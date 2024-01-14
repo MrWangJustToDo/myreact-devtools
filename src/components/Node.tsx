@@ -1,10 +1,11 @@
-import { RenderFiber } from "@my-react/react";
+import { MyReactFiberNode } from "@my-react/react-reconciler";
+
 
 export const Node = ({
   fiber,
   paddingLeft
 }: {
-  fiber: RenderFiber;
+  fiber: MyReactFiberNode;
   paddingLeft: number;
 }) => {
   

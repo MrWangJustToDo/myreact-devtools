@@ -6,14 +6,14 @@ settings:
 
 dependencies:
   '@my-react/react':
-    specifier: ^0.2.8
-    version: 0.2.8
+    specifier: ^0.3.0
+    version: 0.3.0
   '@my-react/react-dom':
-    specifier: ^0.2.8
-    version: 0.2.8(@my-react/react@0.2.8)
+    specifier: ^0.3.0
+    version: 0.3.0(@my-react/react@0.3.0)
   '@my-react/react-reconciler':
-    specifier: ^0.2.8
-    version: 0.2.8(@my-react/react@0.2.8)
+    specifier: ^0.3.0
+    version: 0.3.0(@my-react/react@0.3.0)
   '@nextui-org/react':
     specifier: ^2.2.9
     version: 2.2.9(@types/react@18.2.45)(framer-motion@10.16.16)(react-dom@18.2.0)(react@18.2.0)(tailwind-variants@0.1.19)(tailwindcss@3.3.6)
@@ -38,11 +38,11 @@ dependencies:
 
 devDependencies:
   '@my-react/react-refresh':
-    specifier: ^0.2.8
-    version: 0.2.8(@my-react/react-dom@0.2.8)(@my-react/react@0.2.8)
+    specifier: ^0.3.0
+    version: 0.3.0(@my-react/react-dom@0.3.0)(@my-react/react@0.3.0)
   '@my-react/react-refresh-tools':
-    specifier: ^0.0.8
-    version: 0.0.8(@my-react/react-refresh@0.2.8)
+    specifier: ^0.0.9
+    version: 0.0.9(@my-react/react-refresh@0.3.0)
   '@types/node':
     specifier: ^20
     version: 20.10.5
@@ -243,54 +243,54 @@ packages:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  /@my-react/react-dom@0.2.8(@my-react/react@0.2.8):
-    resolution: {integrity: sha512-ntOmd2kZ3DPSOeX+yKOeIb5ljHGqDBLmsHDenw0plZZaWI2IUK530iqSK7J9srDw5NBKV67saNt67AxdE8ZHrg==}
+  /@my-react/react-dom@0.3.0(@my-react/react@0.3.0):
+    resolution: {integrity: sha512-/osJZOFZPTIhiU9MPHp/dshdWS3H3nVJj2ZJprGZKrzV3zblocI7ii5qrALEBG8GH6U2b2sMicx4C6G3q6xoNA==}
     peerDependencies:
-      '@my-react/react': '>=0.2.8'
+      '@my-react/react': '>=0.2.9'
     dependencies:
-      '@my-react/react': 0.2.8
+      '@my-react/react': 0.3.0
 
-  /@my-react/react-jsx@0.2.8(@my-react/react@0.2.8):
-    resolution: {integrity: sha512-7f88bGmRDouVfrPr6F8YtHUNpM8nL56hQq31twDpH+ZLbsSu2b4cqC6NL+NVFocsL7V8EMx+R6phCmn/k/5bdw==}
+  /@my-react/react-jsx@0.2.9(@my-react/react@0.3.0):
+    resolution: {integrity: sha512-C/OWgKFkSBzsYGmlZZBBPRmjETAZOfJASTEx4/honkmUTtQLIg/qsRgoczbk4jrRHIVzyi9tjm+yhUBZtyBvvQ==}
     peerDependencies:
-      '@my-react/react': '>=0.2.8'
+      '@my-react/react': '>=0.2.9'
     dependencies:
-      '@my-react/react': 0.2.8
+      '@my-react/react': 0.3.0
 
-  /@my-react/react-reconciler@0.2.8(@my-react/react@0.2.8):
-    resolution: {integrity: sha512-FvnHmDY2SZE6+JkrYxFiGr1aXGAEI06qSxvj+nqYgkB+OZCnF8Wcq3P7ICyQV3M5C62e+52P/UvqPl7uYUKxxQ==}
+  /@my-react/react-reconciler@0.3.0(@my-react/react@0.3.0):
+    resolution: {integrity: sha512-slp+htnzW1x1r5yjM9T5bgXj34KBAZDYrW4zraLpdq3Ha7kdi81/3g9zypku93KqmXducDrC2bYMq62xNUYyJg==}
     peerDependencies:
-      '@my-react/react': '>=0.2.8'
+      '@my-react/react': '>=0.2.9'
     dependencies:
-      '@my-react/react': 0.2.8
+      '@my-react/react': 0.3.0
     dev: false
 
-  /@my-react/react-refresh-tools@0.0.8(@my-react/react-refresh@0.2.8):
-    resolution: {integrity: sha512-fVzmjTnhIDSf5st92uHz14xeZsfsmbs7J7JkTCvCVAD6G0eo/ZjbpeCt+WnNHMbe7l5nsvLpeW5tDaW50aj4AA==}
+  /@my-react/react-refresh-tools@0.0.9(@my-react/react-refresh@0.3.0):
+    resolution: {integrity: sha512-2/Iykw11dhgpwssO3Gu/CfwWEEVgG/VE97kcdXxJ+Fi3iM/lByGZLqZR9PAWZ7msq76CAfQ7AgRLOr4dIftdTw==}
     peerDependencies:
-      '@my-react/react-refresh': '>=0.2.8'
+      '@my-react/react-refresh': '>=0.2.9'
       webpack: ^4 || ^5
     peerDependenciesMeta:
       webpack:
         optional: true
     dependencies:
-      '@my-react/react-refresh': 0.2.8(@my-react/react-dom@0.2.8)(@my-react/react@0.2.8)
+      '@my-react/react-refresh': 0.3.0(@my-react/react-dom@0.3.0)(@my-react/react@0.3.0)
     dev: true
 
-  /@my-react/react-refresh@0.2.8(@my-react/react-dom@0.2.8)(@my-react/react@0.2.8):
-    resolution: {integrity: sha512-gdao8Y6vM376hBMMO14mxX37XD1kQgcETVikEvIYEILus2Uzz8wgcbl9EnnX67xe8q8EpbizXyxJ7UhqRx9bxQ==}
+  /@my-react/react-refresh@0.3.0(@my-react/react-dom@0.3.0)(@my-react/react@0.3.0):
+    resolution: {integrity: sha512-R47tjVvHOohnfcg47JtxvsfUwd47kuYXzZI0RV0VsdGDK0ogaLRdLp18XW6ynU26GJeJpB5KTBwLedLQUFlouQ==}
     peerDependencies:
-      '@my-react/react': '>=0.2.8'
-      '@my-react/react-dom': '>=0.2.8'
+      '@my-react/react': '>=0.2.9'
+      '@my-react/react-dom': '>=0.2.9'
     dependencies:
-      '@my-react/react': 0.2.8
-      '@my-react/react-dom': 0.2.8(@my-react/react@0.2.8)
+      '@my-react/react': 0.3.0
+      '@my-react/react-dom': 0.3.0(@my-react/react@0.3.0)
     dev: true
 
-  /@my-react/react@0.2.8:
-    resolution: {integrity: sha512-jdtMn2napVDlx324eFkxxT+6WhMSU/1CNLGBwfPLwqMIxtzYau2sQxnhLrPsgugn8rUpiB7nUGYTi6K8nA+uuQ==}
+  /@my-react/react@0.3.0:
+    resolution: {integrity: sha512-1XoLNDwMYOxICCysVa8i7m2CVZ8RDPTxP3CPFcWD/LTeyScIosb18Trkq9DHBY8hDURLaAKlKFVg2DqLxNSgEg==}
     dependencies:
-      '@my-react/react-jsx': 0.2.8(@my-react/react@0.2.8)
+      '@my-react/react-jsx': 0.2.9(@my-react/react@0.3.0)
 
   /@next/env@14.0.4:
     resolution: {integrity: sha512-irQnbMLbUNQpP1wcE5NstJtbuA/69kRfzBrpAD7Gsn8zm/CY6YQYc3HQBz8QPxwISG26tIm5afvvVbu508oBeQ==}
