@@ -1,5 +1,13 @@
-import { RenderFiber } from "@my-react/react";
+import {
+  getElementName,
+} from "@my-react/react-reconciler";
 
-export const getFiberName = (fiber: RenderFiber) => {
-  return fiber.elementType?.name || fiber.elementType;
-}
+import type {
+  MyReactFiberNode,
+  MyReactFiberNodeDev} from "@my-react/react-reconciler";
+
+export const getFiberName = (fiber: MyReactFiberNodeDev | MyReactFiberNode) => {
+  const elementName = getElementName(fiber);
+
+  return elementName.substring(1, elementName.length - 2);
+};
