@@ -29,6 +29,7 @@
   "devDependencies": {
     "@my-react/react-refresh": "^0.3.1",
     "@my-react/react-refresh-tools": "^0.0.10",
+    "@types/chrome": "^0.0.268",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

@@ -11,13 +11,24 @@
       "128": "/icons/128x128.png",
       "192": "/icons/android-chrome-192x192.png"
   },
-  "permissions": ["activeTab"],
+  "permissions": [
+    "storage",
+    "scripting"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [ "icons/*.png", "hook.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "content_scripts": [
       {
           "matches": ["https://*/*", "http://*/*"],
-          "js": ["inject.js"]
+          "js": ["inject.js", "proxy.js"],
+          "run_at": "document_start"
       }
   ],
+  "host_permissions": ["<all_urls>"],
   "action": {
       "default_popup": "extension.html"
   }
