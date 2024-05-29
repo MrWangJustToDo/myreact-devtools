@@ -2,6 +2,16 @@
   "name": "my-react-devtools",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "build:packages": "ts-node ./scripts/build.ts",
+    "dev:app": "cd chrome && pnpm run dev",
+    "dev:extension": "cd chrome && pnpm run dev:extension",
+    "lint": "eslint --cache --ext ts,tsx .",
+    "lint:fix": "pnpm run lint --fix",
+    "prettier": "prettier --ignore-path .prettierignore --write .",
+    "clean": "pnpm -p -r -c exec rm -rf dist dev .cache",
+    "purge": "pnpm -p -r -c exec rm -rf node_modules"
+  },
   "devDependencies": {
     "@my-react/react": "^0.3.1",
     "@my-react/react-dom": "^0.3.1",

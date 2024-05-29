@@ -8,4 +8,5 @@ export const useForceUpdate = createState(() => ({ count: 0 }), {
       },
     };
   },
+  withDeepSelector: false,
 });

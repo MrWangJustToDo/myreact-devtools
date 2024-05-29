@@ -1,11 +1,14 @@
 import { PlainNode } from "./plain";
 // import { safeClone, safeCloneRef } from "./utils";
 
-import type { CustomRenderDispatch, MyReactFiberNode} from "@my-react/react-reconciler";
+import type {
+  CustomRenderDispatch,
+  MyReactFiberNode,
+} from "@my-react/react-reconciler";
 
-const map = new Map();
+const map = new Map<MyReactFiberNode, PlainNode>();
 
-let id = 0;
+const store = new Map<string, MyReactFiberNode>();
 
 const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   plain.elementType = fiber.elementType.toString();
@@ -17,15 +20,18 @@ const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   // plain.ref = safeCloneRef(fiber.ref);
 
   // plain.props = safeClone(fiber.pendingProps);
-}
+};
 
-const loopFiber = (fiber: MyReactFiberNode, parent?: PlainNode, previous?: PlainNode): PlainNode | null => {
-
+const loopFiber = (
+  fiber: MyReactFiberNode,
+  parent?: PlainNode,
+  previous?: PlainNode
+): PlainNode | null => {
   if (!fiber) return null;
 
-  const current = new PlainNode();
+  const exist = map.get(fiber);
 
-  current.uuid = `${id++}--fiber`;
+  const current = exist || new PlainNode();
 
   current.parent = parent;
 
@@ -35,7 +41,9 @@ const loopFiber = (fiber: MyReactFiberNode, parent?: PlainNode, previous?: Plain
 
   assignFiber(current, fiber);
 
-  map.set(current.uuid, fiber);
+  map.set(fiber, current);
+
+  store.set(current.uuid, fiber);
 
   if (fiber.child) {
     loopFiber(fiber.child, current);
@@ -46,12 +54,25 @@ const loopFiber = (fiber: MyReactFiberNode, parent?: PlainNode, previous?: Plain
   }
 
   return current;
-}
+};
 
-export const generateFiberTreeToPlainTree = (dispatch: CustomRenderDispatch) => {
+export const generateFiberTreeToPlainTree = (
+  dispatch: CustomRenderDispatch
+) => {
   const rootFiber = dispatch.rootFiber;
 
   const rootPlain = loopFiber(rootFiber);
 
   return rootPlain;
+};
+
+export const unmountPlainNode = (fiber: MyReactFiberNode) => {
+  const plain = map.get(fiber);
+  if (plain) {
+    plain.parent = null;
+    plain.child = null;
+    plain.sibling = null;
+    store.delete(plain.uuid);
+  }
+  map.delete(fiber);
 };

@@ -1,6 +1,6 @@
 {
-  "name": "@my-react-devtool/core",
-  "description": "@my-react-devtool/core",
+  "name": "@my-react-devtool/bridge",
+  "description": "@my-react-devtool/bridge",
   "author": "MrWangJustToDo",
   "license": "MIT",
   "version": "0.0.1",
@@ -32,7 +32,11 @@
       }
     ]
   },
+  "dependencies": {
+    "@types/chrome": "^0.0.268"
+  },
   "devDependencies": {
+    "@my-react-devtool/core": "workspace:*",
     "@my-react/react": "^0.3.1",
     "@my-react/react-dom": "^0.3.1",
     "@my-react/react-shared": "^0.3.1",
