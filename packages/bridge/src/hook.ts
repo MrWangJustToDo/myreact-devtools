@@ -1,24 +1,18 @@
+import { DevToolCore } from "@my-react-devtool/core";
+
+import { MessageHookType, MessageProxyType } from "./type";
+
+import type { MessageProxyDataType} from "./type";
 import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
-enum MessagePostType {
-  init = "hook-init",
-  render = "hook-render",
-}
-
-enum MessageReceiveType {
-  ready = "proxy-ready",
-}
-
-type MessageData = {
-  type: MessageReceiveType;
-  data: any;
-};
+const core = new DevToolCore();
 
 let proxyReady = false;
 
-const onMessage = (message: MessageEvent<MessageData>) => {
-  if (!proxyReady && message.data.type === MessageReceiveType.ready) {
-    console.log("[@my-react-devtool] proxy ready");
+const onMessage = (message: MessageEvent<MessageProxyDataType>) => {
+  if (!proxyReady && message.data.type === MessageProxyType.ready) {
+    console.log("[@my-react-devtool/hook] proxy ready");
+
     proxyReady = true;
   }
 };
@@ -27,36 +21,47 @@ window.addEventListener("message", onMessage);
 
 const set = new Set<CustomRenderDispatch>();
 
-let hasPending = false;
+let id = null;
 
 const runWhenProxyReady = (fn: () => void, count: number) => {
   if (proxyReady) {
     fn();
   } else {
     if (count > 10) {
-      console.error("[@my-react-devtool] proxy is not ready");
+      console.error("[@my-react-devtool/hook] proxy is not ready");
       return;
     }
-    if (hasPending) return;
-    hasPending = true;
-    setTimeout(() => {
+
+    clearTimeout(id);
+
+    id = setTimeout(() => {
       runWhenProxyReady(fn, count + 1);
-    }, 5000);
+    }, 2000);
   }
 };
+
+core.subscribe((message) => {
+  window.postMessage({ type: MessageHookType.render, data: message }, "*");
+});
 
 export const globalHook = (dispatch: CustomRenderDispatch) => {
   set.add(dispatch);
   runWhenProxyReady(() => {
-    window.postMessage({ type: MessagePostType.render, data: set }, "*");
+    // current site is render by @my-react
+    window.postMessage({ type: MessageHookType.mount }, "*");
+    console.log("[@my-react-devtool/hook] render", set);
+    set.forEach((dispatch) => {
+      if (!core.hasDispatch(dispatch)) {
+        core.addDispatch(dispatch);
+      }
+    });
   }, 1);
 };
 
 if (window.parent && window.parent !== window) {
-  console.warn(
-    "[@my-react-devtool] currently the @my-react extension does not support iframe."
-  );
+  console.warn("[@my-react-devtool/hook] currently the @my-react extension does not support iframe.");
 } else {
+  window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
   window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-  window.postMessage({ type: MessagePostType.init }, "*");
+  window.postMessage({ type: MessageHookType.init }, "*");
 }

@@ -28,10 +28,24 @@ export class DevToolCore {
 
   addDispatch(dispatch: DevToolRenderDispatch) {
     setupDispatch(dispatch);
+
     this._dispatch.add(dispatch);
-    const tree = generateFiberTreeToPlainTree(dispatch);
-    this._map.set(dispatch, tree);
-    this.notify({ type: MessageType.init, data: tree });
+
+    const originalAfterCommit = dispatch.afterCommit;
+
+    const onLoad = () => {
+      const tree = generateFiberTreeToPlainTree(dispatch);
+
+      this._map.set(dispatch, tree);
+
+      this.notify({ type: MessageType.init, data: tree });
+    };
+
+    dispatch.afterCommit = function (this: DevToolRenderDispatch) {
+      originalAfterCommit?.call?.(this);
+
+      onLoad();
+    };
   }
 
   hasDispatch(dispatch: DevToolRenderDispatch) {
@@ -57,5 +71,11 @@ export class DevToolCore {
 
   notify(data: Message) {
     this._listeners.forEach((listener) => listener(data));
+  }
+
+  getTree(dispatch: DevToolRenderDispatch) {
+    const tree = generateFiberTreeToPlainTree(dispatch);
+    this._map.set(dispatch, tree);
+    return tree;
   }
 }

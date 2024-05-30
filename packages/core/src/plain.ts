@@ -1,4 +1,4 @@
-import type { MyReactElement, MyReactElementType } from "@my-react/react";
+import type { MyReactElement } from "@my-react/react";
 import type { NODE_TYPE } from "@my-react/react-reconciler";
 
 let id = 0;
@@ -7,19 +7,17 @@ let id = 0;
 export class PlainNode {
   props: MyReactElement['props'];
 
+  name: string;
+
   ref: MyReactElement["ref"];
 
   key: MyReactElement["key"];
 
   child: PlainNode;
 
-  parent: PlainNode;
-
   sibling: PlainNode;
 
   type: NODE_TYPE;
-
-  elementType: MyReactElementType | null;
 
   uuid: string;
 

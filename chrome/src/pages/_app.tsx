@@ -1,4 +1,5 @@
 import { NextUIProvider } from "@nextui-org/react";
+
 // import { ThemeProvider } from "next-themes";
 
 import type { AppProps } from "next/app";

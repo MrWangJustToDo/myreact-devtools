@@ -1,17 +1,14 @@
 import { PlainNode } from "./plain";
-// import { safeClone, safeCloneRef } from "./utils";
+import { getFiberName } from "./utils";
 
-import type {
-  CustomRenderDispatch,
-  MyReactFiberNode,
-} from "@my-react/react-reconciler";
+import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 
 const map = new Map<MyReactFiberNode, PlainNode>();
 
 const store = new Map<string, MyReactFiberNode>();
 
 const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
-  plain.elementType = fiber.elementType.toString();
+  plain.name = getFiberName(fiber as MyReactFiberNodeDev);
 
   plain.key = fiber.key;
 
@@ -22,22 +19,20 @@ const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   // plain.props = safeClone(fiber.pendingProps);
 };
 
-const loopFiber = (
-  fiber: MyReactFiberNode,
-  parent?: PlainNode,
-  previous?: PlainNode
-): PlainNode | null => {
+const loopFiber = (fiber: MyReactFiberNode, parent?: PlainNode, previous?: PlainNode): PlainNode | null => {
   if (!fiber) return null;
 
   const exist = map.get(fiber);
 
   const current = exist || new PlainNode();
 
-  current.parent = parent;
+  if (parent) {
+    parent.child = parent.child || current;
+  }
 
-  parent.child = parent.child || current;
-
-  previous && (previous.sibling = current);
+  if (previous) {
+    previous.sibling = current;
+  }
 
   assignFiber(current, fiber);
 
@@ -56,9 +51,7 @@ const loopFiber = (
   return current;
 };
 
-export const generateFiberTreeToPlainTree = (
-  dispatch: CustomRenderDispatch
-) => {
+export const generateFiberTreeToPlainTree = (dispatch: CustomRenderDispatch) => {
   const rootFiber = dispatch.rootFiber;
 
   const rootPlain = loopFiber(rootFiber);
@@ -69,7 +62,6 @@ export const generateFiberTreeToPlainTree = (
 export const unmountPlainNode = (fiber: MyReactFiberNode) => {
   const plain = map.get(fiber);
   if (plain) {
-    plain.parent = null;
     plain.child = null;
     plain.sibling = null;
     store.delete(plain.uuid);

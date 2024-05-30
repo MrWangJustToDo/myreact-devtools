@@ -19,19 +19,47 @@
     ".": "./index.js",
     "./package.json": "./package.json"
   },
-  "buildOptions": {
-    "input": "./src/index.ts",
-    "output": [
-      {
-        "dir": "./dist",
-        "entryFileNames": "cjs/index.js",
-        "format": "cjs",
-        "type": true,
-        "multiple": true,
-        "sourcemap": true
-      }
-    ]
-  },
+  "buildOptions": [
+    {
+      "input": "./src/hook.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "iife/hook.js",
+          "format": "iife",
+          "type": true,
+          "multiple": true,
+          "sourcemap": true
+        }
+      ]
+    },
+    {
+      "input": "./src/proxy.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "iife/proxy.js",
+          "format": "iife",
+          "type": true,
+          "multiple": true,
+          "sourcemap": true
+        }
+      ]
+    },
+    {
+      "input": "./src/backend.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "iife/backend.js",
+          "format": "iife",
+          "type": true,
+          "multiple": true,
+          "sourcemap": true
+        }
+      ]
+    }
+  ],
   "dependencies": {
     "@types/chrome": "^0.0.268"
   },

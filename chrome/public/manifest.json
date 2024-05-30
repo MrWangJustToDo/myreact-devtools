@@ -5,31 +5,31 @@
   "version": "0.0.1",
   "description": "A browser devtools for @my-react framework",
   "icons": {
-      "16": "/icons/favicon-16x16.png",
-      "32": "/icons/favicon-32x32.png",
-      "48": "/icons/favicon-48x48.png",
-      "128": "/icons/128x128.png",
-      "192": "/icons/android-chrome-192x192.png"
+    "16": "icons/favicon-16x16.png",
+    "32": "icons/favicon-32x32.png",
+    "48": "icons/favicon-48x48.png",
+    "128": "icons/128x128.png",
+    "192": "icons/android-chrome-192x192.png"
   },
-  "permissions": [
-    "storage",
-    "scripting"
-  ],
+  "permissions": ["storage", "scripting"],
   "web_accessible_resources": [
     {
-      "resources": [ "icons/*.png", "hook.js"],
+      "resources": ["icons/*.png", "hook.js", "bundle/*.js"],
       "matches": ["<all_urls>"]
     }
   ],
+  "background": {
+    "service_worker": "bundle/backend.js"
+  },
   "content_scripts": [
-      {
-          "matches": ["https://*/*", "http://*/*"],
-          "js": ["inject.js", "proxy.js"],
-          "run_at": "document_start"
-      }
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["inject.js", "bundle/proxy.js"],
+      "run_at": "document_start"
+    }
   ],
   "host_permissions": ["<all_urls>"],
   "action": {
-      "default_popup": "extension.html"
+    "default_popup": "disablePopup.html"
   }
 }
