@@ -59,6 +59,7 @@
             }, 1);
         }
     };
+    console.log("chrome from proxy.js", chrome);
     window.addEventListener("message", onMessage);
 
 })();

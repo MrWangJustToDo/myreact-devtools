@@ -1,6 +1,6 @@
 import { MessageHookType } from "./type";
 
-import type { MessageHookDataType} from "./type";
+import type { MessageHookDataType } from "./type";
 
 chrome.runtime.onConnect.addListener((port) => {
   console.log(`[@my-react-devtool/backend] connected: ${port.name}`);
@@ -10,6 +10,7 @@ chrome.runtime.onConnect.addListener((port) => {
       const tabId = port.sender?.tab?.id;
       if (tabId) {
         chrome.action.setPopup({ tabId, popup: "enablePopup.html" });
+        console.log("chrome from backend.js", chrome);
       }
     }
   });

@@ -156,6 +156,8 @@
     	    var current = exist || new PlainNode();
     	    if (parent) {
     	        parent.child = parent.child || current;
+    	        parent.children = parent.children || [];
+    	        parent.children.push(current);
     	    }
     	    if (previous) {
     	        previous.sibling = current;
@@ -334,6 +336,7 @@
     else {
         window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
         window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+        console.log("chrome from hook.js", chrome);
         window.postMessage({ type: MessageHookType.init }, "*");
     }
 

@@ -2,7 +2,7 @@ import { DevToolCore } from "@my-react-devtool/core";
 
 import { MessageHookType, MessageProxyType } from "./type";
 
-import type { MessageProxyDataType} from "./type";
+import type { MessageProxyDataType } from "./type";
 import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
 const core = new DevToolCore();
@@ -63,5 +63,6 @@ if (window.parent && window.parent !== window) {
 } else {
   window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
   window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+  console.log("chrome from hook.js", chrome);
   window.postMessage({ type: MessageHookType.init }, "*");
 }

@@ -1,6 +1,6 @@
 import { MessageHookType, MessageProxyType } from "./type";
 
-import type { MessageHookDataType} from "./type";
+import type { MessageHookDataType } from "./type";
 import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
 let hookReady = false;
@@ -60,5 +60,7 @@ const onMessage = (message: MessageEvent<MessageHookDataType>) => {
     }, 1);
   }
 };
+
+console.log("chrome from proxy.js", chrome);
 
 window.addEventListener("message", onMessage);

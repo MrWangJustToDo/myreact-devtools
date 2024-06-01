@@ -24,6 +24,7 @@
                 var tabId = (_b = (_a = port.sender) === null || _a === void 0 ? void 0 : _a.tab) === null || _b === void 0 ? void 0 : _b.id;
                 if (tabId) {
                     chrome.action.setPopup({ tabId: tabId, popup: "enablePopup.html" });
+                    console.log("chrome from backend.js", chrome);
                 }
             }
         });

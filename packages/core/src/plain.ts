@@ -13,6 +13,8 @@ export class PlainNode {
 
   key: MyReactElement["key"];
 
+  children: PlainNode[];
+
   child: PlainNode;
 
   sibling: PlainNode;

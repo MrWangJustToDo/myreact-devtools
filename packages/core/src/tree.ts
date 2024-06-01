@@ -28,6 +28,10 @@ const loopFiber = (fiber: MyReactFiberNode, parent?: PlainNode, previous?: Plain
 
   if (parent) {
     parent.child = parent.child || current;
+
+    parent.children = parent.children || [];
+
+    parent.children.push(current);
   }
 
   if (previous) {
