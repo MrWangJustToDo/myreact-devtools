@@ -32,24 +32,43 @@
         PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
 
-    var port = chrome.runtime.connect({ name: PortName.proxy });
-    var sendMessageToBackend = function (message) {
-        window.postMessage({ type: MessageProxyType.forward, data: message }, "*");
-    };
-    var sendMessageToPanel = function (message) {
-        var _a, _b, _c;
-        if (message.source !== window)
-            return;
-        if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.type) === MessageHookType.mount || ((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === MessageHookType.render || ((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === MessageHookType.init) {
-            port.postMessage({ type: MessageProxyType.forward, data: message.data });
+    var hookReady = false;
+    var id = null;
+    var runWhenHookReady = function (fn, count) {
+        clearTimeout(id);
+        if (hookReady) {
+            fn();
+        }
+        else {
+            if (count && count > 10) {
+                {
+                    console.error("[@my-react-devtool/detector] hook not ready");
+                }
+            }
+            id = setTimeout(function () { return runWhenHookReady(fn, count ? count + 1 : 1); }, 2000);
         }
     };
-    var handleDisconnect = function () {
-        window.removeEventListener("message", sendMessageToPanel);
+    var onMessage = function (message) {
+        var _a, _b;
+        if (message.source !== window)
+            return;
+        if (!hookReady && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.type) === MessageHookType.init) {
+            {
+                console.log("[@my-react-devtool/detector] hook init");
+            }
+            hookReady = true;
+            window.postMessage({ type: MessageDetectorType.init }, "*");
+        }
+        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === MessageHookType.mount) {
+            runWhenHookReady(function () {
+                {
+                    console.log("[@my-react-devtool/detector] hook mount");
+                }
+                chrome.runtime.sendMessage({ type: MessageHookType.mount });
+            });
+        }
     };
-    port.onMessage.addListener(sendMessageToBackend);
-    port.onDisconnect.addListener(handleDisconnect);
-    window.addEventListener("message", sendMessageToPanel);
+    window.addEventListener("message", onMessage);
 
 })();
-//# sourceMappingURL=proxy.development.js.map
+//# sourceMappingURL=detector.development.js.map

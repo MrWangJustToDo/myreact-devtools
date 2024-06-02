@@ -13,7 +13,11 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 
+import { useAppTree } from "@/hooks/useAppTree";
+
 export default function Page() {
+
+  useAppTree();
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 

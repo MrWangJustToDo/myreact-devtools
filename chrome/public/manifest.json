@@ -20,7 +20,7 @@
   ],
   "devtools_page": "main.html",
   "background": {
-    "service_worker": "bundle/backend.js"
+    "service_worker": "bundle/service-worker.js"
   },
   "host_permissions": ["<all_urls>"],
   "action": {
@@ -29,7 +29,7 @@
   "content_scripts": [
     {
       "matches": ["https://*/*", "http://*/*"],
-      "js": ["inject.js", "bundle/proxy.js"],
+      "js": ["inject.js", "bundle/detector.js"],
       "run_at": "document_start"
     }
   ],

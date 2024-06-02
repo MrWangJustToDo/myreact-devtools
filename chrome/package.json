@@ -22,11 +22,13 @@
     "next": "14.2.3",
     "next-themes": "^0.3.0",
     "react": "^18",
+    "react-arborist": "^3.4.0",
     "react-dom": "^18",
     "reactivity-store": "^0.3.4"
   },
   "packageManager": "pnpm@8.9.0",
   "devDependencies": {
+    "@my-react-devtool/core": "workspace:*",
     "@my-react/react-refresh": "^0.3.1",
     "@my-react/react-refresh-tools": "^0.0.10",
     "@types/chrome": "^0.0.268",

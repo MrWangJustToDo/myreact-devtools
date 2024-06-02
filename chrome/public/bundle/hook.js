@@ -1,6 +1,657 @@
 (function (exports) {
     'use strict';
 
+    var reactShared = {exports: {}};
+
+    var index_development$1 = {};
+
+    var hasRequiredIndex_development$1;
+
+    function requireIndex_development$1 () {
+    	if (hasRequiredIndex_development$1) return index_development$1;
+    	hasRequiredIndex_development$1 = 1;
+    	(function (exports) {
+
+    		var merge = function (src, rest) {
+    		    return src | rest;
+    		};
+    		var remove = function (src, rest) {
+    		    if (src & rest) {
+    		        return src ^ rest;
+    		    }
+    		    else {
+    		        return src;
+    		    }
+    		};
+    		var include = function (src, rest) {
+    		    return src & rest;
+    		};
+    		var exclude = function (src, rest) {
+    		    return !(src & rest);
+    		};
+
+    		/******************************************************************************
+    		Copyright (c) Microsoft Corporation.
+
+    		Permission to use, copy, modify, and/or distribute this software for any
+    		purpose with or without fee is hereby granted.
+
+    		THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    		REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    		AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    		INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    		LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    		OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    		PERFORMANCE OF THIS SOFTWARE.
+    		***************************************************************************** */
+    		/* global Reflect, Promise, SuppressedError, Symbol */
+
+
+    		function __spreadArray(to, from, pack) {
+    		    if (arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+    		        if (ar || !(i in from)) {
+    		            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+    		            ar[i] = from[i];
+    		        }
+    		    }
+    		    return to.concat(ar || Array.prototype.slice.call(from));
+    		}
+
+    		typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    		    var e = new Error(message);
+    		    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    		};
+
+    		var once = function (action) {
+    		    var called = false;
+    		    return function () {
+    		        var args = [];
+    		        for (var _i = 0; _i < arguments.length; _i++) {
+    		            args[_i] = arguments[_i];
+    		        }
+    		        if (called)
+    		            return;
+    		        called = true;
+    		        if (typeof action === "function")
+    		            action.call.apply(action, __spreadArray([null], args, false));
+    		    };
+    		};
+
+    		var TYPEKEY = "$$typeof";
+    		var Element = Symbol.for("react.element");
+    		var Memo = Symbol.for("react.memo");
+    		var ForwardRef = Symbol.for("react.forward_ref");
+    		var Portal = Symbol.for("react.portal");
+    		var Fragment = Symbol.for("react.fragment");
+    		var Context = Symbol.for("react.context");
+    		var Provider = Symbol.for("react.provider");
+    		var Consumer = Symbol.for("react.consumer");
+    		var Lazy = Symbol.for("react.lazy");
+    		var Suspense = Symbol.for("react.suspense");
+    		var Strict = Symbol.for("react.strict_mode");
+    		// TODO
+    		var KeepLive = Symbol.for("react.keep_live");
+    		var Scope = Symbol.for("react.scope");
+    		var Comment = Symbol.for("react.comment");
+    		var Offscreen = Symbol.for("react.offscreen");
+    		var Profiler = Symbol.for("react.profiler");
+
+    		function isObject(target) {
+    		    return typeof target === "object" && target !== null;
+    		}
+    		function isFunction(target) {
+    		    return typeof target === "function";
+    		}
+    		function isArray(target) {
+    		    return Array.isArray(target);
+    		}
+    		function isSymbol(target) {
+    		    return typeof target === "symbol";
+    		}
+    		function isString(target) {
+    		    return typeof target === "string";
+    		}
+    		function isInteger(target) {
+    		    return Number.isInteger(Number(target));
+    		}
+    		function isNumber(target) {
+    		    return typeof target === "number";
+    		}
+    		function isCollection(target) {
+    		    return target instanceof Map || target instanceof Set || target instanceof WeakMap || target instanceof WeakSet;
+    		}
+    		var isPromise = function (val) {
+    		    return (isObject(val) || isFunction(val)) && isFunction(val.then) && isFunction(val.catch);
+    		};
+
+    		var UniqueArray = /** @class */ (function () {
+    		    function UniqueArray() {
+    		        this.set = new Set();
+    		        this.arr = new Array();
+    		        this.length = 0;
+    		    }
+    		    UniqueArray.prototype.uniPop = function () {
+    		        var v = this.arr.pop();
+    		        this.set.delete(v);
+    		        this.length--;
+    		        return v;
+    		    };
+    		    UniqueArray.prototype.uniPush = function (v) {
+    		        if (this.set.has(v))
+    		            return 0;
+    		        this.set.add(v);
+    		        this.arr.push(v);
+    		        this.length++;
+    		    };
+    		    UniqueArray.prototype.uniShift = function () {
+    		        var v = this.arr.shift();
+    		        this.set.delete(v);
+    		        this.length--;
+    		        return v;
+    		    };
+    		    UniqueArray.prototype.uniUnshift = function (v) {
+    		        if (this.set.has(v))
+    		            return 0;
+    		        this.set.add(v);
+    		        this.arr.unshift(v);
+    		        this.length++;
+    		    };
+    		    UniqueArray.prototype.uniDelete = function (v) {
+    		        if (this.set.has(v)) {
+    		            this.set.delete(v);
+    		            this.arr = this.arr.filter(function (i) { return i !== v; });
+    		            this.length--;
+    		        }
+    		    };
+    		    UniqueArray.prototype.clear = function () {
+    		        this.length = 0;
+    		        this.set.clear();
+    		        this.arr.length = 0;
+    		    };
+    		    UniqueArray.prototype.getAll = function () {
+    		        return this.arr;
+    		    };
+    		    return UniqueArray;
+    		}());
+
+    		exports.HOOK_TYPE = void 0;
+    		(function (HOOK_TYPE) {
+    		    HOOK_TYPE[HOOK_TYPE["useId"] = 0] = "useId";
+    		    HOOK_TYPE[HOOK_TYPE["useRef"] = 1] = "useRef";
+    		    HOOK_TYPE[HOOK_TYPE["useMemo"] = 2] = "useMemo";
+    		    HOOK_TYPE[HOOK_TYPE["useState"] = 3] = "useState";
+    		    HOOK_TYPE[HOOK_TYPE["useSignal"] = 4] = "useSignal";
+    		    HOOK_TYPE[HOOK_TYPE["useEffect"] = 5] = "useEffect";
+    		    HOOK_TYPE[HOOK_TYPE["useContext"] = 6] = "useContext";
+    		    HOOK_TYPE[HOOK_TYPE["useReducer"] = 7] = "useReducer";
+    		    HOOK_TYPE[HOOK_TYPE["useCallback"] = 8] = "useCallback";
+    		    HOOK_TYPE[HOOK_TYPE["useTransition"] = 9] = "useTransition";
+    		    HOOK_TYPE[HOOK_TYPE["useDebugValue"] = 10] = "useDebugValue";
+    		    HOOK_TYPE[HOOK_TYPE["useLayoutEffect"] = 11] = "useLayoutEffect";
+    		    HOOK_TYPE[HOOK_TYPE["useDeferredValue"] = 12] = "useDeferredValue";
+    		    HOOK_TYPE[HOOK_TYPE["useInsertionEffect"] = 13] = "useInsertionEffect";
+    		    HOOK_TYPE[HOOK_TYPE["useImperativeHandle"] = 14] = "useImperativeHandle";
+    		    HOOK_TYPE[HOOK_TYPE["useSyncExternalStore"] = 15] = "useSyncExternalStore";
+    		})(exports.HOOK_TYPE || (exports.HOOK_TYPE = {}));
+
+    		exports.UpdateQueueType = void 0;
+    		(function (UpdateQueueType) {
+    		    UpdateQueueType[UpdateQueueType["hook"] = 2] = "hook";
+    		    UpdateQueueType[UpdateQueueType["component"] = 1] = "component";
+    		    UpdateQueueType[UpdateQueueType["lazy"] = 3] = "lazy";
+    		    UpdateQueueType[UpdateQueueType["context"] = 4] = "context";
+    		})(exports.UpdateQueueType || (exports.UpdateQueueType = {}));
+
+    		exports.MODE_TYPE = void 0;
+    		(function (MODE_TYPE) {
+    		    MODE_TYPE[MODE_TYPE["__initial__"] = 0] = "__initial__";
+    		    MODE_TYPE[MODE_TYPE["__stable__"] = 1] = "__stable__";
+    		})(exports.MODE_TYPE || (exports.MODE_TYPE = {}));
+
+    		exports.STATE_TYPE = void 0;
+    		(function (STATE_TYPE) {
+    		    STATE_TYPE[STATE_TYPE["__initial__"] = 0] = "__initial__";
+    		    STATE_TYPE[STATE_TYPE["__create__"] = 1] = "__create__";
+    		    STATE_TYPE[STATE_TYPE["__stable__"] = 2] = "__stable__";
+    		    STATE_TYPE[STATE_TYPE["__skippedConcurrent__"] = 4] = "__skippedConcurrent__";
+    		    STATE_TYPE[STATE_TYPE["__skippedSync__"] = 8] = "__skippedSync__";
+    		    STATE_TYPE[STATE_TYPE["__inherit__"] = 16] = "__inherit__";
+    		    STATE_TYPE[STATE_TYPE["__triggerConcurrent__"] = 32] = "__triggerConcurrent__";
+    		    STATE_TYPE[STATE_TYPE["__triggerConcurrentForce__"] = 64] = "__triggerConcurrentForce__";
+    		    STATE_TYPE[STATE_TYPE["__triggerSync__"] = 128] = "__triggerSync__";
+    		    STATE_TYPE[STATE_TYPE["__triggerSyncForce__"] = 256] = "__triggerSyncForce__";
+    		    STATE_TYPE[STATE_TYPE["__unmount__"] = 512] = "__unmount__";
+    		    STATE_TYPE[STATE_TYPE["__hmr__"] = 1024] = "__hmr__";
+    		})(exports.STATE_TYPE || (exports.STATE_TYPE = {}));
+
+    		exports.PATCH_TYPE = void 0;
+    		(function (PATCH_TYPE) {
+    		    PATCH_TYPE[PATCH_TYPE["__initial__"] = 0] = "__initial__";
+    		    PATCH_TYPE[PATCH_TYPE["__create__"] = 1] = "__create__";
+    		    PATCH_TYPE[PATCH_TYPE["__update__"] = 2] = "__update__";
+    		    PATCH_TYPE[PATCH_TYPE["__append__"] = 4] = "__append__";
+    		    PATCH_TYPE[PATCH_TYPE["__position__"] = 8] = "__position__";
+    		    PATCH_TYPE[PATCH_TYPE["__effect__"] = 16] = "__effect__";
+    		    PATCH_TYPE[PATCH_TYPE["__layoutEffect__"] = 32] = "__layoutEffect__";
+    		    PATCH_TYPE[PATCH_TYPE["__insertionEffect__"] = 64] = "__insertionEffect__";
+    		    PATCH_TYPE[PATCH_TYPE["__unmount__"] = 128] = "__unmount__";
+    		    PATCH_TYPE[PATCH_TYPE["__ref__"] = 256] = "__ref__";
+    		})(exports.PATCH_TYPE || (exports.PATCH_TYPE = {}));
+
+    		exports.Effect_TYPE = void 0;
+    		(function (Effect_TYPE) {
+    		    Effect_TYPE[Effect_TYPE["__initial__"] = 0] = "__initial__";
+    		    Effect_TYPE[Effect_TYPE["__effect__"] = 1] = "__effect__";
+    		    Effect_TYPE[Effect_TYPE["__unmount__"] = 2] = "__unmount__";
+    		})(exports.Effect_TYPE || (exports.Effect_TYPE = {}));
+
+    		var compareVersion = function (version1, version2) {
+    		    var compare = function (arr1, arr2) {
+    		        if (arr1.length && arr2.length) {
+    		            var v1 = arr1[0];
+    		            var v2 = arr2[0];
+    		            if (v1 > v2)
+    		                return true;
+    		            if (v2 > v1)
+    		                return false;
+    		            return compare(arr1.slice(1), arr2.slice(1));
+    		        }
+    		        if (arr1.length)
+    		            return true;
+    		        if (arr2.length)
+    		            return false;
+    		        return true;
+    		    };
+    		    return compare(version1.split(".").map(Number), version2.split(".").map(Number));
+    		};
+
+    		var isNormalEquals = function (src, target, isSkipKey) {
+    		    var isEquals = Object.is(src, target);
+    		    if (isEquals)
+    		        return true;
+    		    var hasSkipKeyFunction = typeof isSkipKey === "function";
+    		    if (typeof src === "object" && typeof target === "object" && src !== null && target !== null) {
+    		        var srcKeys = Object.keys(src);
+    		        var targetKeys = Object.keys(target);
+    		        if (srcKeys.length !== targetKeys.length)
+    		            return false;
+    		        var res = true;
+    		        if (hasSkipKeyFunction) {
+    		            for (var _i = 0, srcKeys_1 = srcKeys; _i < srcKeys_1.length; _i++) {
+    		                var key = srcKeys_1[_i];
+    		                if (isSkipKey(key) && key in target) {
+    		                    continue;
+    		                }
+    		                else {
+    		                    res = res && Object.is(src[key], target[key]);
+    		                }
+    		                if (!res)
+    		                    return res;
+    		            }
+    		        }
+    		        else {
+    		            for (var _a = 0, srcKeys_2 = srcKeys; _a < srcKeys_2.length; _a++) {
+    		                var key = srcKeys_2[_a];
+    		                res = res && Object.is(src[key], target[key]);
+    		                if (!res)
+    		                    return res;
+    		            }
+    		        }
+    		        return res;
+    		    }
+    		    return false;
+    		};
+    		var isArrayEquals = function (src, target) {
+    		    var isEquals = Object.is(src, target);
+    		    if (isEquals)
+    		        return true;
+    		    if (Array.isArray(src) && Array.isArray(target) && src.length === target.length) {
+    		        var re = true;
+    		        for (var key in src) {
+    		            re = re && Object.is(src[key], target[key]);
+    		            if (!re)
+    		                return re;
+    		        }
+    		        return re;
+    		    }
+    		    return false;
+    		};
+
+    		var ListTreeNode = /** @class */ (function () {
+    		    function ListTreeNode(value) {
+    		        this.prev = null;
+    		        this.next = null;
+    		        this.value = value;
+    		    }
+    		    return ListTreeNode;
+    		}());
+    		var ListTree = /** @class */ (function () {
+    		    function ListTree() {
+    		        this.length = 0;
+    		        var _stickyHead = null;
+    		        Object.defineProperty(this, "stickyHead", {
+    		            get: function () {
+    		                return _stickyHead;
+    		            },
+    		            set: function (v) {
+    		                _stickyHead = v;
+    		            },
+    		        });
+    		        var _stickyFoot = null;
+    		        Object.defineProperty(this, "stickyFoot", {
+    		            get: function () {
+    		                return _stickyFoot;
+    		            },
+    		            set: function (v) {
+    		                _stickyFoot = v;
+    		            },
+    		        });
+    		        var _head = null;
+    		        Object.defineProperty(this, "head", {
+    		            get: function () {
+    		                return _head;
+    		            },
+    		            set: function (v) {
+    		                _head = v;
+    		            },
+    		        });
+    		        var _foot = null;
+    		        Object.defineProperty(this, "foot", {
+    		            get: function () {
+    		                return _foot;
+    		            },
+    		            set: function (v) {
+    		                _foot = v;
+    		            },
+    		        });
+    		    }
+    		    ListTree.prototype.push = function (node) {
+    		        var listNode = new ListTreeNode(node);
+    		        this.length++;
+    		        if (!this.foot) {
+    		            this.head = listNode;
+    		            this.foot = listNode;
+    		        }
+    		        else {
+    		            this.foot.next = listNode;
+    		            listNode.prev = this.foot;
+    		            this.foot = listNode;
+    		        }
+    		    };
+    		    ListTree.prototype.pushToLast = function (node) {
+    		        if (this.stickyFoot) {
+    		            var node_1 = this.stickyFoot;
+    		            this.push(node_1.value);
+    		            this.stickyFoot = null;
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.stickyFoot = listNode;
+    		        this.length++;
+    		    };
+    		    ListTree.prototype.pushToHead = function (node) {
+    		        if (this.stickyHead) {
+    		            var node_2 = this.stickyHead;
+    		            this.unshift(node_2.value);
+    		            this.stickyHead = null;
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.stickyHead = listNode;
+    		        this.length++;
+    		    };
+    		    ListTree.prototype.pop = function () {
+    		        var foot = this.stickyFoot || this.foot;
+    		        if (foot) {
+    		            this.delete(foot);
+    		            return foot.value;
+    		        }
+    		        else {
+    		            return null;
+    		        }
+    		    };
+    		    ListTree.prototype.unshift = function (node) {
+    		        var listNode = new ListTreeNode(node);
+    		        this.length++;
+    		        if (!this.head) {
+    		            this.head = listNode;
+    		            this.foot = listNode;
+    		        }
+    		        else {
+    		            this.head.prev = listNode;
+    		            listNode.next = this.head;
+    		            this.head = listNode;
+    		        }
+    		    };
+    		    ListTree.prototype.unshiftToHead = function (node) {
+    		        if (this.stickyHead) {
+    		            var node_3 = this.stickyHead;
+    		            this.unshift(node_3.value);
+    		            this.stickyHead = null;
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.stickyHead = listNode;
+    		    };
+    		    ListTree.prototype.unshiftToFoot = function (node) {
+    		        if (this.stickyFoot) {
+    		            var node_4 = this.stickyFoot;
+    		            this.push(node_4.value);
+    		            this.stickyFoot = null;
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.stickyFoot = listNode;
+    		    };
+    		    ListTree.prototype.shift = function () {
+    		        var head = this.stickyHead || this.head;
+    		        if (head) {
+    		            this.delete(head);
+    		            return head.value;
+    		        }
+    		        else {
+    		            return null;
+    		        }
+    		    };
+    		    ListTree.prototype.pickHead = function () {
+    		        var _a, _b;
+    		        return ((_a = this.stickyHead) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.head) === null || _b === void 0 ? void 0 : _b.value);
+    		    };
+    		    ListTree.prototype.pickFoot = function () {
+    		        var _a, _b;
+    		        return ((_a = this.stickyFoot) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.foot) === null || _b === void 0 ? void 0 : _b.value);
+    		    };
+    		    ListTree.prototype.listToFoot = function (action) {
+    		        if (this.stickyHead) {
+    		            action(this.stickyHead.value);
+    		        }
+    		        var node = this.head;
+    		        while (node) {
+    		            action(node.value);
+    		            node = node.next;
+    		        }
+    		        if (this.stickyFoot) {
+    		            action(this.stickyFoot.value);
+    		        }
+    		    };
+    		    ListTree.prototype.listToHead = function (action) {
+    		        if (this.stickyFoot) {
+    		            action(this.stickyFoot.value);
+    		        }
+    		        var node = this.foot;
+    		        while (node) {
+    		            action(node.value);
+    		            node = node.prev;
+    		        }
+    		        if (this.stickyHead) {
+    		            action(this.stickyHead.value);
+    		        }
+    		    };
+    		    ListTree.prototype.toArray = function () {
+    		        var re = [];
+    		        this.listToFoot(function (v) { return re.push(v); });
+    		        return re;
+    		    };
+    		    ListTree.prototype.delete = function (node) {
+    		        if (this.stickyHead === node) {
+    		            this.stickyHead = null;
+    		            this.length--;
+    		        }
+    		        else if (this.stickyFoot === node) {
+    		            this.stickyFoot = null;
+    		            this.length--;
+    		        }
+    		        else if (this.head === node) {
+    		            var next = node.next;
+    		            node.next = null;
+    		            if (next) {
+    		                this.head = next;
+    		                next.prev = null;
+    		            }
+    		            else {
+    		                this.head = null;
+    		                this.foot = null;
+    		            }
+    		            this.length--;
+    		        }
+    		        else if (this.foot === node) {
+    		            var prev = node.prev;
+    		            node.prev = null;
+    		            if (prev) {
+    		                this.foot = prev;
+    		                prev.next = null;
+    		            }
+    		            else {
+    		                this.head = null;
+    		                this.foot = null;
+    		            }
+    		            this.length--;
+    		        }
+    		        else if (this.hasNode(node)) {
+    		            var prev = node.prev;
+    		            var next = node.next;
+    		            node.prev = null;
+    		            node.next = null;
+    		            prev.next = next;
+    		            next.prev = prev;
+    		            this.length--;
+    		        }
+    		    };
+    		    ListTree.prototype.size = function () {
+    		        return this.length;
+    		    };
+    		    ListTree.prototype.hasNode = function (node) {
+    		        if (this.stickyHead && Object.is(this.stickyHead, node))
+    		            return true;
+    		        if (this.stickyFoot && Object.is(this.stickyFoot, node))
+    		            return true;
+    		        var listNode = this.head;
+    		        while (listNode) {
+    		            if (Object.is(listNode, node))
+    		                return true;
+    		            listNode = listNode.next;
+    		        }
+    		        return false;
+    		    };
+    		    ListTree.prototype.hasValue = function (node) {
+    		        if (this.stickyHead && Object.is(this.stickyHead.value, node))
+    		            return true;
+    		        if (this.stickyFoot && Object.is(this.stickyFoot.value, node))
+    		            return true;
+    		        var listNode = this.head;
+    		        while (listNode) {
+    		            if (Object.is(listNode.value, node))
+    		                return true;
+    		            listNode = listNode.next;
+    		        }
+    		        return false;
+    		    };
+    		    ListTree.prototype.some = function (iterator) {
+    		        var re = false;
+    		        this.listToFoot(function (node) {
+    		            re = re || iterator(node);
+    		        });
+    		        return re;
+    		    };
+    		    ListTree.prototype.every = function (iterator) {
+    		        var re = true;
+    		        this.listToFoot(function (node) {
+    		            re = re && iterator(node);
+    		        });
+    		        return re;
+    		    };
+    		    ListTree.prototype.concat = function (list) {
+    		        var newList = new ListTree();
+    		        this.listToFoot(function (node) { return newList.push(node); });
+    		        list.listToFoot(function (node) { return newList.push(node); });
+    		        return newList;
+    		    };
+    		    ListTree.prototype.clone = function () {
+    		        var newList = new ListTree();
+    		        this.listToFoot(function (v) { return newList.push(v); });
+    		        return newList;
+    		    };
+    		    ListTree.prototype.clear = function () {
+    		        this.length = 0;
+    		        this.head = null;
+    		        this.foot = null;
+    		        this.stickyHead = null;
+    		        this.stickyFoot = null;
+    		    };
+    		    return ListTree;
+    		}());
+    		{
+    		    Object.defineProperty(ListTree.prototype, "_debugToArray", {
+    		        get: function () {
+    		            return this.toArray();
+    		        },
+    		    });
+    		}
+
+    		exports.Comment = Comment;
+    		exports.Consumer = Consumer;
+    		exports.Context = Context;
+    		exports.Element = Element;
+    		exports.ForwardRef = ForwardRef;
+    		exports.Fragment = Fragment;
+    		exports.KeepLive = KeepLive;
+    		exports.Lazy = Lazy;
+    		exports.ListTree = ListTree;
+    		exports.ListTreeNode = ListTreeNode;
+    		exports.Memo = Memo;
+    		exports.Offscreen = Offscreen;
+    		exports.Portal = Portal;
+    		exports.Profiler = Profiler;
+    		exports.Provider = Provider;
+    		exports.Scope = Scope;
+    		exports.Strict = Strict;
+    		exports.Suspense = Suspense;
+    		exports.TYPEKEY = TYPEKEY;
+    		exports.UniqueArray = UniqueArray;
+    		exports.compareVersion = compareVersion;
+    		exports.exclude = exclude;
+    		exports.include = include;
+    		exports.isArray = isArray;
+    		exports.isArrayEquals = isArrayEquals;
+    		exports.isCollection = isCollection;
+    		exports.isFunction = isFunction;
+    		exports.isInteger = isInteger;
+    		exports.isNormalEquals = isNormalEquals;
+    		exports.isNumber = isNumber;
+    		exports.isObject = isObject;
+    		exports.isPromise = isPromise;
+    		exports.isString = isString;
+    		exports.isSymbol = isSymbol;
+    		exports.merge = merge;
+    		exports.once = once;
+    		exports.remove = remove;
+    		
+    	} (index_development$1));
+    	return index_development$1;
+    }
+
+    {
+      reactShared.exports = requireIndex_development$1();
+    }
+
+    var reactSharedExports = reactShared.exports;
+
     var core$1 = {exports: {}};
 
     var index_development = {};
@@ -263,6 +914,7 @@
     	}());
 
     	index_development.DevToolCore = DevToolCore;
+    	index_development.PlainNode = PlainNode;
     	
     	return index_development;
     }
@@ -279,64 +931,80 @@
         MessageHookType["mount"] = "hook-mount";
         MessageHookType["render"] = "hook-render";
     })(MessageHookType || (MessageHookType = {}));
+    var MessageDetectorType;
+    (function (MessageDetectorType) {
+        MessageDetectorType["init"] = "detector-init";
+    })(MessageDetectorType || (MessageDetectorType = {}));
     var MessageProxyType;
     (function (MessageProxyType) {
         MessageProxyType["ready"] = "proxy-ready";
+        MessageProxyType["unmount"] = "proxy-unmount";
+        MessageProxyType["forward"] = "proxy-forward";
     })(MessageProxyType || (MessageProxyType = {}));
-    var MessagePortType;
-    (function (MessagePortType) {
-        MessagePortType["init"] = "port-init";
-    })(MessagePortType || (MessagePortType = {}));
+    var MessagePanelType;
+    (function (MessagePanelType) {
+        MessagePanelType["show"] = "panel-show";
+        MessagePanelType["hide"] = "panel-hide";
+    })(MessagePanelType || (MessagePanelType = {}));
+    var MessageWorkerType;
+    (function (MessageWorkerType) {
+        MessageWorkerType["forward"] = "worker-forward";
+    })(MessageWorkerType || (MessageWorkerType = {}));
+    var PortName;
+    (function (PortName) {
+        PortName["proxy"] = "dev-tool/proxy";
+        PortName["panel"] = "dev-tool/panel";
+    })(PortName || (PortName = {}));
 
     var core = new coreExports.DevToolCore();
-    var proxyReady = false;
-    var onMessage = function (message) {
-        if (!proxyReady && message.data.type === MessageProxyType.ready) {
-            console.log("[@my-react-devtool/hook] proxy ready");
-            proxyReady = true;
-        }
-    };
-    window.addEventListener("message", onMessage);
-    var set = new Set();
-    var id = null;
-    var runWhenProxyReady = function (fn, count) {
-        if (proxyReady) {
-            fn();
-        }
-        else {
-            if (count > 10) {
-                console.error("[@my-react-devtool/hook] proxy is not ready");
-                return;
-            }
-            clearTimeout(id);
-            id = setTimeout(function () {
-                runWhenProxyReady(fn, count + 1);
-            }, 2000);
-        }
-    };
     core.subscribe(function (message) {
         window.postMessage({ type: MessageHookType.render, data: message }, "*");
     });
+    var set = new Set();
+    var detectorReady = false;
+    var id = null;
+    var runWhenDetectorReady = function (fn, count) {
+        clearTimeout(id);
+        if (detectorReady) {
+            fn();
+        }
+        else {
+            if (count && count > 10) {
+                {
+                    console.error("[@my-react-devtool/hook] detector not ready");
+                }
+            }
+            id = setTimeout(function () { return runWhenDetectorReady(fn, count ? count + 1 : 1); }, 2000);
+        }
+    };
+    var onMessage = function (message) {
+        var _a;
+        if (message.source !== window)
+            return;
+        if (!detectorReady && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.type) === MessageDetectorType.init) {
+            {
+                console.log("[@my-react-devtool/hook] detector init");
+            }
+            detectorReady = true;
+        }
+    };
+    window.addEventListener("message", onMessage);
+    var onceMount = reactSharedExports.once(function () {
+        // current site is render by @my-react
+        window.postMessage({ type: MessageHookType.mount }, "*");
+    });
     var globalHook = function (dispatch) {
         set.add(dispatch);
-        runWhenProxyReady(function () {
-            // current site is render by @my-react
-            window.postMessage({ type: MessageHookType.mount }, "*");
-            console.log("[@my-react-devtool/hook] render", set);
-            set.forEach(function (dispatch) {
-                if (!core.hasDispatch(dispatch)) {
-                    core.addDispatch(dispatch);
-                }
-            });
-        }, 1);
+        runWhenDetectorReady(onceMount);
     };
     if (window.parent && window.parent !== window) {
-        console.warn("[@my-react-devtool/hook] currently the @my-react extension does not support iframe.");
+        {
+            console.warn("[@my-react-devtool/hook] currently the @my-react extension does not support iframe.");
+        }
     }
     else {
         window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
         window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-        console.log("chrome from hook.js", chrome);
         window.postMessage({ type: MessageHookType.init }, "*");
     }
 

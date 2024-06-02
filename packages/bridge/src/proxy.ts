@@ -1,66 +1,27 @@
-import { MessageHookType, MessageProxyType } from "./type";
+import { MessageHookType, MessageProxyType, PortName } from "./type";
 
-import type { MessageHookDataType } from "./type";
-import type { CustomRenderDispatch } from "@my-react/react-reconciler";
+import type { MessageHookDataType, MessageWorkerDataType } from "./type";
 
-let hookReady = false;
+const port = chrome.runtime.connect({ name: PortName.proxy });
 
-const portReady = false;
-
-let port: chrome.runtime.Port | null = null;
-
-let id = null;
-
-const runWhenHookReady = (fn: () => void, count: number) => {
-  if (hookReady) {
-    fn();
-  } else {
-    if (count > 10) {
-      console.error("[@my-react-devtool/proxy] hook is not ready");
-
-      return;
-    }
-
-    clearTimeout(id);
-
-    id = setTimeout(() => {
-      runWhenHookReady(fn, count + 1);
-    }, 2000);
-  }
+const sendMessageToBackend = (message: MessageWorkerDataType) => {
+  window.postMessage({ type: MessageProxyType.forward, data: message }, "*");
 };
 
-const onMessage = (message: MessageEvent<MessageHookDataType>) => {
+const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {
   if (message.source !== window) return;
 
-  if (!hookReady && message.data?.type === MessageHookType.init) {
-    console.log("[@my-react-devtool/proxy] hook ready");
-
-    hookReady = true;
-
-    window.postMessage({ type: MessageProxyType.ready }, "*");
-
-    port = chrome.runtime.connect({ name: "devtool" });
-  }
-
-  if (message.data?.type === MessageHookType.mount) {
-    console.log("[@my-react-devtool/proxy] hook mount");
-
-    runWhenHookReady(() => {
-      port.postMessage(message.data);
-    }, 1);
-  }
-
-  if (message.data?.type === MessageHookType.render) {
-    console.log("[@my-react-devtool/proxy] hook render");
-
-    runWhenHookReady(() => {
-      const dataSet = message.data.data as Set<CustomRenderDispatch>;
-      // TODO
-      console.log("[@my-react-devtool/proxy] render", dataSet);
-    }, 1);
+  if (message.data?.type === MessageHookType.mount || message.data?.type === MessageHookType.render || message.data?.type === MessageHookType.init) {
+    port.postMessage({ type: MessageProxyType.forward, data: message.data });
   }
 };
 
-console.log("chrome from proxy.js", chrome);
+const handleDisconnect = () => {
+  window.removeEventListener("message", sendMessageToPanel);
+};
 
-window.addEventListener("message", onMessage);
+port.onMessage.addListener(sendMessageToBackend);
+
+port.onDisconnect.addListener(handleDisconnect);
+
+window.addEventListener("message", sendMessageToPanel);

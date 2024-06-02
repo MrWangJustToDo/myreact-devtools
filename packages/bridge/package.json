@@ -34,6 +34,19 @@
       ]
     },
     {
+      "input": "./src/detector.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "iife/detector.js",
+          "format": "iife",
+          "type": true,
+          "multiple": true,
+          "sourcemap": true
+        }
+      ]
+    },
+    {
       "input": "./src/proxy.ts",
       "output": [
         {
@@ -47,11 +60,24 @@
       ]
     },
     {
-      "input": "./src/backend.ts",
+      "input": "./src/service-worker.ts",
       "output": [
         {
           "dir": "./dist",
-          "entryFileNames": "iife/backend.js",
+          "entryFileNames": "iife/service-worker.js",
+          "format": "iife",
+          "type": true,
+          "multiple": true,
+          "sourcemap": true
+        }
+      ]
+    },
+    {
+      "input": "./src/panel.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "iife/panel.js",
           "format": "iife",
           "type": true,
           "multiple": true,
@@ -68,6 +94,7 @@
     "@my-react/react": "^0.3.1",
     "@my-react/react-dom": "^0.3.1",
     "@my-react/react-shared": "^0.3.1",
-    "@my-react/react-reconciler": "^0.3.1"
+    "@my-react/react-reconciler": "^0.3.1",
+    "reactivity-store": "^0.3.4"
   }
 }
