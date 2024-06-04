@@ -5,7 +5,7 @@ let id = 0;
 
 // PlainNode is a simplified version of FiberNode just for show the structure
 export class PlainNode {
-  props: MyReactElement['props'];
+  props: MyReactElement["props"];
 
   name: string;
 
@@ -15,15 +15,19 @@ export class PlainNode {
 
   children: PlainNode[];
 
-  child: PlainNode;
+  deep?: number;
 
-  sibling: PlainNode;
+  content: string;
 
   type: NODE_TYPE;
 
   uuid: string;
 
+  id: string | number;
+
   constructor() {
-    this.uuid = `${id++}--fiber`
+    this.id = `${id++}`;
+
+    this.uuid = `${this.id}--fiber`;
   }
 }

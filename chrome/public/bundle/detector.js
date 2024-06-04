@@ -11,12 +11,6 @@
     (function (MessageDetectorType) {
         MessageDetectorType["init"] = "detector-init";
     })(MessageDetectorType || (MessageDetectorType = {}));
-    var MessageProxyType;
-    (function (MessageProxyType) {
-        MessageProxyType["ready"] = "proxy-ready";
-        MessageProxyType["unmount"] = "proxy-unmount";
-        MessageProxyType["forward"] = "proxy-forward";
-    })(MessageProxyType || (MessageProxyType = {}));
     var MessagePanelType;
     (function (MessagePanelType) {
         MessagePanelType["show"] = "panel-show";
@@ -24,7 +18,7 @@
     })(MessagePanelType || (MessagePanelType = {}));
     var MessageWorkerType;
     (function (MessageWorkerType) {
-        MessageWorkerType["forward"] = "worker-forward";
+        MessageWorkerType["init"] = "worker-init";
     })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
@@ -44,6 +38,7 @@
                 {
                     console.error("[@my-react-devtool/detector] hook not ready");
                 }
+                return;
             }
             id = setTimeout(function () { return runWhenHookReady(fn, count ? count + 1 : 1); }, 2000);
         }

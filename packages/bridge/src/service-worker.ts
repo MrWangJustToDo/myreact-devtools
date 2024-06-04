@@ -1,6 +1,6 @@
 import { MessageHookType, MessageWorkerType } from "./type";
 
-import type { MessageHookDataType, MessagePanelDataType, MessageProxyDataType, MessageWorkerDataType } from "./type";
+import type { MessageHookDataType, MessagePanelDataType } from "./type";
 
 const hub: Record<string, { proxy: chrome.runtime.Port | null; devtool: chrome.runtime.Port | null }> = {};
 
@@ -17,12 +17,18 @@ const installProxy = (tabId: number) => {
 };
 
 const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.Port) => {
-  const onMessagePort1 = (message: MessageProxyDataType) => {
-    port2.postMessage({ type: MessageWorkerType.forward, data: message } as MessageWorkerDataType);
+  const onMessagePort1 = (message: MessageHookDataType) => {
+    if (__DEV__) {
+      console.log(`[@my-react-devtool/worker] message from hook: ${id}`, message);
+    }
+    port2.postMessage(message);
   };
 
   const onMessagePort2 = (message: MessagePanelDataType) => {
-    port1.postMessage({ type: MessageWorkerType.forward, data: message } as MessageWorkerDataType);
+    if (__DEV__) {
+      console.log(`[@my-react-devtool/worker] message from devtool: ${id}`, message);
+    }
+    port1.postMessage(message);
   };
 
   function shutdown() {
@@ -43,6 +49,9 @@ const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.P
 
   if (__DEV__) {
     console.log(`[@my-react-devtool/worker] connected: ${id}`);
+
+    port1.postMessage({ type: MessageWorkerType.init });
+    port2.postMessage({ type: MessageWorkerType.init });
   }
 };
 

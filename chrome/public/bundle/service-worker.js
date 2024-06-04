@@ -11,12 +11,6 @@
     (function (MessageDetectorType) {
         MessageDetectorType["init"] = "detector-init";
     })(MessageDetectorType || (MessageDetectorType = {}));
-    var MessageProxyType;
-    (function (MessageProxyType) {
-        MessageProxyType["ready"] = "proxy-ready";
-        MessageProxyType["unmount"] = "proxy-unmount";
-        MessageProxyType["forward"] = "proxy-forward";
-    })(MessageProxyType || (MessageProxyType = {}));
     var MessagePanelType;
     (function (MessagePanelType) {
         MessagePanelType["show"] = "panel-show";
@@ -24,7 +18,7 @@
     })(MessagePanelType || (MessagePanelType = {}));
     var MessageWorkerType;
     (function (MessageWorkerType) {
-        MessageWorkerType["forward"] = "worker-forward";
+        MessageWorkerType["init"] = "worker-init";
     })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
@@ -45,10 +39,16 @@
     };
     var portPip = function (id, port1, port2) {
         var onMessagePort1 = function (message) {
-            port2.postMessage({ type: MessageWorkerType.forward, data: message });
+            {
+                console.log("[@my-react-devtool/worker] message from hook: ".concat(id), message);
+            }
+            port2.postMessage(message);
         };
         var onMessagePort2 = function (message) {
-            port1.postMessage({ type: MessageWorkerType.forward, data: message });
+            {
+                console.log("[@my-react-devtool/worker] message from devtool: ".concat(id), message);
+            }
+            port1.postMessage(message);
         };
         function shutdown() {
             port1.onMessage.removeListener(onMessagePort1);
@@ -63,6 +63,8 @@
         port2.onDisconnect.addListener(shutdown);
         {
             console.log("[@my-react-devtool/worker] connected: ".concat(id));
+            port1.postMessage({ type: MessageWorkerType.init });
+            port2.postMessage({ type: MessageWorkerType.init });
         }
     };
     // forward message devtool -> proxy -> page

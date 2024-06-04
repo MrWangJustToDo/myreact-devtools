@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import { generateFiberTreeToPlainTree } from "./tree";
 
@@ -15,6 +16,27 @@ type Message = {
   data: any;
 };
 
+export const debounce = <T extends Function>(callback: T, time?: number): T => {
+  let id = null;
+  return ((...args) => {
+    clearTimeout(id);
+    id = setTimeout(() => {
+      callback.call(null, ...args);
+    }, time || 40);
+  }) as unknown as T;
+};
+
+export const throttle = <T extends Function>(callback: T, time?: number): T => {
+  let id = null;
+  return ((...args) => {
+    if (id) return;
+    id = setTimeout(() => {
+      callback.call(null, ...args);
+      id = null;
+    }, time || 40);
+  }) as unknown as T;
+}
+
 export class DevToolCore {
   _dispatch: Set<DevToolRenderDispatch> = new Set();
 
@@ -27,25 +49,43 @@ export class DevToolCore {
   }
 
   addDispatch(dispatch: DevToolRenderDispatch) {
+    if (this.hasDispatch(dispatch)) return;
+
     setupDispatch(dispatch);
 
     this._dispatch.add(dispatch);
 
+    this.patchDispatch(dispatch);
+  }
+
+  patchDispatch(dispatch: DevToolRenderDispatch) {
+    if (dispatch.hasPatch) return;
+
+    dispatch.hasPatch = true;
+
     const originalAfterCommit = dispatch.afterCommit;
 
-    const onLoad = () => {
+    // const originalAfterUpdate = dispatch.afterUpdate;
+
+    const onLoad = throttle(() => {
       const tree = generateFiberTreeToPlainTree(dispatch);
 
       this._map.set(dispatch, tree);
 
       this.notify({ type: MessageType.init, data: tree });
-    };
+    }, 10000);
 
     dispatch.afterCommit = function (this: DevToolRenderDispatch) {
       originalAfterCommit?.call?.(this);
 
       onLoad();
     };
+
+    // dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
+    //   originalAfterUpdate?.call?.(this);
+
+    //   onLoad();
+    // };
   }
 
   hasDispatch(dispatch: DevToolRenderDispatch) {
@@ -77,5 +117,12 @@ export class DevToolCore {
     const tree = generateFiberTreeToPlainTree(dispatch);
     this._map.set(dispatch, tree);
     return tree;
+  }
+
+  forceNotify() {
+    this._dispatch.forEach((dispatch) => {
+      const tree = this.getTree(dispatch);
+      this.notify({ type: MessageType.init, data: tree });
+    });
   }
 }

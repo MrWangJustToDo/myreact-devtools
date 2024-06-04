@@ -4,6 +4,7 @@ import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
 export interface DevToolRenderDispatch extends CustomRenderDispatch {
   hasInject?: boolean;
+  hasPatch?: boolean;
 }
 
 function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch) {

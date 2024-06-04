@@ -1,9 +1,9 @@
 import { once } from "@my-react/react-shared";
 import { DevToolCore } from "@my-react-devtool/core";
 
-import { MessageHookType, MessageDetectorType } from "./type";
+import { MessageHookType, MessageDetectorType, MessagePanelType } from "./type";
 
-import type { MessageProxyDataType } from "./type";
+import type { MessagePanelDataType } from "./type";
 import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
 const core = new DevToolCore();
@@ -32,7 +32,7 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
   }
 };
 
-const onMessage = (message: MessageEvent<MessageProxyDataType | { type: MessageDetectorType }>) => {
+const onMessage = (message: MessageEvent<MessagePanelDataType | { type: MessageDetectorType }>) => {
   if (message.source !== window) return;
 
   if (!detectorReady && message.data?.type === MessageDetectorType.init) {
@@ -41,6 +41,20 @@ const onMessage = (message: MessageEvent<MessageProxyDataType | { type: MessageD
     }
 
     detectorReady = true;
+  }
+
+  if (message.data?.type === MessagePanelType.show) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/hook] message from proxy", message);
+    }
+
+    core.forceNotify();
+
+    // set.forEach((dispatch) => {
+    //   if (!core.hasDispatch(dispatch)) {
+    //     core.addDispatch(dispatch);
+    //   }
+    // });
   }
 };
 
@@ -53,6 +67,7 @@ const onceMount = once(() => {
 
 export const globalHook = (dispatch: CustomRenderDispatch) => {
   set.add(dispatch);
+  core.addDispatch(dispatch);
   runWhenDetectorReady(onceMount);
 };
 

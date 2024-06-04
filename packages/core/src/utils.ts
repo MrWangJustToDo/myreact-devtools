@@ -1,4 +1,4 @@
-import { type MyReactFiberNodeDev } from "@my-react/react-reconciler";
+import { type MyReactFiberNodeDev, type MyReactFiberNode } from "@my-react/react-reconciler";
 
 import { NODE_TYPE } from "./type";
 
@@ -108,7 +108,11 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
     const name = typedElementType.displayName || typedElementType.name || "anonymous";
     return `${name}`;
   }
-  if (fiber.type & NODE_TYPE.__text__) return `text (${fiber.elementType?.toString()})`;
+  if (fiber.type & NODE_TYPE.__text__) return `text - (native)`;
   if (typeof fiber.elementType === "string") return `${fiber.elementType}`;
-  return `unknown (${fiber.elementType?.toString()})`;
+  return `Unknown`;
 };
+
+export const getFiberContent = (fiber: MyReactFiberNode) => {
+  return fiber.elementType?.toString();
+}

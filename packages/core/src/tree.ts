@@ -1,14 +1,16 @@
 import { PlainNode } from "./plain";
-import { getFiberName } from "./utils";
+import { getFiberContent, getFiberName } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 
-const map = new Map<MyReactFiberNode, PlainNode>();
+const treeMap = new Map<MyReactFiberNode, PlainNode>();
 
 const store = new Map<string, MyReactFiberNode>();
 
 const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   plain.name = getFiberName(fiber as MyReactFiberNodeDev);
+
+  plain.content = getFiberContent(fiber);
 
   plain.key = fiber.key;
 
@@ -19,37 +21,37 @@ const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   // plain.props = safeClone(fiber.pendingProps);
 };
 
-const loopFiber = (fiber: MyReactFiberNode, parent?: PlainNode, previous?: PlainNode): PlainNode | null => {
+const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null => {
   if (!fiber) return null;
 
-  const exist = map.get(fiber);
+  const exist = treeMap.get(fiber);
 
-  const current = exist || new PlainNode();
+  if (exist) return exist;
+
+  const current = new PlainNode();
 
   if (parent) {
-    parent.child = parent.child || current;
-
     parent.children = parent.children || [];
 
     parent.children.push(current);
-  }
 
-  if (previous) {
-    previous.sibling = current;
+    current.deep = parent.deep! + 1;
+  } else {
+    current.deep = 0;
   }
 
   assignFiber(current, fiber);
 
-  map.set(fiber, current);
+  treeMap.set(fiber, current);
 
   store.set(current.uuid, fiber);
 
   if (fiber.child) {
-    loopFiber(fiber.child, current);
+    loopTree(fiber.child, current);
   }
 
   if (fiber.sibling) {
-    loopFiber(fiber.sibling, parent, current);
+    loopTree(fiber.sibling, parent);
   }
 
   return current;
@@ -58,17 +60,15 @@ const loopFiber = (fiber: MyReactFiberNode, parent?: PlainNode, previous?: Plain
 export const generateFiberTreeToPlainTree = (dispatch: CustomRenderDispatch) => {
   const rootFiber = dispatch.rootFiber;
 
-  const rootPlain = loopFiber(rootFiber);
+  const rootPlain = loopTree(rootFiber);
 
   return rootPlain;
 };
 
 export const unmountPlainNode = (fiber: MyReactFiberNode) => {
-  const plain = map.get(fiber);
+  const plain = treeMap.get(fiber);
   if (plain) {
-    plain.child = null;
-    plain.sibling = null;
     store.delete(plain.uuid);
   }
-  map.delete(fiber);
+  treeMap.delete(fiber);
 };

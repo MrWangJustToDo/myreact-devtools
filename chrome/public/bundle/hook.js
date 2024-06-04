@@ -662,11 +662,44 @@
     	if (hasRequiredIndex_development) return index_development;
     	hasRequiredIndex_development = 1;
 
+    	/******************************************************************************
+    	Copyright (c) Microsoft Corporation.
+
+    	Permission to use, copy, modify, and/or distribute this software for any
+    	purpose with or without fee is hereby granted.
+
+    	THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    	REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    	AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    	INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    	LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    	OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    	PERFORMANCE OF THIS SOFTWARE.
+    	***************************************************************************** */
+    	/* global Reflect, Promise, SuppressedError, Symbol */
+
+
+    	function __spreadArray(to, from, pack) {
+    	    if (arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+    	        if (ar || !(i in from)) {
+    	            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+    	            ar[i] = from[i];
+    	        }
+    	    }
+    	    return to.concat(ar || Array.prototype.slice.call(from));
+    	}
+
+    	typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    	    var e = new Error(message);
+    	    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    	};
+
     	var id = 0;
     	// PlainNode is a simplified version of FiberNode just for show the structure
     	var PlainNode = /** @class */ (function () {
     	    function PlainNode() {
-    	        this.uuid = "".concat(id++, "--fiber");
+    	        this.id = "".concat(id++);
+    	        this.uuid = "".concat(this.id, "--fiber");
     	    }
     	    return PlainNode;
     	}());
@@ -696,7 +729,6 @@
     	})(NODE_TYPE || (NODE_TYPE = {}));
 
     	var getFiberName = function (fiber) {
-    	    var _a, _b;
     	    var typedFiber = fiber;
     	    if (fiber.type & NODE_TYPE.__memo__) {
     	        var targetRender = fiber.elementType;
@@ -785,58 +817,63 @@
     	        return "".concat(name_6);
     	    }
     	    if (fiber.type & NODE_TYPE.__text__)
-    	        return "text (".concat((_a = fiber.elementType) === null || _a === void 0 ? void 0 : _a.toString(), ")");
+    	        return "text - (native)";
     	    if (typeof fiber.elementType === "string")
     	        return "".concat(fiber.elementType);
-    	    return "unknown (".concat((_b = fiber.elementType) === null || _b === void 0 ? void 0 : _b.toString(), ")");
+    	    return "Unknown";
+    	};
+    	var getFiberContent = function (fiber) {
+    	    var _a;
+    	    return (_a = fiber.elementType) === null || _a === void 0 ? void 0 : _a.toString();
     	};
 
-    	var map = new Map();
+    	var treeMap = new Map();
     	var store = new Map();
     	var assignFiber = function (plain, fiber) {
     	    plain.name = getFiberName(fiber);
+    	    plain.content = getFiberContent(fiber);
     	    plain.key = fiber.key;
     	    plain.type = fiber.type;
     	    // plain.ref = safeCloneRef(fiber.ref);
     	    // plain.props = safeClone(fiber.pendingProps);
     	};
-    	var loopFiber = function (fiber, parent, previous) {
+    	var loopTree = function (fiber, parent) {
     	    if (!fiber)
     	        return null;
-    	    var exist = map.get(fiber);
-    	    var current = exist || new PlainNode();
+    	    var exist = treeMap.get(fiber);
+    	    if (exist)
+    	        return exist;
+    	    var current = new PlainNode();
     	    if (parent) {
-    	        parent.child = parent.child || current;
     	        parent.children = parent.children || [];
     	        parent.children.push(current);
+    	        current.deep = parent.deep + 1;
     	    }
-    	    if (previous) {
-    	        previous.sibling = current;
+    	    else {
+    	        current.deep = 0;
     	    }
     	    assignFiber(current, fiber);
-    	    map.set(fiber, current);
+    	    treeMap.set(fiber, current);
     	    store.set(current.uuid, fiber);
     	    if (fiber.child) {
-    	        loopFiber(fiber.child, current);
+    	        loopTree(fiber.child, current);
     	    }
     	    if (fiber.sibling) {
-    	        loopFiber(fiber.sibling, parent, current);
+    	        loopTree(fiber.sibling, parent);
     	    }
     	    return current;
     	};
     	var generateFiberTreeToPlainTree = function (dispatch) {
     	    var rootFiber = dispatch.rootFiber;
-    	    var rootPlain = loopFiber(rootFiber);
+    	    var rootPlain = loopTree(rootFiber);
     	    return rootPlain;
     	};
     	var unmountPlainNode = function (fiber) {
-    	    var plain = map.get(fiber);
+    	    var plain = treeMap.get(fiber);
     	    if (plain) {
-    	        plain.child = null;
-    	        plain.sibling = null;
     	        store.delete(plain.uuid);
     	    }
-    	    map.delete(fiber);
+    	    treeMap.delete(fiber);
     	};
 
     	function overridePatchToFiberUnmount(dispatch) {
@@ -860,6 +897,34 @@
     	    MessageType["detail"] = "detail";
     	    MessageType["unmount"] = "unmount";
     	})(MessageType || (MessageType = {}));
+    	var debounce = function (callback, time) {
+    	    var id = null;
+    	    return (function () {
+    	        var args = [];
+    	        for (var _i = 0; _i < arguments.length; _i++) {
+    	            args[_i] = arguments[_i];
+    	        }
+    	        clearTimeout(id);
+    	        id = setTimeout(function () {
+    	            callback.call.apply(callback, __spreadArray([null], args, false));
+    	        }, time || 40);
+    	    });
+    	};
+    	var throttle = function (callback, time) {
+    	    var id = null;
+    	    return (function () {
+    	        var args = [];
+    	        for (var _i = 0; _i < arguments.length; _i++) {
+    	            args[_i] = arguments[_i];
+    	        }
+    	        if (id)
+    	            return;
+    	        id = setTimeout(function () {
+    	            callback.call.apply(callback, __spreadArray([null], args, false));
+    	            id = null;
+    	        }, time || 40);
+    	    });
+    	};
     	var DevToolCore = /** @class */ (function () {
     	    function DevToolCore() {
     	        this._dispatch = new Set();
@@ -870,20 +935,33 @@
     	        return Array.from(this._dispatch);
     	    };
     	    DevToolCore.prototype.addDispatch = function (dispatch) {
-    	        var _this = this;
+    	        if (this.hasDispatch(dispatch))
+    	            return;
     	        setupDispatch(dispatch);
     	        this._dispatch.add(dispatch);
+    	        this.patchDispatch(dispatch);
+    	    };
+    	    DevToolCore.prototype.patchDispatch = function (dispatch) {
+    	        var _this = this;
+    	        if (dispatch.hasPatch)
+    	            return;
+    	        dispatch.hasPatch = true;
     	        var originalAfterCommit = dispatch.afterCommit;
-    	        var onLoad = function () {
+    	        // const originalAfterUpdate = dispatch.afterUpdate;
+    	        var onLoad = throttle(function () {
     	            var tree = generateFiberTreeToPlainTree(dispatch);
     	            _this._map.set(dispatch, tree);
     	            _this.notify({ type: MessageType.init, data: tree });
-    	        };
+    	        }, 10000);
     	        dispatch.afterCommit = function () {
     	            var _a;
     	            (_a = originalAfterCommit === null || originalAfterCommit === void 0 ? void 0 : originalAfterCommit.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit, this);
     	            onLoad();
     	        };
+    	        // dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
+    	        //   originalAfterUpdate?.call?.(this);
+    	        //   onLoad();
+    	        // };
     	    };
     	    DevToolCore.prototype.hasDispatch = function (dispatch) {
     	        return this._dispatch.has(dispatch);
@@ -910,11 +988,20 @@
     	        this._map.set(dispatch, tree);
     	        return tree;
     	    };
+    	    DevToolCore.prototype.forceNotify = function () {
+    	        var _this = this;
+    	        this._dispatch.forEach(function (dispatch) {
+    	            var tree = _this.getTree(dispatch);
+    	            _this.notify({ type: MessageType.init, data: tree });
+    	        });
+    	    };
     	    return DevToolCore;
     	}());
 
     	index_development.DevToolCore = DevToolCore;
     	index_development.PlainNode = PlainNode;
+    	index_development.debounce = debounce;
+    	index_development.throttle = throttle;
     	
     	return index_development;
     }
@@ -935,12 +1022,6 @@
     (function (MessageDetectorType) {
         MessageDetectorType["init"] = "detector-init";
     })(MessageDetectorType || (MessageDetectorType = {}));
-    var MessageProxyType;
-    (function (MessageProxyType) {
-        MessageProxyType["ready"] = "proxy-ready";
-        MessageProxyType["unmount"] = "proxy-unmount";
-        MessageProxyType["forward"] = "proxy-forward";
-    })(MessageProxyType || (MessageProxyType = {}));
     var MessagePanelType;
     (function (MessagePanelType) {
         MessagePanelType["show"] = "panel-show";
@@ -948,7 +1029,7 @@
     })(MessagePanelType || (MessagePanelType = {}));
     var MessageWorkerType;
     (function (MessageWorkerType) {
-        MessageWorkerType["forward"] = "worker-forward";
+        MessageWorkerType["init"] = "worker-init";
     })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
@@ -978,7 +1059,7 @@
         }
     };
     var onMessage = function (message) {
-        var _a;
+        var _a, _b;
         if (message.source !== window)
             return;
         if (!detectorReady && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.type) === MessageDetectorType.init) {
@@ -986,6 +1067,17 @@
                 console.log("[@my-react-devtool/hook] detector init");
             }
             detectorReady = true;
+        }
+        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === MessagePanelType.show) {
+            {
+                console.log("[@my-react-devtool/hook] message from proxy", message);
+            }
+            core.forceNotify();
+            // set.forEach((dispatch) => {
+            //   if (!core.hasDispatch(dispatch)) {
+            //     core.addDispatch(dispatch);
+            //   }
+            // });
         }
     };
     window.addEventListener("message", onMessage);
@@ -995,6 +1087,7 @@
     });
     var globalHook = function (dispatch) {
         set.add(dispatch);
+        core.addDispatch(dispatch);
         runWhenDetectorReady(onceMount);
     };
     if (window.parent && window.parent !== window) {

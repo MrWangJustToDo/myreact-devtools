@@ -61,23 +61,70 @@
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
 
+    var MessageHookType;
+    (function (MessageHookType) {
+        MessageHookType["init"] = "hook-init";
+        MessageHookType["mount"] = "hook-mount";
+        MessageHookType["render"] = "hook-render";
+    })(MessageHookType || (MessageHookType = {}));
+    var MessageDetectorType;
+    (function (MessageDetectorType) {
+        MessageDetectorType["init"] = "detector-init";
+    })(MessageDetectorType || (MessageDetectorType = {}));
+    var MessagePanelType;
+    (function (MessagePanelType) {
+        MessagePanelType["show"] = "panel-show";
+        MessagePanelType["hide"] = "panel-hide";
+    })(MessagePanelType || (MessagePanelType = {}));
+    var MessageWorkerType;
+    (function (MessageWorkerType) {
+        MessageWorkerType["init"] = "worker-init";
+    })(MessageWorkerType || (MessageWorkerType = {}));
+    var PortName;
+    (function (PortName) {
+        PortName["proxy"] = "dev-tool/proxy";
+        PortName["panel"] = "dev-tool/panel";
+    })(PortName || (PortName = {}));
+
     var port = null;
+    var workerReady = false;
+    var id = null;
+    var runWhenWorkerReady = function (fn, count) {
+        clearTimeout(id);
+        if (workerReady) {
+            fn();
+        }
+        else {
+            if (count && count > 10) {
+                {
+                    console.error("[@my-react-devtool/panel] worker not ready");
+                }
+                return;
+            }
+            id = setTimeout(function () { return runWhenWorkerReady(fn, count ? count + 1 : 1); }, 2000);
+        }
+    };
     var showPanel = function (id) {
         return new Promise(function (resolve) {
             {
                 console.log("[@my-react-devtool/panel] create panel", id);
             }
             chrome.devtools.panels.create("@my-react", "", "devTool.html", function (panel) {
-                var fn = function (window) {
+                var f1 = function (window) {
                     resolve({ window: window, panel: panel });
-                    panel.onShown.removeListener(fn);
+                    panel.onShown.removeListener(f1);
                 };
-                panel.onShown.addListener(fn);
+                panel.onShown.addListener(f1);
+                var f2 = function () {
+                    workerReady = false;
+                    panel.onHidden.removeListener(f2);
+                };
+                panel.onHidden.addListener(f2);
             });
         });
     };
     var init = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-        var window_1;
+        var window_1, onMessage_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -85,10 +132,29 @@
                     return [4 /*yield*/, showPanel(id)];
                 case 1:
                     window_1 = (_a.sent()).window;
-                    console.log(window_1.useAppTree);
                     port = chrome.runtime.connect({ name: id.toString() });
-                    port.onMessage.addListener(function (message) {
-                        console.log("panel message from port", message);
+                    onMessage_1 = function (message) {
+                        var _a;
+                        {
+                            console.log("[@my-react-devtool/panel] message from port", message);
+                        }
+                        if (!workerReady && message.type === MessageWorkerType.init) {
+                            workerReady = true;
+                        }
+                        if ((message === null || message === void 0 ? void 0 : message.type) === MessageHookType.render) {
+                            var data = (_a = message.data) === null || _a === void 0 ? void 0 : _a.data;
+                            var addNode = window_1.useAppTree.getActions().addNode;
+                            if (data) {
+                                addNode(data);
+                            }
+                        }
+                    };
+                    port.onMessage.addListener(onMessage_1);
+                    port.onDisconnect.addListener(function () {
+                        port.onMessage.removeListener(onMessage_1);
+                    });
+                    runWhenWorkerReady(function () {
+                        port.postMessage({ type: MessagePanelType.show });
                     });
                     _a.label = 2;
                 case 2: return [2 /*return*/];

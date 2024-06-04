@@ -1,18 +1,18 @@
-import { MessageHookType, MessageProxyType, PortName } from "./type";
+import { MessageHookType, PortName } from "./type";
 
-import type { MessageHookDataType, MessageWorkerDataType } from "./type";
+import type { MessageHookDataType, MessagePanelDataType } from "./type";
 
 const port = chrome.runtime.connect({ name: PortName.proxy });
 
-const sendMessageToBackend = (message: MessageWorkerDataType) => {
-  window.postMessage({ type: MessageProxyType.forward, data: message }, "*");
+const sendMessageToBackend = (message: MessagePanelDataType) => {
+  window.postMessage(message, "*");
 };
 
 const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {
   if (message.source !== window) return;
 
   if (message.data?.type === MessageHookType.mount || message.data?.type === MessageHookType.render || message.data?.type === MessageHookType.init) {
-    port.postMessage({ type: MessageProxyType.forward, data: message.data });
+    port.postMessage(message.data);
   }
 };
 

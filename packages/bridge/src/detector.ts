@@ -15,6 +15,7 @@ const runWhenHookReady = (fn: () => void, count?: number) => {
       if (__DEV__) {
         console.error("[@my-react-devtool/detector] hook not ready");
       }
+      return;
     }
     id = setTimeout(() => runWhenHookReady(fn, count ? count + 1 : 1), 2000);
   }

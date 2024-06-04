@@ -11,12 +11,6 @@
     (function (MessageDetectorType) {
         MessageDetectorType["init"] = "detector-init";
     })(MessageDetectorType || (MessageDetectorType = {}));
-    var MessageProxyType;
-    (function (MessageProxyType) {
-        MessageProxyType["ready"] = "proxy-ready";
-        MessageProxyType["unmount"] = "proxy-unmount";
-        MessageProxyType["forward"] = "proxy-forward";
-    })(MessageProxyType || (MessageProxyType = {}));
     var MessagePanelType;
     (function (MessagePanelType) {
         MessagePanelType["show"] = "panel-show";
@@ -24,7 +18,7 @@
     })(MessagePanelType || (MessagePanelType = {}));
     var MessageWorkerType;
     (function (MessageWorkerType) {
-        MessageWorkerType["forward"] = "worker-forward";
+        MessageWorkerType["init"] = "worker-init";
     })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
@@ -34,14 +28,14 @@
 
     var port = chrome.runtime.connect({ name: PortName.proxy });
     var sendMessageToBackend = function (message) {
-        window.postMessage({ type: MessageProxyType.forward, data: message }, "*");
+        window.postMessage(message, "*");
     };
     var sendMessageToPanel = function (message) {
         var _a, _b, _c;
         if (message.source !== window)
             return;
         if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.type) === MessageHookType.mount || ((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === MessageHookType.render || ((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === MessageHookType.init) {
-            port.postMessage({ type: MessageProxyType.forward, data: message.data });
+            port.postMessage(message.data);
         }
     };
     var handleDisconnect = function () {
