@@ -662,6 +662,8 @@
     	if (hasRequiredIndex_development) return index_development;
     	hasRequiredIndex_development = 1;
 
+    	var reactShared = reactSharedExports;
+
     	/******************************************************************************
     	Copyright (c) Microsoft Corporation.
 
@@ -728,45 +730,128 @@
     	    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
     	})(NODE_TYPE || (NODE_TYPE = {}));
 
+    	var typeKeys = [];
+    	Object.keys(NODE_TYPE).forEach(function (key) {
+    	    if (!key.startsWith("__")) {
+    	        typeKeys.push(+key);
+    	    }
+    	});
+    	// eslint-disable-next-line @typescript-eslint/ban-types
+    	var safeClone = function (obj) {
+    	    try {
+    	        return JSON.parse(JSON.stringify(obj));
+    	    }
+    	    catch (e) {
+    	        return e.message;
+    	    }
+    	};
+    	var safeCloneRef = function (ref) {
+    	    if (ref) {
+    	        if (typeof ref === "function") {
+    	            return ref.toString();
+    	        }
+    	        else {
+    	            return safeClone(ref);
+    	        }
+    	    }
+    	    else {
+    	        return null;
+    	    }
+    	};
+    	var getTypeName = function (type) {
+    	    switch (type) {
+    	        case NODE_TYPE.__keepLive__:
+    	            return "KeepAlive";
+    	        case NODE_TYPE.__memo__:
+    	            return "Memo";
+    	        case NODE_TYPE.__forwardRef__:
+    	            return "ForwardRef";
+    	        case NODE_TYPE.__lazy__:
+    	            return "Lazy";
+    	        case NODE_TYPE.__provider__:
+    	            return "Provider";
+    	        case NODE_TYPE.__consumer__:
+    	            return "Consumer";
+    	        case NODE_TYPE.__fragment__:
+    	            return "Fragment";
+    	        case NODE_TYPE.__scope__:
+    	            return "Scope";
+    	        case NODE_TYPE.__strict__:
+    	            return "Strict";
+    	        case NODE_TYPE.__profiler__:
+    	            return "Profiler";
+    	        case NODE_TYPE.__suspense__:
+    	            return "Suspense";
+    	        case NODE_TYPE.__portal__:
+    	            return "Portal";
+    	        case NODE_TYPE.__comment__:
+    	            return "Comment";
+    	        case NODE_TYPE.__empty__:
+    	            return "Empty";
+    	        case NODE_TYPE.__null__:
+    	            return "Null";
+    	        case NODE_TYPE.__text__:
+    	            return "Text";
+    	        case NODE_TYPE.__function__:
+    	            return "Function";
+    	        case NODE_TYPE.__class__:
+    	            return "Class";
+    	        case NODE_TYPE.__plain__:
+    	            return "Plain";
+    	        case NODE_TYPE.__initial__:
+    	            return "Initial";
+    	        default:
+    	            return "";
+    	    }
+    	};
+    	var getFiberType = function (fiber) {
+    	    var type = [];
+    	    typeKeys.forEach(function (key) {
+    	        if (fiber.type & key) {
+    	            var name_1 = getTypeName(key);
+    	            name_1 && type.push(name_1);
+    	        }
+    	    });
+    	    return type;
+    	};
+    	var getFiberTag = function (fiber) {
+    	    var tag = [];
+    	    if (fiber.type & NODE_TYPE.__memo__) {
+    	        tag.push("memo");
+    	    }
+    	    if (fiber.type & NODE_TYPE.__forwardRef__) {
+    	        tag.push("forwardRef");
+    	    }
+    	    if (fiber.type & NODE_TYPE.__lazy__) {
+    	        tag.push("lazy");
+    	    }
+    	    if (fiber.type & NODE_TYPE.__fragment__ && fiber.pendingProps["wrap"]) {
+    	        tag.push("auto-wrap");
+    	    }
+    	    return tag;
+    	};
     	var getFiberName = function (fiber) {
     	    var typedFiber = fiber;
-    	    if (fiber.type & NODE_TYPE.__memo__) {
-    	        var targetRender = fiber.elementType;
-    	        var name_1 = "";
-    	        var res = "memo";
-    	        if (fiber.type & NODE_TYPE.__provider__) {
-    	            var typedTargetRender = fiber.elementType;
-    	            name_1 = typedTargetRender.Context.displayName || "anonymous" + "-" + typedTargetRender.Context.contextId;
-    	            res += "-provider";
-    	        }
-    	        else if (fiber.type & NODE_TYPE.__consumer__) {
-    	            var typedTargetRender = fiber.elementType;
-    	            name_1 = typedTargetRender.Context.displayName || "anonymous" + "-" + typedTargetRender.Context.contextId;
-    	            res += "-consumer";
-    	        }
-    	        else if (typeof targetRender === "function") {
-    	            name_1 = (targetRender === null || targetRender === void 0 ? void 0 : targetRender.displayName) || (targetRender === null || targetRender === void 0 ? void 0 : targetRender.name) || name_1;
-    	        }
-    	        if (typedFiber._debugElement) {
-    	            var element = typedFiber._debugElement;
-    	            var type = element.type;
-    	            name_1 = type.displayName || name_1;
-    	        }
-    	        if (fiber.type & NODE_TYPE.__forwardRef__) {
-    	            res += "-forwardRef";
-    	        }
-    	        return "".concat(name_1 ? name_1 : "anonymous", " - (").concat(res, ")");
+    	    if (fiber.type & NODE_TYPE.__provider__) {
+    	        var typedElementType = fiber.elementType;
+    	        var name_2 = typedElementType.Context.displayName;
+    	        return "".concat(name_2 || "Context", ".Provider");
+    	    }
+    	    if (fiber.type & NODE_TYPE.__consumer__) {
+    	        var typedElementType = fiber.elementType;
+    	        var name_3 = typedElementType.Context.displayName;
+    	        return "".concat(name_3 || "Context", ".Consumer");
     	    }
     	    if (fiber.type & NODE_TYPE.__lazy__) {
     	        var typedElementType = fiber.elementType;
     	        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
-    	        var name_2 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
-    	        if (typedFiber._debugElement) {
+    	        var name_4 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
+    	        {
     	            var element = typedFiber._debugElement;
-    	            var type = element.type;
-    	            name_2 = type.displayName || name_2;
+    	            var type = element === null || element === void 0 ? void 0 : element.type;
+    	            name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
     	        }
-    	        return "".concat(name_2 ? name_2 : "anonymous", " - (lazy)");
+    	        return "".concat(name_4 || "anonymous");
     	    }
     	    if (fiber.type & NODE_TYPE.__portal__)
     	        return "Portal";
@@ -782,56 +867,122 @@
     	        return "Profiler";
     	    if (fiber.type & NODE_TYPE.__suspense__)
     	        return "Suspense";
-    	    if (fiber.type & NODE_TYPE.__fragment__) {
-    	        if (fiber.pendingProps["wrap"])
-    	            return "Fragment - (auto-wrap)";
-    	        return "Fragment";
-    	    }
+    	    if (fiber.type & NODE_TYPE.__comment__)
+    	        return "Comment";
     	    if (fiber.type & NODE_TYPE.__keepLive__)
     	        return "KeepAlive";
+    	    if (fiber.type & NODE_TYPE.__fragment__)
+    	        return "Fragment";
+    	    if (fiber.type & NODE_TYPE.__text__)
+    	        return "text";
+    	    if (typeof fiber.elementType === "string")
+    	        return "".concat(fiber.elementType);
+    	    if (typeof fiber.elementType === "function") {
+    	        var typedElementType = fiber.elementType;
+    	        var name_5 = typedElementType.displayName || typedElementType.name || "anonymous";
+    	        return "".concat(name_5);
+    	    }
+    	    return "unknown";
+    	};
+    	var getComponentName = function (fiber) {
     	    if (fiber.type & NODE_TYPE.__provider__) {
     	        var typedElementType = fiber.elementType;
-    	        var name_3 = typedElementType.Context.displayName;
-    	        return "".concat(name_3 ? name_3 : "anonymous" + "-" + typedElementType.Context.contextId, " - (provider)");
+    	        var name_6 = typedElementType.Context.displayName;
+    	        if (name_6) {
+    	            return "".concat(name_6, ".Provider");
+    	        }
+    	        else {
+    	            return "Context.Provider";
+    	        }
     	    }
     	    if (fiber.type & NODE_TYPE.__consumer__) {
     	        var typedElementType = fiber.elementType;
-    	        var name_4 = typedElementType.Context.displayName;
-    	        return "".concat(name_4 ? name_4 : "anonymous" + "-" + typedElementType.Context.contextId, " - (consumer)");
-    	    }
-    	    if (fiber.type & NODE_TYPE.__comment__)
-    	        return "Comment";
-    	    if (fiber.type & NODE_TYPE.__forwardRef__) {
-    	        var targetRender = fiber.elementType;
-    	        var name_5 = (targetRender === null || targetRender === void 0 ? void 0 : targetRender.displayName) || (targetRender === null || targetRender === void 0 ? void 0 : targetRender.name) || "";
-    	        if (typedFiber._debugElement) {
-    	            var element = typedFiber._debugElement;
-    	            var type = element.type;
-    	            name_5 = type.displayName || name_5;
+    	        var name_7 = typedElementType.Context.displayName;
+    	        if (name_7) {
+    	            return "".concat(name_7, ".Consumer");
     	        }
-    	        return "".concat(name_5 ? name_5 : "anonymous", " - (forwardRef)");
+    	        else {
+    	            return "Context.Consumer";
+    	        }
     	    }
-    	    if (typeof fiber.elementType === "function") {
+    	    if (fiber.type & NODE_TYPE.__function__ || fiber.type & NODE_TYPE.__class__) {
     	        var typedElementType = fiber.elementType;
-    	        var name_6 = typedElementType.displayName || typedElementType.name || "anonymous";
-    	        return "".concat(name_6);
+    	        var name_8 = typedElementType.displayName || typedElementType.name || "anonymous";
+    	        var element = fiber._debugElement;
+    	        var type = element === null || element === void 0 ? void 0 : element.type;
+    	        name_8 = (type === null || type === void 0 ? void 0 : type.displayName) || name_8;
+    	        return name_8;
     	    }
-    	    if (fiber.type & NODE_TYPE.__text__)
-    	        return "text - (native)";
-    	    if (typeof fiber.elementType === "string")
-    	        return "".concat(fiber.elementType);
-    	    return "Unknown";
     	};
-    	var getFiberContent = function (fiber) {
+    	var getHookName = function (hook) {
+    	    switch (hook.type) {
+    	        case reactShared.HOOK_TYPE.useReducer:
+    	            return "Reducer";
+    	        case reactShared.HOOK_TYPE.useEffect:
+    	            return "Effect";
+    	        case reactShared.HOOK_TYPE.useLayoutEffect:
+    	            return "LayoutEffect";
+    	        case reactShared.HOOK_TYPE.useMemo:
+    	            return "Memo";
+    	        case reactShared.HOOK_TYPE.useCallback:
+    	            return "Callback";
+    	        case reactShared.HOOK_TYPE.useRef:
+    	            return "Ref";
+    	        case reactShared.HOOK_TYPE.useImperativeHandle:
+    	            return "ImperativeHandle";
+    	        case reactShared.HOOK_TYPE.useDebugValue:
+    	            return "DebugValue";
+    	        case reactShared.HOOK_TYPE.useContext:
+    	            return "Context";
+    	        case reactShared.HOOK_TYPE.useDeferredValue:
+    	            return "DeferredValue";
+    	        case reactShared.HOOK_TYPE.useTransition:
+    	            return "Transition";
+    	        case reactShared.HOOK_TYPE.useId:
+    	            return "Id";
+    	        case reactShared.HOOK_TYPE.useSyncExternalStore:
+    	            return "SyncExternalStore";
+    	        case reactShared.HOOK_TYPE.useInsertionEffect:
+    	            return "InsertionEffect";
+    	        case reactShared.HOOK_TYPE.useState:
+    	            return "State";
+    	        case reactShared.HOOK_TYPE.useSignal:
+    	            return "Signal";
+    	    }
+    	};
+    	var getFiberSource = function (fiber) {
+    	    if (fiber._debugElement) {
+    	        var element = fiber._debugElement;
+    	        return element._source;
+    	    }
+    	    return null;
+    	};
+    	var getFiberTree = function (fiber) {
+    	    var tree = [];
+    	    var parent = fiber === null || fiber === void 0 ? void 0 : fiber.parent;
+    	    while (parent) {
+    	        tree.push(getFiberName(parent));
+    	        parent = parent.parent;
+    	    }
+    	    return tree;
+    	};
+    	var getHookTree = function (fiber) {
     	    var _a;
-    	    return (_a = fiber.elementType) === null || _a === void 0 ? void 0 : _a.toString();
+    	    var tree = [];
+    	    var hookList = fiber.hookList;
+    	    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return tree.push(getHookName(h)); });
+    	    return tree;
     	};
 
     	var treeMap = new Map();
     	var store = new Map();
     	var assignFiber = function (plain, fiber) {
     	    plain.name = getFiberName(fiber);
-    	    plain.content = getFiberContent(fiber);
+    	    plain.tag = getFiberTag(fiber);
+    	    plain.source = getFiberSource(fiber);
+    	    plain.fiberTree = getFiberTree(fiber);
+    	    plain.fiberType = getFiberType(fiber);
+    	    plain.hookTree = getHookTree(fiber);
     	    plain.key = fiber.key;
     	    plain.type = fiber.type;
     	    // plain.ref = safeCloneRef(fiber.ref);
@@ -841,9 +992,8 @@
     	    if (!fiber)
     	        return null;
     	    var exist = treeMap.get(fiber);
-    	    if (exist)
-    	        return exist;
-    	    var current = new PlainNode();
+    	    var current = exist || new PlainNode();
+    	    current.children = null;
     	    if (parent) {
     	        parent.children = parent.children || [];
     	        parent.children.push(current);
@@ -852,9 +1002,11 @@
     	    else {
     	        current.deep = 0;
     	    }
-    	    assignFiber(current, fiber);
-    	    treeMap.set(fiber, current);
-    	    store.set(current.uuid, fiber);
+    	    if (!exist) {
+    	        assignFiber(current, fiber);
+    	        treeMap.set(fiber, current);
+    	        store.set(current.uuid, fiber);
+    	    }
     	    if (fiber.child) {
     	        loopTree(fiber.child, current);
     	    }
@@ -947,21 +1099,22 @@
     	            return;
     	        dispatch.hasPatch = true;
     	        var originalAfterCommit = dispatch.afterCommit;
-    	        // const originalAfterUpdate = dispatch.afterUpdate;
+    	        var originalAfterUpdate = dispatch.afterUpdate;
     	        var onLoad = throttle(function () {
     	            var tree = generateFiberTreeToPlainTree(dispatch);
     	            _this._map.set(dispatch, tree);
     	            _this.notify({ type: MessageType.init, data: tree });
-    	        }, 10000);
+    	        }, 6000);
     	        dispatch.afterCommit = function () {
     	            var _a;
     	            (_a = originalAfterCommit === null || originalAfterCommit === void 0 ? void 0 : originalAfterCommit.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit, this);
     	            onLoad();
     	        };
-    	        // dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
-    	        //   originalAfterUpdate?.call?.(this);
-    	        //   onLoad();
-    	        // };
+    	        dispatch.afterUpdate = function () {
+    	            var _a;
+    	            (_a = originalAfterUpdate === null || originalAfterUpdate === void 0 ? void 0 : originalAfterUpdate.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUpdate, this);
+    	            onLoad();
+    	        };
     	    };
     	    DevToolCore.prototype.hasDispatch = function (dispatch) {
     	        return this._dispatch.has(dispatch);
@@ -1001,7 +1154,19 @@
     	index_development.DevToolCore = DevToolCore;
     	index_development.PlainNode = PlainNode;
     	index_development.debounce = debounce;
+    	index_development.getComponentName = getComponentName;
+    	index_development.getFiberName = getFiberName;
+    	index_development.getFiberSource = getFiberSource;
+    	index_development.getFiberTag = getFiberTag;
+    	index_development.getFiberTree = getFiberTree;
+    	index_development.getFiberType = getFiberType;
+    	index_development.getHookName = getHookName;
+    	index_development.getHookTree = getHookTree;
+    	index_development.getTypeName = getTypeName;
+    	index_development.safeClone = safeClone;
+    	index_development.safeCloneRef = safeCloneRef;
     	index_development.throttle = throttle;
+    	index_development.typeKeys = typeKeys;
     	
     	return index_development;
     }
@@ -1073,11 +1238,6 @@
                 console.log("[@my-react-devtool/hook] message from proxy", message);
             }
             core.forceNotify();
-            // set.forEach((dispatch) => {
-            //   if (!core.hasDispatch(dispatch)) {
-            //     core.addDispatch(dispatch);
-            //   }
-            // });
         }
     };
     window.addEventListener("message", onMessage);

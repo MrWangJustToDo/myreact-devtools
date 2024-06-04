@@ -2,7 +2,7 @@ import { readFile, writeFile } from "fs/promises";
 import { resolve } from "path";
 import { rollupBuild } from "project-tool/rollup";
 
-const externalCorePackage = () => false;
+const externalCorePackage = (id: string) => !id.includes("tslib") && id.includes("node_modules");
 
 const copyFile = async (type: "hook" | "proxy" | "service-worker" | "panel" | "detector") => {
   const path = resolve(process.cwd(), `packages/bridge/dist/iife/${type}.development.js`);
@@ -20,7 +20,7 @@ const start = async () => {
   await rollupBuild({
     packageName: "bridge",
     packageScope: "packages",
-    external: externalCorePackage,
+    external: () => false,
   });
   copyFile("hook");
   copyFile("detector");

@@ -49,12 +49,6 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | { type: MessageD
     }
 
     core.forceNotify();
-
-    // set.forEach((dispatch) => {
-    //   if (!core.hasDispatch(dispatch)) {
-    //     core.addDispatch(dispatch);
-    //   }
-    // });
   }
 };
 

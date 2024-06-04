@@ -1,5 +1,5 @@
 import { PlainNode } from "./plain";
-import { getFiberContent, getFiberName } from "./utils";
+import { getFiberName, getFiberSource, getFiberTag, getFiberTree, getFiberType, getHookTree } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 
@@ -10,7 +10,15 @@ const store = new Map<string, MyReactFiberNode>();
 const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   plain.name = getFiberName(fiber as MyReactFiberNodeDev);
 
-  plain.content = getFiberContent(fiber);
+  plain.tag = getFiberTag(fiber as MyReactFiberNodeDev);
+
+  plain.source = getFiberSource(fiber as MyReactFiberNodeDev);
+
+  plain.fiberTree = getFiberTree(fiber as MyReactFiberNodeDev);
+
+  plain.fiberType = getFiberType(fiber as MyReactFiberNodeDev);
+
+  plain.hookTree = getHookTree(fiber as MyReactFiberNodeDev);
 
   plain.key = fiber.key;
 
@@ -26,9 +34,9 @@ const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null
 
   const exist = treeMap.get(fiber);
 
-  if (exist) return exist;
+  const current = exist || new PlainNode();
 
-  const current = new PlainNode();
+  current.children = null;
 
   if (parent) {
     parent.children = parent.children || [];
@@ -40,11 +48,13 @@ const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null
     current.deep = 0;
   }
 
-  assignFiber(current, fiber);
+  if (!exist) {
+    assignFiber(current, fiber);
 
-  treeMap.set(fiber, current);
+    treeMap.set(fiber, current);
 
-  store.set(current.uuid, fiber);
+    store.set(current.uuid, fiber);
+  }
 
   if (fiber.child) {
     loopTree(fiber.child, current);

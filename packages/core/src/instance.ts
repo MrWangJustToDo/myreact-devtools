@@ -65,7 +65,7 @@ export class DevToolCore {
 
     const originalAfterCommit = dispatch.afterCommit;
 
-    // const originalAfterUpdate = dispatch.afterUpdate;
+    const originalAfterUpdate = dispatch.afterUpdate;
 
     const onLoad = throttle(() => {
       const tree = generateFiberTreeToPlainTree(dispatch);
@@ -73,7 +73,7 @@ export class DevToolCore {
       this._map.set(dispatch, tree);
 
       this.notify({ type: MessageType.init, data: tree });
-    }, 10000);
+    }, 6000);
 
     dispatch.afterCommit = function (this: DevToolRenderDispatch) {
       originalAfterCommit?.call?.(this);
@@ -81,11 +81,11 @@ export class DevToolCore {
       onLoad();
     };
 
-    // dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
-    //   originalAfterUpdate?.call?.(this);
+    dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
+      originalAfterUpdate?.call?.(this);
 
-    //   onLoad();
-    // };
+      onLoad();
+    };
   }
 
   hasDispatch(dispatch: DevToolRenderDispatch) {

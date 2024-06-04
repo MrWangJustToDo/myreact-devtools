@@ -9,6 +9,8 @@ export class PlainNode {
 
   name: string;
 
+  tag: string[];
+
   ref: MyReactElement["ref"];
 
   key: MyReactElement["key"];
@@ -24,6 +26,14 @@ export class PlainNode {
   uuid: string;
 
   id: string | number;
+
+  source: MyReactElement["_source"] | null;
+
+  fiberTree: string[];
+
+  fiberType: string[];
+
+  hookTree: string[];
 
   constructor() {
     this.id = `${id++}`;

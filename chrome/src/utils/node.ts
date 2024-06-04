@@ -17,3 +17,7 @@ export const currentHasSelect = (node: TreeNode, select: TreeNode | null) => {
   if (!select) return false;
   return node.current.id === select.current.id || node.parents?.some((i) => i.current.id === select.current.id);
 };
+
+export const checkHasInclude = (node: TreeNode, typeArray: number[]) => {
+  return typeArray.some((i) => node.current.type & i);
+};
