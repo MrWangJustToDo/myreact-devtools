@@ -701,10 +701,16 @@
     	var PlainNode = /** @class */ (function () {
     	    function PlainNode() {
     	        this.id = "".concat(id++);
-    	        this.uuid = "".concat(this.id, "--fiber");
     	    }
     	    return PlainNode;
     	}());
+    	{
+    	    Object.defineProperty(PlainNode.prototype, "__debugToString", {
+    	        value: function () {
+    	            return JSON.stringify(this);
+    	        },
+    	    });
+    	}
 
     	var NODE_TYPE;
     	(function (NODE_TYPE) {
@@ -880,6 +886,12 @@
     	    if (typeof fiber.elementType === "function") {
     	        var typedElementType = fiber.elementType;
     	        var name_5 = typedElementType.displayName || typedElementType.name || "anonymous";
+    	        {
+    	            var element = typedFiber._debugElement;
+    	            // may be a Suspense element
+    	            var type = element === null || element === void 0 ? void 0 : element.type;
+    	            name_5 = (type === null || type === void 0 ? void 0 : type.displayName) || name_5;
+    	        }
     	        return "".concat(name_5);
     	    }
     	    return "unknown";
@@ -957,11 +969,15 @@
     	    }
     	    return null;
     	};
-    	var getFiberTree = function (fiber) {
+    	var getRenderTree = function (fiber) {
     	    var tree = [];
     	    var parent = fiber === null || fiber === void 0 ? void 0 : fiber.parent;
     	    while (parent) {
-    	        tree.push(getFiberName(parent));
+    	        var name_9 = getFiberName(parent);
+    	        var plain = getPlainNodeByFiber(parent);
+    	        var type = parent.type;
+    	        var id = plain.id;
+    	        tree.push({ name: name_9, type: type, id: id });
     	        parent = parent.parent;
     	    }
     	    return tree;
@@ -980,7 +996,7 @@
     	    plain.name = getFiberName(fiber);
     	    plain.tag = getFiberTag(fiber);
     	    plain.source = getFiberSource(fiber);
-    	    plain.fiberTree = getFiberTree(fiber);
+    	    plain.renderTree = getRenderTree(fiber);
     	    plain.fiberType = getFiberType(fiber);
     	    plain.hookTree = getHookTree(fiber);
     	    plain.key = fiber.key;
@@ -1005,7 +1021,7 @@
     	    if (!exist) {
     	        assignFiber(current, fiber);
     	        treeMap.set(fiber, current);
-    	        store.set(current.uuid, fiber);
+    	        store.set(current.id, fiber);
     	    }
     	    if (fiber.child) {
     	        loopTree(fiber.child, current);
@@ -1023,9 +1039,12 @@
     	var unmountPlainNode = function (fiber) {
     	    var plain = treeMap.get(fiber);
     	    if (plain) {
-    	        store.delete(plain.uuid);
+    	        store.delete(plain.id);
     	    }
     	    treeMap.delete(fiber);
+    	};
+    	var getPlainNodeByFiber = function (fiber) {
+    	    return treeMap.get(fiber);
     	};
 
     	function overridePatchToFiberUnmount(dispatch) {
@@ -1158,10 +1177,10 @@
     	index_development.getFiberName = getFiberName;
     	index_development.getFiberSource = getFiberSource;
     	index_development.getFiberTag = getFiberTag;
-    	index_development.getFiberTree = getFiberTree;
     	index_development.getFiberType = getFiberType;
     	index_development.getHookName = getHookName;
     	index_development.getHookTree = getHookTree;
+    	index_development.getRenderTree = getRenderTree;
     	index_development.getTypeName = getTypeName;
     	index_development.safeClone = safeClone;
     	index_development.safeCloneRef = safeCloneRef;

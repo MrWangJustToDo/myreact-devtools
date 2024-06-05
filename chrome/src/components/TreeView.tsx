@@ -1,6 +1,6 @@
 import { useIsomorphicLayoutEffect } from "framer-motion";
-import { memo, useCallback, useMemo, useRef } from "react";
-import { FixedSizeList } from "react-window";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { Virtuoso } from "react-virtuoso";
 
 import { useAppTree } from "@/hooks/useAppTree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
@@ -13,9 +13,8 @@ import { checkHasInclude, currentHasCloseList } from "@/utils/node";
 import { RenderItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
 
-import type { TreeNode} from "@/utils/node";
+import type { TreeNode } from "@/utils/node";
 import type { PlainNode } from "@my-react-devtool/core";
-import type { CSSProperties } from "react";
 
 const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: { current: number }, lastContainerWidthRef: { current: number }) => {
   const children = Array.from(container.querySelectorAll("[data-depth]")) as HTMLDivElement[];
@@ -51,6 +50,19 @@ const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: 
   container.style.setProperty("--width-size", `${listWidth}px`);
 };
 
+const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: TreeNode[] }) => {
+  const [isScrolling, setIsScrolling] = useState(false);
+
+  const render = useCallbackRef((index: number, _: unknown, { isScrolling }: { isScrolling?: boolean }) => {
+    const node = data[index];
+    return <RenderItem node={node} isScrolling={isScrolling} />;
+  });
+
+  return <Virtuoso overscan={60} isScrolling={setIsScrolling} context={{ isScrolling }} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
+});
+
+TreeViewImpl.displayName = "TreeViewImpl";
+
 export const TreeView = memo(() => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -74,11 +86,6 @@ export const TreeView = memo(() => {
 
   const lastContainerWidthRef = useRef(width);
 
-  const render = useCallbackRef(({ index, style }: { index: number; style: CSSProperties }) => {
-    const node = data[index];
-    return <RenderItem node={node} width={width} style={style} />;
-  });
-
   const onScroll = useCallback(() => {
     if (ref.current) {
       updateIndentationSizeVar(ref.current as HTMLDivElement, lastIndentSizeRef, lastContainerWidthRef);
@@ -91,9 +98,7 @@ export const TreeView = memo(() => {
 
   return (
     <div className="tree-view h-full border rounded-md border-gray-200 group transform-cpu" ref={ref}>
-      <FixedSizeList height={height} width={width} className=" overflow-x-hidden" onScroll={onScroll} overscanCount={30} itemCount={data.length} itemSize={22}>
-        {render}
-      </FixedSizeList>
+      <TreeViewImpl onScroll={onScroll} data={data} />
       <TreeViewSetting />
     </div>
   );

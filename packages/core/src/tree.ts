@@ -1,5 +1,5 @@
 import { PlainNode } from "./plain";
-import { getFiberName, getFiberSource, getFiberTag, getFiberTree, getFiberType, getHookTree } from "./utils";
+import { getFiberName, getFiberSource, getFiberTag, getRenderTree, getFiberType, getHookTree } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 
@@ -14,7 +14,7 @@ const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
 
   plain.source = getFiberSource(fiber as MyReactFiberNodeDev);
 
-  plain.fiberTree = getFiberTree(fiber as MyReactFiberNodeDev);
+  plain.renderTree = getRenderTree(fiber as MyReactFiberNodeDev);
 
   plain.fiberType = getFiberType(fiber as MyReactFiberNodeDev);
 
@@ -53,7 +53,7 @@ const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null
 
     treeMap.set(fiber, current);
 
-    store.set(current.uuid, fiber);
+    store.set(current.id, fiber);
   }
 
   if (fiber.child) {
@@ -78,7 +78,11 @@ export const generateFiberTreeToPlainTree = (dispatch: CustomRenderDispatch) => 
 export const unmountPlainNode = (fiber: MyReactFiberNode) => {
   const plain = treeMap.get(fiber);
   if (plain) {
-    store.delete(plain.uuid);
+    store.delete(plain.id);
   }
   treeMap.delete(fiber);
+};
+
+export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
+  return treeMap.get(fiber);
 };

@@ -1,5 +1,6 @@
 import { HOOK_TYPE } from "@my-react/react-shared";
 
+import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
 import type {
@@ -155,8 +156,15 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   if (typeof fiber.elementType === "string") return `${fiber.elementType}`;
   if (typeof fiber.elementType === "function") {
     const typedElementType = fiber.elementType as MixinMyReactClassComponent | MixinMyReactFunctionComponent;
-    const name = typedElementType.displayName || typedElementType.name || "anonymous";
+    let name = typedElementType.displayName || typedElementType.name || "anonymous";
+    if (__DEV__) {
+      const element = typedFiber._debugElement as MyReactElement;
+      // may be a Suspense element
+      const type = element?.type as MixinMyReactObjectComponent;
+      name = type?.displayName || name;
+    }
     return `${name}`;
+
   }
   return `unknown`;
 };
@@ -235,13 +243,17 @@ export const getFiberSource = (fiber: MyReactFiberNodeDev) => {
   return null;
 };
 
-export const getFiberTree = (fiber: MyReactFiberNodeDev) => {
-  const tree: string[] = [];
+export const getRenderTree = (fiber: MyReactFiberNodeDev) => {
+  const tree: { name: string; type: number; id: string }[] = [];
 
   let parent = fiber?.parent;
 
   while (parent) {
-    tree.push(getFiberName(parent as MyReactFiberNodeDev));
+    const name = getFiberName(parent as MyReactFiberNodeDev);
+    const plain = getPlainNodeByFiber(parent);
+    const type = parent.type;
+    const id = plain.id;
+    tree.push({ name, type, id });
     parent = parent.parent;
   }
 

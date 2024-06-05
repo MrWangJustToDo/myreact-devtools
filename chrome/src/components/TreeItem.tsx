@@ -7,7 +7,6 @@ import { useTreeNode } from "@/hooks/useTreeNode";
 import { currentHasSelect, type TreeNode } from "@/utils/node";
 
 import type { PlainNode } from "@my-react-devtool/core";
-import type { CSSProperties } from "react";
 
 const { setSelect, setClose } = useTreeNode.getActions();
 
@@ -16,7 +15,7 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
     return (
       <div className=" gap-x-[2px] flex items-center">
         {node.tag.map((tag) => (
-          <Chip key={tag} size="sm" radius="none" className="rounded-md capitalize text-[8px] h-[18px]">
+          <Chip key={tag} size="sm" radius="none" className="rounded-md capitalize text-[8px] h-[14px]">
             {tag}
           </Chip>
         ))}
@@ -29,7 +28,7 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
 
 RenderTag.displayName = "RenderTag";
 
-const RenderKey = memo(({ node }: { node: PlainNode }) => {
+const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: boolean }) => {
   if (node.key) {
     return (
       <div className="flex items-center gap-x-[1px] text-[12px]">
@@ -37,9 +36,13 @@ const RenderKey = memo(({ node }: { node: PlainNode }) => {
         <div className=" text-gray-400">=</div>
         <div className="flex">
           {'"'}
-          <Tooltip content={node.key} delay={800}>
+          {isScrolling ? (
             <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">{node.key}</div>
-          </Tooltip>
+          ) : (
+            <Tooltip content={node.key} delay={800}>
+              <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">{node.key}</div>
+            </Tooltip>
+          )}
           {'"'}
         </div>
       </div>
@@ -51,7 +54,7 @@ const RenderKey = memo(({ node }: { node: PlainNode }) => {
 
 RenderKey.displayName = "RenderKey";
 
-export const RenderItem = ({ node, width, style }: { width?: number; node: TreeNode; style: CSSProperties }) => {
+export const RenderItem = ({ node, width, isScrolling }: { width?: number; node: TreeNode; isScrolling?: boolean }) => {
   const current = node.current;
 
   const { select: _select, closeList: _closeList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList }), []));
@@ -87,10 +90,11 @@ export const RenderItem = ({ node, width, style }: { width?: number; node: TreeN
 
   const hasChild = Array.isArray(current.children);
 
+  const StateIcon = hasChild ? !currentIsClose ? <TriangleDownIcon width={16} height={16} /> : <TriangleRightIcon width={16} height={16} /> : null;
+
   return (
     <div
       id={current.id.toString()}
-      style={style}
       data-depth={current.deep}
       onClick={() => setSelect(node)}
       className={
@@ -99,7 +103,7 @@ export const RenderItem = ({ node, width, style }: { width?: number; node: TreeN
         `${currentIsSelect ? " !bg-blue-200" : ""}`
       }
     >
-      <div className="flex items-center h-full px-[2px]">
+      <div className="flex items-center h-full px-[2px] relative">
         {current.id === select?.current?.id && <div className="absolute top-0 left-[1px] h-full border-l-2 border-blue-400 rounded-sm pointer-events-none" />}
         <div data-content className="flex items-center" style={{ transform: `translateX(calc(${current.deep} * var(--indentation-size))` }}>
           <span
@@ -110,16 +114,20 @@ export const RenderItem = ({ node, width, style }: { width?: number; node: TreeN
             }}
           >
             {hasChild ? (
-              <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800}>
-                {!currentIsClose ? <TriangleDownIcon width={16} height={16} /> : <TriangleRightIcon width={16} height={16} />}
-              </Tooltip>
+              !isScrolling ? (
+                <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800}>
+                  {StateIcon}
+                </Tooltip>
+              ) : (
+                StateIcon
+              )
             ) : null}
           </span>
           <div>{Ele}</div>
           <Spacer x={1} />
           <RenderTag node={current} />
           <Spacer x={1} />
-          <RenderKey node={current} />
+          <RenderKey node={current} isScrolling={isScrolling} />
         </div>
       </div>
     </div>

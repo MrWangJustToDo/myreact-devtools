@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "build:extension": "next build && npm run lint:build",
-    "lint:build": "mv out/_next out/assets && gsed -i 's/\\/_next/\\/assets/g' out/**.html && gsed -i 's/\\/_next/\\/assets/g' out/assets/static/chunks/**.js",
+    "lint:build": "mv out/_next out/assets && gsed -i 's/\\/_next/\\/assets/g' out/**.html && gsed -i 's/\\/_next/\\/assets/g' out/assets/static/chunks/**.js && gsed -i 's/\\/_next/\\/assets/g' out/assets/static/css/**.css",
     "package": "npm run build:extension && zip -r packages/$(date -u +\"%Y-%m-%dT%H:%M:%SZ\").zip out"
   },
   "dependencies": {
@@ -24,7 +24,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-resizable-panels": "^2.0.19",
-    "react-window": "^1.8.10",
+    "react-virtuoso": "^4.7.11",
     "reactivity-store": "^0.3.4"
   },
   "packageManager": "pnpm@8.9.0",
@@ -36,7 +36,6 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/react-window": "^1.8.8",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "autoprefixer": "^10.4.19",

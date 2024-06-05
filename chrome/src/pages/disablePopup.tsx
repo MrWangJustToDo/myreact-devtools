@@ -2,7 +2,7 @@ import { CrossCircledIcon } from "@radix-ui/react-icons";
 
 export default function Page() {
   return (
-    <main className="flex p-[10px] whitespace-nowrap">
+    <main className="flex p-[10px] whitespace-nowrap text-[12px]">
       <div className="flex text-red-400 items-center justify-center">
         <span className="mr-1">
           <CrossCircledIcon />

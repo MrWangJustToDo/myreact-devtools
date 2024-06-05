@@ -2,7 +2,7 @@ import { CheckCircledIcon } from "@radix-ui/react-icons";
 
 export default function Page() {
   return (
-    <main className="flex p-[10px] whitespace-nowrap">
+    <main className="flex p-[10px] whitespace-nowrap text-[12px]">
       <div className="flex text-green-400 items-center justify-center">
         <span className="mr-1">
           <CheckCircledIcon />

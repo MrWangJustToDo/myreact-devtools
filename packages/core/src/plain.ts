@@ -25,19 +25,25 @@ export class PlainNode {
 
   uuid: string;
 
-  id: string | number;
+  id: string;
 
   source: MyReactElement["_source"] | null;
 
-  fiberTree: string[];
-
   fiberType: string[];
+
+  renderTree: { name: string; type: number; id: string }[];
 
   hookTree: string[];
 
   constructor() {
     this.id = `${id++}`;
-
-    this.uuid = `${this.id}--fiber`;
   }
+}
+
+if (__DEV__) {
+  Object.defineProperty(PlainNode.prototype, "__debugToString", {
+    value: function () {
+      return JSON.stringify(this);
+    },
+  });
 }
