@@ -6,12 +6,14 @@ import { useAppTree } from "@/hooks/useAppTree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useDomSize } from "@/hooks/useSize";
+import { useTreeNode } from "@/hooks/useTreeNode";
 import { flattenNode } from "@/utils/flattenTree";
-import { checkHasInclude } from "@/utils/node";
+import { checkHasInclude, currentHasCloseList } from "@/utils/node";
 
 import { RenderItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
 
+import type { TreeNode} from "@/utils/node";
 import type { PlainNode } from "@my-react-devtool/core";
 import type { CSSProperties } from "react";
 
@@ -58,9 +60,13 @@ export const TreeView = memo(() => {
 
   const filterType = useFilterNode((s) => s.filter);
 
+  const closeList = useTreeNode((s) => s.closeList) as TreeNode[];
+
   const typeArray = useMemo(() => Array.from(filterType).map((i) => +i), [filterType]);
 
-  const data = useMemo(() => _data.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, _data]);
+  const __data = useMemo(() => _data.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, _data]);
+
+  const data = useMemo(() => __data.filter((item) => !currentHasCloseList(item, closeList)), [__data, closeList]);
 
   const { width, height } = useDomSize({ ref });
 

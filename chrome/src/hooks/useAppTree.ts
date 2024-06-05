@@ -14,7 +14,7 @@ const _data = JSON.parse(str);
 
 export const useAppTree = createState(
   () => {
-    return { nodes: [], current: null } as AppTreeType;
+    return { nodes: [_data], current: null } as AppTreeType;
   },
   {
     withDeepSelector: false,
