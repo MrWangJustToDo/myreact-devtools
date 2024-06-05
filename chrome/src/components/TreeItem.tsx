@@ -29,6 +29,24 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
 
 RenderTag.displayName = "RenderTag";
 
+const RenderKey = memo(({ node }: { node: PlainNode }) => {
+  if (node.key) {
+    return (
+      <div className="flex items-center gap-x-[1px] text-[12px]">
+        <div className=" text-teal-500">key</div>
+        <div className=" text-gray-400">=</div>
+        <Tooltip content={node.key}>
+          <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">&quot;{node.key}&quot;</div>
+        </Tooltip>
+      </div>
+    );
+  } else {
+    return null;
+  }
+});
+
+RenderKey.displayName = "RenderKey";
+
 export const RenderItem = ({ node, width, style }: { width?: number; node: TreeNode; style: CSSProperties }) => {
   const current = node.current;
 
@@ -80,6 +98,7 @@ export const RenderItem = ({ node, width, style }: { width?: number; node: TreeN
           <div>{Ele}</div>
           <Spacer x={1} />
           <RenderTag node={current} />
+          <RenderKey node={current} />
         </div>
       </div>
     </div>
