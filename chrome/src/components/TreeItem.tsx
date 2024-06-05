@@ -98,6 +98,7 @@ export const RenderItem = ({ node, width, style }: { width?: number; node: TreeN
           <div>{Ele}</div>
           <Spacer x={1} />
           <RenderTag node={current} />
+          <Spacer x={1} />
           <RenderKey node={current} />
         </div>
       </div>

@@ -6,6 +6,7 @@
     "build:packages": "ts-node ./scripts/build.ts",
     "dev:app": "cd chrome && pnpm run dev",
     "dev:extension": "cd chrome && pnpm run dev:extension",
+    "build:extension": "cd chrome && pnpm run build:extension",
     "lint": "eslint --cache --ext ts,tsx .",
     "lint:fix": "pnpm run lint --fix",
     "prettier": "prettier --ignore-path .prettierignore --write .",
