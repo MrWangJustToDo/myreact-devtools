@@ -20,7 +20,7 @@ export const TreeViewSetting = memo(() => {
 
   return (
     <>
-      <Button isIconOnly className="fixed top-3 right-3 z-10" variant="bordered" onClick={onOpen}>
+      <Button isIconOnly className="fixed top-3 right-3 z-10" onClick={onOpen}>
         <GearIcon />
       </Button>
       <Modal isOpen={isOpen} onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">

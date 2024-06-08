@@ -1,8 +1,11 @@
 import { HOOK_TYPE } from "@my-react/react-shared";
+import { immutable } from "@redux-devtools/serialize";
+import * as Immutable from "immutable";
 
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
+import type { HOOK } from "./plain";
 import type {
   MixinMyReactClassComponent,
   MixinMyReactFunctionComponent,
@@ -11,7 +14,9 @@ import type {
   createContext,
   lazy,
 } from "@my-react/react";
-import type { MyReactHookNodeDev, MyReactFiberNodeDev } from "@my-react/react-reconciler";
+import type { MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
+
+const { stringify } = immutable(Immutable);
 
 export const typeKeys: number[] = [];
 
@@ -22,25 +27,19 @@ Object.keys(NODE_TYPE).forEach((key) => {
 });
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export const safeClone = (obj: Object) => {
+export const safeParse = (obj: Object | Function) => {
   try {
-    return JSON.parse(JSON.stringify(obj));
+    if (typeof obj === "function") {
+      return { type: "function", name: obj.name, value: obj.toString() } as const;
+    } else {
+      return { type: "object", name: "object", value: stringify(obj) } as const;
+    }
   } catch (e) {
-    return (e as Error).message;
+    console.log((e as Error).message);
   }
 };
 
-export const safeCloneRef = (ref: MyReactElement["ref"]) => {
-  if (ref) {
-    if (typeof ref === "function") {
-      return ref.toString();
-    } else {
-      return safeClone(ref);
-    }
-  } else {
-    return null;
-  }
-};
+export type FiberObj = ReturnType<typeof safeParse>;
 
 export const getTypeName = (type: number) => {
   switch (type) {
@@ -89,11 +88,11 @@ export const getTypeName = (type: number) => {
   }
 };
 
-export const getFiberType = (fiber: MyReactFiberNodeDev) => {
+export const getFiberType = (t: number) => {
   const type: string[] = [];
 
   typeKeys.forEach((key) => {
-    if (fiber.type & key) {
+    if (t & key) {
       const name = getTypeName(key);
       name && type.push(name);
     }
@@ -102,19 +101,16 @@ export const getFiberType = (fiber: MyReactFiberNodeDev) => {
   return type;
 };
 
-export const getFiberTag = (fiber: MyReactFiberNodeDev) => {
+export const getFiberTag = (t: number) => {
   const tag: string[] = [];
-  if (fiber.type & NODE_TYPE.__memo__) {
+  if (t & NODE_TYPE.__memo__) {
     tag.push("memo");
   }
-  if (fiber.type & NODE_TYPE.__forwardRef__) {
+  if (t & NODE_TYPE.__forwardRef__) {
     tag.push("forwardRef");
   }
-  if (fiber.type & NODE_TYPE.__lazy__) {
+  if (t & NODE_TYPE.__lazy__) {
     tag.push("lazy");
-  }
-  if (fiber.type & NODE_TYPE.__fragment__ && fiber.pendingProps["wrap"]) {
-    tag.push("auto-wrap");
   }
   return tag;
 };
@@ -164,42 +160,12 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
       name = type?.displayName || name;
     }
     return `${name}`;
-
   }
   return `unknown`;
 };
 
-export const getComponentName = (fiber: MyReactFiberNodeDev) => {
-  if (fiber.type & NODE_TYPE.__provider__) {
-    const typedElementType = fiber.elementType as ReturnType<typeof createContext>["Provider"];
-    const name = typedElementType.Context.displayName;
-    if (name) {
-      return `${name}.Provider`;
-    } else {
-      return "Context.Provider";
-    }
-  }
-  if (fiber.type & NODE_TYPE.__consumer__) {
-    const typedElementType = fiber.elementType as ReturnType<typeof createContext>["Consumer"];
-    const name = typedElementType.Context.displayName;
-    if (name) {
-      return `${name}.Consumer`;
-    } else {
-      return "Context.Consumer";
-    }
-  }
-  if (fiber.type & NODE_TYPE.__function__ || fiber.type & NODE_TYPE.__class__) {
-    const typedElementType = fiber.elementType as MixinMyReactFunctionComponent;
-    let name = typedElementType.displayName || typedElementType.name || "anonymous";
-    const element = fiber._debugElement as MyReactElement;
-    const type = element?.type as MixinMyReactObjectComponent;
-    name = type?.displayName || name;
-    return name;
-  }
-};
-
-export const getHookName = (hook: MyReactHookNodeDev) => {
-  switch (hook.type) {
+export const getHookName = (type: number) => {
+  switch (type) {
     case HOOK_TYPE.useReducer:
       return "Reducer";
     case HOOK_TYPE.useEffect:
@@ -235,7 +201,7 @@ export const getHookName = (hook: MyReactHookNodeDev) => {
   }
 };
 
-export const getFiberSource = (fiber: MyReactFiberNodeDev) => {
+export const getSource = (fiber: MyReactFiberNodeDev) => {
   if (fiber._debugElement) {
     const element = fiber._debugElement as MyReactElement;
     return element._source;
@@ -243,29 +209,44 @@ export const getFiberSource = (fiber: MyReactFiberNodeDev) => {
   return null;
 };
 
-export const getRenderTree = (fiber: MyReactFiberNodeDev) => {
-  const tree: { name: string; type: number; id: string }[] = [];
+export const getTree = (fiber: MyReactFiberNodeDev) => {
+  const tree: string[] = [];
 
   let parent = fiber?.parent;
 
   while (parent) {
-    const name = getFiberName(parent as MyReactFiberNodeDev);
     const plain = getPlainNodeByFiber(parent);
-    const type = parent.type;
+
     const id = plain.id;
-    tree.push({ name, type, id });
+
+    tree.push(id);
+
     parent = parent.parent;
   }
 
   return tree;
 };
 
-export const getHookTree = (fiber: MyReactFiberNodeDev) => {
-  const tree: string[] = [];
+export const getHook = (fiber: MyReactFiberNodeDev) => {
+  const tree: HOOK[] = [];
 
   const hookList = fiber.hookList;
 
-  hookList?.listToFoot?.((h) => tree.push(getHookName(h as MyReactHookNodeDev)));
+  const parseHook = (hook: MyReactHookNode) => {
+    const name = getHookName(hook.type);
+
+    const value = safeParse(hook.result);
+
+    const deps = safeParse(hook.deps);
+
+    return { name, value, deps };
+  };
+
+  hookList?.listToFoot?.((h) => tree.push(parseHook(h as MyReactHookNode)));
 
   return tree;
+};
+
+export const getObj = (obj: any) => {
+  return stringify(obj);
 };

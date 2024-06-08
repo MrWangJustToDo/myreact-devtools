@@ -12,6 +12,6 @@ svg {
   color: inherit;
 }
 
-.stack-view .stack-divider:is(:first-child) {
+.stack-view .stack-divider:nth-child(odd) {
   display: none;
 }

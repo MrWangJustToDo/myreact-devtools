@@ -7,14 +7,12 @@ import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useDomSize } from "@/hooks/useSize";
 import { useTreeNode } from "@/hooks/useTreeNode";
-import { flattenNode } from "@/utils/flattenTree";
-import { checkHasInclude, currentHasCloseList } from "@/utils/node";
+import { checkHasInclude, currentHasInCloseList } from "@/utils/node";
 
 import { RenderItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
 
 import type { TreeNode } from "@/utils/node";
-import type { PlainNode } from "@my-react-devtool/core";
 
 const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: { current: number }, lastContainerWidthRef: { current: number }) => {
   const children = Array.from(container.querySelectorAll("[data-depth]")) as HTMLDivElement[];
@@ -55,7 +53,7 @@ const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: Tre
 
   const render = useCallbackRef((index: number, _: unknown, { isScrolling }: { isScrolling?: boolean }) => {
     const node = data[index];
-    return <RenderItem node={node} isScrolling={isScrolling} />;
+    return <RenderItem node={node} isScrolling={isScrolling} className=" text-[12px]" />;
   });
 
   return <Virtuoso overscan={60} isScrolling={setIsScrolling} context={{ isScrolling }} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
@@ -66,9 +64,7 @@ TreeViewImpl.displayName = "TreeViewImpl";
 export const TreeView = memo(() => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const nodes = useAppTree(useCallback((s) => s.nodes, [])) as PlainNode[];
-
-  const _data = useMemo(() => flattenNode(nodes), [nodes]);
+  const nodes = useAppTree(useCallback((s) => s.flattenNodes, [])) as TreeNode[];
 
   const filterType = useFilterNode((s) => s.filter);
 
@@ -76,9 +72,12 @@ export const TreeView = memo(() => {
 
   const typeArray = useMemo(() => Array.from(filterType).map((i) => +i), [filterType]);
 
-  const __data = useMemo(() => _data.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, _data]);
+  const _data = useMemo(() => nodes.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, nodes]);
 
-  const data = useMemo(() => __data.filter((item) => !currentHasCloseList(item, closeList)), [__data, closeList]);
+  const data = useMemo(
+    () => _data.filter((item) => closeList.some((_item) => _item.id === item.id) || !currentHasInCloseList(item, closeList)),
+    [_data, closeList]
+  );
 
   const { width, height } = useDomSize({ ref });
 

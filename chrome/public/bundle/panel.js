@@ -18,6 +18,17 @@
     /* global Reflect, Promise, SuppressedError, Symbol */
 
 
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
     function __awaiter(thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
@@ -88,6 +99,7 @@
 
     var port = null;
     var workerReady = false;
+    var messageId = 0;
     var id = null;
     var runWhenWorkerReady = function (fn, count) {
         clearTimeout(id);
@@ -123,39 +135,44 @@
             });
         });
     };
+    var sendMessage = function (data) {
+        runWhenWorkerReady(function () {
+            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++ }));
+        });
+    };
+    var onMessage = function (message) {
+        var _a;
+        {
+            console.log("[@my-react-devtool/panel] message from port", message);
+        }
+        if (!workerReady && message.type === MessageWorkerType.init) {
+            workerReady = true;
+        }
+        if ((message === null || message === void 0 ? void 0 : message.type) === MessageHookType.render) {
+            var data = (_a = message.data) === null || _a === void 0 ? void 0 : _a.data;
+            var addNode = window.useAppTree.getActions().addNode;
+            if (data) {
+                addNode(data);
+            }
+        }
+    };
+    // const onRender = ()
     var init = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-        var window_1, onMessage_1;
+        var onDisconnect;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     if (!id) return [3 /*break*/, 2];
                     return [4 /*yield*/, showPanel(id)];
                 case 1:
-                    window_1 = (_a.sent()).window;
+                    (_a.sent()).window;
                     port = chrome.runtime.connect({ name: id.toString() });
-                    onMessage_1 = function (message) {
-                        var _a;
-                        {
-                            console.log("[@my-react-devtool/panel] message from port", message);
-                        }
-                        if (!workerReady && message.type === MessageWorkerType.init) {
-                            workerReady = true;
-                        }
-                        if ((message === null || message === void 0 ? void 0 : message.type) === MessageHookType.render) {
-                            var data = (_a = message.data) === null || _a === void 0 ? void 0 : _a.data;
-                            var addNode = window_1.useAppTree.getActions().addNode;
-                            if (data) {
-                                addNode(data);
-                            }
-                        }
+                    onDisconnect = function () {
+                        port.onMessage.removeListener(onMessage);
                     };
-                    port.onMessage.addListener(onMessage_1);
-                    port.onDisconnect.addListener(function () {
-                        port.onMessage.removeListener(onMessage_1);
-                    });
-                    runWhenWorkerReady(function () {
-                        port.postMessage({ type: MessagePanelType.show });
-                    });
+                    port.onMessage.addListener(onMessage);
+                    port.onDisconnect.addListener(onDisconnect);
+                    sendMessage({ type: MessagePanelType.show });
                     _a.label = 2;
                 case 2: return [2 /*return*/];
             }

@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import { generateFiberTreeToPlainTree } from "./tree";
+import { generateFiberTreeToPlainTree, getDetailNodeById } from "./tree";
 
 import type { PlainNode } from "./plain";
 
-enum MessageType {
+export enum DevToolMessageEnum {
   init = "init",
   update = "update",
   detail = "detail",
   unmount = "unmount",
 }
 
-type Message = {
-  type: MessageType;
+export type DevToolMessageType = {
+  type: DevToolMessageEnum;
   data: any;
 };
 
@@ -35,14 +35,18 @@ export const throttle = <T extends Function>(callback: T, time?: number): T => {
       id = null;
     }, time || 40);
   }) as unknown as T;
-}
+};
 
 export class DevToolCore {
   _dispatch: Set<DevToolRenderDispatch> = new Set();
 
   _map: Map<DevToolRenderDispatch, PlainNode> = new Map();
 
-  _listeners: Set<(data: Message) => void> = new Set();
+  _hoverId = "";
+
+  _selectId = "";
+
+  _listeners: Set<(data: DevToolMessageType) => void> = new Set();
 
   getDispatch() {
     return Array.from(this._dispatch);
@@ -72,7 +76,7 @@ export class DevToolCore {
 
       this._map.set(dispatch, tree);
 
-      this.notify({ type: MessageType.init, data: tree });
+      this.notify({ type: DevToolMessageEnum.init, data: tree });
     }, 6000);
 
     dispatch.afterCommit = function (this: DevToolRenderDispatch) {
@@ -96,20 +100,20 @@ export class DevToolCore {
     const tree = this._map.get(dispatch);
     this._map.delete(dispatch);
     this._dispatch.delete(dispatch);
-    this.notify({ type: MessageType.unmount, data: tree });
+    this.notify({ type: DevToolMessageEnum.unmount, data: tree });
   }
 
-  subscribe(listener: (data: Message) => void) {
+  subscribe(listener: (data: DevToolMessageType) => void) {
     this._listeners.add(listener);
 
     return () => this._listeners.delete(listener);
   }
 
-  unSubscribe(listener: (data: Message) => void) {
+  unSubscribe(listener: (data: DevToolMessageType) => void) {
     this._listeners.delete(listener);
   }
 
-  notify(data: Message) {
+  notify(data: DevToolMessageType) {
     this._listeners.forEach((listener) => listener(data));
   }
 
@@ -119,10 +123,30 @@ export class DevToolCore {
     return tree;
   }
 
+  setSelect(item: PlainNode) {
+    this._selectId = item.id;
+  }
+
+  setHover(item: PlainNode) {
+    this._hoverId = item.id;
+  }
+
+  getSelectDetail() {
+    const id = this._selectId;
+
+    return getDetailNodeById(id);
+  }
+
+  getHoverDetail() {
+    const id = this._hoverId;
+
+    return getDetailNodeById(id);
+  }
+
   forceNotify() {
     this._dispatch.forEach((dispatch) => {
       const tree = this.getTree(dispatch);
-      this.notify({ type: MessageType.init, data: tree });
+      this.notify({ type: DevToolMessageEnum.init, data: tree });
     });
   }
 }

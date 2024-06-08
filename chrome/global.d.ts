@@ -1,4 +1,6 @@
 import { useAppTree } from "@/hooks/useAppTree";
+import { useDetailNode } from "@/hooks/useDetailNode";
+import { useTreeNode } from "@/hooks/useTreeNode";
 import type { CustomRenderDispatch, CustomRenderPlatform, initHMR } from "@my-react/react-reconciler";
 
 declare global {
@@ -8,8 +10,12 @@ declare global {
     "__@my-react/react-inject__": (runtime: Window["__MY_REACT_DEVTOOL_RUNTIME__"], dispatch: CustomRenderDispatch, platform: CustomRenderPlatform) => void;
 
     "__@my-react/dispatch__": CustomRenderDispatch[];
-    
+
     useAppTree: typeof useAppTree;
+
+    useDetailNode: typeof useDetailNode;
+
+    useTreeNode: typeof useTreeNode;
   }
 }
 

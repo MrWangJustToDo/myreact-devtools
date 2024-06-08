@@ -1,35 +1,49 @@
 import { PlainNode } from "./plain";
-import { getFiberName, getFiberSource, getFiberTag, getRenderTree, getFiberType, getHookTree } from "./utils";
+import { getFiberName, getHook, getObj, getSource, getTree } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
 
-const store = new Map<string, MyReactFiberNode>();
+const detailMap = new Map<MyReactFiberNode, PlainNode>();
 
-const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
-  plain.name = getFiberName(fiber as MyReactFiberNodeDev);
+const fiberStore = new Map<string, MyReactFiberNode>();
 
-  plain.tag = getFiberTag(fiber as MyReactFiberNodeDev);
+const plainStore = new Map<string, PlainNode>();
 
-  plain.source = getFiberSource(fiber as MyReactFiberNodeDev);
-
-  plain.renderTree = getRenderTree(fiber as MyReactFiberNodeDev);
-
-  plain.fiberType = getFiberType(fiber as MyReactFiberNodeDev);
-
-  plain.hookTree = getHookTree(fiber as MyReactFiberNodeDev);
-
+export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   plain.key = fiber.key;
 
   plain.type = fiber.type;
+
+  plain.name = getFiberName(fiber as MyReactFiberNodeDev);
+
+  // plain.source = getFiberSource(fiber as MyReactFiberNodeDev);
+
+  // plain.renderTree = getRenderTree(fiber as MyReactFiberNodeDev);
+
+  // plain.fiberType = getFiberType(fiber as MyReactFiberNodeDev);
+
+  // plain.hookTree = getHookTree(fiber as MyReactFiberNodeDev);
 
   // plain.ref = safeCloneRef(fiber.ref);
 
   // plain.props = safeClone(fiber.pendingProps);
 };
 
-const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null => {
+export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
+  shallowAssignFiber(plain, fiber);
+
+  plain.source = getSource(fiber as MyReactFiberNodeDev);
+
+  plain.hook = getHook(fiber as MyReactFiberNodeDev);
+
+  plain.props = getObj(fiber.pendingProps);
+
+  plain.tree = getTree(fiber as MyReactFiberNodeDev);
+};
+
+export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null => {
   if (!fiber) return null;
 
   const exist = treeMap.get(fiber);
@@ -49,11 +63,13 @@ const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null
   }
 
   if (!exist) {
-    assignFiber(current, fiber);
+    shallowAssignFiber(current, fiber);
 
     treeMap.set(fiber, current);
 
-    store.set(current.id, fiber);
+    fiberStore.set(current.id, fiber);
+
+    plainStore.set(current.id, current);
   }
 
   if (fiber.child) {
@@ -77,12 +93,44 @@ export const generateFiberTreeToPlainTree = (dispatch: CustomRenderDispatch) => 
 
 export const unmountPlainNode = (fiber: MyReactFiberNode) => {
   const plain = treeMap.get(fiber);
+
   if (plain) {
-    store.delete(plain.id);
+    fiberStore.delete(plain.id);
+
+    plainStore.delete(plain.id);
   }
+
   treeMap.delete(fiber);
+
+  detailMap.delete(fiber);
 };
 
 export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
   return treeMap.get(fiber);
 };
+
+export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
+  const exist = detailMap.get(fiber);
+
+  if (exist) {
+    assignFiber(exist, fiber);
+
+    return exist;
+  } else {
+    const created = new PlainNode();
+
+    assignFiber(created, fiber);
+
+    detailMap.set(fiber, created);
+
+    return created;
+  }
+}
+
+export const getDetailNodeById = (id: string) => {
+  const fiber = fiberStore.get(id);
+
+  if (fiber) {
+    return getDetailNodeByFiber(fiber);
+  }
+}

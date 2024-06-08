@@ -35,7 +35,11 @@
   "devDependencies": {
     "@my-react/react": "^0.3.1",
     "@my-react/react-dom": "^0.3.1",
-    "@my-react/react-shared": "^0.3.1",
-    "@my-react/react-reconciler": "^0.3.1"
+    "@my-react/react-reconciler": "^0.3.1",
+    "@my-react/react-shared": "^0.3.1"
+  },
+  "dependencies": {
+    "@redux-devtools/serialize": "^0.4.2",
+    "immutable": "^4.3.6"
   }
 }

@@ -13,6 +13,11 @@ declare global {
 
   interface Window {
     useAppTree: UseSelectorWithState<{ nodes: PlainNode[] }, { addNode: (node: PlainNode) => void; delNode: (node: PlainNode) => void }>;
+    useTreeNode: UseSelectorWithState<{ select: { current: PlainNode } | null; hover: { current: PlainNode } | null }, {}>;
+    useDetailNode: UseSelectorWithState<
+      { nodes: PlainNode[]; loading: boolean; error: Error | null },
+      { addNode: (node: PlainNode) => void; setLoading: (loading: boolean) => void; setError: (e: Error | null) => void }
+    >;
   }
 }
 

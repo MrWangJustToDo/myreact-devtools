@@ -7,7 +7,7 @@ export function flattenTree(node: PlainNode): TreeNode[] {
 
   const temp: Record<string, boolean> = {};
 
-  function collect(node: PlainNode, parents?: TreeNode[]) {
+  function collect(node: PlainNode, parent?: TreeNode) {
     if (!temp[node.id]) {
       temp[node.id] = true;
 
@@ -15,11 +15,11 @@ export function flattenTree(node: PlainNode): TreeNode[] {
 
       list.push(tree);
 
-      tree.parents = parents;
+      tree.parent = parent;
 
       if (node.children) {
         node.children.forEach((child) => {
-          collect(child, [...(parents || []), tree]);
+          collect(child, tree);
         });
       }
     }

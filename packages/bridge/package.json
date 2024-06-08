@@ -92,14 +92,16 @@
     }
   ],
   "dependencies": {
-    "@types/chrome": "^0.0.268"
+    "@redux-devtools/serialize": "^0.4.2",
+    "@types/chrome": "^0.0.268",
+    "immutable": "^4.3.6"
   },
   "devDependencies": {
     "@my-react-devtool/core": "workspace:*",
     "@my-react/react": "^0.3.1",
     "@my-react/react-dom": "^0.3.1",
-    "@my-react/react-shared": "^0.3.1",
     "@my-react/react-reconciler": "^0.3.1",
+    "@my-react/react-shared": "^0.3.1",
     "reactivity-store": "^0.3.4"
   }
 }
