@@ -7,7 +7,7 @@ export type HOOK = {
   name: string;
   value: any;
   deps: any;
-}
+};
 
 // PlainNode is a simplified version of FiberNode just for show the structure
 export class PlainNode {
@@ -31,8 +31,8 @@ export class PlainNode {
 
   hook: HOOK[];
 
-  constructor() {
-    this.id = `${id++}`;
+  constructor(_id?: string) {
+    this.id = _id || `${id++}`;
   }
 }
 

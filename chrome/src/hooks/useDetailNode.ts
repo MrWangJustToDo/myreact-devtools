@@ -12,6 +12,8 @@ export const useDetailNode = createState(() => ({ nodes: [], loading: false, err
       list.push(node);
 
       s.nodes = list;
+
+      console.log('add detail node', node);
     },
 
     setLoading: (loading: boolean) => {
@@ -22,6 +24,7 @@ export const useDetailNode = createState(() => ({ nodes: [], loading: false, err
       s.error = error;
     },
   }),
+  withDeepSelector: false,
 });
 
 if (!isServer) {

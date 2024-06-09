@@ -12,7 +12,7 @@ import { RenderItem } from "./TreeItem";
 export const RenderView = () => {
   const select = useTreeNode((s) => s.select);
 
-  const renderTree = select?.current?.["renderTree"];
+  const renderTree = select?.current?.["tree"];
 
   const [isScrolling, setIsScrolling] = useState(false);
 

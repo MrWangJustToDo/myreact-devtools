@@ -15,7 +15,7 @@ const _flattenNodes = flattenNode([_data]);
 
 export const useAppTree = createState(
   () => {
-    return { nodes: [_data], flattenNodes: _flattenNodes } as AppTreeType;
+    return { nodes: [], flattenNodes: _flattenNodes } as AppTreeType;
   },
   {
     withDeepSelector: false,

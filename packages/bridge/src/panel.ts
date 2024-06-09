@@ -1,4 +1,4 @@
-import { DevToolMessageEnum, type DevToolMessageType, type PlainNode } from "@my-react-devtool/core";
+import { DevToolMessageEnum, parseDetailNode, type DevToolMessageType, type PlainNode } from "@my-react-devtool/core";
 
 import { MessageHookType, MessagePanelType, MessageWorkerType } from "./type";
 
@@ -43,15 +43,14 @@ const showPanel = (
       const f1 = (window: Window) => {
         onShow(window);
         resolve({ window, panel });
-        panel.onShown.removeListener(f1);
+        // panel.onShown.removeListener(f1);
       };
 
       panel.onShown.addListener(f1);
 
       const f2 = () => {
         onHide();
-        workerReady = false;
-        panel.onHidden.removeListener(f2);
+        // panel.onHidden.removeListener(f2);
       };
 
       panel.onHidden.addListener(f2);
@@ -70,7 +69,9 @@ const onRender = (data: DevToolMessageType) => {
     if (__DEV__) {
       console.log("[@my-react-devtool/panel] init", data.data);
     }
+
     const node = data.data as PlainNode;
+    
     try {
       const { addNode } = panelWindow.useAppTree.getActions();
 
@@ -85,11 +86,23 @@ const onRender = (data: DevToolMessageType) => {
     if (__DEV__) {
       console.log("[@my-react-devtool/panel] detail", data.data);
     }
+
     const node = data.data as PlainNode;
+
     try {
       const { addNode } = panelWindow.useDetailNode.getActions();
 
       if (node) {
+        if (__DEV__) {
+          console.log("[@my-react-devtool/panel] before parse detail node", node);
+        }
+      
+        parseDetailNode(node);
+
+        if (__DEV__) {
+          console.log("[@my-react-devtool/panel] after parse detail node", node);
+        }
+
         addNode(node);
       }
     } catch {
@@ -121,8 +134,12 @@ const initSelectListen = (_window: Window) => {
       (s) => s.select,
       () => {
         const currentSelect = useTreeNode.getReadonlyState().select;
+
+        console.log("select", currentSelect?.current);
+
         if (currentSelect?.current) {
           useDetailNode.getActions().setLoading(true);
+
           sendMessage({ type: MessagePanelType.nodeSelect, data: currentSelect.current.id });
         }
       }
@@ -138,11 +155,15 @@ const initHoverListen = (_window: Window) => {
 
   try {
     return useTreeNode.subscribe(
-      (s) => s,
+      (s) => s.hover,
       () => {
         const currentHover = useTreeNode.getReadonlyState().hover;
+
+        console.log("hover", currentHover?.current);
+
         if (currentHover?.current) {
           useDetailNode.getActions().setLoading(true);
+
           sendMessage({ type: MessagePanelType.nodeHover, data: currentHover.current.id });
         }
       }
@@ -159,9 +180,17 @@ const init = async (id: number) => {
     const { window } = await showPanel(
       id,
       (window) => {
+        if (__DEV__) {
+          console.log("show panel");
+        }
+
         cleanList.push(initSelectListen(window), initHoverListen(window));
       },
       () => {
+        if (__DEV__) {
+          console.log("hide panel");
+        }
+
         cleanList.forEach((f) => f());
       }
     );

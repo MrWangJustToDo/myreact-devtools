@@ -11,8 +11,8 @@ export enum MessageDetectorType {
 export enum MessagePanelType {
   show = "panel-show",
   hide = "panel-hide",
-  nodeSelect = "panel-select",
   nodeHover = "panel-hover",
+  nodeSelect = "panel-select",
 }
 
 export enum MessageWorkerType {

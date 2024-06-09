@@ -123,24 +123,38 @@ export class DevToolCore {
     return tree;
   }
 
-  setSelect(item: PlainNode) {
-    this._selectId = item.id;
+  setSelect(id: string) {
+    this._selectId = id;
   }
 
-  setHover(item: PlainNode) {
-    this._hoverId = item.id;
+  setHover(id: string) {
+    this._hoverId = id;
   }
 
-  getSelectDetail() {
+  notifySelect() {
     const id = this._selectId;
 
-    return getDetailNodeById(id);
+    if (!id) {
+      if (__DEV__) {
+        console.log("[@my-react-devtool/core] select id is empty");
+      }
+      return;
+    }
+
+    this.notify({ type: DevToolMessageEnum.detail, data: getDetailNodeById(id) });
   }
 
-  getHoverDetail() {
+  notifyHover() {
     const id = this._hoverId;
 
-    return getDetailNodeById(id);
+    if (!id) {
+      if (__DEV__) {
+        console.log("[@my-react-devtool/core] hover id is empty");
+      }
+      return;
+    }
+
+    this.notify({ type: DevToolMessageEnum.detail, data: getDetailNodeById(id) });
   }
 
   forceNotify() {

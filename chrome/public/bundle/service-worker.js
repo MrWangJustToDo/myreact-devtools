@@ -15,6 +15,8 @@
     (function (MessagePanelType) {
         MessagePanelType["show"] = "panel-show";
         MessagePanelType["hide"] = "panel-hide";
+        MessagePanelType["nodeHover"] = "panel-hover";
+        MessagePanelType["nodeSelect"] = "panel-select";
     })(MessagePanelType || (MessagePanelType = {}));
     var MessageWorkerType;
     (function (MessageWorkerType) {

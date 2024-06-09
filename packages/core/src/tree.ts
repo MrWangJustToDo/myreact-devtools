@@ -1,5 +1,5 @@
 import { PlainNode } from "./plain";
-import { getFiberName, getHook, getObj, getSource, getTree } from "./utils";
+import { getFiberName, getHook, getObj, getSource, getTree, parseHook, parseObj } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 
@@ -110,6 +110,12 @@ export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
 };
 
 export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
+  const plainNode = getPlainNodeByFiber(fiber);
+
+  if (!plainNode) {
+    throw new Error("plainNode not found, look like a @my-react/devtools bug");
+  }
+
   const exist = detailMap.get(fiber);
 
   if (exist) {
@@ -117,7 +123,7 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
 
     return exist;
   } else {
-    const created = new PlainNode();
+    const created = new PlainNode(plainNode.id);
 
     assignFiber(created, fiber);
 
@@ -125,7 +131,7 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
 
     return created;
   }
-}
+};
 
 export const getDetailNodeById = (id: string) => {
   const fiber = fiberStore.get(id);
@@ -133,4 +139,12 @@ export const getDetailNodeById = (id: string) => {
   if (fiber) {
     return getDetailNodeByFiber(fiber);
   }
-}
+};
+
+export const parseDetailNode = (plain: PlainNode) => {
+  plain.hook = parseHook(plain);
+
+  plain.props = parseObj(plain);
+
+  return plain;
+};

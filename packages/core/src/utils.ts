@@ -5,7 +5,7 @@ import * as Immutable from "immutable";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
-import type { HOOK } from "./plain";
+import type { HOOK, PlainNode } from "./plain";
 import type {
   MixinMyReactClassComponent,
   MixinMyReactFunctionComponent,
@@ -16,7 +16,14 @@ import type {
 } from "@my-react/react";
 import type { MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
 
-const { stringify } = immutable(Immutable);
+function customReplacer(key: string, value: any, defaultReplacer: any) {
+  if (key === "_owner" || key === "fiber") {
+    return null;
+  }
+  return defaultReplacer(key, value);
+}
+
+const { stringify, parse } = immutable(Immutable, null, customReplacer);
 
 export const typeKeys: number[] = [];
 
@@ -27,7 +34,7 @@ Object.keys(NODE_TYPE).forEach((key) => {
 });
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export const safeParse = (obj: Object | Function) => {
+export const safeStringify = (obj: Object | Function) => {
   try {
     if (typeof obj === "function") {
       return { type: "function", name: obj.name, value: obj.toString() } as const;
@@ -39,7 +46,23 @@ export const safeParse = (obj: Object | Function) => {
   }
 };
 
-export type FiberObj = ReturnType<typeof safeParse>;
+export type FiberObj = ReturnType<typeof safeStringify>;
+
+export const safeParse = (val: FiberObj) => {
+  try {
+    if (val.type === "function") {
+      const re = new Function(val.value);
+      Object.defineProperty(re, "name", {
+        value: val.name,
+      });
+      return re;
+    } else {
+      return parse(val.value);
+    }
+  } catch(e) {
+    console.log((e as Error).message);
+  }
+};
 
 export const getTypeName = (type: number) => {
   switch (type) {
@@ -235,9 +258,9 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
   const parseHook = (hook: MyReactHookNode) => {
     const name = getHookName(hook.type);
 
-    const value = safeParse(hook.result);
+    const value = safeStringify(hook.result);
 
-    const deps = safeParse(hook.deps);
+    const deps = safeStringify(hook.deps);
 
     return { name, value, deps };
   };
@@ -247,6 +270,20 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
   return tree;
 };
 
+export const parseHook = (plain: PlainNode) => {
+  const hook = plain.hook;
+
+  if (!hook || hook.length === 0) return [];
+
+  return hook.map((item) => ({ ...item, value: safeParse(item.value), deps: safeParse(item.deps) }));
+};
+
 export const getObj = (obj: any) => {
-  return stringify(obj);
+  return safeStringify(obj);
+};
+
+export const parseObj = (plain: PlainNode) => {
+  const obj = plain.props;
+
+  return safeParse(obj);
 };
