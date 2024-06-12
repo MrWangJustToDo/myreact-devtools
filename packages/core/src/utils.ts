@@ -1,6 +1,7 @@
 import { HOOK_TYPE } from "@my-react/react-shared";
-import { immutable } from "@redux-devtools/serialize";
+import { immutableSerialize } from "@redux-devtools/serialize";
 import * as Immutable from "immutable";
+import * as Jsan from "jsan";
 
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
@@ -23,7 +24,7 @@ function customReplacer(key: string, value: any, defaultReplacer: any) {
   return defaultReplacer(key, value);
 }
 
-const { stringify, parse } = immutable(Immutable, null, customReplacer);
+const { replacer, reviver } = immutableSerialize(Immutable, null, customReplacer);
 
 export const typeKeys: number[] = [];
 
@@ -39,7 +40,7 @@ export const safeStringify = (obj: Object | Function) => {
     if (typeof obj === "function") {
       return { type: "function", name: obj.name, value: obj.toString() } as const;
     } else {
-      return { type: "object", name: "object", value: stringify(obj) } as const;
+      return { type: "object", name: "object", value: Jsan.stringify(obj, replacer) } as const;
     }
   } catch (e) {
     console.log((e as Error).message);
@@ -57,9 +58,9 @@ export const safeParse = (val: FiberObj) => {
       });
       return re;
     } else {
-      return parse(val.value);
+      return Jsan.parse(val.value, reviver);
     }
-  } catch(e) {
+  } catch (e) {
     console.log((e as Error).message);
   }
 };

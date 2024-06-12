@@ -764,28 +764,36 @@
 
     var cycle = {};
 
-    var pathGetter_1 = pathGetter;
+    var pathGetter_1;
+    var hasRequiredPathGetter;
 
-    function pathGetter(obj, path) {
-      if (path !== '$') {
-        var paths = getPaths(path);
-        for (var i = 0; i < paths.length; i++) {
-          path = paths[i].toString().replace(/\\"/g, '"');
-          if (typeof obj[path] === 'undefined' && i !== paths.length - 1) continue;
-          obj = obj[path];
-        }
-      }
-      return obj;
-    }
+    function requirePathGetter () {
+    	if (hasRequiredPathGetter) return pathGetter_1;
+    	hasRequiredPathGetter = 1;
+    	pathGetter_1 = pathGetter;
 
-    function getPaths(pathString) {
-      var regex = /(?:\.(\w+))|(?:\[(\d+)\])|(?:\["((?:[^\\"]|\\.)*)"\])/g;
-      var matches = [];
-      var match;
-      while (match = regex.exec(pathString)) {
-        matches.push( match[1] || match[2] || match[3] );
-      }
-      return matches;
+    	function pathGetter(obj, path) {
+    	  if (path !== '$') {
+    	    var paths = getPaths(path);
+    	    for (var i = 0; i < paths.length; i++) {
+    	      path = paths[i].toString().replace(/\\"/g, '"');
+    	      if (typeof obj[path] === 'undefined' && i !== paths.length - 1) continue;
+    	      obj = obj[path];
+    	    }
+    	  }
+    	  return obj;
+    	}
+
+    	function getPaths(pathString) {
+    	  var regex = /(?:\.(\w+))|(?:\[(\d+)\])|(?:\["((?:[^\\"]|\\.)*)"\])/g;
+    	  var matches = [];
+    	  var match;
+    	  while (match = regex.exec(pathString)) {
+    	    matches.push( match[1] || match[2] || match[3] );
+    	  }
+    	  return matches;
+    	}
+    	return pathGetter_1;
     }
 
     var utils = {};
@@ -795,7 +803,7 @@
     function requireUtils () {
     	if (hasRequiredUtils) return utils;
     	hasRequiredUtils = 1;
-    	var pathGetter = pathGetter_1;
+    	var pathGetter = requirePathGetter();
     	var jsan = requireLib();
 
     	utils.getRegexFlags = function getRegexFlags(regex) {
@@ -867,6 +875,7 @@
     function requireCycle () {
     	if (hasRequiredCycle) return cycle;
     	hasRequiredCycle = 1;
+    	requirePathGetter();
     	var utils = requireUtils();
 
     	var WMap = typeof WeakMap !== 'undefined'?
@@ -1138,9 +1147,18 @@
     	return lib;
     }
 
-    var jsan = requireLib();
+    var jsan$1;
+    var hasRequiredJsan;
 
-    var jsan$1 = /*@__PURE__*/getDefaultExportFromCjs(jsan);
+    function requireJsan () {
+    	if (hasRequiredJsan) return jsan$1;
+    	hasRequiredJsan = 1;
+    	jsan$1 = requireLib();
+    	return jsan$1;
+    }
+
+    var jsanExports = requireJsan();
+    var jsan = /*@__PURE__*/getDefaultExportFromCjs(jsanExports);
 
     function mark(data, type, transformMethod) {
       return {
@@ -1242,10 +1260,10 @@
     function index (immutable, refs, customReplacer, customReviver) {
       return {
         stringify: function (data) {
-          return jsan$1.stringify(data, serialize(immutable, refs, customReplacer, customReviver).replacer, undefined, options);
+          return jsan.stringify(data, serialize(immutable, refs, customReplacer, customReviver).replacer, undefined, options);
         },
         parse: function (data) {
-          return jsan$1.parse(data, serialize(immutable, refs, customReplacer, customReviver).reviver);
+          return jsan.parse(data, serialize(immutable, refs, customReplacer, customReviver).reviver);
         },
         serialize: serialize
       };
@@ -7311,6 +7329,7 @@
     		var reactShared = requireReactShared();
     		var serialize = require$$1;
     		var Immutable = require$$2;
+    		var Jsan = requireJsan();
 
     		function _interopNamespaceDefault(e) {
     		    var n = Object.create(null);
@@ -7330,6 +7349,7 @@
     		}
 
     		var Immutable__namespace = /*#__PURE__*/_interopNamespaceDefault(Immutable);
+    		var Jsan__namespace = /*#__PURE__*/_interopNamespaceDefault(Jsan);
 
     		/******************************************************************************
     		Copyright (c) Microsoft Corporation.
@@ -7420,7 +7440,7 @@
     		    }
     		    return defaultReplacer(key, value);
     		}
-    		var _a = serialize.immutable(Immutable__namespace, null, customReplacer), stringify = _a.stringify, parse = _a.parse;
+    		var _a = serialize.immutableSerialize(Immutable__namespace, null, customReplacer), replacer = _a.replacer, reviver = _a.reviver;
     		var typeKeys = [];
     		Object.keys(NODE_TYPE).forEach(function (key) {
     		    if (!key.startsWith("__")) {
@@ -7434,7 +7454,7 @@
     		            return { type: "function", name: obj.name, value: obj.toString() };
     		        }
     		        else {
-    		            return { type: "object", name: "object", value: stringify(obj) };
+    		            return { type: "object", name: "object", value: Jsan__namespace.stringify(obj, replacer) };
     		        }
     		    }
     		    catch (e) {
@@ -7451,7 +7471,7 @@
     		            return re;
     		        }
     		        else {
-    		            return parse(val.value);
+    		            return Jsan__namespace.parse(val.value, reviver);
     		        }
     		    }
     		    catch (e) {

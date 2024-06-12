@@ -1,5 +1,7 @@
 import { Chip, Skeleton, Spacer } from "@nextui-org/react";
+import { Fragment } from "react";
 import { Virtuoso } from "react-virtuoso";
+import JsonView from "react18-json-view";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
@@ -21,12 +23,17 @@ export const HookView = () => {
   const render = useCallbackRef((index: number) => {
     const node = hookList[index];
     return (
-      <div key={index} className="flex items-center ml-4">
-        <Chip size="sm" radius="none" className=" rounded-sm mr-1 text-[8px] w-[12px] h-[12px]">
-          {index + 1}
-        </Chip>
-        <div className="text-[12px] text-gray-500">{node.name}</div>
-      </div>
+      <Fragment key={index}>
+        <div className="flex items-start">
+          <div className="flex ml-4 items-center">
+            <Chip size="sm" radius="none" className=" rounded-sm mr-1 text-[8px] w-[12px] h-[12px]">
+              {index + 1}
+            </Chip>
+            <div className="text-[12px] text-gray-500">{node.name}</div>
+          </div>
+          {node.value && <JsonView src={node.value} className="ml-1" theme="github" collapsed={true} />}
+        </div>
+      </Fragment>
     );
   });
 

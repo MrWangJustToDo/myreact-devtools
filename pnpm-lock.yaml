@@ -77,6 +77,9 @@ importers:
       react-virtuoso:
         specifier: ^4.7.11
         version: 4.7.11(react-dom@18.3.1)(react@18.3.1)
+      react18-json-view:
+        specifier: ^0.2.8
+        version: 0.2.8(react@18.3.1)
       reactivity-store:
         specifier: ^0.3.4
         version: 0.3.4(react-dom@18.3.1)(react@18.3.1)
@@ -132,15 +135,9 @@ importers:
 
   packages/bridge:
     dependencies:
-      '@redux-devtools/serialize':
-        specifier: ^0.4.2
-        version: 0.4.2(immutable@4.3.6)
       '@types/chrome':
         specifier: ^0.0.268
         version: 0.0.268
-      immutable:
-        specifier: ^4.3.6
-        version: 4.3.6
     devDependencies:
       '@my-react-devtool/core':
         specifier: workspace:*
@@ -169,6 +166,9 @@ importers:
       immutable:
         specifier: ^4.3.6
         version: 4.3.6
+      jsan:
+        specifier: ^3.1.14
+        version: 3.1.14
     devDependencies:
       '@my-react/react':
         specifier: ^0.3.1
@@ -182,6 +182,9 @@ importers:
       '@my-react/react-shared':
         specifier: ^0.3.1
         version: 0.3.1
+      '@types/jsan':
+        specifier: ^3.1.5
+        version: 3.1.5
 
 packages:
 
@@ -3891,6 +3894,10 @@ packages:
   /@types/har-format@1.2.15:
     resolution: {integrity: sha512-RpQH4rXLuvTXKR0zqHq3go0RVXYv/YVqv4TnPH95VbwUxZdQlK1EtcMvQvMpDngHbt13Csh9Z4qT9AbkiQH5BA==}
 
+  /@types/jsan@3.1.5:
+    resolution: {integrity: sha512-gPZqsdRGlS/lAIXP0kKnHoG3w6DaFskZHpt3PZlvY7g2Pme16Qu9weGdY1dSoziU6A73+Wj/wst5d2v+j4AO9A==}
+    dev: true
+
   /@types/json-schema@7.0.15:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
     dev: true
@@ -6731,6 +6738,14 @@ packages:
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+    dev: false
+
+  /react18-json-view@0.2.8(react@18.3.1):
+    resolution: {integrity: sha512-uJlcf5PEDaba6yTqfcDAcMSYECZ15SLcpP94mLFTa/+fa1kZANjERqKzS7YxxsrGP4+jDxt6sIaglR0PbQcKPw==}
+    peerDependencies:
+      react: '>=16.8.0'
+    dependencies:
+      react: 18.3.1
     dev: false
 
   /react@18.3.1:

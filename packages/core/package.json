@@ -36,10 +36,12 @@
     "@my-react/react": "^0.3.1",
     "@my-react/react-dom": "^0.3.1",
     "@my-react/react-reconciler": "^0.3.1",
-    "@my-react/react-shared": "^0.3.1"
+    "@my-react/react-shared": "^0.3.1",
+    "@types/jsan": "^3.1.5"
   },
   "dependencies": {
     "@redux-devtools/serialize": "^0.4.2",
-    "immutable": "^4.3.6"
+    "immutable": "^4.3.6",
+    "jsan": "^3.1.14"
   }
 }

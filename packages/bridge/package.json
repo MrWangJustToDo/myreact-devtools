@@ -92,9 +92,7 @@
     }
   ],
   "dependencies": {
-    "@redux-devtools/serialize": "^0.4.2",
-    "@types/chrome": "^0.0.268",
-    "immutable": "^4.3.6"
+    "@types/chrome": "^0.0.268"
   },
   "devDependencies": {
     "@my-react-devtool/core": "workspace:*",

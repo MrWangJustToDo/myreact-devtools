@@ -6,6 +6,7 @@ import { JetBrains_Mono } from "next/font/google";
 import type { AppProps } from "next/app";
 
 import "@/styles/globals.css";
+import "react18-json-view/src/style.css";
 
 const roboto = JetBrains_Mono({
   weight: "400",

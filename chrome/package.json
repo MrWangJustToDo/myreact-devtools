@@ -25,6 +25,7 @@
     "react-dom": "^18",
     "react-resizable-panels": "^2.0.19",
     "react-virtuoso": "^4.7.11",
+    "react18-json-view": "^0.2.8",
     "reactivity-store": "^0.3.4"
   },
   "packageManager": "pnpm@8.9.0",
