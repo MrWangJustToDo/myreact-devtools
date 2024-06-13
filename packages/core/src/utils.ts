@@ -1,6 +1,4 @@
 import { HOOK_TYPE } from "@my-react/react-shared";
-import { immutableSerialize } from "@redux-devtools/serialize";
-import * as Immutable from "immutable";
 import * as Jsan from "jsan";
 
 import { getPlainNodeByFiber } from "./tree";
@@ -17,14 +15,26 @@ import type {
 } from "@my-react/react";
 import type { MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
 
-function customReplacer(key: string, value: any, defaultReplacer: any) {
-  if (key === "_owner" || key === "fiber") {
+const replacer = (key: string, value: any) => {
+  if (key === "_owner" || key === "__fiber__" || key === "__props__") {
     return null;
   }
-  return defaultReplacer(key, value);
-}
+  return value;
+};
 
-const { replacer, reviver } = immutableSerialize(Immutable, null, customReplacer);
+const options = {
+  refs: false, // references can't be resolved on the original Immutable structure
+  date: true,
+  function: true,
+  regex: true,
+  undefined: true,
+  error: true,
+  symbol: true,
+  map: true,
+  set: true,
+  nan: true,
+  infinity: true,
+};
 
 export const typeKeys: number[] = [];
 
@@ -40,7 +50,7 @@ export const safeStringify = (obj: Object | Function) => {
     if (typeof obj === "function") {
       return { type: "function", name: obj.name, value: obj.toString() } as const;
     } else {
-      return { type: "object", name: "object", value: Jsan.stringify(obj, replacer) } as const;
+      return { type: "object", name: "object", value: Jsan.stringify(obj, replacer, undefined, options) } as const;
     }
   } catch (e) {
     console.log((e as Error).message);
@@ -58,7 +68,7 @@ export const safeParse = (val: FiberObj) => {
       });
       return re;
     } else {
-      return Jsan.parse(val.value, reviver);
+      return Jsan.parse(val.value);
     }
   } catch (e) {
     console.log((e as Error).message);

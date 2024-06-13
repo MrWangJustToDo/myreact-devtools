@@ -31,7 +31,7 @@ export const HookView = () => {
             </Chip>
             <div className="text-[12px] text-gray-500">{node.name}</div>
           </div>
-          {node.value && <JsonView src={node.value} className="ml-1" theme="github" collapsed={true} />}
+          {node.value && <JsonView src={node.value} className="ml-1" collapsed displaySize enableClipboard={false} theme="github" editable={false} />}
         </div>
       </Fragment>
     );

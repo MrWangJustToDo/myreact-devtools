@@ -160,12 +160,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@redux-devtools/serialize':
-        specifier: ^0.4.2
-        version: 0.4.2(immutable@4.3.6)
-      immutable:
-        specifier: ^4.3.6
-        version: 4.3.6
       jsan:
         specifier: ^3.1.14
         version: 3.1.14
@@ -3589,16 +3583,6 @@ packages:
       react: 18.3.1
     dev: false
 
-  /@redux-devtools/serialize@0.4.2(immutable@4.3.6):
-    resolution: {integrity: sha512-YVqZCChJld5l3Ni2psEZ5loe9x5xpf9J4ckz+7OJdzCNsplC7vzjnkQbFxE6+ULZbywRVp+nSBslTXmaXqAw4A==}
-    peerDependencies:
-      immutable: ^4.0.0
-    dependencies:
-      '@babel/runtime': 7.24.5
-      immutable: 4.3.6
-      jsan: 3.1.14
-    dev: false
-
   /@rollup/plugin-commonjs@25.0.7(rollup@4.17.2):
     resolution: {integrity: sha512-nEvcR+LRjEjsaSsc4x3XZfCCvZIaSMenZu/OiwOKGN2UhQpAYI7ru7czFvyWbErlpoGjnSX3D5Ch5FcMA3kRWQ==}
     engines: {node: '>=14.0.0'}
@@ -5617,10 +5601,6 @@ packages:
     resolution: {integrity: sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==}
     engines: {node: '>= 4'}
     dev: true
-
-  /immutable@4.3.6:
-    resolution: {integrity: sha512-Ju0+lEMyzMVZarkTn/gqRpdqd5dOPaz1mCZ0SH3JV6iFw81PldE/PEB1hWVEA288HPt4WXW8O7AWxB10M+03QQ==}
-    dev: false
 
   /import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
