@@ -1,11 +1,12 @@
 import { Chip, Skeleton, Spacer } from "@nextui-org/react";
-import { Fragment } from "react";
+import { Fragment, lazy } from "react";
 import { Virtuoso } from "react-virtuoso";
-import JsonView from "react18-json-view";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
+
+const LazyJsonView = lazy(() => import("@microlink/react-json-view"));
 
 export const HookView = () => {
   const select = useTreeNode((s) => s.select);
@@ -24,14 +25,25 @@ export const HookView = () => {
     const node = hookList[index];
     return (
       <Fragment key={index}>
-        <div className="flex items-start">
-          <div className="flex ml-4 items-center">
-            <Chip size="sm" radius="none" className=" rounded-sm mr-1 text-[8px] w-[12px] h-[12px]">
-              {index + 1}
-            </Chip>
-            <div className="text-[12px] text-gray-500">{node.name}</div>
-          </div>
-          {node.value && <JsonView src={node.value} className="ml-1" collapsed displaySize enableClipboard={false} theme="github" editable={false} />}
+        <div className="flex items-center text-[11px]">
+          <LazyJsonView
+            src={node.value}
+            name={
+              <div className=" inline-flex items-center leading-[1] text-[11px]">
+                <Chip size="sm" radius="none" className=" rounded-sm mr-1 text-[8px] w-[10px] h-[10px]">
+                  {index + 1}
+                </Chip>
+                <div className=" text-gray-500">{node.name}</div>
+              </div>
+            }
+            indentWidth={2}
+            collapsed
+            displayObjectSize
+            enableClipboard={false}
+            iconStyle="triangle"
+            quotesOnKeys={false}
+            displayDataTypes={false}
+          />
         </div>
       </Fragment>
     );
@@ -53,7 +65,7 @@ export const HookView = () => {
         <div>hooks</div>
         <Spacer y={1} />
         <div className="w-full h-[200px]">
-          <Virtuoso overscan={20} totalCount={hookList.length} itemContent={render} />
+          <Virtuoso key={currentSelectDetail?.id} overscan={20} totalCount={hookList.length} itemContent={render} />
         </div>
       </div>
     );

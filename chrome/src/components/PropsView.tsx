@@ -1,12 +1,12 @@
 import { Skeleton, Spacer } from "@nextui-org/react";
-import { Fragment } from "react";
+import { Fragment, lazy } from "react";
 import { Virtuoso } from "react-virtuoso";
-import JsonView from "react18-json-view";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 
+const LazyJsonView = lazy(() => import("@microlink/react-json-view"));
 
 export const PropsView = () => {
   const select = useTreeNode((s) => s.select);
@@ -25,11 +25,18 @@ export const PropsView = () => {
     const key = propsKey[index];
     return (
       <Fragment key={index}>
-        <div className="flex items-start">
-          <div className="flex ml-4 items-center">
-            <div className="text-[12px] text-gray-500">{key}</div>
-          </div>
-          <JsonView src={currentSelectDetail?.props?.[key]} className="ml-1" collapsed displaySize enableClipboard={false} theme="github" editable={false} />
+        <div className="flex items-center text-[11px]">
+          <LazyJsonView
+            src={currentSelectDetail?.props?.[key]}
+            name={<span className="text-[11px] text-gray-500">{key}</span>}
+            indentWidth={2}
+            collapsed
+            displayObjectSize
+            enableClipboard={false}
+            iconStyle="triangle"
+            quotesOnKeys={false}
+            displayDataTypes={false}
+          />
         </div>
       </Fragment>
     );
@@ -51,7 +58,7 @@ export const PropsView = () => {
         <div>props</div>
         <Spacer y={1} />
         <div className="w-full h-[200px]">
-          <Virtuoso overscan={20} totalCount={propsKey.length} itemContent={render} />
+          <Virtuoso key={currentSelectDetail?.id} overscan={20} totalCount={propsKey.length} itemContent={render} />
         </div>
       </div>
     );

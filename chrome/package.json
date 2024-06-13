@@ -13,6 +13,7 @@
     "package": "npm run build:extension && zip -r packages/$(date -u +\"%Y-%m-%dT%H:%M:%SZ\").zip out"
   },
   "dependencies": {
+    "@microlink/react-json-view": "^1.23.0",
     "@my-react/react": "^0.3.1",
     "@my-react/react-dom": "^0.3.1",
     "@my-react/react-reconciler": "^0.3.1",
@@ -25,7 +26,6 @@
     "react-dom": "^18",
     "react-resizable-panels": "^2.0.19",
     "react-virtuoso": "^4.7.11",
-    "react18-json-view": "^0.2.8",
     "reactivity-store": "^0.3.4"
   },
   "packageManager": "pnpm@8.9.0",
