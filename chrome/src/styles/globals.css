@@ -12,6 +12,7 @@ svg {
   color: inherit;
 }
 
-.stack-view .stack-divider:nth-child(odd) {
-  display: none;
+.tree-wrapper ul {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }

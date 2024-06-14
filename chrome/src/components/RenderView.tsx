@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
-import { Virtuoso } from "react-virtuoso";
+import { Divider, Skeleton } from "@nextui-org/react";
+import { useMemo } from "react";
+// import { Virtuoso } from "react-virtuoso";
 
 import { useAppTree } from "@/hooks/useAppTree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
+import { useDetailNode } from "@/hooks/useDetailNode";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { checkHasInclude, type TreeNode } from "@/utils/node";
@@ -12,9 +14,15 @@ import { RenderItem } from "./TreeItem";
 export const RenderView = () => {
   const select = useTreeNode((s) => s.select);
 
-  const renderTree = select?.current?.["tree"];
+  const { nodeList, loading } = useDetailNode((s) => ({ nodeList: s.nodes, loading: s.loading }));
 
-  const [isScrolling, setIsScrolling] = useState(false);
+  const currentSelectDetail = nodeList.find((i) => i.id === select?.id);
+
+  const renderTree = currentSelectDetail?.["tree"];
+
+  const isLoading = !currentSelectDetail && loading;
+
+  // const [isScrolling, setIsScrolling] = useState(false);
 
   const filterType = useFilterNode((s) => s.filter);
 
@@ -26,18 +34,34 @@ export const RenderView = () => {
 
   const data = useMemo(() => renderTreeNode?.filter((item) => !checkHasInclude(item as TreeNode, typeArray)), [typeArray, renderTreeNode]);
 
-  const render = useCallbackRef((index: number, _: unknown, { isScrolling }: { isScrolling?: boolean }) => {
+  const render = useCallbackRef((index: number) => {
     const node = data![index]! as TreeNode;
 
-    return <RenderItem node={node} isScrolling={isScrolling} withCollapse={false} />;
+    return (
+      <div className="text-[11px] ml-2 font-mono">
+        <RenderItem node={node} withCollapse={false} />
+      </div>
+    );
   });
+
+  if (isLoading) {
+    return (
+      <div className="p-2">
+        <div className="w-full h-[100px]">
+          <Skeleton className="w-full" />
+        </div>
+        <Divider />
+      </div>
+    );
+  }
 
   if (data?.length) {
     return (
       <div className="p-2">
         <div>renders</div>
         <div className="w-full h-[300px]">
-          <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} />
+          {data.map((_, index) => render(index))}
+          {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
         </div>
       </div>
     );

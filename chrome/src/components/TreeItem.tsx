@@ -33,7 +33,7 @@ const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: 
   if (node.key) {
     return (
       <div className="flex items-center gap-x-[1px] text-[12px]">
-        <div className=" text-teal-500">key</div>
+        <div className=" text-[#40af2c]">key</div>
         <div className=" text-gray-400">=</div>
         <div className="flex">
           {'"'}
@@ -130,7 +130,7 @@ export const RenderItem = ({
               ) : null}
             </span>
           )}
-          <p className={isNativeNode ? " text-orange-600" : "text-violet-600"}>{current.name}</p>
+          <p className={isNativeNode ? " text-[#f15950]" : "text-[#427af5]"}>{current.name}</p>
           {withTag && (
             <>
               <Spacer x={1} />
