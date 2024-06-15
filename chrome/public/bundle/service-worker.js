@@ -63,10 +63,10 @@
         port2.onMessage.addListener(onMessagePort2);
         port1.onDisconnect.addListener(shutdown);
         port2.onDisconnect.addListener(shutdown);
+        port1.postMessage({ type: MessageWorkerType.init });
+        port2.postMessage({ type: MessageWorkerType.init });
         {
             console.log("[@my-react-devtool/worker] connected: ".concat(id));
-            port1.postMessage({ type: MessageWorkerType.init });
-            port2.postMessage({ type: MessageWorkerType.init });
         }
     };
     // forward message devtool -> proxy -> page

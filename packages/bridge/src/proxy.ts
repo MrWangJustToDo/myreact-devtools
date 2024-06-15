@@ -17,6 +17,7 @@ const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {
 };
 
 const handleDisconnect = () => {
+  port.onMessage.removeListener(sendMessageToBackend);
   window.removeEventListener("message", sendMessageToPanel);
 };
 

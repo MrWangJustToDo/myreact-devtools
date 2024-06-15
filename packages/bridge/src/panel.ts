@@ -10,6 +10,8 @@ let panelWindow: Window = window;
 
 let workerReady = false;
 
+let workerConnecting = false;
+
 // TODO use messageId to sync message
 let messageId = 0;
 
@@ -20,6 +22,9 @@ const runWhenWorkerReady = (fn: () => void, count?: number) => {
   if (workerReady) {
     fn();
   } else {
+    if (!workerConnecting) {
+      initPort(chrome.devtools.inspectedWindow.tabId);
+    }
     if (count && count > 10) {
       if (__DEV__) {
         console.error("[@my-react-devtool/panel] worker not ready");
@@ -71,7 +76,7 @@ const onRender = (data: DevToolMessageType) => {
     }
 
     const node = data.data as PlainNode;
-    
+
     try {
       const { addNode } = panelWindow.useAppTree.getActions();
 
@@ -96,7 +101,7 @@ const onRender = (data: DevToolMessageType) => {
         if (__DEV__) {
           console.log("[@my-react-devtool/panel] before parse detail node", node);
         }
-      
+
         parseDetailNode(node);
 
         if (__DEV__) {
@@ -112,6 +117,8 @@ const onRender = (data: DevToolMessageType) => {
 };
 
 const onMessage = (message: MessageHookDataType | { type: MessageWorkerType }) => {
+  workerConnecting = false;
+
   if (__DEV__) {
     console.log("[@my-react-devtool/panel] message from port", message);
   }
@@ -173,6 +180,28 @@ const initHoverListen = (_window: Window) => {
   }
 };
 
+const initPort = (id: number) => {
+  workerConnecting = true;
+
+  port = chrome.runtime.connect({ name: id.toString() });
+
+  const onDisconnect = () => {
+    console.log("[@my-react-devtool/panel] disconnect");
+
+    port = null;
+
+    workerReady = false;
+
+    port.onMessage.removeListener(onMessage);
+  };
+
+  port.onMessage.addListener(onMessage);
+
+  port.onDisconnect.addListener(onDisconnect);
+
+  sendMessage({ type: MessagePanelType.show });
+};
+
 const init = async (id: number) => {
   if (id) {
     const cleanList: Array<() => void> = [];
@@ -197,17 +226,7 @@ const init = async (id: number) => {
 
     panelWindow = window;
 
-    port = chrome.runtime.connect({ name: id.toString() });
-
-    const onDisconnect = () => {
-      port.onMessage.removeListener(onMessage);
-    };
-
-    port.onMessage.addListener(onMessage);
-
-    port.onDisconnect.addListener(onDisconnect);
-
-    sendMessage({ type: MessagePanelType.show });
+    initPort(id);
   }
 };
 

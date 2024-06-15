@@ -41,6 +41,7 @@
         }
     };
     var handleDisconnect = function () {
+        port.onMessage.removeListener(sendMessageToBackend);
         window.removeEventListener("message", sendMessageToPanel);
     };
     port.onMessage.addListener(sendMessageToBackend);

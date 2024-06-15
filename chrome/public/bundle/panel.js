@@ -1823,6 +1823,7 @@
     var port = null;
     var panelWindow = window;
     var workerReady = false;
+    var workerConnecting = false;
     // TODO use messageId to sync message
     var messageId = 0;
     var id = null;
@@ -1832,6 +1833,9 @@
             fn();
         }
         else {
+            if (!workerConnecting) {
+                initPort(chrome.devtools.inspectedWindow.tabId);
+            }
             if (count && count > 10) {
                 {
                     console.error("[@my-react-devtool/panel] worker not ready");
@@ -1904,6 +1908,7 @@
         }
     };
     var onMessage = function (message) {
+        workerConnecting = false;
         {
             console.log("[@my-react-devtool/panel] message from port", message);
         }
@@ -1946,8 +1951,21 @@
         catch (_a) {
         }
     };
+    var initPort = function (id) {
+        workerConnecting = true;
+        port = chrome.runtime.connect({ name: id.toString() });
+        var onDisconnect = function () {
+            console.log("[@my-react-devtool/panel] disconnect");
+            port = null;
+            workerReady = false;
+            port.onMessage.removeListener(onMessage);
+        };
+        port.onMessage.addListener(onMessage);
+        port.onDisconnect.addListener(onDisconnect);
+        sendMessage({ type: MessagePanelType.show });
+    };
     var init = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-        var cleanList_1, window_1, onDisconnect;
+        var cleanList_1, window_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1967,13 +1985,7 @@
                 case 1:
                     window_1 = (_a.sent()).window;
                     panelWindow = window_1;
-                    port = chrome.runtime.connect({ name: id.toString() });
-                    onDisconnect = function () {
-                        port.onMessage.removeListener(onMessage);
-                    };
-                    port.onMessage.addListener(onMessage);
-                    port.onDisconnect.addListener(onDisconnect);
-                    sendMessage({ type: MessagePanelType.show });
+                    initPort(id);
                     _a.label = 2;
                 case 2: return [2 /*return*/];
             }
