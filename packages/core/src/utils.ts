@@ -48,7 +48,7 @@ Object.keys(NODE_TYPE).forEach((key) => {
 export const safeStringify = (obj: Object | Function) => {
   try {
     if (typeof obj === "function") {
-      return { type: "function", name: obj.name, value: obj.toString() } as const;
+      return { type: "function", name: obj.name, value: Jsan.stringify(obj, replacer, undefined, options) } as const;
     } else {
       return { type: "object", name: "object", value: Jsan.stringify(obj, replacer, undefined, options) } as const;
     }
@@ -62,8 +62,11 @@ export type FiberObj = ReturnType<typeof safeStringify>;
 export const safeParse = (val: FiberObj) => {
   try {
     if (val.type === "function") {
-      const re = new Function(val.value);
+      const re = Jsan.parse(val.value);
       Object.defineProperty(re, "name", {
+        value: val.name,
+      });
+      Object.defineProperty(re, "displayName", {
         value: val.name,
       });
       return re;
@@ -269,7 +272,9 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
   const parseHook = (hook: MyReactHookNode) => {
     const name = getHookName(hook.type);
 
-    const value = safeStringify(hook.result);
+    const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
+
+    const value = safeStringify(isEffect ? hook.value : hook.result);
 
     const deps = safeStringify(hook.deps);
 

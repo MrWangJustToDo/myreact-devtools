@@ -1271,7 +1271,7 @@
     		var safeStringify = function (obj) {
     		    try {
     		        if (typeof obj === "function") {
-    		            return { type: "function", name: obj.name, value: obj.toString() };
+    		            return { type: "function", name: obj.name, value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
     		        }
     		        else {
     		            return { type: "object", name: "object", value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
@@ -1284,8 +1284,11 @@
     		var safeParse = function (val) {
     		    try {
     		        if (val.type === "function") {
-    		            var re = new Function(val.value);
+    		            var re = Jsan__namespace.parse(val.value);
     		            Object.defineProperty(re, "name", {
+    		                value: val.name,
+    		            });
+    		            Object.defineProperty(re, "displayName", {
     		                value: val.name,
     		            });
     		            return re;
@@ -1487,7 +1490,8 @@
     		    var hookList = fiber.hookList;
     		    var parseHook = function (hook) {
     		        var name = getHookName(hook.type);
-    		        var value = safeStringify(hook.result);
+    		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
+    		        var value = safeStringify(isEffect ? hook.value : hook.result);
     		        var deps = safeStringify(hook.deps);
     		        return { name: name, value: value, deps: deps };
     		    };
@@ -1956,9 +1960,9 @@
         port = chrome.runtime.connect({ name: id.toString() });
         var onDisconnect = function () {
             console.log("[@my-react-devtool/panel] disconnect");
+            port.onMessage.removeListener(onMessage);
             port = null;
             workerReady = false;
-            port.onMessage.removeListener(onMessage);
         };
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);

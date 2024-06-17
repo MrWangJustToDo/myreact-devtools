@@ -188,11 +188,11 @@ const initPort = (id: number) => {
   const onDisconnect = () => {
     console.log("[@my-react-devtool/panel] disconnect");
 
+    port.onMessage.removeListener(onMessage);
+
     port = null;
 
     workerReady = false;
-
-    port.onMessage.removeListener(onMessage);
   };
 
   port.onMessage.addListener(onMessage);
