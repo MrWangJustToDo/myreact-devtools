@@ -19,6 +19,9 @@ const replacer = (key: string, value: any) => {
   if (key === "_owner" || key === "__fiber__" || key === "__props__") {
     return null;
   }
+  if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && value instanceof HTMLElement) {
+    return { type: "nativeNode", value: `<${value.tagName.toLowerCase()} />` };
+  }
   return value;
 };
 

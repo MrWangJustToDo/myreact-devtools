@@ -1169,6 +1169,9 @@
     		    if (key === "_owner" || key === "__fiber__" || key === "__props__") {
     		        return null;
     		    }
+    		    if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && value instanceof HTMLElement) {
+    		        return { type: "nativeNode", value: "<".concat(value.tagName.toLowerCase(), " />") };
+    		    }
     		    return value;
     		};
     		var options = {

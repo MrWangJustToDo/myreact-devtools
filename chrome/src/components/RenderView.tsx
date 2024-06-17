@@ -48,7 +48,7 @@ export const RenderView = () => {
     return (
       <div className="p-2">
         <div className="w-full h-[100px]">
-          <Skeleton className="w-full" />
+          <Skeleton className="w-full h-[99%]" />
         </div>
         <Divider />
       </div>

@@ -95,7 +95,7 @@ const onRender = (data: DevToolMessageType) => {
     const node = data.data as PlainNode;
 
     try {
-      const { addNode } = panelWindow.useDetailNode.getActions();
+      const { addNode, setLoading } = panelWindow.useDetailNode.getActions();
 
       if (node) {
         if (__DEV__) {
@@ -109,6 +109,8 @@ const onRender = (data: DevToolMessageType) => {
         }
 
         addNode(node);
+
+        setLoading(false);
       }
     } catch {
       void 0;
@@ -156,6 +158,7 @@ const initSelectListen = (_window: Window) => {
   }
 };
 
+// TODO
 const initHoverListen = (_window: Window) => {
   const useTreeNode = _window.useTreeNode;
   const useDetailNode = _window.useDetailNode;

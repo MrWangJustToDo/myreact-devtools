@@ -25,7 +25,19 @@ export const HookView = () => {
     const node = hookList[index];
     return (
       <div className="text-[11px] ml-2 font-mono tree-wrapper" key={index}>
-        <JSONTree data={node.value} theme={theme} keyPath={[node.name]} shouldExpandNodeInitially={() => false} />
+        <JSONTree
+          data={node.value}
+          theme={theme}
+          keyPath={[node.name]}
+          shouldExpandNodeInitially={() => false}
+          isCustomNode={(v: any) => v?.type === "nativeNode"}
+          valueRenderer={(_v: any, v: any) => {
+            if (v?.type === "nativeNode") {
+              return <span className="text-[#f15950]">{v.value}</span>;
+            }
+            return _v;
+          }}
+        />
       </div>
     );
   });
@@ -34,7 +46,7 @@ export const HookView = () => {
     return (
       <div className="p-2">
         <div className="w-full h-[100px]">
-          <Skeleton className="w-full" />
+          <Skeleton className="w-full h-[99%]" />
         </div>
         <Divider />
       </div>

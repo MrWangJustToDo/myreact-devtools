@@ -1,5 +1,5 @@
 import { useIsomorphicLayoutEffect } from "framer-motion";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
 import { useAppTree } from "@/hooks/useAppTree";
@@ -13,6 +13,7 @@ import { RenderItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
 
 import type { TreeNode } from "@/utils/node";
+import type { VirtuosoHandle } from "react-virtuoso";
 
 const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: { current: number }, lastContainerWidthRef: { current: number }) => {
   const children = Array.from(container.querySelectorAll("[data-depth]")) as HTMLDivElement[];
@@ -51,12 +52,33 @@ const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: 
 const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: TreeNode[] }) => {
   const [isScrolling, setIsScrolling] = useState(false);
 
+  const ref = useRef<VirtuosoHandle>(null);
+
+  const select = useTreeNode((s) => s.select);
+
   const render = useCallbackRef((index: number, _: unknown, { isScrolling }: { isScrolling?: boolean }) => {
     const node = data[index];
     return <RenderItem node={node} isScrolling={isScrolling} className=" text-[12px]" />;
   });
 
-  return <Virtuoso overscan={60} isScrolling={setIsScrolling} context={{ isScrolling }} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
+  useEffect(() => {
+    const index = data.findIndex((item) => item.id === select?.id);
+    if (index !== -1) {
+      ref.current?.scrollIntoView({ index });
+    }
+  }, [data, select]);
+
+  return (
+    <Virtuoso
+      ref={ref}
+      overscan={60}
+      isScrolling={setIsScrolling}
+      context={{ isScrolling }}
+      onScroll={onScroll}
+      totalCount={data.length}
+      itemContent={render}
+    />
+  );
 });
 
 TreeViewImpl.displayName = "TreeViewImpl";
