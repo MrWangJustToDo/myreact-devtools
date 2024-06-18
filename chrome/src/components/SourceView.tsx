@@ -1,4 +1,4 @@
-import { Divider, Skeleton, Spacer } from "@nextui-org/react";
+import { Skeleton, Spacer } from "@nextui-org/react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
@@ -20,7 +20,6 @@ export const SourceView = () => {
         <div className="w-full h-[100px]">
           <Skeleton className="w-full h-[99%]" />
         </div>
-        <Divider />
       </div>
     );
   }

@@ -64,6 +64,7 @@ export const RenderView = () => {
           {data.map((_, index) => render(index))}
           {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
         </div>
+        <Divider />
       </div>
     );
   } else {
