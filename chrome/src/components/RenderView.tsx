@@ -1,4 +1,4 @@
-import { Divider, Skeleton } from "@nextui-org/react";
+import { Divider, Skeleton, Spacer } from "@nextui-org/react";
 import { useMemo } from "react";
 // import { Virtuoso } from "react-virtuoso";
 
@@ -59,7 +59,8 @@ export const RenderView = () => {
     return (
       <div className="p-2">
         <div>renders</div>
-        <div className="w-full h-[300px]">
+        <Spacer y={1} />
+        <div className="w-full">
           {data.map((_, index) => render(index))}
           {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
         </div>

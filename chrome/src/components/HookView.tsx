@@ -5,6 +5,7 @@ import { JSONTree } from "react-json-tree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
+import { getText } from "@/utils/treeValue";
 
 export const theme = getBase16Theme("google:inverted");
 
@@ -31,6 +32,13 @@ export const HookView = () => {
           keyPath={[node.name]}
           shouldExpandNodeInitially={() => false}
           isCustomNode={(v: any) => v?.type === "nativeNode"}
+          getItemString={(nodeType, data, itemType, itemString) => {
+            return (
+              <span>
+                {getText(nodeType, data)} {itemString}
+              </span>
+            );
+          }}
           valueRenderer={(_v: any, v: any) => {
             if (v?.type === "nativeNode") {
               return <span className="text-[#f15950]">{v.value}</span>;

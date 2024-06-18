@@ -61,12 +61,13 @@ const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: Tre
     return <RenderItem node={node} isScrolling={isScrolling} className=" text-[12px]" />;
   });
 
+  const index = useMemo(() => data.findIndex((item) => item.id === select?.id), [data, select]);
+
   useEffect(() => {
-    const index = data.findIndex((item) => item.id === select?.id);
     if (index !== -1) {
       ref.current?.scrollIntoView({ index });
     }
-  }, [data, select]);
+  }, [index]);
 
   return (
     <Virtuoso
