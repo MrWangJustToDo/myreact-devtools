@@ -17,13 +17,15 @@ let messageId = 0;
 
 let id = null;
 
+const tabId = chrome.devtools.inspectedWindow.tabId;
+
 const runWhenWorkerReady = (fn: () => void, count?: number) => {
   clearTimeout(id);
   if (workerReady) {
     fn();
   } else {
     if (!workerConnecting) {
-      initPort(chrome.devtools.inspectedWindow.tabId);
+      initPort();
     }
     if (count && count > 10) {
       if (__DEV__) {
@@ -35,14 +37,10 @@ const runWhenWorkerReady = (fn: () => void, count?: number) => {
   }
 };
 
-const showPanel = (
-  id: number,
-  onShow: (window: Window) => void,
-  onHide: () => void
-): Promise<{ window: Window; panel: chrome.devtools.panels.ExtensionPanel }> => {
+const showPanel = (onShow: (window: Window) => void, onHide: () => void): Promise<{ window: Window; panel: chrome.devtools.panels.ExtensionPanel }> => {
   return new Promise((resolve) => {
     if (__DEV__) {
-      console.log("[@my-react-devtool/panel] create panel", id);
+      console.log("[@my-react-devtool/panel] create panel", tabId);
     }
     chrome.devtools.panels.create(`@my-react`, "", "devTool.html", (panel) => {
       const f1 = (window: Window) => {
@@ -127,6 +125,8 @@ const onMessage = (message: MessageHookDataType | { type: MessageWorkerType }) =
 
   if (!workerReady && message.type === MessageWorkerType.init) {
     workerReady = true;
+
+    panelWindow.useConnect.getActions().connect();
   }
 
   if (message?.type === MessageHookType.render) {
@@ -183,13 +183,19 @@ const initHoverListen = (_window: Window) => {
   }
 };
 
-const initPort = (id: number) => {
+const initPort = () => {
   workerConnecting = true;
 
-  port = chrome.runtime.connect({ name: id.toString() });
+  const { disconnect, setConnectHandler } = panelWindow.useConnect.getActions();
+
+  setConnectHandler(() => initPort());
+
+  port = chrome.runtime.connect({ name: tabId.toString() });
 
   const onDisconnect = () => {
     console.log("[@my-react-devtool/panel] disconnect");
+
+    disconnect();
 
     port.onMessage.removeListener(onMessage);
 
@@ -210,7 +216,6 @@ const init = async (id: number) => {
     const cleanList: Array<() => void> = [];
 
     const { window } = await showPanel(
-      id,
       (window) => {
         if (__DEV__) {
           console.log("show panel");
@@ -229,8 +234,8 @@ const init = async (id: number) => {
 
     panelWindow = window;
 
-    initPort(id);
+    initPort();
   }
 };
 
-init(chrome.devtools.inspectedWindow.tabId);
+init(tabId);

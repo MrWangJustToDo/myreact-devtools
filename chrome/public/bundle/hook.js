@@ -1392,6 +1392,9 @@
     		            return "Signal";
     		    }
     		};
+    		var getContextName = function (value) {
+    		    return value.displayName || "Context";
+    		};
     		var getSource = function (fiber) {
     		    if (fiber._debugElement) {
     		        var element = fiber._debugElement;
@@ -1415,7 +1418,7 @@
     		    var tree = [];
     		    var hookList = fiber.hookList;
     		    var parseHook = function (hook) {
-    		        var name = getHookName(hook.type);
+    		        var name = hook.type === reactShared.HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
     		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
     		        var value = safeStringify(isEffect ? hook.value : hook.result);
     		        var deps = safeStringify(hook.deps);
@@ -1612,7 +1615,8 @@
     		            var tree = generateFiberTreeToPlainTree(dispatch);
     		            _this._map.set(dispatch, tree);
     		            _this.notify({ type: exports.DevToolMessageEnum.init, data: tree });
-    		        }, 6000);
+    		            _this.notifySelect();
+    		        }, 1000);
     		        dispatch.afterCommit = function () {
     		            var _a;
     		            (_a = originalAfterCommit === null || originalAfterCommit === void 0 ? void 0 : originalAfterCommit.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit, this);
@@ -1681,6 +1685,7 @@
     		            var tree = _this.getTree(dispatch);
     		            _this.notify({ type: exports.DevToolMessageEnum.init, data: tree });
     		        });
+    		        this.notifySelect();
     		    };
     		    return DevToolCore;
     		}());
@@ -1690,6 +1695,7 @@
     		exports.assignFiber = assignFiber;
     		exports.debounce = debounce;
     		exports.generateFiberTreeToPlainTree = generateFiberTreeToPlainTree;
+    		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getDetailNodeById = getDetailNodeById;
     		exports.getFiberName = getFiberName;

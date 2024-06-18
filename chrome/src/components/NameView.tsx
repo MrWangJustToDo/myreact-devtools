@@ -9,7 +9,7 @@ import type { TreeNode } from "@/utils/node";
 export const NameView = () => {
   const select = useTreeNode((s) => s.select);
 
-  if (select) {
+  if (select && select.current) {
     return (
       <div className="p-2 text-[16px] whitespace-nowrap text-ellipsis overflow-hidden sticky top-0 bg-white z-50">
         <RenderItem node={select as TreeNode} withCollapse={false} withSelect={false} withKey={false} />

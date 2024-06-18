@@ -77,7 +77,9 @@ export class DevToolCore {
       this._map.set(dispatch, tree);
 
       this.notify({ type: DevToolMessageEnum.init, data: tree });
-    }, 6000);
+
+      this.notifySelect();
+    }, 1000);
 
     dispatch.afterCommit = function (this: DevToolRenderDispatch) {
       originalAfterCommit?.call?.(this);
@@ -162,5 +164,6 @@ export class DevToolCore {
       const tree = this.getTree(dispatch);
       this.notify({ type: DevToolMessageEnum.init, data: tree });
     });
+    this.notifySelect();
   }
 }

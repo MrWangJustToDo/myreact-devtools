@@ -1,4 +1,5 @@
 import { useAppTree } from "@/hooks/useAppTree";
+import { useConnect } from "@/hooks/useConnect";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import type { CustomRenderDispatch, CustomRenderPlatform, initHMR } from "@my-react/react-reconciler";
@@ -16,6 +17,8 @@ declare global {
     useDetailNode: typeof useDetailNode;
 
     useTreeNode: typeof useTreeNode;
+
+    useConnect: typeof useConnect;
   }
 }
 

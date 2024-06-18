@@ -241,6 +241,10 @@ export const getHookName = (type: number) => {
   }
 };
 
+export const getContextName = (value: ReturnType<typeof createContext>) => {
+  return value.displayName || "Context";
+};
+
 export const getSource = (fiber: MyReactFiberNodeDev) => {
   if (fiber._debugElement) {
     const element = fiber._debugElement as MyReactElement;
@@ -273,7 +277,7 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
   const hookList = fiber.hookList;
 
   const parseHook = (hook: MyReactHookNode) => {
-    const name = getHookName(hook.type);
+    const name = hook.type === HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
 
     const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
 

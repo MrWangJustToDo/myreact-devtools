@@ -1469,6 +1469,9 @@
     		            return "Signal";
     		    }
     		};
+    		var getContextName = function (value) {
+    		    return value.displayName || "Context";
+    		};
     		var getSource = function (fiber) {
     		    if (fiber._debugElement) {
     		        var element = fiber._debugElement;
@@ -1492,7 +1495,7 @@
     		    var tree = [];
     		    var hookList = fiber.hookList;
     		    var parseHook = function (hook) {
-    		        var name = getHookName(hook.type);
+    		        var name = hook.type === reactShared.HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
     		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
     		        var value = safeStringify(isEffect ? hook.value : hook.result);
     		        var deps = safeStringify(hook.deps);
@@ -1689,7 +1692,8 @@
     		            var tree = generateFiberTreeToPlainTree(dispatch);
     		            _this._map.set(dispatch, tree);
     		            _this.notify({ type: exports.DevToolMessageEnum.init, data: tree });
-    		        }, 6000);
+    		            _this.notifySelect();
+    		        }, 1000);
     		        dispatch.afterCommit = function () {
     		            var _a;
     		            (_a = originalAfterCommit === null || originalAfterCommit === void 0 ? void 0 : originalAfterCommit.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit, this);
@@ -1758,6 +1762,7 @@
     		            var tree = _this.getTree(dispatch);
     		            _this.notify({ type: exports.DevToolMessageEnum.init, data: tree });
     		        });
+    		        this.notifySelect();
     		    };
     		    return DevToolCore;
     		}());
@@ -1767,6 +1772,7 @@
     		exports.assignFiber = assignFiber;
     		exports.debounce = debounce;
     		exports.generateFiberTreeToPlainTree = generateFiberTreeToPlainTree;
+    		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getDetailNodeById = getDetailNodeById;
     		exports.getFiberName = getFiberName;
@@ -1834,6 +1840,7 @@
     // TODO use messageId to sync message
     var messageId = 0;
     var id = null;
+    var tabId = chrome.devtools.inspectedWindow.tabId;
     var runWhenWorkerReady = function (fn, count) {
         clearTimeout(id);
         if (workerReady) {
@@ -1841,7 +1848,7 @@
         }
         else {
             if (!workerConnecting) {
-                initPort(chrome.devtools.inspectedWindow.tabId);
+                initPort();
             }
             if (count && count > 10) {
                 {
@@ -1852,10 +1859,10 @@
             id = setTimeout(function () { return runWhenWorkerReady(fn, count ? count + 1 : 1); }, 2000);
         }
     };
-    var showPanel = function (id, onShow, onHide) {
+    var showPanel = function (onShow, onHide) {
         return new Promise(function (resolve) {
             {
-                console.log("[@my-react-devtool/panel] create panel", id);
+                console.log("[@my-react-devtool/panel] create panel", tabId);
             }
             chrome.devtools.panels.create("@my-react", "", "devTool.html", function (panel) {
                 var f1 = function (window) {
@@ -1922,6 +1929,7 @@
         }
         if (!workerReady && message.type === MessageWorkerType.init) {
             workerReady = true;
+            panelWindow.useConnect.getActions().connect();
         }
         if ((message === null || message === void 0 ? void 0 : message.type) === MessageHookType.render) {
             onRender(message.data);
@@ -1960,11 +1968,14 @@
         catch (_a) {
         }
     };
-    var initPort = function (id) {
+    var initPort = function () {
         workerConnecting = true;
-        port = chrome.runtime.connect({ name: id.toString() });
+        var _a = panelWindow.useConnect.getActions(), disconnect = _a.disconnect, setConnectHandler = _a.setConnectHandler;
+        setConnectHandler(function () { return initPort(); });
+        port = chrome.runtime.connect({ name: tabId.toString() });
         var onDisconnect = function () {
             console.log("[@my-react-devtool/panel] disconnect");
+            disconnect();
             port.onMessage.removeListener(onMessage);
             port = null;
             workerReady = false;
@@ -1980,7 +1991,7 @@
                 case 0:
                     if (!id) return [3 /*break*/, 2];
                     cleanList_1 = [];
-                    return [4 /*yield*/, showPanel(id, function (window) {
+                    return [4 /*yield*/, showPanel(function (window) {
                             {
                                 console.log("show panel");
                             }
@@ -1994,13 +2005,13 @@
                 case 1:
                     window_1 = (_a.sent()).window;
                     panelWindow = window_1;
-                    initPort(id);
+                    initPort();
                     _a.label = 2;
                 case 2: return [2 /*return*/];
             }
         });
     }); };
-    init(chrome.devtools.inspectedWindow.tabId);
+    init(tabId);
 
 })();
 //# sourceMappingURL=panel.development.js.map
