@@ -1,4 +1,4 @@
-import { Divider, Skeleton, Spacer } from "@nextui-org/react";
+import { Divider, Spacer } from "@nextui-org/react";
 import { useMemo } from "react";
 // import { Virtuoso } from "react-virtuoso";
 
@@ -14,13 +14,11 @@ import { RenderItem } from "./TreeItem";
 export const RenderView = () => {
   const select = useTreeNode((s) => s.select);
 
-  const { nodeList, loading } = useDetailNode((s) => ({ nodeList: s.nodes, loading: s.loading }));
+  const nodeList = useDetailNode((s) => s.nodes);
 
   const currentSelectDetail = nodeList.find((i) => i.id === select?.id);
 
   const renderTree = currentSelectDetail?.["tree"];
-
-  const isLoading = !currentSelectDetail && loading;
 
   // const [isScrolling, setIsScrolling] = useState(false);
 
@@ -43,17 +41,6 @@ export const RenderView = () => {
       </div>
     );
   });
-
-  if (isLoading) {
-    return (
-      <div className="p-2">
-        <div className="w-full h-[100px]">
-          <Skeleton className="w-full h-[99%]" />
-        </div>
-        <Divider />
-      </div>
-    );
-  }
 
   if (data?.length) {
     return (

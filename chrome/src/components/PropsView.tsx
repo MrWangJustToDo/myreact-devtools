@@ -1,4 +1,4 @@
-import { Divider, Skeleton, Spacer } from "@nextui-org/react";
+import { Divider, Spacer } from "@nextui-org/react";
 import { JSONTree } from "react-json-tree";
 // import { Virtuoso } from "react-virtuoso";
 
@@ -12,11 +12,9 @@ import { theme } from "./HookView";
 export const PropsView = () => {
   const select = useTreeNode((s) => s.select);
 
-  const { nodeList, loading } = useDetailNode((s) => ({ nodeList: s.nodes, loading: s.loading }));
+  const nodeList = useDetailNode((s) => s.nodes);
 
   const currentSelectDetail = nodeList.find((i) => i.id === select?.id);
-
-  const isLoading = !currentSelectDetail && loading;
 
   const propsKey = Object.keys(currentSelectDetail?.props || {});
 
@@ -49,17 +47,6 @@ export const PropsView = () => {
       </div>
     );
   });
-
-  if (isLoading) {
-    return (
-      <div className="p-2">
-        <div className="w-full h-[100px]">
-          <Skeleton className="w-full h-[99%]" />
-        </div>
-        <Divider />
-      </div>
-    );
-  }
 
   if (hasProps) {
     return (

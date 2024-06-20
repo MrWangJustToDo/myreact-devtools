@@ -1,4 +1,4 @@
-import { Skeleton, Spacer } from "@nextui-org/react";
+import { Spacer } from "@nextui-org/react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
@@ -6,23 +6,11 @@ import { useTreeNode } from "@/hooks/useTreeNode";
 export const SourceView = () => {
   const select = useTreeNode((s) => s.select);
 
-  const { nodeList, loading } = useDetailNode((s) => ({ nodeList: s.nodes, loading: s.loading }));
+  const nodeList = useDetailNode((s) => s.nodes);
 
   const currentSelectDetail = nodeList.find((i) => i.id === select?.id);
 
   const renderSource = currentSelectDetail?.["source"];
-
-  const isLoading = !currentSelectDetail && loading;
-
-  if (isLoading) {
-    return (
-      <div className="p-2">
-        <div className="w-full h-[100px]">
-          <Skeleton className="w-full h-[99%]" />
-        </div>
-      </div>
-    );
-  }
 
   if (renderSource?.fileName) {
     return (

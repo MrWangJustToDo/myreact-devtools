@@ -98,7 +98,7 @@ export const TreeView = memo(() => {
   const _data = useMemo(() => nodes.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, nodes]);
 
   const data = useMemo(
-    () => _data.filter((item) => closeList.some((_item) => _item.id === item.id) || !currentHasInCloseList(item, closeList)),
+    () => _data.filter((item) => !currentHasInCloseList(item, closeList)),
     [_data, closeList]
   );
 

@@ -17,14 +17,15 @@ export const currentHasSelect = (node: TreeNode, select: TreeNode | null): boole
   return node.parent ? currentHasSelect(node.parent, select) : false;
 };
 
-export const currentHasClose = (node: TreeNode, close: TreeNode | null): boolean => {
+export const currentHasClose = (node?: TreeNode | null, close?: TreeNode | null): boolean => {
   if (!close) return false;
+  if (!node) return false;
   if (node.id === close.id) return true;
   return node.parent ? currentHasClose(node.parent, close) : false;
 };
 
 export const currentHasInCloseList = (node: TreeNode, closeList: TreeNode[]) => {
-  return closeList.some((i) => currentHasClose(node, i));
+  return closeList.some((i) => currentHasClose(node.parent, i));
 };
 
 export const checkHasInclude = (node: TreeNode, typeArray: number[]) => {
