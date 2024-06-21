@@ -46,6 +46,8 @@ export class DevToolCore {
 
   _selectId = "";
 
+  _enabled = false;
+
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
 
   getDispatch() {
@@ -72,11 +74,9 @@ export class DevToolCore {
     const originalAfterUpdate = dispatch.afterUpdate;
 
     const onLoad = throttle(() => {
-      const tree = generateFiberTreeToPlainTree(dispatch);
+      if (!this._enabled) return;
 
-      this._map.set(dispatch, tree);
-
-      this.notify({ type: DevToolMessageEnum.init, data: tree });
+      this.notifyDispatch(dispatch);
 
       this.notifySelect();
     }, 1000);
@@ -99,10 +99,11 @@ export class DevToolCore {
   }
 
   delDispatch(dispatch: DevToolRenderDispatch) {
-    const tree = this._map.get(dispatch);
     this._map.delete(dispatch);
+
     this._dispatch.delete(dispatch);
-    this.notify({ type: DevToolMessageEnum.unmount, data: tree });
+    
+    this.notifyAll();
   }
 
   subscribe(listener: (data: DevToolMessageType) => void) {
@@ -115,13 +116,15 @@ export class DevToolCore {
     this._listeners.delete(listener);
   }
 
-  notify(data: DevToolMessageType) {
+  _notify(data: DevToolMessageType) {
     this._listeners.forEach((listener) => listener(data));
   }
 
   getTree(dispatch: DevToolRenderDispatch) {
     const tree = generateFiberTreeToPlainTree(dispatch);
+
     this._map.set(dispatch, tree);
+
     return tree;
   }
 
@@ -134,6 +137,8 @@ export class DevToolCore {
   }
 
   notifySelect() {
+    if (!this._enabled) return;
+
     const id = this._selectId;
 
     if (!id) {
@@ -143,10 +148,12 @@ export class DevToolCore {
       return;
     }
 
-    this.notify({ type: DevToolMessageEnum.detail, data: getDetailNodeById(id) });
+    this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeById(id) });
   }
 
   notifyHover() {
+    if (!this._enabled) return;
+
     const id = this._hoverId;
 
     if (!id) {
@@ -156,14 +163,32 @@ export class DevToolCore {
       return;
     }
 
-    this.notify({ type: DevToolMessageEnum.detail, data: getDetailNodeById(id) });
+    this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeById(id) });
   }
 
-  forceNotify() {
-    this._dispatch.forEach((dispatch) => {
+  notifyDispatch(dispatch: DevToolRenderDispatch) {
+    if (!this._enabled) return;
+
+    if (this._dispatch.has(dispatch)) {
       const tree = this.getTree(dispatch);
-      this.notify({ type: DevToolMessageEnum.init, data: tree });
+
+      this._notify({ type: DevToolMessageEnum.init, data: tree });
+    }
+  }
+
+  notifyAll() {
+    this._dispatch.forEach((dispatch) => {
+      this.notifyDispatch(dispatch);
     });
+    this.notifyHover();
     this.notifySelect();
+  }
+
+  connect() {
+    this._enabled = true;
+  }
+
+  disconnect() {
+    this._enabled = false;
   }
 }

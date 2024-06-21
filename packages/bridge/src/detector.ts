@@ -1,4 +1,5 @@
-import { MessageDetectorType, MessageHookType } from "./type";
+import { DevToolSource, MessageDetectorType, MessageHookType } from "./type";
+import { windowPostMessageWithSource } from "./window";
 
 import type { MessageHookDataType } from "./type";
 
@@ -24,14 +25,16 @@ const runWhenHookReady = (fn: () => void, count?: number) => {
 const onMessage = (message: MessageEvent<MessageHookDataType>) => {
   if (message.source !== window) return;
 
+  if (message.data?.source !== DevToolSource) return;
+
   if (!hookReady && message.data?.type === MessageHookType.init) {
     if (__DEV__) {
       console.log("[@my-react-devtool/detector] hook init");
     }
 
     hookReady = true;
-    
-    window.postMessage({ type: MessageDetectorType.init }, "*");
+
+    windowPostMessageWithSource({ type: MessageDetectorType.init });
   }
 
   if (message.data?.type === MessageHookType.mount) {

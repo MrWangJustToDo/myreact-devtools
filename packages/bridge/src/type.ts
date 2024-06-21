@@ -27,10 +27,14 @@ export enum PortName {
 export type MessageHookDataType = {
   type: MessageHookType;
   data: any;
+  source?: string;
 };
 
 export type MessagePanelDataType = {
   type: MessagePanelType;
   tabId: number | string;
   data?: any;
+  source?: string;
 };
+
+export const DevToolSource = "@my-react/devtool";

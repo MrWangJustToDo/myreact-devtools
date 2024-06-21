@@ -1669,6 +1669,7 @@
     		        this._map = new Map();
     		        this._hoverId = "";
     		        this._selectId = "";
+    		        this._enabled = false;
     		        this._listeners = new Set();
     		    }
     		    DevToolCore.prototype.getDispatch = function () {
@@ -1689,9 +1690,9 @@
     		        var originalAfterCommit = dispatch.afterCommit;
     		        var originalAfterUpdate = dispatch.afterUpdate;
     		        var onLoad = throttle(function () {
-    		            var tree = generateFiberTreeToPlainTree(dispatch);
-    		            _this._map.set(dispatch, tree);
-    		            _this.notify({ type: exports.DevToolMessageEnum.init, data: tree });
+    		            if (!_this._enabled)
+    		                return;
+    		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
     		        }, 1000);
     		        dispatch.afterCommit = function () {
@@ -1709,10 +1710,9 @@
     		        return this._dispatch.has(dispatch);
     		    };
     		    DevToolCore.prototype.delDispatch = function (dispatch) {
-    		        var tree = this._map.get(dispatch);
     		        this._map.delete(dispatch);
     		        this._dispatch.delete(dispatch);
-    		        this.notify({ type: exports.DevToolMessageEnum.unmount, data: tree });
+    		        this.notifyAll();
     		    };
     		    DevToolCore.prototype.subscribe = function (listener) {
     		        var _this = this;
@@ -1722,7 +1722,7 @@
     		    DevToolCore.prototype.unSubscribe = function (listener) {
     		        this._listeners.delete(listener);
     		    };
-    		    DevToolCore.prototype.notify = function (data) {
+    		    DevToolCore.prototype._notify = function (data) {
     		        this._listeners.forEach(function (listener) { return listener(data); });
     		    };
     		    DevToolCore.prototype.getTree = function (dispatch) {
@@ -1737,6 +1737,8 @@
     		        this._hoverId = id;
     		    };
     		    DevToolCore.prototype.notifySelect = function () {
+    		        if (!this._enabled)
+    		            return;
     		        var id = this._selectId;
     		        if (!id) {
     		            {
@@ -1744,9 +1746,11 @@
     		            }
     		            return;
     		        }
-    		        this.notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
+    		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
     		    };
     		    DevToolCore.prototype.notifyHover = function () {
+    		        if (!this._enabled)
+    		            return;
     		        var id = this._hoverId;
     		        if (!id) {
     		            {
@@ -1754,15 +1758,29 @@
     		            }
     		            return;
     		        }
-    		        this.notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
+    		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
     		    };
-    		    DevToolCore.prototype.forceNotify = function () {
+    		    DevToolCore.prototype.notifyDispatch = function (dispatch) {
+    		        if (!this._enabled)
+    		            return;
+    		        if (this._dispatch.has(dispatch)) {
+    		            var tree = this.getTree(dispatch);
+    		            this._notify({ type: exports.DevToolMessageEnum.init, data: tree });
+    		        }
+    		    };
+    		    DevToolCore.prototype.notifyAll = function () {
     		        var _this = this;
     		        this._dispatch.forEach(function (dispatch) {
-    		            var tree = _this.getTree(dispatch);
-    		            _this.notify({ type: exports.DevToolMessageEnum.init, data: tree });
+    		            _this.notifyDispatch(dispatch);
     		        });
+    		        this.notifyHover();
     		        this.notifySelect();
+    		    };
+    		    DevToolCore.prototype.connect = function () {
+    		        this._enabled = true;
+    		    };
+    		    DevToolCore.prototype.disconnect = function () {
+    		        this._enabled = false;
     		    };
     		    return DevToolCore;
     		}());
@@ -1868,12 +1886,10 @@
                 var f1 = function (window) {
                     onShow(window);
                     resolve({ window: window, panel: panel });
-                    // panel.onShown.removeListener(f1);
                 };
                 panel.onShown.addListener(f1);
                 var f2 = function () {
                     onHide();
-                    // panel.onHidden.removeListener(f2);
                 };
                 panel.onHidden.addListener(f2);
             });
@@ -1982,7 +1998,7 @@
         };
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);
-        sendMessage({ type: MessagePanelType.show });
+        // sendMessage({ type: MessagePanelType.show });
     };
     var init = function (id) { return __awaiter(void 0, void 0, void 0, function () {
         var cleanList_1, window_1;
@@ -1995,11 +2011,14 @@
                             {
                                 console.log("show panel");
                             }
+                            panelWindow = window;
+                            sendMessage({ type: MessagePanelType.show });
                             cleanList_1.push(initSelectListen(window), initHoverListen(window));
                         }, function () {
                             {
                                 console.log("hide panel");
                             }
+                            sendMessage({ type: MessagePanelType.hide });
                             cleanList_1.forEach(function (f) { return f(); });
                         })];
                 case 1:

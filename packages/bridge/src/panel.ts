@@ -46,14 +46,12 @@ const showPanel = (onShow: (window: Window) => void, onHide: () => void): Promis
       const f1 = (window: Window) => {
         onShow(window);
         resolve({ window, panel });
-        // panel.onShown.removeListener(f1);
       };
 
       panel.onShown.addListener(f1);
 
       const f2 = () => {
         onHide();
-        // panel.onHidden.removeListener(f2);
       };
 
       panel.onHidden.addListener(f2);
@@ -208,7 +206,7 @@ const initPort = () => {
 
   port.onDisconnect.addListener(onDisconnect);
 
-  sendMessage({ type: MessagePanelType.show });
+  // sendMessage({ type: MessagePanelType.show });
 };
 
 const init = async (id: number) => {
@@ -221,12 +219,18 @@ const init = async (id: number) => {
           console.log("show panel");
         }
 
+        panelWindow = window;
+
+        sendMessage({ type: MessagePanelType.show });
+
         cleanList.push(initSelectListen(window), initHoverListen(window));
       },
       () => {
         if (__DEV__) {
           console.log("hide panel");
         }
+
+        sendMessage({ type: MessagePanelType.hide });
 
         cleanList.forEach((f) => f());
       }

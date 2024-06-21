@@ -1,11 +1,12 @@
 import { MessageHookType, PortName } from "./type";
+import { windowPostMessageWithSource } from "./window";
 
 import type { MessageHookDataType, MessagePanelDataType } from "./type";
 
 const port = chrome.runtime.connect({ name: PortName.proxy });
 
 const sendMessageToBackend = (message: MessagePanelDataType) => {
-  window.postMessage(message, "*");
+  windowPostMessageWithSource(message)
 };
 
 const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {

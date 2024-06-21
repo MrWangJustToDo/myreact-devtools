@@ -1,7 +1,8 @@
 import { once } from "@my-react/react-shared";
 import { DevToolCore } from "@my-react-devtool/core";
 
-import { MessageHookType, MessageDetectorType, MessagePanelType } from "./type";
+import { MessageHookType, MessageDetectorType, MessagePanelType, DevToolSource } from "./type";
+import { windowPostMessageWithSource } from "./window";
 
 import type { MessagePanelDataType } from "./type";
 import type { CustomRenderDispatch } from "@my-react/react-reconciler";
@@ -12,7 +13,7 @@ core.subscribe((message) => {
   if (__DEV__) {
     console.log("[@my-react-devtool/hook] core message", message);
   }
-  window.postMessage({ type: MessageHookType.render, data: message }, "*");
+  windowPostMessageWithSource({ type: MessageHookType.render, data: message });
 });
 
 const set = new Set<CustomRenderDispatch>();
@@ -35,8 +36,10 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
   }
 };
 
-const onMessage = (message: MessageEvent<MessagePanelDataType | { type: MessageDetectorType }>) => {
+const onMessage = (message: MessageEvent<MessagePanelDataType | { type: MessageDetectorType; source?: string }>) => {
   if (message.source !== window) return;
+
+  if (message.data?.source !== DevToolSource) return;
 
   if (__DEV__ && message.data?.type) {
     console.log("[@my-react-devtool/hook] message from proxy", message.data);
@@ -51,7 +54,13 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | { type: MessageD
   }
 
   if (message.data?.type === MessagePanelType.show) {
-    core.forceNotify();
+    core.connect();
+
+    core.notifyAll();
+  }
+
+  if (message.data?.type === MessagePanelType.hide) {
+    core.disconnect();
   }
 
   if (message.data?.type === MessagePanelType.nodeSelect) {
@@ -65,14 +74,14 @@ window.addEventListener("message", onMessage);
 
 const onceMount = once(() => {
   // current site is render by @my-react
-  window.postMessage({ type: MessageHookType.mount }, "*");
+  windowPostMessageWithSource({ type: MessageHookType.mount });
 });
 
 export const globalHook = (dispatch: CustomRenderDispatch) => {
   set.add(dispatch);
 
   core.addDispatch(dispatch);
-  
+
   runWhenDetectorReady(onceMount);
 };
 
@@ -83,5 +92,5 @@ if (window.parent && window.parent !== window) {
 } else {
   window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
   window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-  window.postMessage({ type: MessageHookType.init }, "*");
+  windowPostMessageWithSource({ type: MessageHookType.init });
 }
