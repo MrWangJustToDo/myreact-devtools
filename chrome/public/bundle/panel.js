@@ -1630,7 +1630,9 @@
 
     		exports.DevToolMessageEnum = void 0;
     		(function (DevToolMessageEnum) {
+    		    // 初始化，判断是否用@my-react进行页面渲染
     		    DevToolMessageEnum["init"] = "init";
+    		    DevToolMessageEnum["ready"] = "ready";
     		    DevToolMessageEnum["update"] = "update";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
@@ -1665,17 +1667,30 @@
     		};
     		var DevToolCore = /** @class */ (function () {
     		    function DevToolCore() {
+    		        var _this = this;
     		        this._dispatch = new Set();
+    		        // 是否存在 @my-react
+    		        this._detector = false;
     		        this._map = new Map();
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._enabled = false;
     		        this._listeners = new Set();
+    		        this.notifyAll = debounce(function () {
+    		            _this.notifyDetector();
+    		            _this._dispatch.forEach(function (dispatch) {
+    		                _this.notifyDispatch(dispatch);
+    		            });
+    		            _this.notifyHover();
+    		            _this.notifySelect();
+    		        }, 200);
     		    }
     		    DevToolCore.prototype.getDispatch = function () {
     		        return Array.from(this._dispatch);
     		    };
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
+    		        if (dispatch)
+    		            this._detector = true;
     		        if (this.hasDispatch(dispatch))
     		            return;
     		        setupDispatch(dispatch);
@@ -1694,7 +1709,7 @@
     		                return;
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
-    		        }, 1000);
+    		        }, 200);
     		        dispatch.afterCommit = function () {
     		            var _a;
     		            (_a = originalAfterCommit === null || originalAfterCommit === void 0 ? void 0 : originalAfterCommit.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit, this);
@@ -1736,6 +1751,11 @@
     		    DevToolCore.prototype.setHover = function (id) {
     		        this._hoverId = id;
     		    };
+    		    DevToolCore.prototype.notifyDetector = function () {
+    		        if (!this._enabled)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
+    		    };
     		    DevToolCore.prototype.notifySelect = function () {
     		        if (!this._enabled)
     		            return;
@@ -1765,16 +1785,8 @@
     		            return;
     		        if (this._dispatch.has(dispatch)) {
     		            var tree = this.getTree(dispatch);
-    		            this._notify({ type: exports.DevToolMessageEnum.init, data: tree });
+    		            this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
     		        }
-    		    };
-    		    DevToolCore.prototype.notifyAll = function () {
-    		        var _this = this;
-    		        this._dispatch.forEach(function (dispatch) {
-    		            _this.notifyDispatch(dispatch);
-    		        });
-    		        this.notifyHover();
-    		        this.notifySelect();
     		    };
     		    DevToolCore.prototype.connect = function () {
     		        this._enabled = true;
@@ -1883,9 +1895,9 @@
                 console.log("[@my-react-devtool/panel] create panel", tabId);
             }
             chrome.devtools.panels.create("@my-react", "", "devTool.html", function (panel) {
-                var f1 = function (window) {
-                    onShow(window);
-                    resolve({ window: window, panel: panel });
+                var f1 = function (_window) {
+                    onShow(_window);
+                    resolve({ window: _window, panel: panel });
                 };
                 panel.onShown.addListener(f1);
                 var f2 = function () {
@@ -1900,19 +1912,35 @@
             port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++ }));
         });
     };
-    var onRender = function (data) {
+    var onRender = function (data, _window) {
         if (data.type === coreExports.DevToolMessageEnum.init) {
+            {
+                console.log("[@my-react-devtool/panel] init", data.data);
+            }
+            var detector = data.data;
+            try {
+                var setRender = _window.useConnect.getActions().setRender;
+                setRender(detector);
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
+        if (data.type === coreExports.DevToolMessageEnum.ready) {
             {
                 console.log("[@my-react-devtool/panel] init", data.data);
             }
             var node = data.data;
             try {
-                var addNode = panelWindow.useAppTree.getActions().addNode;
+                var addNode = _window.useAppTree.getActions().addNode;
                 if (node) {
                     addNode(node);
                 }
             }
-            catch (_a) {
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.detail) {
@@ -1921,7 +1949,7 @@
             }
             var node = data.data;
             try {
-                var _b = panelWindow.useDetailNode.getActions(), addNode = _b.addNode, setLoading = _b.setLoading;
+                var _a = _window.useDetailNode.getActions(), addNode = _a.addNode, setLoading = _a.setLoading;
                 if (node) {
                     if (true) {
                         console.log("[@my-react-devtool/panel] before parse detail node", node);
@@ -1934,21 +1962,10 @@
                     setLoading(false);
                 }
             }
-            catch (_c) {
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
             }
-        }
-    };
-    var onMessage = function (message) {
-        workerConnecting = false;
-        {
-            console.log("[@my-react-devtool/panel] message from port", message);
-        }
-        if (!workerReady && message.type === MessageWorkerType.init) {
-            workerReady = true;
-            panelWindow.useConnect.getActions().connect();
-        }
-        if ((message === null || message === void 0 ? void 0 : message.type) === MessageHookType.render) {
-            onRender(message.data);
         }
     };
     var initSelectListen = function (_window) {
@@ -1989,19 +2006,31 @@
         var _a = panelWindow.useConnect.getActions(), disconnect = _a.disconnect, setConnectHandler = _a.setConnectHandler;
         setConnectHandler(function () { return initPort(); });
         port = chrome.runtime.connect({ name: tabId.toString() });
+        var onMessage = function (message) {
+            workerConnecting = false;
+            {
+                console.log("[@my-react-devtool/panel] message from port", message);
+            }
+            if (!workerReady && message.type === MessageWorkerType.init) {
+                workerReady = true;
+                panelWindow.useConnect.getActions().connect();
+            }
+            if ((message === null || message === void 0 ? void 0 : message.type) === MessageHookType.render) {
+                onRender(message.data, panelWindow);
+            }
+        };
         var onDisconnect = function () {
             console.log("[@my-react-devtool/panel] disconnect");
-            disconnect();
             port.onMessage.removeListener(onMessage);
+            disconnect();
             port = null;
             workerReady = false;
         };
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);
-        // sendMessage({ type: MessagePanelType.show });
     };
     var init = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-        var cleanList_1, window_1;
+        var cleanList_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -2022,8 +2051,7 @@
                             cleanList_1.forEach(function (f) { return f(); });
                         })];
                 case 1:
-                    window_1 = (_a.sent()).window;
-                    panelWindow = window_1;
+                    _a.sent();
                     initPort();
                     _a.label = 2;
                 case 2: return [2 /*return*/];

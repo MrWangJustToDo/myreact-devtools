@@ -37,15 +37,15 @@ const runWhenWorkerReady = (fn: () => void, count?: number) => {
   }
 };
 
-const showPanel = (onShow: (window: Window) => void, onHide: () => void): Promise<{ window: Window; panel: chrome.devtools.panels.ExtensionPanel }> => {
+const showPanel = (onShow: (_window: Window) => void, onHide: () => void): Promise<{ window: Window; panel: chrome.devtools.panels.ExtensionPanel }> => {
   return new Promise((resolve) => {
     if (__DEV__) {
       console.log("[@my-react-devtool/panel] create panel", tabId);
     }
     chrome.devtools.panels.create(`@my-react`, "", "devTool.html", (panel) => {
-      const f1 = (window: Window) => {
-        onShow(window);
-        resolve({ window, panel });
+      const f1 = (_window: Window) => {
+        onShow(_window);
+        resolve({ window: _window, panel });
       };
 
       panel.onShown.addListener(f1);
@@ -65,8 +65,26 @@ const sendMessage = <T = any>(data: T) => {
   });
 };
 
-const onRender = (data: DevToolMessageType) => {
+const onRender = (data: DevToolMessageType, _window: Window) => {
   if (data.type === DevToolMessageEnum.init) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] init", data.data);
+    }
+
+    const detector = data.data as boolean;
+
+    try {
+      const { setRender } = _window.useConnect.getActions();
+
+      setRender(detector);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
+
+  if (data.type === DevToolMessageEnum.ready) {
     if (__DEV__) {
       console.log("[@my-react-devtool/panel] init", data.data);
     }
@@ -74,13 +92,15 @@ const onRender = (data: DevToolMessageType) => {
     const node = data.data as PlainNode;
 
     try {
-      const { addNode } = panelWindow.useAppTree.getActions();
+      const { addNode } = _window.useAppTree.getActions();
 
       if (node) {
         addNode(node);
       }
-    } catch {
-      void 0;
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
     }
   }
   if (data.type === DevToolMessageEnum.detail) {
@@ -91,7 +111,7 @@ const onRender = (data: DevToolMessageType) => {
     const node = data.data as PlainNode;
 
     try {
-      const { addNode, setLoading } = panelWindow.useDetailNode.getActions();
+      const { addNode, setLoading } = _window.useDetailNode.getActions();
 
       if (node) {
         if (__DEV__) {
@@ -108,27 +128,11 @@ const onRender = (data: DevToolMessageType) => {
 
         setLoading(false);
       }
-    } catch {
-      void 0;
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
     }
-  }
-};
-
-const onMessage = (message: MessageHookDataType | { type: MessageWorkerType }) => {
-  workerConnecting = false;
-
-  if (__DEV__) {
-    console.log("[@my-react-devtool/panel] message from port", message);
-  }
-
-  if (!workerReady && message.type === MessageWorkerType.init) {
-    workerReady = true;
-
-    panelWindow.useConnect.getActions().connect();
-  }
-
-  if (message?.type === MessageHookType.render) {
-    onRender(message.data);
   }
 };
 
@@ -190,12 +194,30 @@ const initPort = () => {
 
   port = chrome.runtime.connect({ name: tabId.toString() });
 
+  const onMessage = (message: MessageHookDataType | { type: MessageWorkerType }) => {
+    workerConnecting = false;
+
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] message from port", message);
+    }
+
+    if (!workerReady && message.type === MessageWorkerType.init) {
+      workerReady = true;
+
+      panelWindow.useConnect.getActions().connect();
+    }
+
+    if (message?.type === MessageHookType.render) {
+      onRender(message.data, panelWindow);
+    }
+  };
+
   const onDisconnect = () => {
     console.log("[@my-react-devtool/panel] disconnect");
 
-    disconnect();
-
     port.onMessage.removeListener(onMessage);
+
+    disconnect();
 
     port = null;
 
@@ -205,15 +227,13 @@ const initPort = () => {
   port.onMessage.addListener(onMessage);
 
   port.onDisconnect.addListener(onDisconnect);
-
-  // sendMessage({ type: MessagePanelType.show });
 };
 
 const init = async (id: number) => {
   if (id) {
     const cleanList: Array<() => void> = [];
 
-    const { window } = await showPanel(
+    await showPanel(
       (window) => {
         if (__DEV__) {
           console.log("show panel");
@@ -235,8 +255,6 @@ const init = async (id: number) => {
         cleanList.forEach((f) => f());
       }
     );
-
-    panelWindow = window;
 
     initPort();
   }

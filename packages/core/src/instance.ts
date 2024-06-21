@@ -5,7 +5,9 @@ import { generateFiberTreeToPlainTree, getDetailNodeById } from "./tree";
 import type { PlainNode } from "./plain";
 
 export enum DevToolMessageEnum {
+  // 初始化，判断是否用@my-react进行页面渲染
   init = "init",
+  ready = "ready",
   update = "update",
   detail = "detail",
   unmount = "unmount",
@@ -40,6 +42,9 @@ export const throttle = <T extends Function>(callback: T, time?: number): T => {
 export class DevToolCore {
   _dispatch: Set<DevToolRenderDispatch> = new Set();
 
+  // 是否存在 @my-react
+  _detector = false;
+
   _map: Map<DevToolRenderDispatch, PlainNode> = new Map();
 
   _hoverId = "";
@@ -55,6 +60,8 @@ export class DevToolCore {
   }
 
   addDispatch(dispatch: DevToolRenderDispatch) {
+    if (dispatch) this._detector = true;
+
     if (this.hasDispatch(dispatch)) return;
 
     setupDispatch(dispatch);
@@ -79,7 +86,7 @@ export class DevToolCore {
       this.notifyDispatch(dispatch);
 
       this.notifySelect();
-    }, 1000);
+    }, 200);
 
     dispatch.afterCommit = function (this: DevToolRenderDispatch) {
       originalAfterCommit?.call?.(this);
@@ -102,7 +109,7 @@ export class DevToolCore {
     this._map.delete(dispatch);
 
     this._dispatch.delete(dispatch);
-    
+
     this.notifyAll();
   }
 
@@ -134,6 +141,12 @@ export class DevToolCore {
 
   setHover(id: string) {
     this._hoverId = id;
+  }
+
+  notifyDetector() {
+    if (!this._enabled) return;
+
+    this._notify({ type: DevToolMessageEnum.init, data: this._detector });
   }
 
   notifySelect() {
@@ -172,17 +185,21 @@ export class DevToolCore {
     if (this._dispatch.has(dispatch)) {
       const tree = this.getTree(dispatch);
 
-      this._notify({ type: DevToolMessageEnum.init, data: tree });
+      this._notify({ type: DevToolMessageEnum.ready, data: tree });
     }
   }
 
-  notifyAll() {
+  notifyAll = debounce(() => {
+    this.notifyDetector();
+
     this._dispatch.forEach((dispatch) => {
       this.notifyDispatch(dispatch);
     });
+
     this.notifyHover();
+
     this.notifySelect();
-  }
+  }, 200);
 
   connect() {
     this._enabled = true;

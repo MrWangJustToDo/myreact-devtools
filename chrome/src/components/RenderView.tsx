@@ -49,6 +49,7 @@ export const RenderView = () => {
         <Spacer y={1} />
         <div className="w-full">
           {data.map((_, index) => render(index))}
+          <div className="text-[11px] ml-2 font-mono px-[2px]">@my-react</div>
           {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
         </div>
         <Divider />

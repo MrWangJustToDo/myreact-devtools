@@ -21,7 +21,16 @@ declare global {
       { addNode: (node: PlainNode) => void; setLoading: (loading: boolean) => void; setError: (e: Error | null) => void }
     >;
 
-    useConnect: UseSelectorWithState<{ state: boolean }, { connect: () => void; disconnect: () => void; setConnectHandler: (cb: () => void) => void }>;
+    useConnect: UseSelectorWithState<
+      { state: boolean },
+      {
+        connect: () => void;
+        disconnect: () => void;
+        setError: (r?: string) => void;
+        setRender: (r?: boolean) => void;
+        setConnectHandler: (cb: () => void) => void;
+      }
+    >;
   }
 }
 

@@ -1,7 +1,8 @@
-import { NextUIProvider } from "@nextui-org/react";
+import { Code, NextUIProvider, Snippet, Spacer, Spinner } from "@nextui-org/react";
 import { JetBrains_Mono } from "next/font/google";
 
 // import { ThemeProvider } from "next-themes";
+import { useConnect } from "@/hooks/useConnect";
 
 import type { AppProps } from "next/app";
 
@@ -14,7 +15,35 @@ const roboto = JetBrains_Mono({
   variable: "--root-font--",
 });
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps, router }: AppProps) {
+  const render = useConnect((s) => s.render);
+
+  const isPanelPage = router.pathname === "/devTool";
+
+  let children = <Component {...pageProps} />;
+
+  if (isPanelPage && typeof render !== "boolean") {
+    children = (
+      <div className="flex items-center justify-center w-screen h-screen">
+        <Spinner color="primary" size="lg" />
+      </div>
+    );
+  } else if (isPanelPage && !render) {
+    children = (
+      <div className="flex items-center justify-center w-screen h-screen">
+        <div className="text-center text-[20px] text-red-400 px-10">
+          <div>
+            This page not render By <Code className=" text-inherit text-[20px] ml-2">@my-react</Code>
+          </div>
+          <Spacer className="my-2" />
+          <Snippet symbol="" color="warning" variant="solid" hideCopyButton>
+            https://github.com/MrWangJustToDo/MyReact
+          </Snippet>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <NextUIProvider>
       <style jsx global>{`
@@ -27,7 +56,7 @@ export default function App({ Component, pageProps }: AppProps) {
         }
       `}</style>
       {/* <ThemeProvider attribute="class" defaultTheme="dark"> */}
-      <Component {...pageProps} />
+      {children}
       {/* </ThemeProvider> */}
     </NextUIProvider>
   );

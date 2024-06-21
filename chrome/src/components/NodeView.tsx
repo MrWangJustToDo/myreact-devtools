@@ -1,3 +1,5 @@
+import { Spinner } from "@nextui-org/react";
+
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 
@@ -19,7 +21,7 @@ export const NodeView = () => {
   if (isLoading) {
     return (
       <div className="node-view h-full border rounded-md border-gray-200 group overflow-auto flex items-center justify-center">
-        <div>loading ...</div>
+        <Spinner color="primary" />
       </div>
     );
   }

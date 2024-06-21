@@ -1553,7 +1553,9 @@
 
     		exports.DevToolMessageEnum = void 0;
     		(function (DevToolMessageEnum) {
+    		    // 初始化，判断是否用@my-react进行页面渲染
     		    DevToolMessageEnum["init"] = "init";
+    		    DevToolMessageEnum["ready"] = "ready";
     		    DevToolMessageEnum["update"] = "update";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
@@ -1588,17 +1590,30 @@
     		};
     		var DevToolCore = /** @class */ (function () {
     		    function DevToolCore() {
+    		        var _this = this;
     		        this._dispatch = new Set();
+    		        // 是否存在 @my-react
+    		        this._detector = false;
     		        this._map = new Map();
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._enabled = false;
     		        this._listeners = new Set();
+    		        this.notifyAll = debounce(function () {
+    		            _this.notifyDetector();
+    		            _this._dispatch.forEach(function (dispatch) {
+    		                _this.notifyDispatch(dispatch);
+    		            });
+    		            _this.notifyHover();
+    		            _this.notifySelect();
+    		        }, 200);
     		    }
     		    DevToolCore.prototype.getDispatch = function () {
     		        return Array.from(this._dispatch);
     		    };
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
+    		        if (dispatch)
+    		            this._detector = true;
     		        if (this.hasDispatch(dispatch))
     		            return;
     		        setupDispatch(dispatch);
@@ -1617,7 +1632,7 @@
     		                return;
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
-    		        }, 1000);
+    		        }, 200);
     		        dispatch.afterCommit = function () {
     		            var _a;
     		            (_a = originalAfterCommit === null || originalAfterCommit === void 0 ? void 0 : originalAfterCommit.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit, this);
@@ -1659,6 +1674,11 @@
     		    DevToolCore.prototype.setHover = function (id) {
     		        this._hoverId = id;
     		    };
+    		    DevToolCore.prototype.notifyDetector = function () {
+    		        if (!this._enabled)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
+    		    };
     		    DevToolCore.prototype.notifySelect = function () {
     		        if (!this._enabled)
     		            return;
@@ -1688,16 +1708,8 @@
     		            return;
     		        if (this._dispatch.has(dispatch)) {
     		            var tree = this.getTree(dispatch);
-    		            this._notify({ type: exports.DevToolMessageEnum.init, data: tree });
+    		            this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
     		        }
-    		    };
-    		    DevToolCore.prototype.notifyAll = function () {
-    		        var _this = this;
-    		        this._dispatch.forEach(function (dispatch) {
-    		            _this.notifyDispatch(dispatch);
-    		        });
-    		        this.notifyHover();
-    		        this.notifySelect();
     		    };
     		    DevToolCore.prototype.connect = function () {
     		        this._enabled = true;

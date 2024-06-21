@@ -29,5 +29,5 @@ export const currentHasInCloseList = (node: TreeNode, closeList: TreeNode[]) => 
 };
 
 export const checkHasInclude = (node: TreeNode, typeArray: number[]) => {
-  return typeArray.some((i) => node.current.type & i);
+  return typeArray.some((i) => node.current?.type & i);
 };
