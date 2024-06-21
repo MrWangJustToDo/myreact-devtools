@@ -255,8 +255,6 @@ const init = async (id: number) => {
         cleanList.forEach((f) => f());
       }
     );
-
-    initPort();
   }
 };
 

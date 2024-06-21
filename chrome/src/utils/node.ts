@@ -13,8 +13,8 @@ export class TreeNode {
 
 export const currentHasSelect = (node: TreeNode, select: TreeNode | null): boolean => {
   if (!select) return false;
-  if (node.id === select.id) return true;
-  return node.parent ? currentHasSelect(node.parent, select) : false;
+  if (node?.id === select.id) return true;
+  return node.parent ? currentHasSelect(node?.parent, select) : false;
 };
 
 export const currentHasClose = (node?: TreeNode | null, close?: TreeNode | null): boolean => {
@@ -25,9 +25,9 @@ export const currentHasClose = (node?: TreeNode | null, close?: TreeNode | null)
 };
 
 export const currentHasInCloseList = (node: TreeNode, closeList: TreeNode[]) => {
-  return closeList.some((i) => currentHasClose(node.parent, i));
+  return closeList.some((i) => currentHasClose(node?.parent, i));
 };
 
 export const checkHasInclude = (node: TreeNode, typeArray: number[]) => {
-  return typeArray.some((i) => node.current?.type & i);
+  return typeArray.some((i) => node?.current?.type & i);
 };

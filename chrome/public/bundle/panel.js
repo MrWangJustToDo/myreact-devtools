@@ -2052,7 +2052,6 @@
                         })];
                 case 1:
                     _a.sent();
-                    initPort();
                     _a.label = 2;
                 case 2: return [2 /*return*/];
             }
