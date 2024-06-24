@@ -35,6 +35,8 @@ export const RenderView = () => {
   const render = useCallbackRef((index: number) => {
     const node = data![index]! as TreeNode;
 
+    if (!node) return null;
+
     return (
       <div className="text-[11px] ml-2 font-mono">
         <RenderItem node={node} withCollapse={false} />
