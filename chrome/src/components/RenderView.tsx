@@ -7,16 +7,18 @@ import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
-import { checkHasInclude, type TreeNode } from "@/utils/node";
+import { checkHasInclude } from "@/utils/node";
 
 import { RenderItem } from "./TreeItem";
+
+import type { PlainNode } from "@my-react-devtool/core";
 
 export const RenderView = () => {
   const select = useTreeNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select?.id);
+  const currentSelectDetail = nodeList.find((i) => i.id === select);
 
   const renderTree = currentSelectDetail?.["tree"];
 
@@ -26,14 +28,14 @@ export const RenderView = () => {
 
   const typeArray = useMemo(() => Array.from(filterType).map((i) => +i), [filterType]);
 
-  const allTreeNode = useAppTree((s) => s.flattenNodes);
+  const allTreeNode = useAppTree((s) => s.list);
 
-  const renderTreeNode = useMemo(() => renderTree?.map((item) => allTreeNode.find((i) => i.id === item)), [allTreeNode, renderTree]);
+  const renderTreeNode = useMemo(() => renderTree?.map((item) => allTreeNode.find((i) => i.id === item)), [allTreeNode, renderTree]) as PlainNode[];
 
-  const data = useMemo(() => renderTreeNode?.filter((item) => !checkHasInclude(item as TreeNode, typeArray)), [typeArray, renderTreeNode]);
+  const data = useMemo(() => renderTreeNode?.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, renderTreeNode]);
 
   const render = useCallbackRef((index: number) => {
-    const node = data![index]! as TreeNode;
+    const node = data?.[index];
 
     if (!node) return null;
 

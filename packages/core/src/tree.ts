@@ -1,5 +1,6 @@
 import { PlainNode } from "./plain";
-import { getFiberName, getHook, getObj, getSource, getTree, parseHook, parseObj } from "./utils";
+import { NODE_TYPE } from "./type";
+import { getFiberName, getHook, getObj, getSource, getTree, parseHook, parseProps, parseState } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 
@@ -17,18 +18,6 @@ export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) =>
   plain.type = fiber.type;
 
   plain.name = getFiberName(fiber as MyReactFiberNodeDev);
-
-  // plain.source = getFiberSource(fiber as MyReactFiberNodeDev);
-
-  // plain.renderTree = getRenderTree(fiber as MyReactFiberNodeDev);
-
-  // plain.fiberType = getFiberType(fiber as MyReactFiberNodeDev);
-
-  // plain.hookTree = getHookTree(fiber as MyReactFiberNodeDev);
-
-  // plain.ref = safeCloneRef(fiber.ref);
-
-  // plain.props = safeClone(fiber.pendingProps);
 };
 
 export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
@@ -41,8 +30,13 @@ export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   plain.props = getObj(fiber.pendingProps);
 
   plain.tree = getTree(fiber as MyReactFiberNodeDev);
+
+  if (fiber.type & NODE_TYPE.__class__) {
+    plain.state = getObj(fiber.pendingState);
+  }
 };
 
+// TODO improve performance
 export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null => {
   if (!fiber) return null;
 
@@ -83,13 +77,15 @@ export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode
   return current;
 };
 
-export const generateFiberTreeToPlainTree = (dispatch: CustomRenderDispatch) => {
+export const generateTreeMap = (dispatch: CustomRenderDispatch) => {
   const rootFiber = dispatch.rootFiber;
 
-  const rootPlain = loopTree(rootFiber);
+  const rootNode = loopTree(rootFiber);
 
-  return rootPlain;
+  return rootNode;
 };
+
+export type Tree = ReturnType<typeof generateTreeMap>;
 
 export const unmountPlainNode = (fiber: MyReactFiberNode) => {
   const plain = treeMap.get(fiber);
@@ -113,7 +109,7 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
   const plainNode = getPlainNodeByFiber(fiber);
 
   if (!plainNode) {
-    throw new Error("plainNode not found, look like a @my-react/devtools bug");
+    throw new Error("plainNode not found, look like a bug for @my-react/devtools");
   }
 
   const exist = detailMap.get(fiber);
@@ -144,7 +140,13 @@ export const getDetailNodeById = (id: string) => {
 export const parseDetailNode = (plain: PlainNode) => {
   plain.hook = parseHook(plain);
 
-  plain.props = parseObj(plain);
+  plain.props = parseProps(plain);
+
+  if (plain.state) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    plain.state = parseState(plain);
+  }
 
   return plain;
 };

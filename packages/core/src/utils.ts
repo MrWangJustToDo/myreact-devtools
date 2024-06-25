@@ -305,8 +305,14 @@ export const getObj = (obj: any) => {
   return safeStringify(obj);
 };
 
-export const parseObj = (plain: PlainNode) => {
+export const parseProps = (plain: PlainNode) => {
   const obj = plain.props;
 
   return safeParse(obj);
+};
+
+export const parseState = (plain: PlainNode) => {
+  const state = plain.state as any;
+
+  return safeParse(state);
 };

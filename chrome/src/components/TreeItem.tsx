@@ -1,11 +1,12 @@
 import { NODE_TYPE } from "@my-react/react-reconciler";
-import { getFiberTag, type PlainNode } from "@my-react-devtool/core";
+import { getFiberTag } from "@my-react-devtool/core";
 import { Chip, Spacer, Tooltip } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { memo, useCallback, useMemo } from "react";
 
 import { useTreeNode } from "@/hooks/useTreeNode";
-import { currentHasSelect, type TreeNode } from "@/utils/node";
+
+import type { PlainNode } from "@my-react-devtool/core";
 
 const { setSelect, setClose } = useTreeNode.getActions();
 
@@ -65,7 +66,7 @@ export const RenderItem = ({
   withCollapse = true,
 }: {
   width?: number;
-  node: TreeNode;
+  node: PlainNode;
   className?: string;
   isScrolling?: boolean;
   withCollapse?: boolean;
@@ -73,23 +74,19 @@ export const RenderItem = ({
   withTag?: boolean;
   withKey?: boolean;
 }) => {
-  const current = node.current;
+  const current = node;
 
-  const { select: _select, closeList: _closeList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList }), []));
+  const { select, closeList, selectList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []));
 
-  const select = _select as TreeNode;
+  const currentIsSelect = withSelect && node.id === select;
 
-  const closeList = _closeList as TreeNode[];
+  const currentIsClose = withCollapse && closeList?.[node.id];
 
-  const currentIsSelect = withSelect && node.id === select?.id;
-
-  const currentIsClose = withCollapse && closeList.some((item) => item.id === node.id);
-
-  const hasSelect = useMemo(() => withSelect && currentHasSelect(node, select), [select, node, withSelect]);
+  const hasSelect = useMemo(() => withSelect && select && !currentIsSelect && selectList?.[node.id], [withSelect, select, currentIsSelect, selectList, node.id]);
 
   const isNativeNode = current.type & NODE_TYPE.__plain__ || current.type & NODE_TYPE.__text__;
 
-  const hasChild = Array.isArray(current.children);
+  const hasChild = Array.isArray(current?.children);
 
   const StateIcon = hasChild ? !currentIsClose ? <TriangleDownIcon width={16} height={16} /> : <TriangleRightIcon width={16} height={16} /> : null;
 
@@ -98,7 +95,7 @@ export const RenderItem = ({
       id={current.id.toString()}
       data-depth={current.deep}
       onClick={() => {
-        withSelect && setSelect(node);
+        withSelect && setSelect(node.id);
       }}
       className={
         "w-full h-full whitespace-nowrap cursor-pointer rounded-sm select-none transition-background" +
@@ -116,7 +113,7 @@ export const RenderItem = ({
               className={" text-gray-400 min-w-[18px]" + (hasChild ? " hover:text-gray-700" : "")}
               onClick={(e) => {
                 e.stopPropagation();
-                setClose(node);
+                setClose(node.id);
               }}
             >
               {hasChild ? (

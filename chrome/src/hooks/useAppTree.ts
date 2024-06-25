@@ -1,50 +1,67 @@
+import { type PlainNode, type Tree } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
 
-// import { mock } from "@/mock/data";
-import { flattenNode } from "@/utils/flattenTree";
 import { isServer } from "@/utils/isServer";
+import { flattenNode } from "@/utils/node";
 
-import type { TreeNode } from "@/utils/node";
-import type { PlainNode } from "@my-react-devtool/core";
+import { useFilterNode } from "./useFilterNode";
+import { useTreeNode } from "./useTreeNode";
 
-type AppTreeType = { nodes: PlainNode[]; flattenNodes: TreeNode[] };
-
-// const _data = JSON.parse(mock);
-
-// const _flattenNodes = flattenNode([_data]);
+type AppTreeType = { nodes: Tree[]; list: PlainNode[] };
 
 export const useAppTree = createState(
   () => {
-    return { nodes: [], flattenNodes: [] } as AppTreeType;
+    return { nodes: [], list: [] } as AppTreeType;
   },
   {
     withDeepSelector: false,
     withActions: (state) => {
-      const flattenCurrentNodes = () => {
-        state.flattenNodes = flattenNode(state.nodes);
-      };
-
       return {
-        addNode: (node: PlainNode) => {
-          const currentNodes = Array.from(state.nodes);
-
-          const index = currentNodes.findIndex((n) => n.id === node.id);
-
-          if (index !== -1) {
-            currentNodes.splice(index, 1, node);
+        addNode: (node: Tree) => {
+          const closeList = useTreeNode.getReadonlyState().closeList;
+          const filterSet = useFilterNode.getReadonlyState().filter;
+          const filterArray = Array.from(filterSet);
+          const exist = state.nodes.find((n) => n.id === node.id);
+          // TODO! improve
+          if (exist) {
+            state.nodes = state.nodes.map((n) => (n.id === node.id ? node : n));
+            state.list = state.nodes
+              .map((n) =>
+                flattenNode(
+                  n,
+                  (node) => closeList?.[node.id],
+                  (node) => filterArray.some((i) => +i & node.type)
+                )
+              )
+              .flat(1);
+            useTreeNode.getActions().updateSelectList();
           } else {
-            currentNodes.push(node);
+            state.nodes = [...state.nodes, node];
+            state.list = [
+              ...state.list,
+              ...flattenNode(
+                node,
+                (node) => closeList?.[node.id],
+                (node) => filterArray.some((i) => +i & node.type)
+              ),
+            ];
+            useTreeNode.getActions().updateSelectList();
           }
-
-          state.nodes = currentNodes;
-
-          flattenCurrentNodes();
         },
-        delNode: (node: PlainNode) => {
-          if (state.nodes.some((n) => n.id === node.id)) {
-            state.nodes = state.nodes.filter((n) => n.id !== node.id);
-            flattenCurrentNodes();
-          }
+        update: () => {
+          const closeList = useTreeNode.getReadonlyState().closeList;
+          const filterSet = useFilterNode.getReadonlyState().filter;
+          const filterArray = Array.from(filterSet);
+          state.list = state.nodes
+            .map((n) =>
+              flattenNode(
+                n,
+                (node) => closeList?.[node.id],
+                (node) => filterArray.some((i) => +i & node.type)
+              )
+            )
+            .flat(1);
+          useTreeNode.getActions().updateSelectList();
         },
       };
     },

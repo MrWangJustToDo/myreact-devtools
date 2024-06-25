@@ -1513,9 +1513,13 @@
     		var getObj = function (obj) {
     		    return safeStringify(obj);
     		};
-    		var parseObj = function (plain) {
+    		var parseProps = function (plain) {
     		    var obj = plain.props;
     		    return safeParse(obj);
+    		};
+    		var parseState = function (plain) {
+    		    var state = plain.state;
+    		    return safeParse(state);
     		};
 
     		var treeMap = new Map();
@@ -1526,12 +1530,6 @@
     		    plain.key = fiber.key;
     		    plain.type = fiber.type;
     		    plain.name = getFiberName(fiber);
-    		    // plain.source = getFiberSource(fiber as MyReactFiberNodeDev);
-    		    // plain.renderTree = getRenderTree(fiber as MyReactFiberNodeDev);
-    		    // plain.fiberType = getFiberType(fiber as MyReactFiberNodeDev);
-    		    // plain.hookTree = getHookTree(fiber as MyReactFiberNodeDev);
-    		    // plain.ref = safeCloneRef(fiber.ref);
-    		    // plain.props = safeClone(fiber.pendingProps);
     		};
     		var assignFiber = function (plain, fiber) {
     		    shallowAssignFiber(plain, fiber);
@@ -1539,7 +1537,11 @@
     		    plain.hook = getHook(fiber);
     		    plain.props = getObj(fiber.pendingProps);
     		    plain.tree = getTree(fiber);
+    		    if (fiber.type & NODE_TYPE.__class__) {
+    		        plain.state = getObj(fiber.pendingState);
+    		    }
     		};
+    		// TODO improve performance
     		var loopTree = function (fiber, parent) {
     		    if (!fiber)
     		        return null;
@@ -1568,10 +1570,10 @@
     		    }
     		    return current;
     		};
-    		var generateFiberTreeToPlainTree = function (dispatch) {
+    		var generateTreeMap = function (dispatch) {
     		    var rootFiber = dispatch.rootFiber;
-    		    var rootPlain = loopTree(rootFiber);
-    		    return rootPlain;
+    		    var rootNode = loopTree(rootFiber);
+    		    return rootNode;
     		};
     		var unmountPlainNode = function (fiber) {
     		    var plain = treeMap.get(fiber);
@@ -1588,7 +1590,7 @@
     		var getDetailNodeByFiber = function (fiber) {
     		    var plainNode = getPlainNodeByFiber(fiber);
     		    if (!plainNode) {
-    		        throw new Error("plainNode not found, look like a @my-react/devtools bug");
+    		        throw new Error("plainNode not found, look like a bug for @my-react/devtools");
     		    }
     		    var exist = detailMap.get(fiber);
     		    if (exist) {
@@ -1610,7 +1612,12 @@
     		};
     		var parseDetailNode = function (plain) {
     		    plain.hook = parseHook(plain);
-    		    plain.props = parseObj(plain);
+    		    plain.props = parseProps(plain);
+    		    if (plain.state) {
+    		        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    		        // @ts-ignore
+    		        plain.state = parseState(plain);
+    		    }
     		    return plain;
     		};
 
@@ -1715,6 +1722,7 @@
     		            (_a = originalAfterCommit === null || originalAfterCommit === void 0 ? void 0 : originalAfterCommit.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit, this);
     		            onLoad();
     		        };
+    		        // TODO `global patch` flag for performance
     		        dispatch.afterUpdate = function () {
     		            var _a;
     		            (_a = originalAfterUpdate === null || originalAfterUpdate === void 0 ? void 0 : originalAfterUpdate.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUpdate, this);
@@ -1741,7 +1749,7 @@
     		        this._listeners.forEach(function (listener) { return listener(data); });
     		    };
     		    DevToolCore.prototype.getTree = function (dispatch) {
-    		        var tree = generateFiberTreeToPlainTree(dispatch);
+    		        var tree = generateTreeMap(dispatch);
     		        this._map.set(dispatch, tree);
     		        return tree;
     		    };
@@ -1801,7 +1809,7 @@
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
     		exports.debounce = debounce;
-    		exports.generateFiberTreeToPlainTree = generateFiberTreeToPlainTree;
+    		exports.generateTreeMap = generateTreeMap;
     		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getDetailNodeById = getDetailNodeById;
@@ -1818,7 +1826,8 @@
     		exports.loopTree = loopTree;
     		exports.parseDetailNode = parseDetailNode;
     		exports.parseHook = parseHook;
-    		exports.parseObj = parseObj;
+    		exports.parseProps = parseProps;
+    		exports.parseState = parseState;
     		exports.safeParse = safeParse;
     		exports.safeStringify = safeStringify;
     		exports.shallowAssignFiber = shallowAssignFiber;
@@ -1974,10 +1983,9 @@
         try {
             return useTreeNode.subscribe(function (s) { return s.select; }, function () {
                 var currentSelect = useTreeNode.getReadonlyState().select;
-                console.log("select", currentSelect === null || currentSelect === void 0 ? void 0 : currentSelect.current);
-                if (currentSelect === null || currentSelect === void 0 ? void 0 : currentSelect.current) {
+                if (currentSelect) {
                     useDetailNode.getActions().setLoading(true);
-                    sendMessage({ type: MessagePanelType.nodeSelect, data: currentSelect.current.id });
+                    sendMessage({ type: MessagePanelType.nodeSelect, data: currentSelect });
                 }
             });
         }
@@ -1991,10 +1999,9 @@
         try {
             return useTreeNode.subscribe(function (s) { return s.hover; }, function () {
                 var currentHover = useTreeNode.getReadonlyState().hover;
-                console.log("hover", currentHover === null || currentHover === void 0 ? void 0 : currentHover.current);
-                if (currentHover === null || currentHover === void 0 ? void 0 : currentHover.current) {
+                if (currentHover) {
                     useDetailNode.getActions().setLoading(true);
-                    sendMessage({ type: MessagePanelType.nodeHover, data: currentHover.current.id });
+                    sendMessage({ type: MessagePanelType.nodeHover, data: currentHover });
                 }
             });
         }

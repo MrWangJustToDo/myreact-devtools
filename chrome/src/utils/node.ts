@@ -1,33 +1,24 @@
 import type { PlainNode } from "@my-react-devtool/core";
 
-export class TreeNode {
-  id: string;
-  current: PlainNode;
-  parent?: TreeNode;
+export const checkHasInclude = (node: PlainNode, typeArray: number[]) => {
+  return typeArray.some((i) => node?.type & i);
+};
 
-  constructor(node: PlainNode) {
-    this.id = node.id;
-    this.current = node;
+export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => boolean, isHide: (node: PlainNode) => boolean) => {
+  const list: PlainNode[] = [];
+  const stack = [node];
+  while (stack.length) {
+    const currentNode = stack.pop();
+    if (!currentNode) continue;
+    if (!isHide(currentNode)) {
+      list.push(currentNode);
+    }
+    if (currentNode.children && !isCollapsed(currentNode)) {
+      for (let i = currentNode.children.length - 1; i >= 0; i--) {
+        stack.push(currentNode.children[i]);
+      }
+    }
   }
-}
-
-export const currentHasSelect = (node: TreeNode, select: TreeNode | null): boolean => {
-  if (!select) return false;
-  if (node?.id === select.id) return true;
-  return node.parent ? currentHasSelect(node?.parent, select) : false;
+  return list;
 };
 
-export const currentHasClose = (node?: TreeNode | null, close?: TreeNode | null): boolean => {
-  if (!close) return false;
-  if (!node) return false;
-  if (node.id === close.id) return true;
-  return node.parent ? currentHasClose(node.parent, close) : false;
-};
-
-export const currentHasInCloseList = (node: TreeNode, closeList: TreeNode[]) => {
-  return closeList.some((i) => currentHasClose(node?.parent, i));
-};
-
-export const checkHasInclude = (node: TreeNode, typeArray: number[]) => {
-  return typeArray.some((i) => node?.current?.type & i);
-};

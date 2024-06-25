@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import { generateFiberTreeToPlainTree, getDetailNodeById } from "./tree";
+import { generateTreeMap, getDetailNodeById } from "./tree";
 
-import type { PlainNode } from "./plain";
+import type { Tree } from "./tree";
 
 export enum DevToolMessageEnum {
   // 初始化，判断是否用@my-react进行页面渲染
@@ -45,7 +45,7 @@ export class DevToolCore {
   // 是否存在 @my-react
   _detector = false;
 
-  _map: Map<DevToolRenderDispatch, PlainNode> = new Map();
+  _map: Map<DevToolRenderDispatch, Tree> = new Map();
 
   _hoverId = "";
 
@@ -94,6 +94,7 @@ export class DevToolCore {
       onLoad();
     };
 
+    // TODO `global patch` flag for performance
     dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
       originalAfterUpdate?.call?.(this);
 
@@ -128,7 +129,7 @@ export class DevToolCore {
   }
 
   getTree(dispatch: DevToolRenderDispatch) {
-    const tree = generateFiberTreeToPlainTree(dispatch);
+    const tree = generateTreeMap(dispatch);
 
     this._map.set(dispatch, tree);
 

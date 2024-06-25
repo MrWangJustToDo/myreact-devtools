@@ -1,4 +1,4 @@
-import { PlainNode } from "@my-react-devtool/core";
+import { PlainNode, Tree } from "@my-react-devtool/core";
 import { UseSelectorWithState } from "reactivity-store";
 
 declare global {
@@ -12,9 +12,9 @@ declare global {
   }
 
   interface Window {
-    useAppTree: UseSelectorWithState<{ nodes: PlainNode[] }, { addNode: (node: PlainNode) => void; delNode: (node: PlainNode) => void }>;
+    useAppTree: UseSelectorWithState<{ nodes: Tree[] }, { addNode: (node: Tree) => void }>;
 
-    useTreeNode: UseSelectorWithState<{ select: { current: PlainNode } | null; hover: { current: PlainNode } | null }, {}>;
+    useTreeNode: UseSelectorWithState<{ select: string | null; hover: string | null }, {}>;
 
     useDetailNode: UseSelectorWithState<
       { nodes: PlainNode[]; loading: boolean; error: Error | null },

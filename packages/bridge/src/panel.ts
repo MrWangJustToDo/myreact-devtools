@@ -1,4 +1,4 @@
-import { DevToolMessageEnum, parseDetailNode, type DevToolMessageType, type PlainNode } from "@my-react-devtool/core";
+import { DevToolMessageEnum, parseDetailNode, type DevToolMessageType, type PlainNode, type Tree } from "@my-react-devtool/core";
 
 import { MessageHookType, MessagePanelType, MessageWorkerType } from "./type";
 
@@ -89,7 +89,7 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       console.log("[@my-react-devtool/panel] init", data.data);
     }
 
-    const node = data.data as PlainNode;
+    const node = data.data as Tree;
 
     try {
       const { addNode } = _window.useAppTree.getActions();
@@ -146,12 +146,10 @@ const initSelectListen = (_window: Window) => {
       () => {
         const currentSelect = useTreeNode.getReadonlyState().select;
 
-        console.log("select", currentSelect?.current);
-
-        if (currentSelect?.current) {
+        if (currentSelect) {
           useDetailNode.getActions().setLoading(true);
 
-          sendMessage({ type: MessagePanelType.nodeSelect, data: currentSelect.current.id });
+          sendMessage({ type: MessagePanelType.nodeSelect, data: currentSelect });
         }
       }
     );
@@ -171,12 +169,10 @@ const initHoverListen = (_window: Window) => {
       () => {
         const currentHover = useTreeNode.getReadonlyState().hover;
 
-        console.log("hover", currentHover?.current);
-
-        if (currentHover?.current) {
+        if (currentHover) {
           useDetailNode.getActions().setLoading(true);
 
-          sendMessage({ type: MessagePanelType.nodeHover, data: currentHover.current.id });
+          sendMessage({ type: MessagePanelType.nodeHover, data: currentHover });
         }
       }
     );

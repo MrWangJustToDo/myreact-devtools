@@ -9,23 +9,23 @@ import { getText } from "@/utils/treeValue";
 
 import { theme } from "./HookView";
 
-export const PropsView = () => {
+export const StateView = () => {
   const select = useTreeNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
 
   const currentSelectDetail = nodeList.find((i) => i.id === select);
 
-  const propsKeys = Object.keys(currentSelectDetail?.props || {});
+  const stateKeys = Object.keys(currentSelectDetail?.state || {});
 
-  const hasProps = propsKeys.length > 0;
+  const hasStates = stateKeys.length > 0;
 
   const render = useCallbackRef((index: number) => {
-    const key = propsKeys[index];
+    const key = stateKeys[index];
     return (
       <div className="text-[11px] ml-2 font-mono tree-wrapper" key={index}>
         <JSONTree
-          data={currentSelectDetail?.props?.[key]}
+          data={currentSelectDetail?.state?.[key]}
           theme={theme}
           keyPath={[key]}
           shouldExpandNodeInitially={() => false}
@@ -48,13 +48,13 @@ export const PropsView = () => {
     );
   });
 
-  if (hasProps) {
+  if (hasStates) {
     return (
       <div className="p-2">
-        <div>props</div>
+        <div>states</div>
         <Spacer y={1} />
         <div className="w-full">
-          {propsKeys.map((key, index) => render(index))}
+          {stateKeys.map((key, index) => render(index))}
           {/* <Virtuoso key={currentSelectDetail?.id} overscan={20} totalCount={propsKey.length} itemContent={render} /> */}
         </div>
         <Divider />

@@ -1,36 +1,62 @@
+import { debounce, type PlainNode } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
 
 import { isServer } from "@/utils/isServer";
+import { flattenNode } from "@/utils/node";
 
-import type { TreeNode } from "@/utils/node";
+import { useAppTree } from "./useAppTree";
 
 export const useTreeNode = createState(
-  () => ({ select: null, hover: null, closeList: [] }) as { select: TreeNode | null; hover: TreeNode | null; closeList: TreeNode[] },
+  () =>
+    ({ select: null, hover: null, closeList: {} }) as {
+      select: string | null;
+      hover: string | null;
+      closeList: Record<string, boolean>;
+      selectList: Record<string, boolean>;
+    },
   {
-    withActions: (s) => ({
-      setSelect: (node: TreeNode | null) => {
-        if (s.select && node?.id === s.select.id) {
-          s.select = null;
-        } else {
-          s.select = node;
-        }
-      },
-      setHover: (node: TreeNode | null) => {
-        if (s.hover && node?.id === s.hover.id) {
-          s.hover = null;
-        } else {
-          s.hover = node;
-        }
-      },
-      setClose: (node: TreeNode) => {
-        const hasInclude = s.closeList.some((i) => i.id === node.id);
-        if (hasInclude) {
-          s.closeList = s.closeList.filter((i) => i.id !== node.id);
-        } else {
-          s.closeList = Array.from([...s.closeList, node]);
-        }
-      },
-    }),
+    withActions: (s) => {
+      const updateSelectList = debounce(() => {
+        const plainNode = useAppTree.getReadonlyState().list.find((i) => i.id === s.select) as PlainNode;
+        if (!plainNode) return;
+        s.selectList = flattenNode(
+          plainNode,
+          () => false,
+          () => false
+        ).reduce<Record<string, boolean>>((p, c) => {
+          p[c.id] = true;
+          return p;
+        }, {});
+      }, 16);
+      return {
+        setSelect: (node: string | null) => {
+          if (node === s.select) {
+            s.select = null;
+            s.selectList = {};
+          } else {
+            s.select = node;
+            updateSelectList();
+          }
+        },
+        updateSelectList,
+        setHover: (node: string | null) => {
+          if (node === s.hover) {
+            s.hover = null;
+          } else {
+            s.hover = node;
+          }
+        },
+        setClose: (node: string | null) => {
+          if (!node) return;
+          if (s.closeList?.[node]) {
+            s.closeList = { ...s.closeList, [node]: false };
+          } else {
+            s.closeList = { ...s.closeList, [node]: true };
+          }
+          useAppTree.getActions().update();
+        },
+      };
+    },
     withDeepSelector: false,
     // withNamespace: "useTreeNode",
   }

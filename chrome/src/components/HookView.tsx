@@ -14,7 +14,7 @@ export const HookView = () => {
 
   const nodeList = useDetailNode((s) => s.nodes);
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select?.id);
+  const currentSelectDetail = nodeList.find((i) => i.id === select);
 
   const hookList = currentSelectDetail?.hook || [];
 

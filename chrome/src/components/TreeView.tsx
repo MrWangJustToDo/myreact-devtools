@@ -4,15 +4,13 @@ import { Virtuoso } from "react-virtuoso";
 
 import { useAppTree } from "@/hooks/useAppTree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
-import { useFilterNode } from "@/hooks/useFilterNode";
 import { useDomSize } from "@/hooks/useSize";
 import { useTreeNode } from "@/hooks/useTreeNode";
-import { checkHasInclude, currentHasInCloseList } from "@/utils/node";
 
 import { RenderItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
 
-import type { TreeNode } from "@/utils/node";
+import type { PlainNode } from "@my-react-devtool/core";
 import type { VirtuosoHandle } from "react-virtuoso";
 
 const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: { current: number }, lastContainerWidthRef: { current: number }) => {
@@ -49,7 +47,7 @@ const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: 
   container.style.setProperty("--width-size", `${listWidth}px`);
 };
 
-const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: TreeNode[] }) => {
+const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: PlainNode[] }) => {
   const [isScrolling, setIsScrolling] = useState(false);
 
   const ref = useRef<VirtuosoHandle>(null);
@@ -58,16 +56,21 @@ const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: Tre
 
   const render = useCallbackRef((index: number, _: unknown, { isScrolling }: { isScrolling?: boolean }) => {
     const node = data[index];
+
+    if (!node) return null;
+
     return <RenderItem node={node} isScrolling={isScrolling} className=" text-[12px]" />;
   });
 
-  const index = useMemo(() => data.findIndex((item) => item.id === select?.id), [data, select]);
+  const index = useMemo(() => data.findIndex((item) => item.id === select), [data, select]);
 
   useEffect(() => {
     if (index !== -1) {
       ref.current?.scrollIntoView({ index });
     }
   }, [index]);
+
+  if (!data.length) return null;
 
   return (
     <Virtuoso
@@ -87,20 +90,7 @@ TreeViewImpl.displayName = "TreeViewImpl";
 export const TreeView = memo(() => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const nodes = useAppTree(useCallback((s) => s.flattenNodes, [])) as TreeNode[];
-
-  const filterType = useFilterNode((s) => s.filter);
-
-  const closeList = useTreeNode((s) => s.closeList) as TreeNode[];
-
-  const typeArray = useMemo(() => Array.from(filterType).map((i) => +i), [filterType]);
-
-  const _data = useMemo(() => nodes.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, nodes]);
-
-  const data = useMemo(
-    () => _data.filter((item) => !currentHasInCloseList(item, closeList)),
-    [_data, closeList]
-  );
+  const nodes = useAppTree(useCallback((s) => s.list, [])) as PlainNode[];
 
   const { width, height } = useDomSize({ ref });
 
@@ -116,11 +106,11 @@ export const TreeView = memo(() => {
 
   useIsomorphicLayoutEffect(() => {
     onScroll();
-  }, [width, height, data]);
+  }, [width, height, nodes.length]);
 
   return (
     <div className="tree-view h-full border rounded-md border-gray-200 group transform-cpu" ref={ref}>
-      <TreeViewImpl onScroll={onScroll} data={data} />
+      <TreeViewImpl onScroll={onScroll} data={nodes} />
       <TreeViewSetting />
     </div>
   );

@@ -8,13 +8,14 @@ import { NameView } from "./NameView";
 import { PropsView } from "./PropsView";
 import { RenderView } from "./RenderView";
 import { SourceView } from "./SourceView";
+import { StateView } from "./StateView";
 
 export const NodeView = () => {
   const select = useTreeNode((s) => s.select);
 
   const { nodeList, loading } = useDetailNode((s) => ({ nodeList: s.nodes, loading: s.loading }));
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select?.id);
+  const currentSelectDetail = nodeList.find((i) => i.id === select);
 
   const isLoading = !currentSelectDetail && loading;
 
@@ -30,6 +31,7 @@ export const NodeView = () => {
     <div className="node-view h-full border rounded-md border-gray-200 group overflow-auto">
       <NameView />
       <PropsView />
+      <StateView />
       <HookView />
       <RenderView />
       <SourceView />
