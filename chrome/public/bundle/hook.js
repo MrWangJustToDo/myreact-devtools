@@ -1552,9 +1552,9 @@
     		    };
     		}
     		var setupDispatch = function (dispatch) {
-    		    if (dispatch.hasInject)
+    		    if (dispatch.hasDevToolInject)
     		        return;
-    		    dispatch.hasInject = true;
+    		    dispatch.hasDevToolInject = true;
     		    overridePatchToFiberUnmount(dispatch);
     		};
 
@@ -1629,9 +1629,9 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        if (dispatch.hasPatch)
+    		        if (dispatch.hasDevToolPatch)
     		            return;
-    		        dispatch.hasPatch = true;
+    		        dispatch.hasDevToolPatch = true;
     		        var originalAfterCommit = dispatch.afterCommit;
     		        var originalAfterUpdate = dispatch.afterUpdate;
     		        var onLoad = throttle(function () {

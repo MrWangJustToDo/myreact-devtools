@@ -1,4 +1,4 @@
-import { MessageHookType, PortName } from "./type";
+import { MessageHookType, MessagePanelType, PortName } from "./type";
 import { windowPostMessageWithSource } from "./window";
 
 import type { MessageHookDataType, MessagePanelDataType } from "./type";
@@ -6,7 +6,7 @@ import type { MessageHookDataType, MessagePanelDataType } from "./type";
 const port = chrome.runtime.connect({ name: PortName.proxy });
 
 const sendMessageToBackend = (message: MessagePanelDataType) => {
-  windowPostMessageWithSource(message)
+  windowPostMessageWithSource(message);
 };
 
 const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {
@@ -19,6 +19,9 @@ const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {
 
 const handleDisconnect = () => {
   port.onMessage.removeListener(sendMessageToBackend);
+
+  sendMessageToBackend({ type: MessagePanelType.hide, tabId: "" });
+
   window.removeEventListener("message", sendMessageToPanel);
 };
 

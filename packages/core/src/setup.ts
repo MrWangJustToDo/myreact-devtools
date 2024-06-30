@@ -3,8 +3,8 @@ import { unmountPlainNode } from "./tree";
 import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
 export interface DevToolRenderDispatch extends CustomRenderDispatch {
-  hasInject?: boolean;
-  hasPatch?: boolean;
+  hasDevToolInject?: boolean;
+  hasDevToolPatch?: boolean;
 }
 
 function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch) {
@@ -17,9 +17,9 @@ function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch) {
 }
 
 export const setupDispatch = (dispatch: DevToolRenderDispatch) => {
-  if (dispatch.hasInject) return;
+  if (dispatch.hasDevToolInject) return;
 
-  dispatch.hasInject = true;
+  dispatch.hasDevToolInject = true;
 
   overridePatchToFiberUnmount(dispatch);
 };

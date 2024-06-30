@@ -72,9 +72,9 @@ export class DevToolCore {
   }
 
   patchDispatch(dispatch: DevToolRenderDispatch) {
-    if (dispatch.hasPatch) return;
+    if (dispatch.hasDevToolPatch) return;
 
-    dispatch.hasPatch = true;
+    dispatch.hasDevToolPatch = true;
 
     const originalAfterCommit = dispatch.afterCommit;
 

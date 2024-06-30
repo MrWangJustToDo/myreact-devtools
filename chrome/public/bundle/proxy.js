@@ -80,6 +80,7 @@
     };
     var handleDisconnect = function () {
         port.onMessage.removeListener(sendMessageToBackend);
+        sendMessageToBackend({ type: MessagePanelType.hide, tabId: "" });
         window.removeEventListener("message", sendMessageToPanel);
     };
     port.onMessage.addListener(sendMessageToBackend);
