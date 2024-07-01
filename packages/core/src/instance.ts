@@ -203,10 +203,22 @@ export class DevToolCore {
   }, 200);
 
   connect() {
+    if (this._enabled) return;
+
+    if (__DEV__) {
+      console.log("[@my-react-devtool/core-instance] connect");
+    }
+
     this._enabled = true;
   }
 
   disconnect() {
+    if (!this._enabled) return;
+
+    if (__DEV__) {
+      console.log("[@my-react-devtool/core-instance] disconnect");
+    }
+
     this._enabled = false;
   }
 }

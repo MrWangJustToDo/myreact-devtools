@@ -1797,9 +1797,19 @@
     		        }
     		    };
     		    DevToolCore.prototype.connect = function () {
+    		        if (this._enabled)
+    		            return;
+    		        {
+    		            console.log("[@my-react-devtool/core-instance] connect");
+    		        }
     		        this._enabled = true;
     		    };
     		    DevToolCore.prototype.disconnect = function () {
+    		        if (!this._enabled)
+    		            return;
+    		        {
+    		            console.log("[@my-react-devtool/core-instance] disconnect");
+    		        }
     		        this._enabled = false;
     		    };
     		    return DevToolCore;
@@ -1865,12 +1875,21 @@
     var MessageWorkerType;
     (function (MessageWorkerType) {
         MessageWorkerType["init"] = "worker-init";
+        MessageWorkerType["close"] = "worker-close";
     })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
         PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
+    var sourceFrom;
+    (function (sourceFrom) {
+        sourceFrom["hook"] = "hook";
+        sourceFrom["proxy"] = "proxy";
+        sourceFrom["panel"] = "panel";
+        sourceFrom["worker"] = "worker";
+        sourceFrom["detector"] = "detector";
+    })(sourceFrom || (sourceFrom = {}));
 
     var port = null;
     var panelWindow = window;
@@ -1918,7 +1937,7 @@
     };
     var sendMessage = function (data) {
         runWhenWorkerReady(function () {
-            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++ }));
+            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++, from: sourceFrom.panel }));
         });
     };
     var onRender = function (data, _window) {

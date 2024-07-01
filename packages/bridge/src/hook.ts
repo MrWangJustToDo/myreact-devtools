@@ -1,19 +1,21 @@
 import { once } from "@my-react/react-shared";
 import { DevToolCore } from "@my-react-devtool/core";
 
-import { MessageHookType, MessageDetectorType, MessagePanelType, DevToolSource } from "./type";
-import { windowPostMessageWithSource } from "./window";
+import { MessageHookType, MessageDetectorType, MessagePanelType, DevToolSource, MessageWorkerType, sourceFrom } from "./type";
+import { generatePostMessageWithSource } from "./window";
 
-import type { MessagePanelDataType } from "./type";
+import type { MessageDetectorDataType, MessagePanelDataType, MessageWorkerDataType } from "./type";
 import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
 const core = new DevToolCore();
+
+const hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
 
 core.subscribe((message) => {
   if (__DEV__) {
     console.log("[@my-react-devtool/hook] core message", message);
   }
-  windowPostMessageWithSource({ type: MessageHookType.render, data: message });
+  hookPostMessageWithSource({ type: MessageHookType.render, data: message });
 });
 
 const set = new Set<CustomRenderDispatch>();
@@ -36,10 +38,12 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
   }
 };
 
-const onMessage = (message: MessageEvent<MessagePanelDataType | { type: MessageDetectorType; source?: string }>) => {
+const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorDataType | MessageWorkerDataType>) => {
   if (message.source !== window) return;
 
   if (message.data?.source !== DevToolSource) return;
+
+  if (message.data?.from === sourceFrom.hook) return;
 
   if (__DEV__ && message.data?.type) {
     console.log("[@my-react-devtool/hook] message from proxy", message.data);
@@ -53,13 +57,18 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | { type: MessageD
     detectorReady = true;
   }
 
+  if (message.data?.type === MessageWorkerType.init) {
+    core.connect();
+  }
+
   if (message.data?.type === MessagePanelType.show) {
     core.connect();
 
     core.notifyAll();
   }
 
-  if (message.data?.type === MessagePanelType.hide) {
+  // 主动关闭panel / 或者worker失活
+  if (message.data?.type === MessagePanelType.hide || message.data?.type === MessageWorkerType.close) {
     core.disconnect();
   }
 
@@ -74,7 +83,7 @@ window.addEventListener("message", onMessage);
 
 const onceMount = once(() => {
   // current site is render by @my-react
-  windowPostMessageWithSource({ type: MessageHookType.mount });
+  hookPostMessageWithSource({ type: MessageHookType.mount });
 });
 
 export const globalHook = (dispatch: CustomRenderDispatch) => {
@@ -92,5 +101,5 @@ if (window.parent && window.parent !== window) {
 } else {
   window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
   window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-  windowPostMessageWithSource({ type: MessageHookType.init });
+  hookPostMessageWithSource({ type: MessageHookType.init });
 }

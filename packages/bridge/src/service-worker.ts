@@ -1,4 +1,4 @@
-import { MessageHookType, MessageWorkerType } from "./type";
+import { MessageHookType, MessageWorkerType, sourceFrom } from "./type";
 
 import type { MessageHookDataType, MessagePanelDataType } from "./type";
 
@@ -18,15 +18,20 @@ const installProxy = (tabId: number) => {
 
 const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.Port) => {
   const onMessagePort1 = (message: MessageHookDataType) => {
+    if (message.from === sourceFrom.panel) return;
+
     if (__DEV__) {
       console.log(`[@my-react-devtool/worker] message from hook: ${id}`, message);
     }
+
     port2.postMessage(message);
   };
 
   const onMessagePort2 = (message: MessagePanelDataType) => {
+    if (message.from === sourceFrom.hook) return;
+
     if (__DEV__) {
-      console.log(`[@my-react-devtool/worker] message from devtool: ${id}`, message);
+      console.log(`[@my-react-devtool/worker] message from panel: ${id}`, message);
     }
     port1.postMessage(message);
   };

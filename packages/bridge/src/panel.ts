@@ -1,6 +1,6 @@
 import { DevToolMessageEnum, parseDetailNode, type DevToolMessageType, type PlainNode, type Tree } from "@my-react-devtool/core";
 
-import { MessageHookType, MessagePanelType, MessageWorkerType } from "./type";
+import { MessageHookType, MessagePanelType, MessageWorkerType, sourceFrom } from "./type";
 
 import type { MessageHookDataType } from "./type";
 
@@ -61,7 +61,7 @@ const showPanel = (onShow: (_window: Window) => void, onHide: () => void): Promi
 
 const sendMessage = <T = any>(data: T) => {
   runWhenWorkerReady(() => {
-    port?.postMessage({ ...data, _messageId: messageId++ });
+    port?.postMessage({ ...data, _messageId: messageId++, from: sourceFrom.panel });
   });
 };
 

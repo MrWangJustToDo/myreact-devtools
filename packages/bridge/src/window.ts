@@ -1,5 +1,7 @@
 import { DevToolSource } from "./type";
 
-export const windowPostMessageWithSource = <T = any>(message: T) => {
-  window.postMessage({ ...message, source: DevToolSource }, "*");
-};
+export const generatePostMessageWithSource =
+  (from?: string) =>
+  <T = any>(message: T) => {
+    window.postMessage({ from, ...message, source: DevToolSource }, "*");
+  };

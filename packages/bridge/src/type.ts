@@ -17,6 +17,7 @@ export enum MessagePanelType {
 
 export enum MessageWorkerType {
   init = "worker-init",
+  close = "worker-close",
 }
 
 export enum PortName {
@@ -28,6 +29,7 @@ export type MessageHookDataType = {
   type: MessageHookType;
   data: any;
   source?: string;
+  from?: string;
 };
 
 export type MessagePanelDataType = {
@@ -35,6 +37,27 @@ export type MessagePanelDataType = {
   tabId: number | string;
   data?: any;
   source?: string;
+  from?: string;
+};
+
+export type MessageWorkerDataType = {
+  type: MessageWorkerType;
+  source?: string;
+  from?: string;
+};
+
+export type MessageDetectorDataType = {
+  type: MessageDetectorType;
+  source?: string;
+  from?: string;
 };
 
 export const DevToolSource = "@my-react/devtool";
+
+export enum sourceFrom {
+  hook = "hook",
+  proxy = "proxy",
+  panel = "panel",
+  worker = "worker",
+  detector = "detector",
+}

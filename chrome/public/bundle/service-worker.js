@@ -21,12 +21,21 @@
     var MessageWorkerType;
     (function (MessageWorkerType) {
         MessageWorkerType["init"] = "worker-init";
+        MessageWorkerType["close"] = "worker-close";
     })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
         PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
+    var sourceFrom;
+    (function (sourceFrom) {
+        sourceFrom["hook"] = "hook";
+        sourceFrom["proxy"] = "proxy";
+        sourceFrom["panel"] = "panel";
+        sourceFrom["worker"] = "worker";
+        sourceFrom["detector"] = "detector";
+    })(sourceFrom || (sourceFrom = {}));
 
     var hub = {};
     function isNumeric(str) {
@@ -41,14 +50,18 @@
     };
     var portPip = function (id, port1, port2) {
         var onMessagePort1 = function (message) {
+            if (message.from === sourceFrom.panel)
+                return;
             {
                 console.log("[@my-react-devtool/worker] message from hook: ".concat(id), message);
             }
             port2.postMessage(message);
         };
         var onMessagePort2 = function (message) {
+            if (message.from === sourceFrom.hook)
+                return;
             {
-                console.log("[@my-react-devtool/worker] message from devtool: ".concat(id), message);
+                console.log("[@my-react-devtool/worker] message from panel: ".concat(id), message);
             }
             port1.postMessage(message);
         };

@@ -21,6 +21,7 @@
     var MessageWorkerType;
     (function (MessageWorkerType) {
         MessageWorkerType["init"] = "worker-init";
+        MessageWorkerType["close"] = "worker-close";
     })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
@@ -28,6 +29,14 @@
         PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var DevToolSource = "@my-react/devtool";
+    var sourceFrom;
+    (function (sourceFrom) {
+        sourceFrom["hook"] = "hook";
+        sourceFrom["proxy"] = "proxy";
+        sourceFrom["panel"] = "panel";
+        sourceFrom["worker"] = "worker";
+        sourceFrom["detector"] = "detector";
+    })(sourceFrom || (sourceFrom = {}));
 
     /******************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -62,12 +71,15 @@
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
 
-    var windowPostMessageWithSource = function (message) {
-        window.postMessage(__assign(__assign({}, message), { source: DevToolSource }), "*");
+    var generatePostMessageWithSource = function (from) {
+        return function (message) {
+            window.postMessage(__assign(__assign({ from: from }, message), { source: DevToolSource }), "*");
+        };
     };
 
     var hookReady = false;
     var id = null;
+    var detectorPostMessageWithSource = generatePostMessageWithSource(sourceFrom.detector);
     var runWhenHookReady = function (fn, count) {
         clearTimeout(id);
         if (hookReady) {
@@ -94,14 +106,14 @@
                 console.log("[@my-react-devtool/detector] hook init");
             }
             hookReady = true;
-            windowPostMessageWithSource({ type: MessageDetectorType.init });
+            detectorPostMessageWithSource({ type: MessageDetectorType.init });
         }
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === MessageHookType.mount) {
             runWhenHookReady(function () {
                 {
                     console.log("[@my-react-devtool/detector] hook mount");
                 }
-                chrome.runtime.sendMessage({ type: MessageHookType.mount });
+                chrome.runtime.sendMessage({ type: MessageHookType.mount, from: sourceFrom.detector });
             });
         }
     };

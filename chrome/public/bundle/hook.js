@@ -1720,9 +1720,19 @@
     		        }
     		    };
     		    DevToolCore.prototype.connect = function () {
+    		        if (this._enabled)
+    		            return;
+    		        {
+    		            console.log("[@my-react-devtool/core-instance] connect");
+    		        }
     		        this._enabled = true;
     		    };
     		    DevToolCore.prototype.disconnect = function () {
+    		        if (!this._enabled)
+    		            return;
+    		        {
+    		            console.log("[@my-react-devtool/core-instance] disconnect");
+    		        }
     		        this._enabled = false;
     		    };
     		    return DevToolCore;
@@ -1788,6 +1798,7 @@
     var MessageWorkerType;
     (function (MessageWorkerType) {
         MessageWorkerType["init"] = "worker-init";
+        MessageWorkerType["close"] = "worker-close";
     })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
@@ -1795,6 +1806,14 @@
         PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var DevToolSource = "@my-react/devtool";
+    var sourceFrom;
+    (function (sourceFrom) {
+        sourceFrom["hook"] = "hook";
+        sourceFrom["proxy"] = "proxy";
+        sourceFrom["panel"] = "panel";
+        sourceFrom["worker"] = "worker";
+        sourceFrom["detector"] = "detector";
+    })(sourceFrom || (sourceFrom = {}));
 
     /******************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -1829,16 +1848,19 @@
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
 
-    var windowPostMessageWithSource = function (message) {
-        window.postMessage(__assign(__assign({}, message), { source: DevToolSource }), "*");
+    var generatePostMessageWithSource = function (from) {
+        return function (message) {
+            window.postMessage(__assign(__assign({ from: from }, message), { source: DevToolSource }), "*");
+        };
     };
 
     var core = new coreExports.DevToolCore();
+    var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
     core.subscribe(function (message) {
         {
             console.log("[@my-react-devtool/hook] core message", message);
         }
-        windowPostMessageWithSource({ type: MessageHookType.render, data: message });
+        hookPostMessageWithSource({ type: MessageHookType.render, data: message });
     });
     var set = new Set();
     var detectorReady = false;
@@ -1858,28 +1880,34 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         if (message.source !== window)
             return;
         if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.source) !== DevToolSource)
             return;
-        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.type)) {
+        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.from) === sourceFrom.hook)
+            return;
+        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type)) {
             console.log("[@my-react-devtool/hook] message from proxy", message.data);
         }
-        if (!detectorReady && ((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === MessageDetectorType.init) {
+        if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === MessageDetectorType.init) {
             {
                 console.log("[@my-react-devtool/hook] detector init");
             }
             detectorReady = true;
         }
-        if (((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === MessagePanelType.show) {
+        if (((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === MessageWorkerType.init) {
+            core.connect();
+        }
+        if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === MessagePanelType.show) {
             core.connect();
             core.notifyAll();
         }
-        if (((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === MessagePanelType.hide) {
+        // 主动关闭panel / 或者worker失活
+        if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === MessagePanelType.hide || ((_h = message.data) === null || _h === void 0 ? void 0 : _h.type) === MessageWorkerType.close) {
             core.disconnect();
         }
-        if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === MessagePanelType.nodeSelect) {
+        if (((_j = message.data) === null || _j === void 0 ? void 0 : _j.type) === MessagePanelType.nodeSelect) {
             core.setSelect(message.data.data);
             core.notifySelect();
         }
@@ -1887,7 +1915,7 @@
     window.addEventListener("message", onMessage);
     var onceMount = reactSharedExports.once(function () {
         // current site is render by @my-react
-        windowPostMessageWithSource({ type: MessageHookType.mount });
+        hookPostMessageWithSource({ type: MessageHookType.mount });
     });
     var globalHook = function (dispatch) {
         set.add(dispatch);
@@ -1902,7 +1930,7 @@
     else {
         window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
         window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-        windowPostMessageWithSource({ type: MessageHookType.init });
+        hookPostMessageWithSource({ type: MessageHookType.init });
     }
 
     exports.globalHook = globalHook;
