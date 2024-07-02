@@ -56,7 +56,29 @@ export const safeStringify = (obj: Object | Function) => {
       return { type: "object", name: "object", value: Jsan.stringify(obj, replacer, undefined, options) } as const;
     }
   } catch (e) {
-    console.log((e as Error).message);
+    if (typeof obj === "object") {
+      const keys = Object.keys(obj);
+      return {
+        type: "object",
+        name: "object",
+        value: Jsan.stringify(
+          keys.reduce((p, c) => {
+            const v = obj[c];
+            if (typeof v === "object") {
+              p[c] = "object placeholder";
+            } else {
+              p[c] = obj[c];
+            }
+            return p;
+          }, {}),
+          replacer,
+          undefined,
+          options
+        ),
+      };
+    } else {
+      return { type: "object", name: "object", value: Jsan.stringify({ error: (e as Error).message }, replacer, undefined, options) };
+    }
   }
 };
 

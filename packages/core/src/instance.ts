@@ -156,9 +156,6 @@ export class DevToolCore {
     const id = this._selectId;
 
     if (!id) {
-      if (__DEV__) {
-        console.log("[@my-react-devtool/core] select id is empty");
-      }
       return;
     }
 
@@ -171,9 +168,6 @@ export class DevToolCore {
     const id = this._hoverId;
 
     if (!id) {
-      if (__DEV__) {
-        console.log("[@my-react-devtool/core] hover id is empty");
-      }
       return;
     }
 

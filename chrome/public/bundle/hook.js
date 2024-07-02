@@ -1204,7 +1204,26 @@
     		        }
     		    }
     		    catch (e) {
-    		        console.log(e.message);
+    		        if (typeof obj === "object") {
+    		            var keys = Object.keys(obj);
+    		            return {
+    		                type: "object",
+    		                name: "object",
+    		                value: Jsan__namespace.stringify(keys.reduce(function (p, c) {
+    		                    var v = obj[c];
+    		                    if (typeof v === "object") {
+    		                        p[c] = "object placeholder";
+    		                    }
+    		                    else {
+    		                        p[c] = obj[c];
+    		                    }
+    		                    return p;
+    		                }, {}), replacer, undefined, options),
+    		            };
+    		        }
+    		        else {
+    		            return { type: "object", name: "object", value: Jsan__namespace.stringify({ error: e.message }, replacer, undefined, options) };
+    		        }
     		    }
     		};
     		var safeParse = function (val) {
@@ -1530,6 +1549,9 @@
     		var getDetailNodeById = function (id) {
     		    var fiber = fiberStore.get(id);
     		    if (fiber) {
+    		        {
+    		            console.log("[@my-react-devtool/core] current select fiber", fiber);
+    		        }
     		        return getDetailNodeByFiber(fiber);
     		    }
     		};
