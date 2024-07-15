@@ -1251,6 +1251,17 @@
     		    }
     		    return value;
     		};
+    		var objType = function (obj) {
+    		    var type = Object.prototype.toString.call(obj).slice(8, -1);
+    		    if (type === "Object" && typeof obj[Symbol.iterator] === "function") {
+    		        return "Iterable";
+    		    }
+    		    if (type === "Custom" && obj.constructor !== Object && obj instanceof Object) {
+    		        // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
+    		        return "Object";
+    		    }
+    		    return type;
+    		};
     		var options = {
     		    refs: false, // references can't be resolved on the original Immutable structure
     		    date: true,
@@ -1270,37 +1281,41 @@
     		        typeKeys.push(+key);
     		    }
     		});
+    		var cloneObj = function (obj, deepIndex, parentPath) {
+    		    var _a;
+    		    var re = __assign({}, obj);
+    		    if (!deepIndex)
+    		        return re;
+    		    for (var key in obj) {
+    		        var v = obj[key];
+    		        if (typeof v === "object") {
+    		            var currentKey = parentPath ? "".concat(parentPath, " -split- ").concat(key) : key;
+    		            if (deepIndex > 1) {
+    		                re[key] = cloneObj(v, deepIndex - 1, currentKey);
+    		            }
+    		            else {
+    		                re[key] = { type: "nativeObj", value: ((_a = v === null || v === void 0 ? void 0 : v.constructor) === null || _a === void 0 ? void 0 : _a.name) || objType(v), key: currentKey };
+    		            }
+    		        }
+    		        else {
+    		            re[key] = v;
+    		        }
+    		    }
+    		    return re;
+    		};
     		// eslint-disable-next-line @typescript-eslint/ban-types
-    		var safeStringify = function (obj) {
+    		var safeStringify = function (obj, deepIndex) {
     		    try {
     		        if (typeof obj === "function") {
     		            return { type: "function", name: obj.name, value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
     		        }
     		        else {
-    		            return { type: "object", name: "object", value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
+    		            var nObj = cloneObj(obj, deepIndex);
+    		            return { type: "object", name: "object", value: Jsan__namespace.stringify(nObj, replacer, undefined, options) };
     		        }
     		    }
     		    catch (e) {
-    		        if (typeof obj === "object") {
-    		            var keys = Object.keys(obj);
-    		            return {
-    		                type: "object",
-    		                name: "object",
-    		                value: Jsan__namespace.stringify(keys.reduce(function (p, c) {
-    		                    var v = obj[c];
-    		                    if (typeof v === "object") {
-    		                        p[c] = "object placeholder";
-    		                    }
-    		                    else {
-    		                        p[c] = obj[c];
-    		                    }
-    		                    return p;
-    		                }, {}), replacer, undefined, options),
-    		            };
-    		        }
-    		        else {
-    		            return { type: "object", name: "object", value: Jsan__namespace.stringify({ error: e.message }, replacer, undefined, options) };
-    		        }
+    		        return { type: "object", name: "object", value: Jsan__namespace.stringify({ error: e.message }, replacer, undefined, options) };
     		    }
     		};
     		var safeParse = function (val) {
@@ -1516,8 +1531,8 @@
     		    var parseHook = function (hook) {
     		        var name = hook.type === reactShared.HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
     		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
-    		        var value = safeStringify(isEffect ? hook.value : hook.result);
-    		        var deps = safeStringify(hook.deps);
+    		        var value = safeStringify(isEffect ? hook.value : hook.result, 2);
+    		        var deps = safeStringify(hook.deps, 2);
     		        return { name: name, value: value, deps: deps };
     		    };
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return tree.push(parseHook(h)); });
@@ -1530,7 +1545,7 @@
     		    return hook.map(function (item) { return (__assign(__assign({}, item), { value: safeParse(item.value), deps: safeParse(item.deps) })); });
     		};
     		var getObj = function (obj) {
-    		    return safeStringify(obj);
+    		    return safeStringify(obj, 2);
     		};
     		var parseProps = function (plain) {
     		    var obj = plain.props;
@@ -1791,9 +1806,6 @@
     		            return;
     		        var id = this._selectId;
     		        if (!id) {
-    		            {
-    		                console.log("[@my-react-devtool/core] select id is empty");
-    		            }
     		            return;
     		        }
     		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
@@ -1803,9 +1815,6 @@
     		            return;
     		        var id = this._hoverId;
     		        if (!id) {
-    		            {
-    		                console.log("[@my-react-devtool/core] hover id is empty");
-    		            }
     		            return;
     		        }
     		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });

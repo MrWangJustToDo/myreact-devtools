@@ -26,7 +26,11 @@ export const StateView = () => {
       <div className="text-[11px] ml-2 font-mono tree-wrapper" key={index}>
         <JSONTree
           data={currentSelectDetail?.state?.[key]}
-          theme={theme}
+          theme={{
+            extend: theme,
+            arrowContainer: ({ style }, arrowStyle) => ({ style: { ...style, width: "1.125em", paddingRight: arrowStyle === "double" ? "1em" : "0.5em" } }),
+            tree: { marginLeft: 0 },
+          }}
           keyPath={[key]}
           shouldExpandNodeInitially={() => false}
           isCustomNode={(v: any) => v?.type === "nativeNode"}

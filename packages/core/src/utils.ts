@@ -25,6 +25,20 @@ const replacer = (key: string, value: any) => {
   return value;
 };
 
+const objType = (obj: any) => {
+  const type = Object.prototype.toString.call(obj).slice(8, -1);
+  if (type === "Object" && typeof obj[Symbol.iterator] === "function") {
+    return "Iterable";
+  }
+
+  if (type === "Custom" && obj.constructor !== Object && obj instanceof Object) {
+    // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
+    return "Object";
+  }
+
+  return type;
+};
+
 const options = {
   refs: false, // references can't be resolved on the original Immutable structure
   date: true,
@@ -47,38 +61,36 @@ Object.keys(NODE_TYPE).forEach((key) => {
   }
 });
 
+const cloneObj = (obj: any, deepIndex: number, parentPath?: string) => {
+  const re = { ...obj };
+  if (!deepIndex) return re;
+  for (const key in obj) {
+    const v = obj[key];
+    if (typeof v === "object") {
+      const currentKey = parentPath ? `${parentPath} -split- ${key}` : key;
+      if (deepIndex > 1) {
+        re[key] = cloneObj(v, deepIndex - 1, currentKey);
+      } else {
+        re[key] = { type: "nativeObj", value: v?.constructor?.name || objType(v), key: currentKey };
+      }
+    } else {
+      re[key] = v;
+    }
+  }
+  return re;
+};
+
 // eslint-disable-next-line @typescript-eslint/ban-types
-export const safeStringify = (obj: Object | Function) => {
+export const safeStringify = (obj: Object | Function, deepIndex?: number) => {
   try {
     if (typeof obj === "function") {
       return { type: "function", name: obj.name, value: Jsan.stringify(obj, replacer, undefined, options) } as const;
     } else {
-      return { type: "object", name: "object", value: Jsan.stringify(obj, replacer, undefined, options) } as const;
+      const nObj = cloneObj(obj, deepIndex);
+      return { type: "object", name: "object", value: Jsan.stringify(nObj, replacer, undefined, options) } as const;
     }
   } catch (e) {
-    if (typeof obj === "object") {
-      const keys = Object.keys(obj);
-      return {
-        type: "object",
-        name: "object",
-        value: Jsan.stringify(
-          keys.reduce((p, c) => {
-            const v = obj[c];
-            if (typeof v === "object") {
-              p[c] = "object placeholder";
-            } else {
-              p[c] = obj[c];
-            }
-            return p;
-          }, {}),
-          replacer,
-          undefined,
-          options
-        ),
-      };
-    } else {
-      return { type: "object", name: "object", value: Jsan.stringify({ error: (e as Error).message }, replacer, undefined, options) };
-    }
+    return { type: "object", name: "object", value: Jsan.stringify({ error: (e as Error).message }, replacer, undefined, options) };
   }
 };
 

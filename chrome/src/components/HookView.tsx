@@ -7,7 +7,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { getText } from "@/utils/treeValue";
 
-export const theme = getBase16Theme("google:inverted");
+export const theme = getBase16Theme("google:inverted")!;
 
 export const HookView = () => {
   const select = useTreeNode((s) => s.select);
@@ -26,7 +26,11 @@ export const HookView = () => {
       <div className="text-[11px] ml-2 font-mono tree-wrapper" key={index}>
         <JSONTree
           data={node.value}
-          theme={theme}
+          theme={{
+            extend: theme,
+            arrowContainer: ({ style }, arrowStyle) => ({ style: { ...style, width: "1.125em", paddingRight: arrowStyle === "double" ? "1em" : "0.5em" } }),
+            tree: { marginLeft: 0 },
+          }}
           keyPath={[node.name]}
           shouldExpandNodeInitially={() => false}
           isCustomNode={(v: any) => v?.type === "nativeNode"}
