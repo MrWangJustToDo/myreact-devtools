@@ -76,10 +76,6 @@ export class DevToolCore {
 
     dispatch.hasDevToolPatch = true;
 
-    const originalAfterCommit = dispatch.afterCommit;
-
-    const originalAfterUpdate = dispatch.afterUpdate;
-
     const onLoad = throttle(() => {
       if (!this._enabled) return;
 
@@ -88,18 +84,28 @@ export class DevToolCore {
       this.notifySelect();
     }, 200);
 
-    dispatch.afterCommit = function (this: DevToolRenderDispatch) {
-      originalAfterCommit?.call?.(this);
+    if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
+      dispatch.onAfterCommit(onLoad);
 
-      onLoad();
-    };
+      dispatch.onAfterUpdate(onLoad);
+    } else {
+      const originalAfterCommit = dispatch.afterCommit;
 
-    // TODO `global patch` flag for performance
-    dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
-      originalAfterUpdate?.call?.(this);
+      const originalAfterUpdate = dispatch.afterUpdate;
 
-      onLoad();
-    };
+      dispatch.afterCommit = function (this: DevToolRenderDispatch) {
+        originalAfterCommit?.call?.(this);
+
+        onLoad();
+      };
+
+      // TODO `global patch` flag for performance
+      dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
+        originalAfterUpdate?.call?.(this);
+
+        onLoad();
+      };
+    }
   }
 
   hasDispatch(dispatch: DevToolRenderDispatch) {

@@ -20,7 +20,7 @@ export const RenderView = () => {
 
   const currentSelectDetail = nodeList.find((i) => i.id === select);
 
-  const renderTree = currentSelectDetail?.["tree"];
+  let renderTree = currentSelectDetail?.["tree"];
 
   // const [isScrolling, setIsScrolling] = useState(false);
 
@@ -29,6 +29,14 @@ export const RenderView = () => {
   const typeArray = useMemo(() => Array.from(filterType).map((i) => +i), [filterType]);
 
   const allTreeNode = useAppTree((s) => s.list);
+
+  let last = renderTree?.[renderTree?.length - 1];
+
+  if (last?.startsWith("@my-react")) {
+    renderTree = renderTree?.slice(0, -1);
+  } else {
+    last = undefined;
+  }
 
   const renderTreeNode = useMemo(() => renderTree?.map((item) => allTreeNode.find((i) => i.id === item)), [allTreeNode, renderTree]) as PlainNode[];
 
@@ -53,7 +61,7 @@ export const RenderView = () => {
         <Spacer y={1} />
         <div className="w-full">
           {data.map((_, index) => render(index))}
-          <div className="text-[11px] ml-2 font-mono px-[2px]">@my-react</div>
+          <div className="text-[11px] ml-2 font-mono px-[2px]">{last || "@my-react"}</div>
           {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
         </div>
         <Divider />

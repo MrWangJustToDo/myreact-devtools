@@ -5,6 +5,7 @@ import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
 import type { HOOK, PlainNode } from "./plain";
+import type { DevToolRenderDispatch } from "./setup";
 import type {
   MixinMyReactClassComponent,
   MixinMyReactFunctionComponent,
@@ -13,7 +14,7 @@ import type {
   createContext,
   lazy,
 } from "@my-react/react";
-import type { MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
+import type { MyReactFiberContainer, MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
 
 const replacer = (key: string, value: any) => {
   if (key === "_owner" || key === "__fiber__" || key === "__props__") {
@@ -298,6 +299,20 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
     const id = plain.id;
 
     tree.push(id);
+
+    if (!parent.parent) {
+      // next version
+      const typedParent = parent as MyReactFiberContainer & { renderDispatch?: DevToolRenderDispatch };
+      if (typedParent.renderDispatch && typedParent.renderDispatch.version) {
+        tree.push(`@my-react ${typedParent.renderDispatch.version}`);
+      } else {
+        const containerNode = typedParent.containerNode;
+        const version = containerNode.__container__?.version;
+        if (version) {
+          tree.push(`@my-react ${version}`);
+        }
+      }
+    }
 
     parent = parent.parent;
   }

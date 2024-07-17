@@ -1514,12 +1514,27 @@
     		    return null;
     		};
     		var getTree = function (fiber) {
+    		    var _a;
     		    var tree = [];
     		    var parent = fiber === null || fiber === void 0 ? void 0 : fiber.parent;
     		    while (parent) {
     		        var plain = getPlainNodeByFiber(parent);
     		        var id = plain.id;
     		        tree.push(id);
+    		        if (!parent.parent) {
+    		            // next version
+    		            var typedParent = parent;
+    		            if (typedParent.renderDispatch && typedParent.renderDispatch.version) {
+    		                tree.push("@my-react ".concat(typedParent.renderDispatch.version));
+    		            }
+    		            else {
+    		                var containerNode = typedParent.containerNode;
+    		                var version = (_a = containerNode.__container__) === null || _a === void 0 ? void 0 : _a.version;
+    		                if (version) {
+    		                    tree.push("@my-react ".concat(version));
+    		                }
+    		            }
+    		        }
     		        parent = parent.parent;
     		    }
     		    return tree;
@@ -1531,8 +1546,8 @@
     		    var parseHook = function (hook) {
     		        var name = hook.type === reactShared.HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
     		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
-    		        var value = safeStringify(isEffect ? hook.value : hook.result, 2);
-    		        var deps = safeStringify(hook.deps, 2);
+    		        var value = safeStringify(isEffect ? hook.value : hook.result);
+    		        var deps = safeStringify(hook.deps);
     		        return { name: name, value: value, deps: deps };
     		    };
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return tree.push(parseHook(h)); });
@@ -1545,7 +1560,7 @@
     		    return hook.map(function (item) { return (__assign(__assign({}, item), { value: safeParse(item.value), deps: safeParse(item.deps) })); });
     		};
     		var getObj = function (obj) {
-    		    return safeStringify(obj, 2);
+    		    return safeStringify(obj);
     		};
     		var parseProps = function (plain) {
     		    var obj = plain.props;
@@ -1658,12 +1673,18 @@
     		    return plain;
     		};
 
+    		// TODO use 'eventListener' instead of 'patchFunction'
     		function overridePatchToFiberUnmount(dispatch) {
-    		    var originalPatchUnmount = dispatch.patchToFiberUnmount;
-    		    dispatch.patchToFiberUnmount = function (fiber) {
-    		        originalPatchUnmount.call(this, fiber);
-    		        unmountPlainNode(fiber);
-    		    };
+    		    if (typeof dispatch.onFiberUnmount === "function") {
+    		        dispatch.onFiberUnmount(unmountPlainNode);
+    		    }
+    		    else {
+    		        var originalPatchUnmount_1 = dispatch.patchToFiberUnmount;
+    		        dispatch.patchToFiberUnmount = function (fiber) {
+    		            originalPatchUnmount_1.call(this, fiber);
+    		            unmountPlainNode(fiber);
+    		        };
+    		    }
     		}
     		var setupDispatch = function (dispatch) {
     		    if (dispatch.hasDevToolInject)
@@ -1746,25 +1767,31 @@
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
-    		        var originalAfterCommit = dispatch.afterCommit;
-    		        var originalAfterUpdate = dispatch.afterUpdate;
     		        var onLoad = throttle(function () {
     		            if (!_this._enabled)
     		                return;
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
     		        }, 200);
-    		        dispatch.afterCommit = function () {
-    		            var _a;
-    		            (_a = originalAfterCommit === null || originalAfterCommit === void 0 ? void 0 : originalAfterCommit.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit, this);
-    		            onLoad();
-    		        };
-    		        // TODO `global patch` flag for performance
-    		        dispatch.afterUpdate = function () {
-    		            var _a;
-    		            (_a = originalAfterUpdate === null || originalAfterUpdate === void 0 ? void 0 : originalAfterUpdate.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUpdate, this);
-    		            onLoad();
-    		        };
+    		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
+    		            dispatch.onAfterCommit(onLoad);
+    		            dispatch.onAfterUpdate(onLoad);
+    		        }
+    		        else {
+    		            var originalAfterCommit_1 = dispatch.afterCommit;
+    		            var originalAfterUpdate_1 = dispatch.afterUpdate;
+    		            dispatch.afterCommit = function () {
+    		                var _a;
+    		                (_a = originalAfterCommit_1 === null || originalAfterCommit_1 === void 0 ? void 0 : originalAfterCommit_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit_1, this);
+    		                onLoad();
+    		            };
+    		            // TODO `global patch` flag for performance
+    		            dispatch.afterUpdate = function () {
+    		                var _a;
+    		                (_a = originalAfterUpdate_1 === null || originalAfterUpdate_1 === void 0 ? void 0 : originalAfterUpdate_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUpdate_1, this);
+    		                onLoad();
+    		            };
+    		        }
     		    };
     		    DevToolCore.prototype.hasDispatch = function (dispatch) {
     		        return this._dispatch.has(dispatch);
