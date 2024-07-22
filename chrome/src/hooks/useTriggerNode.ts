@@ -11,7 +11,9 @@ export const useTriggerNode = createState(() => ({ state: null, count: {} }) as 
       update: (node: PlainNode[]) => {
         s.state = node;
         node.forEach((i) => {
-          s.count[i.id] = s.count[i.id] ? s.count[i.id] + 1 : 1;
+          if (i) {
+            s.count[i.id] = s.count[i.id] ? s.count[i.id] + 1 : 1;
+          }
         });
       },
       reset: () => {
