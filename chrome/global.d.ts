@@ -2,6 +2,7 @@ import { useAppTree } from "@/hooks/useAppTree";
 import { useConnect } from "@/hooks/useConnect";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
+import { useTriggerNode } from "@/hooks/useTriggerNode";
 import type { CustomRenderDispatch, CustomRenderPlatform, initHMR } from "@my-react/react-reconciler";
 
 declare global {
@@ -13,6 +14,8 @@ declare global {
     "__@my-react/dispatch__": CustomRenderDispatch[];
 
     useAppTree: typeof useAppTree;
+
+    useTriggerNode: typeof useTriggerNode;
 
     useDetailNode: typeof useDetailNode;
 

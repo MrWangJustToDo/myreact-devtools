@@ -5,6 +5,7 @@ import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { memo, useCallback, useMemo } from "react";
 
 import { useTreeNode } from "@/hooks/useTreeNode";
+import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
@@ -63,6 +64,7 @@ export const RenderItem = ({
   withKey = true,
   withTag = true,
   withSelect = true,
+  withTrigger = true,
   withCollapse = true,
 }: {
   width?: number;
@@ -70,11 +72,14 @@ export const RenderItem = ({
   className?: string;
   isScrolling?: boolean;
   withCollapse?: boolean;
+  withTrigger?: boolean;
   withSelect?: boolean;
   withTag?: boolean;
   withKey?: boolean;
 }) => {
   const current = node;
+
+  const count = useTriggerNode(useCallback((s) => s.count?.[node.id], [node.id]));
 
   const { select, closeList, selectList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []));
 
@@ -82,7 +87,10 @@ export const RenderItem = ({
 
   const currentIsClose = withCollapse && closeList?.[node.id];
 
-  const hasSelect = useMemo(() => withSelect && select && !currentIsSelect && selectList?.[node.id], [withSelect, select, currentIsSelect, selectList, node.id]);
+  const hasSelect = useMemo(
+    () => withSelect && select && !currentIsSelect && selectList?.[node.id],
+    [withSelect, select, currentIsSelect, selectList, node.id]
+  );
 
   const isNativeNode = current.type & NODE_TYPE.__plain__ || current.type & NODE_TYPE.__text__;
 
@@ -138,6 +146,14 @@ export const RenderItem = ({
             <>
               <Spacer x={1} />
               <RenderKey node={current} isScrolling={isScrolling} />
+            </>
+          )}
+          {withTrigger && count > 0 && (
+            <>
+              <Spacer x={1} />
+              <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
+                {count}
+              </Chip>
             </>
           )}
         </div>

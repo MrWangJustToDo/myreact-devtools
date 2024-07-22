@@ -1559,6 +1559,10 @@
     		var getPlainNodeByFiber = function (fiber) {
     		    return treeMap.get(fiber);
     		};
+    		var getPlainNodeIdByFiber = function (fiber) {
+    		    var node = getPlainNodeByFiber(fiber);
+    		    return node.id;
+    		};
     		var getDetailNodeByFiber = function (fiber) {
     		    var plainNode = getPlainNodeByFiber(fiber);
     		    if (!plainNode) {
@@ -1622,6 +1626,7 @@
     		    DevToolMessageEnum["init"] = "init";
     		    DevToolMessageEnum["ready"] = "ready";
     		    DevToolMessageEnum["update"] = "update";
+    		    DevToolMessageEnum["trigger"] = "trigger";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
@@ -1662,6 +1667,7 @@
     		        this._map = new Map();
     		        this._hoverId = "";
     		        this._selectId = "";
+    		        this._trigger = [];
     		        this._enabled = false;
     		        this._listeners = new Set();
     		        this.notifyAll = debounce(function () {
@@ -1687,6 +1693,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
+    		        var _a;
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
@@ -1696,9 +1703,17 @@
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
     		        }, 200);
+    		        var onTrigger = function (fiber) {
+    		            if (!_this._enabled)
+    		                return;
+    		            var plainNode = getPlainNodeByFiber(fiber);
+    		            _this._trigger = [plainNode];
+    		            _this.notifyTrigger();
+    		        };
     		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
     		            dispatch.onAfterCommit(onLoad);
     		            dispatch.onAfterUpdate(onLoad);
+    		            (_a = dispatch.onFiberTrigger) === null || _a === void 0 ? void 0 : _a.call(dispatch, onTrigger);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
@@ -1750,6 +1765,12 @@
     		        if (!this._enabled)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
+    		    };
+    		    DevToolCore.prototype.notifyTrigger = function () {
+    		        var _a;
+    		        if (!this._enabled)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: ((_a = this._trigger) === null || _a === void 0 ? void 0 : _a.length) ? this._trigger : null });
     		    };
     		    DevToolCore.prototype.notifySelect = function () {
     		        if (!this._enabled)
@@ -1811,6 +1832,7 @@
     		exports.getHookName = getHookName;
     		exports.getObj = getObj;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
+    		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
     		exports.getSource = getSource;
     		exports.getTree = getTree;
     		exports.getTypeName = getTypeName;

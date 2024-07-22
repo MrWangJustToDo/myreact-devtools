@@ -103,6 +103,25 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       _window.useConnect.getActions().setError(typedE.message);
     }
   }
+
+  if (data.type === DevToolMessageEnum.trigger) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] trigger", data.data);
+    }
+
+    const nodes = data.data as PlainNode[];
+
+    try {
+      const { update } = _window.useTriggerNode.getActions();
+
+      update(nodes);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
+
   if (data.type === DevToolMessageEnum.detail) {
     if (__DEV__) {
       console.log("[@my-react-devtool/panel] detail", data.data);

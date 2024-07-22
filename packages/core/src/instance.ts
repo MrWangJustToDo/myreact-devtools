@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import { generateTreeMap, getDetailNodeById } from "./tree";
+import { generateTreeMap, getDetailNodeById, getPlainNodeByFiber } from "./tree";
 
 import type { Tree } from "./tree";
+import type { MyReactFiberNode } from "@my-react/react-reconciler";
 
 export enum DevToolMessageEnum {
   // 初始化，判断是否用@my-react进行页面渲染
   init = "init",
   ready = "ready",
   update = "update",
+  trigger = "trigger",
   detail = "detail",
   unmount = "unmount",
 }
@@ -51,6 +53,8 @@ export class DevToolCore {
 
   _selectId = "";
 
+  _trigger = [];
+
   _enabled = false;
 
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
@@ -84,10 +88,22 @@ export class DevToolCore {
       this.notifySelect();
     }, 200);
 
+    const onTrigger = (fiber: MyReactFiberNode) => {
+      if (!this._enabled) return;
+
+      const plainNode = getPlainNodeByFiber(fiber);
+
+      this._trigger = [plainNode];
+
+      this.notifyTrigger();
+    };
+
     if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
       dispatch.onAfterCommit(onLoad);
 
       dispatch.onAfterUpdate(onLoad);
+
+      dispatch.onFiberTrigger?.(onTrigger);
     } else {
       const originalAfterCommit = dispatch.afterCommit;
 
@@ -154,6 +170,12 @@ export class DevToolCore {
     if (!this._enabled) return;
 
     this._notify({ type: DevToolMessageEnum.init, data: this._detector });
+  }
+
+  notifyTrigger() {
+    if (!this._enabled) return;
+
+    this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger?.length ? this._trigger : null });
   }
 
   notifySelect() {

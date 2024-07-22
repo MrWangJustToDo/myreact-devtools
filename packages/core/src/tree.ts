@@ -105,6 +105,11 @@ export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
   return treeMap.get(fiber);
 };
 
+export const getPlainNodeIdByFiber = (fiber: MyReactFiberNode) => {
+  const node = getPlainNodeByFiber(fiber);
+  return node.id;
+};
+
 export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
   const plainNode = getPlainNodeByFiber(fiber);
 

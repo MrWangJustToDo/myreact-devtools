@@ -31,6 +31,8 @@ declare global {
         setConnectHandler: (cb: () => void) => void;
       }
     >;
+
+    useTriggerNode: UseSelectorWithState<{ state: PlainNode[] | null }, { update: (node: PlainNode[]) => void }>;
   }
 }
 
