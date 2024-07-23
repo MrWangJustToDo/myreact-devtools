@@ -107,7 +107,7 @@ export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
 
 export const getPlainNodeIdByFiber = (fiber: MyReactFiberNode) => {
   const node = getPlainNodeByFiber(fiber);
-  return node.id;
+  return node?.id;
 };
 
 export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {

@@ -109,7 +109,7 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       console.log("[@my-react-devtool/panel] trigger", data.data);
     }
 
-    const nodes = data.data as PlainNode[];
+    const nodes = data.data as Record<string, number>;
 
     try {
       const { update } = _window.useTriggerNode.getActions();

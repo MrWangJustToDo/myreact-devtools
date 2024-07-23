@@ -2,22 +2,15 @@ import { createState } from "reactivity-store";
 
 import { isServer } from "@/utils/isServer";
 
-import type { PlainNode } from "@my-react-devtool/core";
-
-export const useTriggerNode = createState(() => ({ state: null, count: {} }) as { state: PlainNode[] | null; count: Record<string, number> }, {
+export const useTriggerNode = createState(() => ({ state: {} }) as { state: Record<string, number> }, {
   withDeepSelector: false,
   withActions: (s) => {
     return {
-      update: (node: PlainNode[]) => {
-        s.state = node;
-        node.forEach((i) => {
-          if (i) {
-            s.count[i.id] = s.count[i.id] ? s.count[i.id] + 1 : 1;
-          }
-        });
+      update: (state: Record<string, number>) => {
+        s.state = state;
       },
       reset: () => {
-        s.state = null;
+        s.state = {};
       },
     };
   },

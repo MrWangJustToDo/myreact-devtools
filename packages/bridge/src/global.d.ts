@@ -32,7 +32,7 @@ declare global {
       }
     >;
 
-    useTriggerNode: UseSelectorWithState<{ state: PlainNode[] | null }, { update: (node: PlainNode[]) => void }>;
+    useTriggerNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;
   }
 }
 

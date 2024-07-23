@@ -1638,7 +1638,7 @@
     		};
     		var getPlainNodeIdByFiber = function (fiber) {
     		    var node = getPlainNodeByFiber(fiber);
-    		    return node.id;
+    		    return node === null || node === void 0 ? void 0 : node.id;
     		};
     		var getDetailNodeByFiber = function (fiber) {
     		    var plainNode = getPlainNodeByFiber(fiber);
@@ -1744,7 +1744,7 @@
     		        this._map = new Map();
     		        this._hoverId = "";
     		        this._selectId = "";
-    		        this._trigger = [];
+    		        this._trigger = {};
     		        this._enabled = false;
     		        this._listeners = new Set();
     		        this.notifyAll = debounce(function () {
@@ -1781,10 +1781,12 @@
     		            _this.notifySelect();
     		        }, 200);
     		        var onTrigger = function (fiber) {
+    		            var id = getPlainNodeIdByFiber(fiber);
+    		            if (!id)
+    		                return;
+    		            _this._trigger[id] = _this._trigger[id] ? _this._trigger[id] + 1 : 1;
     		            if (!_this._enabled)
     		                return;
-    		            var plainNode = getPlainNodeByFiber(fiber);
-    		            _this._trigger = [plainNode];
     		            _this.notifyTrigger();
     		        };
     		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
@@ -1844,10 +1846,9 @@
     		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
     		    };
     		    DevToolCore.prototype.notifyTrigger = function () {
-    		        var _a;
     		        if (!this._enabled)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: ((_a = this._trigger) === null || _a === void 0 ? void 0 : _a.length) ? this._trigger : null });
+    		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: this._trigger });
     		    };
     		    DevToolCore.prototype.notifySelect = function () {
     		        if (!this._enabled)

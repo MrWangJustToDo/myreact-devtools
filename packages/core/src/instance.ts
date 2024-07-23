@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import { generateTreeMap, getDetailNodeById, getPlainNodeByFiber } from "./tree";
+import { generateTreeMap, getDetailNodeById, getPlainNodeIdByFiber } from "./tree";
 
 import type { Tree } from "./tree";
 import type { MyReactFiberNode } from "@my-react/react-reconciler";
@@ -53,7 +53,7 @@ export class DevToolCore {
 
   _selectId = "";
 
-  _trigger = [];
+  _trigger = {};
 
   _enabled = false;
 
@@ -89,11 +89,13 @@ export class DevToolCore {
     }, 200);
 
     const onTrigger = (fiber: MyReactFiberNode) => {
+      const id = getPlainNodeIdByFiber(fiber);
+
+      if (!id) return;
+
+      this._trigger[id] = this._trigger[id] ? this._trigger[id] + 1 : 1;
+
       if (!this._enabled) return;
-
-      const plainNode = getPlainNodeByFiber(fiber);
-
-      this._trigger = [plainNode];
 
       this.notifyTrigger();
     };
@@ -175,7 +177,7 @@ export class DevToolCore {
   notifyTrigger() {
     if (!this._enabled) return;
 
-    this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger?.length ? this._trigger : null });
+    this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
   }
 
   notifySelect() {

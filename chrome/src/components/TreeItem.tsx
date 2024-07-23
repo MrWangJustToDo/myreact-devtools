@@ -79,7 +79,7 @@ export const RenderItem = ({
 }) => {
   const current = node;
 
-  const count = useTriggerNode(useCallback((s) => s.count?.[node.id], [node.id]));
+  const count = useTriggerNode(useCallback((s) => s.state?.[node.id], [node.id]));
 
   const { select, closeList, selectList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []));
 
