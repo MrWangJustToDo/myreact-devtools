@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import { isNormalEquals } from "@my-react/react-shared";
+
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import { generateTreeMap, getDetailNodeById, getPlainNodeIdByFiber } from "./tree";
 
@@ -8,9 +10,11 @@ import type { MyReactFiberNode } from "@my-react/react-reconciler";
 export enum DevToolMessageEnum {
   // 初始化，判断是否用@my-react进行页面渲染
   init = "init",
+  dir = "dir",
   ready = "ready",
   update = "update",
   trigger = "trigger",
+  hmr = "hmr",
   detail = "detail",
   unmount = "unmount",
 }
@@ -49,11 +53,16 @@ export class DevToolCore {
 
   _map: Map<DevToolRenderDispatch, Tree> = new Map();
 
+  // 字符串字典
+  _dir = {};
+
   _hoverId = "";
 
   _selectId = "";
 
   _trigger = {};
+
+  _hmr = {};
 
   _enabled = false;
 
@@ -100,12 +109,26 @@ export class DevToolCore {
       this.notifyTrigger();
     };
 
+    const onHMR = (fiber: MyReactFiberNode) => {
+      const id = getPlainNodeIdByFiber(fiber);
+
+      if (!id) return;
+
+      this._hmr[id] = this._hmr[id] ? this._hmr[id] + 1 : 1;
+
+      if (!this._enabled) return;
+
+      this.notifyHMR();
+    };
+
     if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
       dispatch.onAfterCommit(onLoad);
 
       dispatch.onAfterUpdate(onLoad);
 
       dispatch.onFiberTrigger?.(onTrigger);
+
+      dispatch.onFiberHMR?.(onHMR);
     } else {
       const originalAfterCommit = dispatch.afterCommit;
 
@@ -153,11 +176,17 @@ export class DevToolCore {
   }
 
   getTree(dispatch: DevToolRenderDispatch) {
-    const tree = generateTreeMap(dispatch);
+    const { directory, current } = generateTreeMap(dispatch);
 
-    this._map.set(dispatch, tree);
+    if (!isNormalEquals(this._dir, directory)) {
+      this._dir = directory;
 
-    return tree;
+      this.notifyDir();
+    }
+
+    this._map.set(dispatch, current);
+
+    return current;
   }
 
   setSelect(id: string) {
@@ -166,6 +195,12 @@ export class DevToolCore {
 
   setHover(id: string) {
     this._hoverId = id;
+  }
+
+  notifyDir() {
+    if (!this._enabled) return;
+
+    this._notify({ type: DevToolMessageEnum.dir, data: this._dir });
   }
 
   notifyDetector() {
@@ -178,6 +213,12 @@ export class DevToolCore {
     if (!this._enabled) return;
 
     this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
+  }
+
+  notifyHMR() {
+    if (!this._enabled) return;
+
+    this._notify({ type: DevToolMessageEnum.hmr, data: this._hmr });
   }
 
   notifySelect() {
@@ -220,6 +261,8 @@ export class DevToolCore {
     this._dispatch.forEach((dispatch) => {
       this.notifyDispatch(dispatch);
     });
+
+    this.notifyDir();
 
     this.notifyHover();
 

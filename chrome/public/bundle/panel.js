@@ -1309,9 +1309,17 @@
     		        if (typeof obj === "function") {
     		            return { type: "function", name: obj.name, value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
     		        }
+    		        else if (typeof obj === "object") {
+    		            if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && obj instanceof HTMLElement) {
+    		                return { type: "nativeNode", value: "<".concat(obj.tagName.toLowerCase(), " />") };
+    		            }
+    		            else {
+    		                var nObj = cloneObj(obj, deepIndex);
+    		                return { type: "object", name: "object", value: Jsan__namespace.stringify(nObj, replacer, undefined, options) };
+    		            }
+    		        }
     		        else {
-    		            var nObj = cloneObj(obj, deepIndex);
-    		            return { type: "object", name: "object", value: Jsan__namespace.stringify(nObj, replacer, undefined, options) };
+    		            return obj;
     		        }
     		    }
     		    catch (e) {
@@ -1330,8 +1338,11 @@
     		            });
     		            return re;
     		        }
-    		        else {
+    		        else if (val.type === "object") {
     		            return Jsan__namespace.parse(val.value);
+    		        }
+    		        else {
+    		            return val;
     		        }
     		    }
     		    catch (e) {
@@ -1575,10 +1586,20 @@
     		var detailMap = new Map();
     		var fiberStore = new Map();
     		var plainStore = new Map();
+    		var directory = {};
+    		var count = 0;
     		var shallowAssignFiber = function (plain, fiber) {
-    		    plain.key = fiber.key;
+    		    var hasKey = fiber.key !== null && fiber.key !== undefined;
+    		    if (hasKey && !directory[fiber.key]) {
+    		        directory[fiber.key] = ++count + "";
+    		    }
+    		    var name = getFiberName(fiber);
+    		    if (!directory[name]) {
+    		        directory[name] = ++count + "";
+    		    }
+    		    plain.key = hasKey ? directory[fiber.key] : undefined;
     		    plain.type = fiber.type;
-    		    plain.name = getFiberName(fiber);
+    		    plain.name = directory[name];
     		};
     		var assignFiber = function (plain, fiber) {
     		    shallowAssignFiber(plain, fiber);
@@ -1617,7 +1638,7 @@
     		    if (fiber.sibling) {
     		        loopTree(fiber.sibling, parent);
     		    }
-    		    return current;
+    		    return { current: current, directory: directory };
     		};
     		var generateTreeMap = function (dispatch) {
     		    var rootFiber = dispatch.rootFiber;
@@ -1701,9 +1722,11 @@
     		(function (DevToolMessageEnum) {
     		    // 初始化，判断是否用@my-react进行页面渲染
     		    DevToolMessageEnum["init"] = "init";
+    		    DevToolMessageEnum["dir"] = "dir";
     		    DevToolMessageEnum["ready"] = "ready";
     		    DevToolMessageEnum["update"] = "update";
     		    DevToolMessageEnum["trigger"] = "trigger";
+    		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
@@ -1742,9 +1765,12 @@
     		        // 是否存在 @my-react
     		        this._detector = false;
     		        this._map = new Map();
+    		        // 字符串字典
+    		        this._dir = {};
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._trigger = {};
+    		        this._hmr = {};
     		        this._enabled = false;
     		        this._listeners = new Set();
     		        this.notifyAll = debounce(function () {
@@ -1752,6 +1778,7 @@
     		            _this._dispatch.forEach(function (dispatch) {
     		                _this.notifyDispatch(dispatch);
     		            });
+    		            _this.notifyDir();
     		            _this.notifyHover();
     		            _this.notifySelect();
     		        }, 200);
@@ -1770,7 +1797,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a;
+    		        var _a, _b;
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
@@ -1789,10 +1816,20 @@
     		                return;
     		            _this.notifyTrigger();
     		        };
+    		        var onHMR = function (fiber) {
+    		            var id = getPlainNodeIdByFiber(fiber);
+    		            if (!id)
+    		                return;
+    		            _this._hmr[id] = _this._hmr[id] ? _this._hmr[id] + 1 : 1;
+    		            if (!_this._enabled)
+    		                return;
+    		            _this.notifyHMR();
+    		        };
     		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
     		            dispatch.onAfterCommit(onLoad);
     		            dispatch.onAfterUpdate(onLoad);
     		            (_a = dispatch.onFiberTrigger) === null || _a === void 0 ? void 0 : _a.call(dispatch, onTrigger);
+    		            (_b = dispatch.onFiberHMR) === null || _b === void 0 ? void 0 : _b.call(dispatch, onHMR);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
@@ -1830,15 +1867,24 @@
     		        this._listeners.forEach(function (listener) { return listener(data); });
     		    };
     		    DevToolCore.prototype.getTree = function (dispatch) {
-    		        var tree = generateTreeMap(dispatch);
-    		        this._map.set(dispatch, tree);
-    		        return tree;
+    		        var _a = generateTreeMap(dispatch), directory = _a.directory, current = _a.current;
+    		        if (!reactShared.isNormalEquals(this._dir, directory)) {
+    		            this._dir = directory;
+    		            this.notifyDir();
+    		        }
+    		        this._map.set(dispatch, current);
+    		        return current;
     		    };
     		    DevToolCore.prototype.setSelect = function (id) {
     		        this._selectId = id;
     		    };
     		    DevToolCore.prototype.setHover = function (id) {
     		        this._hoverId = id;
+    		    };
+    		    DevToolCore.prototype.notifyDir = function () {
+    		        if (!this._enabled)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.dir, data: this._dir });
     		    };
     		    DevToolCore.prototype.notifyDetector = function () {
     		        if (!this._enabled)
@@ -1849,6 +1895,11 @@
     		        if (!this._enabled)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: this._trigger });
+    		    };
+    		    DevToolCore.prototype.notifyHMR = function () {
+    		        if (!this._enabled)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.hmr, data: this._hmr });
     		    };
     		    DevToolCore.prototype.notifySelect = function () {
     		        if (!this._enabled)
@@ -2036,6 +2087,20 @@
                 _window.useConnect.getActions().setError(typedE.message);
             }
         }
+        if (data.type === coreExports.DevToolMessageEnum.dir) {
+            {
+                console.log("[@my-react-devtool/panel] dir", data.data);
+            }
+            var node = data.data;
+            try {
+                var set = _window.useNodeName.getActions().set;
+                set(node);
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
         if (data.type === coreExports.DevToolMessageEnum.ready) {
             {
                 console.log("[@my-react-devtool/panel] init", data.data);
@@ -2046,6 +2111,20 @@
                 if (node) {
                     addNode(node);
                 }
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
+        if (data.type === coreExports.DevToolMessageEnum.hmr) {
+            {
+                console.log("[@my-react-devtool/panel] hmr", data.data);
+            }
+            var nodes = data.data;
+            try {
+                var update = _window.useHMRNode.getActions().update;
+                update(nodes);
             }
             catch (e) {
                 var typedE = e;

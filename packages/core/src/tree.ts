@@ -12,12 +12,28 @@ const fiberStore = new Map<string, MyReactFiberNode>();
 
 const plainStore = new Map<string, PlainNode>();
 
+const directory: Record<string, string> = {};
+
+let count = 0;
+
 export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
-  plain.key = fiber.key;
+  const hasKey = fiber.key !== null && fiber.key !== undefined;
+
+  if (hasKey && !directory[fiber.key]) {
+    directory[fiber.key] = ++count + "";
+  }
+
+  const name = getFiberName(fiber as MyReactFiberNodeDev);
+
+  if (!directory[name]) {
+    directory[name] = ++count + "";
+  }
+
+  plain.key = hasKey ? directory[fiber.key] : undefined;
 
   plain.type = fiber.type;
 
-  plain.name = getFiberName(fiber as MyReactFiberNodeDev);
+  plain.name = directory[name];
 };
 
 export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
@@ -37,7 +53,7 @@ export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
 };
 
 // TODO improve performance
-export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode | null => {
+export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): { current: PlainNode; directory: Record<string, string> } | null => {
   if (!fiber) return null;
 
   const exist = treeMap.get(fiber);
@@ -74,7 +90,7 @@ export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): PlainNode
     loopTree(fiber.sibling, parent);
   }
 
-  return current;
+  return { current, directory };
 };
 
 export const generateTreeMap = (dispatch: CustomRenderDispatch) => {
@@ -85,7 +101,7 @@ export const generateTreeMap = (dispatch: CustomRenderDispatch) => {
   return rootNode;
 };
 
-export type Tree = ReturnType<typeof generateTreeMap>;
+export type Tree = ReturnType<typeof generateTreeMap>["current"];
 
 export const unmountPlainNode = (fiber: MyReactFiberNode) => {
   const plain = treeMap.get(fiber);

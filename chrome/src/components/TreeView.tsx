@@ -1,4 +1,3 @@
-import { useIsomorphicLayoutEffect } from "framer-motion";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
@@ -104,9 +103,9 @@ export const TreeView = memo(() => {
     }
   }, []);
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     onScroll();
-  }, [width, height, nodes.length]);
+  }, [width, height, nodes.length, onScroll]);
 
   return (
     <div className="tree-view h-full border rounded-md border-gray-200 group transform-cpu" ref={ref}>

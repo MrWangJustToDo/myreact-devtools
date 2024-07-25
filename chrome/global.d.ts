@@ -2,6 +2,8 @@ import { useAppTree } from "@/hooks/useAppTree";
 import { useConnect } from "@/hooks/useConnect";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
+import { useNodeName } from "@/hooks/useNodeName";
+import { useHMRNode } from "@/hooks/useHMRNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import type { CustomRenderDispatch, CustomRenderPlatform, initHMR } from "@my-react/react-reconciler";
 
@@ -22,6 +24,10 @@ declare global {
     useTreeNode: typeof useTreeNode;
 
     useConnect: typeof useConnect;
+
+    useNodeName: typeof useNodeName;
+
+    useHMRNode: typeof useHMRNode;
   }
 }
 

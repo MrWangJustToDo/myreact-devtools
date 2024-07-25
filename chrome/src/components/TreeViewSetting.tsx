@@ -24,12 +24,12 @@ export const TreeViewSetting = memo(() => {
   return (
     <>
       <ButtonGroup className="fixed top-3 right-3 z-10">
-        <Tooltip content={<p className={state ? "text-green-400" : "text-red-400"}>{state ? "DevTool Connect" : "DevTool DisConnect"}</p>}>
+        <Tooltip content={<p className={state ? "text-green-400" : "text-red-400"}>{state ? "DevTool Connect" : "DevTool DisConnect"}</p>} showArrow>
           <Button isIconOnly onClick={() => cb?.()} disabled={state}>
             {state ? <CheckCircledIcon className="text-green-500" /> : <CrossCircledIcon className=" text-red-500" />}
           </Button>
         </Tooltip>
-        <Tooltip content="Setting">
+        <Tooltip content="Setting" showArrow>
           <Button isIconOnly onClick={onOpen}>
             <GearIcon className=" text-gray-500" />
           </Button>

@@ -86,9 +86,15 @@ export const safeStringify = (obj: Object | Function, deepIndex?: number) => {
   try {
     if (typeof obj === "function") {
       return { type: "function", name: obj.name, value: Jsan.stringify(obj, replacer, undefined, options) } as const;
+    } else if (typeof obj === "object") {
+      if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && obj instanceof HTMLElement) {
+        return { type: "nativeNode", value: `<${obj.tagName.toLowerCase()} />` };
+      } else {
+        const nObj = cloneObj(obj, deepIndex);
+        return { type: "object", name: "object", value: Jsan.stringify(nObj, replacer, undefined, options) } as const;
+      }
     } else {
-      const nObj = cloneObj(obj, deepIndex);
-      return { type: "object", name: "object", value: Jsan.stringify(nObj, replacer, undefined, options) } as const;
+      return obj;
     }
   } catch (e) {
     return { type: "object", name: "object", value: Jsan.stringify({ error: (e as Error).message }, replacer, undefined, options) };
@@ -108,8 +114,10 @@ export const safeParse = (val: FiberObj) => {
         value: val.name,
       });
       return re;
-    } else {
+    } else if (val.type === "object") {
       return Jsan.parse(val.value);
+    } else {
+      return val;
     }
   } catch (e) {
     console.log((e as Error).message);

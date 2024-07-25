@@ -84,6 +84,24 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
     }
   }
 
+  if (data.type === DevToolMessageEnum.dir) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] dir", data.data);
+    }
+
+    const node = data.data as Record<string, string>;
+
+    try {
+      const { set } = _window.useNodeName.getActions();
+
+      set(node);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
+
   if (data.type === DevToolMessageEnum.ready) {
     if (__DEV__) {
       console.log("[@my-react-devtool/panel] init", data.data);
@@ -97,6 +115,24 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       if (node) {
         addNode(node);
       }
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
+
+  if (data.type === DevToolMessageEnum.hmr) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] hmr", data.data);
+    }
+
+    const nodes = data.data as Record<string, number>;
+
+    try {
+      const { update } = _window.useHMRNode.getActions();
+
+      update(nodes);
     } catch (e) {
       const typedE = e as Error;
 

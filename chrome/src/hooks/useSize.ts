@@ -1,4 +1,5 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useIsomorphicLayoutEffect } from "framer-motion";
+import { useRef, type RefObject } from "react";
 
 import { useDebouncedState } from "./useDebouncedState";
 
@@ -43,7 +44,7 @@ export function useDomSize({
 
   const [rect, setRect] = useDebouncedState<DOMRectType>(INITIAL_RECT, 100);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const domElement = ref ? ref.current : cssSelector ? document.querySelector(cssSelector) : getEleRef.current?.() || null;
     if (domElement) {
       if (window.ResizeObserver) {

@@ -33,6 +33,10 @@ declare global {
     >;
 
     useTriggerNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;
+
+    useHMRNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;
+
+    useNodeName: UseSelectorWithState<{ state: Record<string, string> }, { set: (s: Record<string, string>) => void }>;
   }
 }
 

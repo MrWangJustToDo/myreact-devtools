@@ -4,6 +4,8 @@ import { Chip, Spacer, Tooltip } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { memo, useCallback, useMemo } from "react";
 
+import { useHMRNode } from "@/hooks/useHMRNode";
+import { useNodeName } from "@/hooks/useNodeName";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
@@ -32,27 +34,25 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
 RenderTag.displayName = "RenderTag";
 
 const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: boolean }) => {
-  if (node.key) {
-    return (
-      <div className="flex items-center gap-x-[1px] text-[12px]">
-        <div className=" text-[#40af2c]">key</div>
-        <div className=" text-gray-400">=</div>
-        <div className="flex">
-          {'"'}
-          {isScrolling ? (
-            <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">{node.key}</div>
-          ) : (
-            <Tooltip content={node.key} delay={800}>
-              <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">{node.key}</div>
-            </Tooltip>
-          )}
-          {'"'}
-        </div>
+  const finalKey = useNodeName(useCallback((s) => s.map?.[node.key!], [node.key]));
+
+  return (
+    <div className="flex items-center gap-x-[1px] text-[12px]">
+      <div className=" text-[#40af2c]">key</div>
+      <div className=" text-gray-400">=</div>
+      <div className="flex">
+        {'"'}
+        {isScrolling ? (
+          <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
+        ) : (
+          <Tooltip content={finalKey} delay={800} showArrow>
+            <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
+          </Tooltip>
+        )}
+        {'"'}
       </div>
-    );
-  } else {
-    return null;
-  }
+    </div>
+  );
 });
 
 RenderKey.displayName = "RenderKey";
@@ -63,6 +63,7 @@ export const RenderItem = ({
   className,
   withKey = true,
   withTag = true,
+  withHMR = true,
   withSelect = true,
   withTrigger = true,
   withCollapse = true,
@@ -74,12 +75,17 @@ export const RenderItem = ({
   withCollapse?: boolean;
   withTrigger?: boolean;
   withSelect?: boolean;
+  withHMR?: boolean;
   withTag?: boolean;
   withKey?: boolean;
 }) => {
   const current = node;
 
-  const count = useTriggerNode(useCallback((s) => s.state?.[node.id], [node.id]));
+  const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.id], [node.id]));
+
+  const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.id], [node.id]));
+
+  const finalName = useNodeName(useCallback((s) => s.map[current.name], [current.name]));
 
   const { select, closeList, selectList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []));
 
@@ -126,7 +132,7 @@ export const RenderItem = ({
             >
               {hasChild ? (
                 !isScrolling ? (
-                  <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800}>
+                  <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow>
                     {StateIcon}
                   </Tooltip>
                 ) : (
@@ -135,25 +141,37 @@ export const RenderItem = ({
               ) : null}
             </span>
           )}
-          <p className={isNativeNode ? " text-[#f15950]" : "text-[#427af5]"}>{current.name}</p>
+          <p className={isNativeNode ? " text-[#f15950]" : "text-[#427af5]"}>{finalName}</p>
           {withTag && (
             <>
               <Spacer x={1} />
               <RenderTag node={current} />
             </>
           )}
-          {withKey && (
+          {withKey && current.key && (
             <>
               <Spacer x={1} />
               <RenderKey node={current} isScrolling={isScrolling} />
             </>
           )}
-          {withTrigger && count > 0 && (
+          {withTrigger && triggerCount > 0 && (
             <>
               <Spacer x={1} />
-              <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
-                {count}
-              </Chip>
+              <Tooltip content="trigger update" showArrow>
+                <Chip size="sm" radius="none" color="primary" className="rounded-md capitalize text-[8px] h-[14px]">
+                  {triggerCount}
+                </Chip>
+              </Tooltip>
+            </>
+          )}
+          {withHMR && hmrCount > 0 && (
+            <>
+              <Spacer x={1} />
+              <Tooltip content="hmr update" showArrow>
+                <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
+                  {hmrCount}
+                </Chip>
+              </Tooltip>
             </>
           )}
         </div>
