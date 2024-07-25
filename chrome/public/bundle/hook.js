@@ -1792,7 +1792,7 @@
     		    DevToolCore.prototype.getTree = function (dispatch) {
     		        var _a = generateTreeMap(dispatch), directory = _a.directory, current = _a.current;
     		        if (!reactShared.isNormalEquals(this._dir, directory)) {
-    		            this._dir = directory;
+    		            this._dir = __assign({}, directory);
     		            this.notifyDir();
     		        }
     		        this._map.set(dispatch, current);

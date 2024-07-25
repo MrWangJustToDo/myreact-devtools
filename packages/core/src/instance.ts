@@ -179,7 +179,7 @@ export class DevToolCore {
     const { directory, current } = generateTreeMap(dispatch);
 
     if (!isNormalEquals(this._dir, directory)) {
-      this._dir = directory;
+      this._dir = { ...directory };
 
       this.notifyDir();
     }
