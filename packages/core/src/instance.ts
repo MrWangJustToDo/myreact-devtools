@@ -266,6 +266,10 @@ export class DevToolCore {
 
     this.notifyHover();
 
+    this.notifyTrigger();
+
+    this.notifyHMR();
+
     this.notifySelect();
   }, 200);
 
