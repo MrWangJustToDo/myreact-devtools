@@ -105,17 +105,21 @@ export type FiberObj = ReturnType<typeof safeStringify>;
 
 export const safeParse = (val: FiberObj) => {
   try {
-    if (val.type === "function") {
-      const re = Jsan.parse(val.value);
-      Object.defineProperty(re, "name", {
-        value: val.name,
-      });
-      Object.defineProperty(re, "displayName", {
-        value: val.name,
-      });
-      return re;
-    } else if (val.type === "object") {
-      return Jsan.parse(val.value);
+    if (typeof val === "object") {
+      if (val.type === "function") {
+        const re = Jsan.parse(val.value);
+        Object.defineProperty(re, "name", {
+          value: val.name,
+        });
+        Object.defineProperty(re, "displayName", {
+          value: val.name,
+        });
+        return re;
+      } else if (val.type === "object") {
+        return Jsan.parse(val.value);
+      } else {
+        return Jsan.parse(val as any);
+      }
     } else {
       return val;
     }
