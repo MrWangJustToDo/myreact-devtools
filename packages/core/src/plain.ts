@@ -9,6 +9,13 @@ export type HOOK = {
   deps: any;
 };
 
+export type HOOKTree = {
+  id: string;
+  name: string;
+  node?: HOOK;
+  value?: { [p: string]: HOOKTree };
+};
+
 // PlainNode is a simplified version of FiberNode just for show the structure
 export class PlainNode {
   props: MyReactFiberNode["pendingProps"];
@@ -32,6 +39,8 @@ export class PlainNode {
   tree: string[];
 
   hook: HOOK[];
+
+  hook_v2: HOOKTree[];
 
   constructor(_id?: string) {
     this.id = _id || `${id++}`;

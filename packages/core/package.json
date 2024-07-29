@@ -37,9 +37,11 @@
     "@my-react/react-dom": "^0.3.1",
     "@my-react/react-reconciler": "^0.3.1",
     "@my-react/react-shared": "^0.3.1",
-    "@types/jsan": "^3.1.5"
+    "@types/jsan": "^3.1.5",
+    "@types/lodash": "^4.17.7"
   },
   "dependencies": {
-    "jsan": "^3.1.14"
+    "jsan": "^3.1.14",
+    "lodash": "^4.17.21"
   }
 }

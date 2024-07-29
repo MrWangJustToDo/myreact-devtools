@@ -1174,17 +1174,6 @@
     		    }
     		    return value;
     		};
-    		var objType = function (obj) {
-    		    var type = Object.prototype.toString.call(obj).slice(8, -1);
-    		    if (type === "Object" && typeof obj[Symbol.iterator] === "function") {
-    		        return "Iterable";
-    		    }
-    		    if (type === "Custom" && obj.constructor !== Object && obj instanceof Object) {
-    		        // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
-    		        return "Object";
-    		    }
-    		    return type;
-    		};
     		var options = {
     		    refs: false, // references can't be resolved on the original Immutable structure
     		    date: true,
@@ -1204,30 +1193,8 @@
     		        typeKeys.push(+key);
     		    }
     		});
-    		var cloneObj = function (obj, deepIndex, parentPath) {
-    		    var _a;
-    		    var re = __assign({}, obj);
-    		    if (!deepIndex)
-    		        return re;
-    		    for (var key in obj) {
-    		        var v = obj[key];
-    		        if (typeof v === "object") {
-    		            var currentKey = parentPath ? "".concat(parentPath, " -split- ").concat(key) : key;
-    		            if (deepIndex > 1) {
-    		                re[key] = cloneObj(v, deepIndex - 1, currentKey);
-    		            }
-    		            else {
-    		                re[key] = { type: "nativeObj", value: ((_a = v === null || v === void 0 ? void 0 : v.constructor) === null || _a === void 0 ? void 0 : _a.name) || objType(v), key: currentKey };
-    		            }
-    		        }
-    		        else {
-    		            re[key] = v;
-    		        }
-    		    }
-    		    return re;
-    		};
     		// eslint-disable-next-line @typescript-eslint/ban-types
-    		var safeStringify = function (obj, deepIndex) {
+    		var safeStringify = function (obj, _deepIndex) {
     		    try {
     		        if (typeof obj === "function") {
     		            return { type: "function", name: obj.name, value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
@@ -1237,8 +1204,7 @@
     		                return { type: "nativeNode", value: "<".concat(obj.tagName.toLowerCase(), " />") };
     		            }
     		            else {
-    		                var nObj = cloneObj(obj, deepIndex);
-    		                return { type: "object", name: "object", value: Jsan__namespace.stringify(nObj, replacer, undefined, options) };
+    		                return { type: "object", name: "object", value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
     		            }
     		        }
     		        else {
@@ -1251,18 +1217,26 @@
     		};
     		var safeParse = function (val) {
     		    try {
-    		        if (val.type === "function") {
-    		            var re = Jsan__namespace.parse(val.value);
-    		            Object.defineProperty(re, "name", {
-    		                value: val.name,
-    		            });
-    		            Object.defineProperty(re, "displayName", {
-    		                value: val.name,
-    		            });
-    		            return re;
-    		        }
-    		        else if (val.type === "object") {
-    		            return Jsan__namespace.parse(val.value);
+    		        if (typeof val === "object") {
+    		            if (val.type === "function") {
+    		                var re = Jsan__namespace.parse(val.value);
+    		                Object.defineProperty(re, "name", {
+    		                    value: val.name,
+    		                });
+    		                Object.defineProperty(re, "displayName", {
+    		                    value: val.name,
+    		                });
+    		                return re;
+    		            }
+    		            else if (val.type === "object") {
+    		                return Jsan__namespace.parse(val.value);
+    		            }
+    		            else if (val.type === "nativeNode") {
+    		                return val;
+    		            }
+    		            else {
+    		                return Jsan__namespace.parse(val);
+    		            }
     		        }
     		        else {
     		            return val;
@@ -1473,17 +1447,18 @@
     		    }
     		    return tree;
     		};
+    		var parseHookDetail = function (hook) {
+    		    var name = hook.type === reactShared.HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
+    		    var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
+    		    var value = safeStringify(isEffect ? hook.value : hook.result);
+    		    var deps = safeStringify(hook.deps);
+    		    return { name: name, value: value, deps: deps };
+    		};
     		var getHook = function (fiber) {
     		    var _a;
     		    var tree = [];
     		    var hookList = fiber.hookList;
-    		    var parseHook = function (hook) {
-    		        var name = hook.type === reactShared.HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
-    		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
-    		        var value = safeStringify(isEffect ? hook.value : hook.result);
-    		        var deps = safeStringify(hook.deps);
-    		        return { name: name, value: value, deps: deps };
-    		    };
+    		    var parseHook = function (hook) { return parseHookDetail(hook); };
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return tree.push(parseHook(h)); });
     		    return tree;
     		};
@@ -1528,6 +1503,7 @@
     		    shallowAssignFiber(plain, fiber);
     		    plain.source = getSource(fiber);
     		    plain.hook = getHook(fiber);
+    		    // plain.hook_v2 = getHook_v2(fiber as MyReactFiberNodeDev);
     		    plain.props = getObj(fiber.pendingProps);
     		    plain.tree = getTree(fiber);
     		    if (fiber.type & NODE_TYPE.__class__) {
@@ -1703,6 +1679,8 @@
     		            });
     		            _this.notifyDir();
     		            _this.notifyHover();
+    		            _this.notifyTrigger();
+    		            _this.notifyHMR();
     		            _this.notifySelect();
     		        }, 200);
     		    }

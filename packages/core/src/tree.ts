@@ -43,6 +43,8 @@ export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
 
   plain.hook = getHook(fiber as MyReactFiberNodeDev);
 
+  // plain.hook_v2 = getHook_v2(fiber as MyReactFiberNodeDev);
+
   plain.props = getObj(fiber.pendingProps);
 
   plain.tree = getTree(fiber as MyReactFiberNodeDev);

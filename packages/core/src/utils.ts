@@ -26,20 +26,6 @@ const replacer = (key: string, value: any) => {
   return value;
 };
 
-const objType = (obj: any) => {
-  const type = Object.prototype.toString.call(obj).slice(8, -1);
-  if (type === "Object" && typeof obj[Symbol.iterator] === "function") {
-    return "Iterable";
-  }
-
-  if (type === "Custom" && obj.constructor !== Object && obj instanceof Object) {
-    // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
-    return "Object";
-  }
-
-  return type;
-};
-
 const options = {
   refs: false, // references can't be resolved on the original Immutable structure
   date: true,
@@ -62,27 +48,8 @@ Object.keys(NODE_TYPE).forEach((key) => {
   }
 });
 
-const cloneObj = (obj: any, deepIndex: number, parentPath?: string) => {
-  const re = { ...obj };
-  if (!deepIndex) return re;
-  for (const key in obj) {
-    const v = obj[key];
-    if (typeof v === "object") {
-      const currentKey = parentPath ? `${parentPath} -split- ${key}` : key;
-      if (deepIndex > 1) {
-        re[key] = cloneObj(v, deepIndex - 1, currentKey);
-      } else {
-        re[key] = { type: "nativeObj", value: v?.constructor?.name || objType(v), key: currentKey };
-      }
-    } else {
-      re[key] = v;
-    }
-  }
-  return re;
-};
-
 // eslint-disable-next-line @typescript-eslint/ban-types
-export const safeStringify = (obj: Object | Function, deepIndex?: number) => {
+export const safeStringify = (obj: Object | Function, _deepIndex?: number) => {
   try {
     if (typeof obj === "function") {
       return { type: "function", name: obj.name, value: Jsan.stringify(obj, replacer, undefined, options) } as const;
@@ -90,8 +57,7 @@ export const safeStringify = (obj: Object | Function, deepIndex?: number) => {
       if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && obj instanceof HTMLElement) {
         return { type: "nativeNode", value: `<${obj.tagName.toLowerCase()} />` };
       } else {
-        const nObj = cloneObj(obj, deepIndex);
-        return { type: "object", name: "object", value: Jsan.stringify(nObj, replacer, undefined, options) } as const;
+        return { type: "object", name: "object", value: Jsan.stringify(obj, replacer, undefined, options) } as const;
       }
     } else {
       return obj;
@@ -117,6 +83,8 @@ export const safeParse = (val: FiberObj) => {
         return re;
       } else if (val.type === "object") {
         return Jsan.parse(val.value);
+      } else if (val.type === "nativeNode") {
+        return val;
       } else {
         return Jsan.parse(val as any);
       }
@@ -332,22 +300,24 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
   return tree;
 };
 
+const parseHookDetail = (hook: MyReactHookNode) => {
+  const name = hook.type === HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
+
+  const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
+
+  const value = safeStringify(isEffect ? hook.value : hook.result);
+
+  const deps = safeStringify(hook.deps);
+
+  return { name, value, deps };
+};
+
 export const getHook = (fiber: MyReactFiberNodeDev) => {
   const tree: HOOK[] = [];
 
   const hookList = fiber.hookList;
 
-  const parseHook = (hook: MyReactHookNode) => {
-    const name = hook.type === HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
-
-    const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
-
-    const value = safeStringify(isEffect ? hook.value : hook.result);
-
-    const deps = safeStringify(hook.deps);
-
-    return { name, value, deps };
-  };
+  const parseHook = (hook: MyReactHookNode) => parseHookDetail(hook);
 
   hookList?.listToFoot?.((h) => tree.push(parseHook(h as MyReactHookNode)));
 
