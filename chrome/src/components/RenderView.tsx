@@ -48,7 +48,7 @@ export const RenderView = () => {
     if (!node) return null;
 
     return (
-      <div className="text-[11px] ml-2 font-mono">
+      <div className="text-[11px] ml-2 font-mono" key={node.id}>
         <RenderItem node={node} withCollapse={false} />
       </div>
     );

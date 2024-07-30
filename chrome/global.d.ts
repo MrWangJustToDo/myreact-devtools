@@ -5,6 +5,7 @@ import { useTreeNode } from "@/hooks/useTreeNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
+import { io } from "socket.io-client";
 import type { CustomRenderDispatch, CustomRenderPlatform, initHMR } from "@my-react/react-reconciler";
 
 declare global {
@@ -17,6 +18,8 @@ declare global {
 
     useAppTree: typeof useAppTree;
 
+    io: typeof io;
+
     useTriggerNode: typeof useTriggerNode;
 
     useDetailNode: typeof useDetailNode;
@@ -28,6 +31,12 @@ declare global {
     useNodeName: typeof useNodeName;
 
     useHMRNode: typeof useHMRNode;
+  }
+
+  namespace NodeJS {
+    interface ProcessEnv {
+      NEXT_PUBLIC_MODE?: "web";
+    }
   }
 }
 

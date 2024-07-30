@@ -1,6 +1,77 @@
 (function (exports) {
     'use strict';
 
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    /* global Reflect, Promise, SuppressedError, Symbol */
+
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    function __awaiter(thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    }
+
+    function __generator(thisArg, body) {
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        function verb(n) { return function (v) { return step([n, v]); }; }
+        function step(op) {
+            if (f) throw new TypeError("Generator is already executing.");
+            while (g && (g = 0, op[0] && (_ = 0)), _) try {
+                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+                if (y = 0, t) op = [op[0] & 2, t.value];
+                switch (op[0]) {
+                    case 0: case 1: t = op; break;
+                    case 4: _.label++; return { value: op[1], done: false };
+                    case 5: _.label++; y = op[1]; op = [0]; continue;
+                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                    default:
+                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                        if (t[2]) _.ops.pop();
+                        _.trys.pop(); continue;
+                }
+                op = body.call(thisArg, _);
+            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+        }
+    }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
     var reactShared = {exports: {}};
 
     var index_development$1 = {};
@@ -1414,6 +1485,15 @@
     		var getContextName = function (value) {
     		    return value.displayName || "Context";
     		};
+    		var getStackName = function (value) {
+    		    if (value.startsWith("use")) {
+    		        return value.slice(3);
+    		    }
+    		    if (value[0] === value[0].toUpperCase()) {
+    		        return value;
+    		    }
+    		    return value[0].toUpperCase() + value.slice(1);
+    		};
     		var getSource = function (fiber) {
     		    if (fiber._debugElement) {
     		        var element = fiber._debugElement;
@@ -1461,6 +1541,66 @@
     		    var parseHook = function (hook) { return parseHookDetail(hook); };
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return tree.push(parseHook(h)); });
     		    return tree;
+    		};
+    		var getHook_v2 = function (fiber) {
+    		    var _a;
+    		    var tree = [];
+    		    var final = [];
+    		    var hookList = fiber.hookList;
+    		    var parseHook = function (hook) {
+    		        var stack = hook._debugStack;
+    		        if (!stack || !Array.isArray(stack) || stack.length === 0)
+    		            return;
+    		        if (stack.length === 1) {
+    		            tree.push(__assign(__assign({}, stack[0]), { node: parseHookDetail(hook) }));
+    		            return;
+    		        }
+    		        var obj = tree.at(-1);
+    		        for (var i = 0; i < stack.length; i++) {
+    		            var item = stack[i];
+    		            if (i === 0) {
+    		                if (item.id !== (obj === null || obj === void 0 ? void 0 : obj.id)) {
+    		                    var next = __assign(__assign({}, item), { value: [] });
+    		                    tree.push(next);
+    		                    obj = next;
+    		                }
+    		            }
+    		            else if (i === stack.length - 1) {
+    		                obj["value"] = obj["value"] || [];
+    		                obj["value"].push(__assign(__assign({}, item), { node: parseHookDetail(hook) }));
+    		            }
+    		            else {
+    		                obj["value"] = obj["value"] || [];
+    		                var next = obj["value"].at(-1);
+    		                if ((next === null || next === void 0 ? void 0 : next.id) === item.id) {
+    		                    obj = next;
+    		                }
+    		                else {
+    		                    obj["value"].push(__assign(__assign({}, item), { value: [] }));
+    		                    obj = obj["value"].at(-1);
+    		                }
+    		            }
+    		        }
+    		    };
+    		    var processChildren = function (item) {
+    		        if (item.value && Array.isArray(item.value) && item.value.length) {
+    		            return { name: getStackName(item.name), isStack: true, children: item.value.map(processChildren) };
+    		        }
+    		        else if (item.node) {
+    		            return item.node;
+    		        }
+    		    };
+    		    var processTree = function (item) {
+    		        if (item.value && Array.isArray(item.value) && item.value.length) {
+    		            final.push({ name: getStackName(item.name), isStack: true, children: item.value.map(processChildren) });
+    		        }
+    		        else if (item.node) {
+    		            final.push(item.node);
+    		        }
+    		    };
+    		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return parseHook(h); });
+    		    tree.forEach(processTree);
+    		    return final;
     		};
     		var parseHook = function (plain) {
     		    var hook = plain.hook;
@@ -1671,6 +1811,7 @@
     		        this._trigger = {};
     		        this._hmr = {};
     		        this._enabled = false;
+    		        this._forceEnable = false;
     		        this._listeners = new Set();
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
@@ -1687,6 +1828,13 @@
     		    DevToolCore.prototype.getDispatch = function () {
     		        return Array.from(this._dispatch);
     		    };
+    		    Object.defineProperty(DevToolCore.prototype, "hasEnable", {
+    		        get: function () {
+    		            return this._enabled || this._forceEnable;
+    		        },
+    		        enumerable: false,
+    		        configurable: true
+    		    });
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
     		        if (dispatch)
     		            this._detector = true;
@@ -1703,7 +1851,7 @@
     		            return;
     		        dispatch.hasDevToolPatch = true;
     		        var onLoad = throttle(function () {
-    		            if (!_this._enabled)
+    		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
@@ -1713,7 +1861,7 @@
     		            if (!id)
     		                return;
     		            _this._trigger[id] = _this._trigger[id] ? _this._trigger[id] + 1 : 1;
-    		            if (!_this._enabled)
+    		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyTrigger();
     		        };
@@ -1722,7 +1870,7 @@
     		            if (!id)
     		                return;
     		            _this._hmr[id] = _this._hmr[id] ? _this._hmr[id] + 1 : 1;
-    		            if (!_this._enabled)
+    		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyHMR();
     		        };
@@ -1783,27 +1931,27 @@
     		        this._hoverId = id;
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.dir, data: this._dir });
     		    };
     		    DevToolCore.prototype.notifyDetector = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
     		    };
     		    DevToolCore.prototype.notifyTrigger = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: this._trigger });
     		    };
     		    DevToolCore.prototype.notifyHMR = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.hmr, data: this._hmr });
     		    };
     		    DevToolCore.prototype.notifySelect = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        var id = this._selectId;
     		        if (!id) {
@@ -1812,7 +1960,7 @@
     		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
     		    };
     		    DevToolCore.prototype.notifyHover = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        var id = this._hoverId;
     		        if (!id) {
@@ -1821,7 +1969,7 @@
     		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
     		    };
     		    DevToolCore.prototype.notifyDispatch = function (dispatch) {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        if (this._dispatch.has(dispatch)) {
     		            var tree = this.getTree(dispatch);
@@ -1847,6 +1995,29 @@
     		    return DevToolCore;
     		}());
 
+    		exports.MessageHookType = void 0;
+    		(function (MessageHookType) {
+    		    MessageHookType["init"] = "hook-init";
+    		    MessageHookType["mount"] = "hook-mount";
+    		    MessageHookType["render"] = "hook-render";
+    		})(exports.MessageHookType || (exports.MessageHookType = {}));
+    		exports.MessageDetectorType = void 0;
+    		(function (MessageDetectorType) {
+    		    MessageDetectorType["init"] = "detector-init";
+    		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessagePanelType = void 0;
+    		(function (MessagePanelType) {
+    		    MessagePanelType["show"] = "panel-show";
+    		    MessagePanelType["hide"] = "panel-hide";
+    		    MessagePanelType["nodeHover"] = "panel-hover";
+    		    MessagePanelType["nodeSelect"] = "panel-select";
+    		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
+    		exports.MessageWorkerType = void 0;
+    		(function (MessageWorkerType) {
+    		    MessageWorkerType["init"] = "worker-init";
+    		    MessageWorkerType["close"] = "worker-close";
+    		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
+
     		exports.DevToolCore = DevToolCore;
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
@@ -1860,10 +2031,12 @@
     		exports.getFiberType = getFiberType;
     		exports.getHook = getHook;
     		exports.getHookName = getHookName;
+    		exports.getHook_v2 = getHook_v2;
     		exports.getObj = getObj;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
     		exports.getSource = getSource;
+    		exports.getStackName = getStackName;
     		exports.getTree = getTree;
     		exports.getTypeName = getTypeName;
     		exports.loopTree = loopTree;
@@ -1888,28 +2061,6 @@
 
     var coreExports = core$1.exports;
 
-    var MessageHookType;
-    (function (MessageHookType) {
-        MessageHookType["init"] = "hook-init";
-        MessageHookType["mount"] = "hook-mount";
-        MessageHookType["render"] = "hook-render";
-    })(MessageHookType || (MessageHookType = {}));
-    var MessageDetectorType;
-    (function (MessageDetectorType) {
-        MessageDetectorType["init"] = "detector-init";
-    })(MessageDetectorType || (MessageDetectorType = {}));
-    var MessagePanelType;
-    (function (MessagePanelType) {
-        MessagePanelType["show"] = "panel-show";
-        MessagePanelType["hide"] = "panel-hide";
-        MessagePanelType["nodeHover"] = "panel-hover";
-        MessagePanelType["nodeSelect"] = "panel-select";
-    })(MessagePanelType || (MessagePanelType = {}));
-    var MessageWorkerType;
-    (function (MessageWorkerType) {
-        MessageWorkerType["init"] = "worker-init";
-        MessageWorkerType["close"] = "worker-close";
-    })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
@@ -1925,39 +2076,6 @@
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
 
-    /******************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol */
-
-
-    var __assign = function() {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-
-    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-    };
-
     var generatePostMessageWithSource = function (from) {
         return function (message) {
             window.postMessage(__assign(__assign({ from: from }, message), { source: DevToolSource }), "*");
@@ -1970,7 +2088,7 @@
         {
             console.log("[@my-react-devtool/hook] core message", message);
         }
-        hookPostMessageWithSource({ type: MessageHookType.render, data: message });
+        hookPostMessageWithSource({ type: coreExports.MessageHookType.render, data: message });
     });
     var set = new Set();
     var detectorReady = false;
@@ -2000,24 +2118,24 @@
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type)) {
             console.log("[@my-react-devtool/hook] message from proxy", message.data);
         }
-        if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === MessageDetectorType.init) {
+        if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === coreExports.MessageDetectorType.init) {
             {
                 console.log("[@my-react-devtool/hook] detector init");
             }
             detectorReady = true;
         }
-        if (((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === MessageWorkerType.init) {
+        if (((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === coreExports.MessageWorkerType.init) {
             core.connect();
         }
-        if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === MessagePanelType.show) {
+        if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessagePanelType.show) {
             core.connect();
             core.notifyAll();
         }
         // 主动关闭panel / 或者worker失活
-        if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === MessagePanelType.hide || ((_h = message.data) === null || _h === void 0 ? void 0 : _h.type) === MessageWorkerType.close) {
+        if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === coreExports.MessagePanelType.hide || ((_h = message.data) === null || _h === void 0 ? void 0 : _h.type) === coreExports.MessageWorkerType.close) {
             core.disconnect();
         }
-        if (((_j = message.data) === null || _j === void 0 ? void 0 : _j.type) === MessagePanelType.nodeSelect) {
+        if (((_j = message.data) === null || _j === void 0 ? void 0 : _j.type) === coreExports.MessagePanelType.nodeSelect) {
             core.setSelect(message.data.data);
             core.notifySelect();
         }
@@ -2025,8 +2143,55 @@
     window.addEventListener("message", onMessage);
     var onceMount = reactSharedExports.once(function () {
         // current site is render by @my-react
-        hookPostMessageWithSource({ type: MessageHookType.mount });
+        hookPostMessageWithSource({ type: coreExports.MessageHookType.mount });
     });
+    var loadScript = function (url) {
+        return new Promise(function (resolve, reject) {
+            var script = document.createElement("script");
+            script.src = url;
+            script.onload = function () { return resolve(); };
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
+    };
+    var initWEB_UI = function (url) { return __awaiter(void 0, void 0, void 0, function () {
+        var socket, unSubscribe;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js")];
+                case 1:
+                    _a.sent();
+                    socket = window.io(url);
+                    unSubscribe = function () { };
+                    socket.on("connect", function () {
+                        {
+                            console.log("[@my-react-devtool/hook] socket connected");
+                        }
+                        unSubscribe = core.subscribe(function (message) {
+                            socket.emit("render", message);
+                        });
+                    });
+                    socket.on("disconnect", function () {
+                        {
+                            console.log("[@my-react-devtool/hook] socket disconnected");
+                        }
+                        unSubscribe();
+                    });
+                    socket.on("action", function (data) {
+                        if (data.type === coreExports.MessageWorkerType.init || data.type === coreExports.MessagePanelType.show) {
+                            core._forceEnable = true;
+                            core.connect();
+                            core.notifyAll();
+                        }
+                        if (data.type === coreExports.MessagePanelType.nodeSelect) {
+                            core.setSelect(data.data);
+                            core.notifySelect();
+                        }
+                    });
+                    return [2 /*return*/];
+            }
+        });
+    }); };
     var globalHook = function (dispatch) {
         set.add(dispatch);
         core.addDispatch(dispatch);
@@ -2040,7 +2205,8 @@
     else {
         window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
         window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-        hookPostMessageWithSource({ type: MessageHookType.init });
+        window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
+        hookPostMessageWithSource({ type: coreExports.MessageHookType.init });
     }
 
     exports.globalHook = globalHook;

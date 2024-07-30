@@ -13,7 +13,7 @@ export type HOOKTree = {
   id: string;
   name: string;
   node?: HOOK;
-  value?: { [p: string]: HOOKTree };
+  value?: HOOKTree[];
 };
 
 // PlainNode is a simplified version of FiberNode just for show the structure

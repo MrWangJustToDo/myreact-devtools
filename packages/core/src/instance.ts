@@ -66,10 +66,16 @@ export class DevToolCore {
 
   _enabled = false;
 
+  _forceEnable = false;
+
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
 
   getDispatch() {
     return Array.from(this._dispatch);
+  }
+
+  get hasEnable() {
+    return this._enabled || this._forceEnable
   }
 
   addDispatch(dispatch: DevToolRenderDispatch) {
@@ -90,7 +96,7 @@ export class DevToolCore {
     dispatch.hasDevToolPatch = true;
 
     const onLoad = throttle(() => {
-      if (!this._enabled) return;
+      if (!this.hasEnable) return;
 
       this.notifyDispatch(dispatch);
 
@@ -104,7 +110,7 @@ export class DevToolCore {
 
       this._trigger[id] = this._trigger[id] ? this._trigger[id] + 1 : 1;
 
-      if (!this._enabled) return;
+      if (!this.hasEnable) return;
 
       this.notifyTrigger();
     };
@@ -116,7 +122,7 @@ export class DevToolCore {
 
       this._hmr[id] = this._hmr[id] ? this._hmr[id] + 1 : 1;
 
-      if (!this._enabled) return;
+      if (!this.hasEnable) return;
 
       this.notifyHMR();
     };
@@ -198,31 +204,31 @@ export class DevToolCore {
   }
 
   notifyDir() {
-    if (!this._enabled) return;
+    if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.dir, data: this._dir });
   }
 
   notifyDetector() {
-    if (!this._enabled) return;
+    if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.init, data: this._detector });
   }
 
   notifyTrigger() {
-    if (!this._enabled) return;
+    if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
   }
 
   notifyHMR() {
-    if (!this._enabled) return;
+    if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.hmr, data: this._hmr });
   }
 
   notifySelect() {
-    if (!this._enabled) return;
+    if (!this.hasEnable) return;
 
     const id = this._selectId;
 
@@ -234,7 +240,7 @@ export class DevToolCore {
   }
 
   notifyHover() {
-    if (!this._enabled) return;
+    if (!this.hasEnable) return;
 
     const id = this._hoverId;
 
@@ -246,7 +252,7 @@ export class DevToolCore {
   }
 
   notifyDispatch(dispatch: DevToolRenderDispatch) {
-    if (!this._enabled) return;
+    if (!this.hasEnable) return;
 
     if (this._dispatch.has(dispatch)) {
       const tree = this.getTree(dispatch);

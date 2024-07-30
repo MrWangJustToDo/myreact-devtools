@@ -1,5 +1,6 @@
 import { PlainNode, Tree } from "@my-react-devtool/core";
 import { UseSelectorWithState } from "reactivity-store";
+import { io } from "socket.io-client";
 
 declare global {
   const __DEV__: boolean;
@@ -37,6 +38,8 @@ declare global {
     useHMRNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;
 
     useNodeName: UseSelectorWithState<{ state: Record<string, string> }, { set: (s: Record<string, string>) => void }>;
+
+    io: typeof io;
   }
 }
 

@@ -86,6 +86,62 @@ const onceMount = once(() => {
   hookPostMessageWithSource({ type: MessageHookType.mount });
 });
 
+const loadScript = (url: string) => {
+  return new Promise<void>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = url;
+    script.onload = () => resolve();
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+};
+
+const initWEB_UI = async (url: string) => {
+  if (__DEV__) {
+    console.log('[@my-react-devtool/hook] start a web ui devtool');
+
+    await loadScript("https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js");
+
+    const socket = window.io(url);
+
+    let unSubscribe = () => {};
+
+    socket.on("connect", () => {
+      if (__DEV__) {
+        console.log("[@my-react-devtool/hook] socket connected");
+      }
+
+      unSubscribe = core.subscribe((message) => {
+        socket.emit("render", message);
+      });
+    });
+
+    socket.on("disconnect", () => {
+      if (__DEV__) {
+        console.log("[@my-react-devtool/hook] socket disconnected");
+      }
+
+      unSubscribe();
+    });
+
+    socket.on("action", (data) => {
+      if (data.type === MessageWorkerType.init || data.type === MessagePanelType.show) {
+        core._forceEnable = true;
+
+        core.connect();
+
+        core.notifyAll();
+      }
+
+      if (data.type === MessagePanelType.nodeSelect) {
+        core.setSelect(data.data);
+
+        core.notifySelect();
+      }
+    });
+  }
+};
+
 export const globalHook = (dispatch: CustomRenderDispatch) => {
   set.add(dispatch);
 
@@ -101,5 +157,7 @@ if (window.parent && window.parent !== window) {
 } else {
   window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
   window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+  // support local dev
+  window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
   hookPostMessageWithSource({ type: MessageHookType.init });
 }

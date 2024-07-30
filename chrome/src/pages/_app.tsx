@@ -3,6 +3,7 @@ import { JetBrains_Mono } from "next/font/google";
 
 // import { ThemeProvider } from "next-themes";
 import { useConnect } from "@/hooks/useConnect";
+import { useWebDev } from "@/hooks/useWebDev";
 
 import type { AppProps } from "next/app";
 
@@ -43,6 +44,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
       </div>
     );
   }
+
+  useWebDev();
 
   return (
     <NextUIProvider>

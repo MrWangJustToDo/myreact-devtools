@@ -1491,6 +1491,15 @@
     		var getContextName = function (value) {
     		    return value.displayName || "Context";
     		};
+    		var getStackName = function (value) {
+    		    if (value.startsWith("use")) {
+    		        return value.slice(3);
+    		    }
+    		    if (value[0] === value[0].toUpperCase()) {
+    		        return value;
+    		    }
+    		    return value[0].toUpperCase() + value.slice(1);
+    		};
     		var getSource = function (fiber) {
     		    if (fiber._debugElement) {
     		        var element = fiber._debugElement;
@@ -1538,6 +1547,66 @@
     		    var parseHook = function (hook) { return parseHookDetail(hook); };
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return tree.push(parseHook(h)); });
     		    return tree;
+    		};
+    		var getHook_v2 = function (fiber) {
+    		    var _a;
+    		    var tree = [];
+    		    var final = [];
+    		    var hookList = fiber.hookList;
+    		    var parseHook = function (hook) {
+    		        var stack = hook._debugStack;
+    		        if (!stack || !Array.isArray(stack) || stack.length === 0)
+    		            return;
+    		        if (stack.length === 1) {
+    		            tree.push(__assign(__assign({}, stack[0]), { node: parseHookDetail(hook) }));
+    		            return;
+    		        }
+    		        var obj = tree.at(-1);
+    		        for (var i = 0; i < stack.length; i++) {
+    		            var item = stack[i];
+    		            if (i === 0) {
+    		                if (item.id !== (obj === null || obj === void 0 ? void 0 : obj.id)) {
+    		                    var next = __assign(__assign({}, item), { value: [] });
+    		                    tree.push(next);
+    		                    obj = next;
+    		                }
+    		            }
+    		            else if (i === stack.length - 1) {
+    		                obj["value"] = obj["value"] || [];
+    		                obj["value"].push(__assign(__assign({}, item), { node: parseHookDetail(hook) }));
+    		            }
+    		            else {
+    		                obj["value"] = obj["value"] || [];
+    		                var next = obj["value"].at(-1);
+    		                if ((next === null || next === void 0 ? void 0 : next.id) === item.id) {
+    		                    obj = next;
+    		                }
+    		                else {
+    		                    obj["value"].push(__assign(__assign({}, item), { value: [] }));
+    		                    obj = obj["value"].at(-1);
+    		                }
+    		            }
+    		        }
+    		    };
+    		    var processChildren = function (item) {
+    		        if (item.value && Array.isArray(item.value) && item.value.length) {
+    		            return { name: getStackName(item.name), isStack: true, children: item.value.map(processChildren) };
+    		        }
+    		        else if (item.node) {
+    		            return item.node;
+    		        }
+    		    };
+    		    var processTree = function (item) {
+    		        if (item.value && Array.isArray(item.value) && item.value.length) {
+    		            final.push({ name: getStackName(item.name), isStack: true, children: item.value.map(processChildren) });
+    		        }
+    		        else if (item.node) {
+    		            final.push(item.node);
+    		        }
+    		    };
+    		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return parseHook(h); });
+    		    tree.forEach(processTree);
+    		    return final;
     		};
     		var parseHook = function (plain) {
     		    var hook = plain.hook;
@@ -1748,6 +1817,7 @@
     		        this._trigger = {};
     		        this._hmr = {};
     		        this._enabled = false;
+    		        this._forceEnable = false;
     		        this._listeners = new Set();
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
@@ -1764,6 +1834,13 @@
     		    DevToolCore.prototype.getDispatch = function () {
     		        return Array.from(this._dispatch);
     		    };
+    		    Object.defineProperty(DevToolCore.prototype, "hasEnable", {
+    		        get: function () {
+    		            return this._enabled || this._forceEnable;
+    		        },
+    		        enumerable: false,
+    		        configurable: true
+    		    });
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
     		        if (dispatch)
     		            this._detector = true;
@@ -1780,7 +1857,7 @@
     		            return;
     		        dispatch.hasDevToolPatch = true;
     		        var onLoad = throttle(function () {
-    		            if (!_this._enabled)
+    		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
@@ -1790,7 +1867,7 @@
     		            if (!id)
     		                return;
     		            _this._trigger[id] = _this._trigger[id] ? _this._trigger[id] + 1 : 1;
-    		            if (!_this._enabled)
+    		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyTrigger();
     		        };
@@ -1799,7 +1876,7 @@
     		            if (!id)
     		                return;
     		            _this._hmr[id] = _this._hmr[id] ? _this._hmr[id] + 1 : 1;
-    		            if (!_this._enabled)
+    		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyHMR();
     		        };
@@ -1860,27 +1937,27 @@
     		        this._hoverId = id;
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.dir, data: this._dir });
     		    };
     		    DevToolCore.prototype.notifyDetector = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
     		    };
     		    DevToolCore.prototype.notifyTrigger = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: this._trigger });
     		    };
     		    DevToolCore.prototype.notifyHMR = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.hmr, data: this._hmr });
     		    };
     		    DevToolCore.prototype.notifySelect = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        var id = this._selectId;
     		        if (!id) {
@@ -1889,7 +1966,7 @@
     		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
     		    };
     		    DevToolCore.prototype.notifyHover = function () {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        var id = this._hoverId;
     		        if (!id) {
@@ -1898,7 +1975,7 @@
     		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
     		    };
     		    DevToolCore.prototype.notifyDispatch = function (dispatch) {
-    		        if (!this._enabled)
+    		        if (!this.hasEnable)
     		            return;
     		        if (this._dispatch.has(dispatch)) {
     		            var tree = this.getTree(dispatch);
@@ -1924,6 +2001,29 @@
     		    return DevToolCore;
     		}());
 
+    		exports.MessageHookType = void 0;
+    		(function (MessageHookType) {
+    		    MessageHookType["init"] = "hook-init";
+    		    MessageHookType["mount"] = "hook-mount";
+    		    MessageHookType["render"] = "hook-render";
+    		})(exports.MessageHookType || (exports.MessageHookType = {}));
+    		exports.MessageDetectorType = void 0;
+    		(function (MessageDetectorType) {
+    		    MessageDetectorType["init"] = "detector-init";
+    		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessagePanelType = void 0;
+    		(function (MessagePanelType) {
+    		    MessagePanelType["show"] = "panel-show";
+    		    MessagePanelType["hide"] = "panel-hide";
+    		    MessagePanelType["nodeHover"] = "panel-hover";
+    		    MessagePanelType["nodeSelect"] = "panel-select";
+    		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
+    		exports.MessageWorkerType = void 0;
+    		(function (MessageWorkerType) {
+    		    MessageWorkerType["init"] = "worker-init";
+    		    MessageWorkerType["close"] = "worker-close";
+    		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
+
     		exports.DevToolCore = DevToolCore;
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
@@ -1937,10 +2037,12 @@
     		exports.getFiberType = getFiberType;
     		exports.getHook = getHook;
     		exports.getHookName = getHookName;
+    		exports.getHook_v2 = getHook_v2;
     		exports.getObj = getObj;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
     		exports.getSource = getSource;
+    		exports.getStackName = getStackName;
     		exports.getTree = getTree;
     		exports.getTypeName = getTypeName;
     		exports.loopTree = loopTree;
@@ -1965,28 +2067,6 @@
 
     var coreExports = core.exports;
 
-    var MessageHookType;
-    (function (MessageHookType) {
-        MessageHookType["init"] = "hook-init";
-        MessageHookType["mount"] = "hook-mount";
-        MessageHookType["render"] = "hook-render";
-    })(MessageHookType || (MessageHookType = {}));
-    var MessageDetectorType;
-    (function (MessageDetectorType) {
-        MessageDetectorType["init"] = "detector-init";
-    })(MessageDetectorType || (MessageDetectorType = {}));
-    var MessagePanelType;
-    (function (MessagePanelType) {
-        MessagePanelType["show"] = "panel-show";
-        MessagePanelType["hide"] = "panel-hide";
-        MessagePanelType["nodeHover"] = "panel-hover";
-        MessagePanelType["nodeSelect"] = "panel-select";
-    })(MessagePanelType || (MessagePanelType = {}));
-    var MessageWorkerType;
-    (function (MessageWorkerType) {
-        MessageWorkerType["init"] = "worker-init";
-        MessageWorkerType["close"] = "worker-close";
-    })(MessageWorkerType || (MessageWorkerType = {}));
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
@@ -2156,7 +2236,7 @@
                 var currentSelect = useTreeNode.getReadonlyState().select;
                 if (currentSelect) {
                     useDetailNode.getActions().setLoading(true);
-                    sendMessage({ type: MessagePanelType.nodeSelect, data: currentSelect });
+                    sendMessage({ type: coreExports.MessagePanelType.nodeSelect, data: currentSelect });
                 }
             });
         }
@@ -2172,7 +2252,7 @@
                 var currentHover = useTreeNode.getReadonlyState().hover;
                 if (currentHover) {
                     useDetailNode.getActions().setLoading(true);
-                    sendMessage({ type: MessagePanelType.nodeHover, data: currentHover });
+                    sendMessage({ type: coreExports.MessagePanelType.nodeHover, data: currentHover });
                 }
             });
         }
@@ -2189,11 +2269,11 @@
             {
                 console.log("[@my-react-devtool/panel] message from port", message);
             }
-            if (!workerReady && message.type === MessageWorkerType.init) {
+            if (!workerReady && message.type === coreExports.MessageWorkerType.init) {
                 workerReady = true;
                 panelWindow.useConnect.getActions().connect();
             }
-            if ((message === null || message === void 0 ? void 0 : message.type) === MessageHookType.render) {
+            if ((message === null || message === void 0 ? void 0 : message.type) === coreExports.MessageHookType.render) {
                 onRender(message.data, panelWindow);
             }
         };
@@ -2219,13 +2299,13 @@
                                 console.log("show panel");
                             }
                             panelWindow = window;
-                            sendMessage({ type: MessagePanelType.show });
+                            sendMessage({ type: coreExports.MessagePanelType.show });
                             cleanList_1.push(initSelectListen(window), initHoverListen(window));
                         }, function () {
                             {
                                 console.log("hide panel");
                             }
-                            sendMessage({ type: MessagePanelType.hide });
+                            sendMessage({ type: coreExports.MessagePanelType.hide });
                             cleanList_1.forEach(function (f) { return f(); });
                         })];
                 case 1:
