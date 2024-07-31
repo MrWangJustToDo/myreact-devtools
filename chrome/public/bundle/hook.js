@@ -1846,7 +1846,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a, _b;
+    		        var _a, _b, _c;
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
@@ -1856,7 +1856,12 @@
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
     		        }, 200);
-    		        var onTrigger = function (fiber) {
+    		        var onUnmount = function () {
+    		            if (!_this.hasEnable)
+    		                return;
+    		            _this.delDispatch(dispatch);
+    		        };
+    		        var onFiberTrigger = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
@@ -1865,7 +1870,7 @@
     		                return;
     		            _this.notifyTrigger();
     		        };
-    		        var onHMR = function (fiber) {
+    		        var onFiberHMR = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
@@ -1877,12 +1882,14 @@
     		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
     		            dispatch.onAfterCommit(onLoad);
     		            dispatch.onAfterUpdate(onLoad);
-    		            (_a = dispatch.onFiberTrigger) === null || _a === void 0 ? void 0 : _a.call(dispatch, onTrigger);
-    		            (_b = dispatch.onFiberHMR) === null || _b === void 0 ? void 0 : _b.call(dispatch, onHMR);
+    		            (_a = dispatch.onAfterUnmount) === null || _a === void 0 ? void 0 : _a.call(dispatch, onUnmount);
+    		            (_b = dispatch.onFiberTrigger) === null || _b === void 0 ? void 0 : _b.call(dispatch, onFiberTrigger);
+    		            (_c = dispatch.onFiberHMR) === null || _c === void 0 ? void 0 : _c.call(dispatch, onFiberHMR);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
     		            var originalAfterUpdate_1 = dispatch.afterUpdate;
+    		            var originalAfterUnmount_1 = dispatch.afterUnmount;
     		            dispatch.afterCommit = function () {
     		                var _a;
     		                (_a = originalAfterCommit_1 === null || originalAfterCommit_1 === void 0 ? void 0 : originalAfterCommit_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit_1, this);
@@ -1893,6 +1900,11 @@
     		                var _a;
     		                (_a = originalAfterUpdate_1 === null || originalAfterUpdate_1 === void 0 ? void 0 : originalAfterUpdate_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUpdate_1, this);
     		                onLoad();
+    		            };
+    		            dispatch.afterUnmount = function () {
+    		                var _a;
+    		                (_a = originalAfterUnmount_1 === null || originalAfterUnmount_1 === void 0 ? void 0 : originalAfterUnmount_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUnmount_1, this);
+    		                onUnmount();
     		            };
     		        }
     		    };
@@ -2154,6 +2166,7 @@
             document.body.appendChild(script);
         });
     };
+    var connectSocket = null;
     var initWEB_UI = function (url) { return __awaiter(void 0, void 0, void 0, function () {
         var socket_1, unSubscribe_1;
         return __generator(this, function (_a) {
@@ -2164,6 +2177,7 @@
                 case 1:
                     _a.sent();
                     socket_1 = window.io(url);
+                    connectSocket = socket_1;
                     unSubscribe_1 = function () { };
                     socket_1.on("connect", function () {
                         {
@@ -2195,6 +2209,11 @@
             }
         });
     }); };
+    initWEB_UI.close = function () {
+        var _a;
+        (_a = connectSocket === null || connectSocket === void 0 ? void 0 : connectSocket.close) === null || _a === void 0 ? void 0 : _a.call(connectSocket);
+        connectSocket = null;
+    };
     var globalHook = function (dispatch) {
         set.add(dispatch);
         core.addDispatch(dispatch);

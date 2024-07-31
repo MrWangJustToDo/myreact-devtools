@@ -124,7 +124,9 @@ export const useWebDev = () => {
         window.location.reload();
       });
 
-      return () => io.disconnect();
+      return () => {
+        io.disconnect();
+      };
     }
   }, []);
 };
