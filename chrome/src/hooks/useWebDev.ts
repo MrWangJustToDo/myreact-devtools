@@ -1,13 +1,21 @@
 import { DevToolMessageEnum, MessagePanelType, MessageWorkerType, parseDetailNode } from "@my-react-devtool/core";
 import { useEffect } from "react";
 
+import { useAppTree } from "./useAppTree";
+import { useConnect } from "./useConnect";
+import { useDetailNode } from "./useDetailNode";
+import { useHMRNode } from "./useHMRNode";
+import { useNodeName } from "./useNodeName";
+import { useTreeNode } from "./useTreeNode";
+import { useTriggerNode } from "./useTriggerNode";
+
 const safeAction = (cb: () => void) => {
   try {
     cb();
   } catch (e) {
     const typedE = e as Error;
 
-    window.useConnect.getActions().setError(typedE.message);
+    useConnect.getActions().setError(typedE.message);
   }
 };
 
@@ -37,17 +45,17 @@ export const useWebDev = () => {
       io.on("connect", () => {
         console.log("[Dev mode] client connect");
 
-        window.useConnect.getActions().connect();
+        useConnect.getActions().connect();
 
         listenBackEndReady();
 
-        unSubscribe = window.useTreeNode.subscribe(
+        unSubscribe = useTreeNode.subscribe(
           (s) => s.select,
           () => {
-            const currentSelect = window.useTreeNode.getReadonlyState().select;
+            const currentSelect = useTreeNode.getReadonlyState().select;
 
             if (currentSelect) {
-              window.useDetailNode.getActions().setLoading(true);
+              useDetailNode.getActions().setLoading(true);
 
               io.emit("action", { type: MessagePanelType.nodeSelect, data: currentSelect });
             }
@@ -64,7 +72,7 @@ export const useWebDev = () => {
 
         unSubscribe();
 
-        window.useConnect.getActions().disconnect();
+        useConnect.getActions().disconnect();
       });
 
       io.on("render", (data) => {
@@ -73,39 +81,39 @@ export const useWebDev = () => {
           safeAction(() => {
             connect = true;
 
-            window.useConnect.getActions().setRender(data.data);
+            useConnect.getActions().setRender(data.data);
           });
         }
 
         if (data.type === DevToolMessageEnum.dir) {
           safeAction(() => {
-            window.useNodeName.getActions().set(data.data);
+            useNodeName.getActions().set(data.data);
           });
         }
 
         if (data.type === DevToolMessageEnum.ready) {
           safeAction(() => {
-            window.useAppTree.getActions().addNode(data.data);
+            useAppTree.getActions().addNode(data.data);
           });
         }
 
         if (data.type === DevToolMessageEnum.hmr) {
           safeAction(() => {
-            window.useHMRNode.getActions().update(data.data);
+            useHMRNode.getActions().update(data.data);
           });
         }
 
         if (data.type === DevToolMessageEnum.trigger) {
           safeAction(() => {
-            window.useTriggerNode.getActions().update(data.data);
+            useTriggerNode.getActions().update(data.data);
           });
         }
 
         if (data.type === DevToolMessageEnum.detail) {
           safeAction(() => {
-            window.useDetailNode.getActions().addNode(parseDetailNode(data.data));
+            useDetailNode.getActions().addNode(parseDetailNode(data.data));
 
-            window.useDetailNode.getActions().setLoading(false);
+            useDetailNode.getActions().setLoading(false);
           });
         }
       });
