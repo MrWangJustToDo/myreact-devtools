@@ -26,7 +26,10 @@ export default function App({ Component, pageProps, router }: AppProps) {
   if (isPanelPage && typeof render !== "boolean") {
     children = (
       <div className="flex items-center justify-center w-screen h-screen">
-        <Spinner color="primary" size="lg" />
+        <div className="flex flex-col items-center">
+          <Spinner color="primary" size="lg" />
+          {process.env.NEXT_PUBLIC_MODE === "web" && <div className="text-center text-[18px] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
+        </div>
       </div>
     );
   } else if (isPanelPage && !render) {

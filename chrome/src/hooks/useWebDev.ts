@@ -117,6 +117,10 @@ export const useWebDev = () => {
           });
         }
       });
+
+      io.on('refresh', () => {
+        window.location.reload();
+      })
     }
   }, []);
 };

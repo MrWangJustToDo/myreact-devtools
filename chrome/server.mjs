@@ -9,6 +9,9 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+/**
+ * @type {Set<import('socket.io').Socket>}
+ */
 let socketSet = new Set();
 
 // support local dev
@@ -18,9 +21,11 @@ let socketSet = new Set();
  */
 const processSocket = (item) => {
   item.on("disconnect", () => {
+    socketSet.delete(item);
+
     console.log("disconnect a socket, total:", socketSet.size);
 
-    socketSet.delete(item);
+    socketSet.forEach((i) => i.emit("refresh"));
   });
 
   item.on("render", (data) => {
