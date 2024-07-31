@@ -103,7 +103,13 @@ export class DevToolCore {
       this.notifySelect();
     }, 200);
 
-    const onTrigger = (fiber: MyReactFiberNode) => {
+    const onUnmount = () => {
+      if (!this.hasEnable) return;
+
+      this.delDispatch(dispatch);
+    }
+
+    const onFiberTrigger = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
 
       if (!id) return;
@@ -115,7 +121,7 @@ export class DevToolCore {
       this.notifyTrigger();
     };
 
-    const onHMR = (fiber: MyReactFiberNode) => {
+    const onFiberHMR = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
 
       if (!id) return;
@@ -132,13 +138,18 @@ export class DevToolCore {
 
       dispatch.onAfterUpdate(onLoad);
 
-      dispatch.onFiberTrigger?.(onTrigger);
+      dispatch.onAfterUnmount?.(onUnmount);
 
-      dispatch.onFiberHMR?.(onHMR);
+      dispatch.onFiberTrigger?.(onFiberTrigger);
+
+      dispatch.onFiberHMR?.(onFiberHMR);
+
     } else {
       const originalAfterCommit = dispatch.afterCommit;
 
       const originalAfterUpdate = dispatch.afterUpdate;
+
+      const originalAfterUnmount = dispatch.afterUnmount;
 
       dispatch.afterCommit = function (this: DevToolRenderDispatch) {
         originalAfterCommit?.call?.(this);
@@ -152,6 +163,12 @@ export class DevToolCore {
 
         onLoad();
       };
+
+      dispatch.afterUnmount = function (this: DevToolRenderDispatch) {
+        originalAfterUnmount?.call?.(this);
+
+        onUnmount();
+      }
     }
   }
 

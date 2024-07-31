@@ -3,6 +3,7 @@ import { JetBrains_Mono } from "next/font/google";
 
 // import { ThemeProvider } from "next-themes";
 import { useConnect } from "@/hooks/useConnect";
+import { useIsMounted } from "@/hooks/useIsMounted";
 import { useWebDev } from "@/hooks/useWebDev";
 
 import type { AppProps } from "next/app";
@@ -19,16 +20,24 @@ const roboto = JetBrains_Mono({
 export default function App({ Component, pageProps, router }: AppProps) {
   const render = useConnect((s) => s.render);
 
+  const isMounted = useIsMounted();
+
   const isPanelPage = router.pathname === "/devTool";
 
   let children = <Component {...pageProps} />;
 
   if (isPanelPage && typeof render !== "boolean") {
+    const str = isMounted ? window.location.origin : "";
     children = (
       <div className="flex items-center justify-center w-screen h-screen">
         <div className="flex flex-col items-center">
           <Spinner color="primary" size="lg" />
           {process.env.NEXT_PUBLIC_MODE === "web" && <div className="text-center text-[18px] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
+          {process.env.NEXT_PUBLIC_MODE === "web" && (
+            <Snippet symbol="" color="success" variant="solid" size="sm" className="mt-1">
+              {`__MY_REACT_DEVTOOL_WEB__("${str}")`}
+            </Snippet>
+          )}
         </div>
       </div>
     );

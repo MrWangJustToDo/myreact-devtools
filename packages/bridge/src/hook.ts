@@ -6,6 +6,7 @@ import { generatePostMessageWithSource } from "./window";
 
 import type { MessageDetectorDataType, MessagePanelDataType, MessageWorkerDataType } from "./type";
 import type { CustomRenderDispatch } from "@my-react/react-reconciler";
+import type { Socket } from "socket.io-client";
 
 const core = new DevToolCore();
 
@@ -96,6 +97,8 @@ const loadScript = (url: string) => {
   });
 };
 
+let connectSocket: Socket | null = null;
+
 const initWEB_UI = async (url: string) => {
   if (__DEV__) {
     console.log('[@my-react-devtool/hook] start a web ui devtool');
@@ -103,6 +106,8 @@ const initWEB_UI = async (url: string) => {
     await loadScript("https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js");
 
     const socket = window.io(url);
+
+    connectSocket = socket;
 
     let unSubscribe = () => {};
 
@@ -141,6 +146,12 @@ const initWEB_UI = async (url: string) => {
     });
   }
 };
+
+initWEB_UI.close = () => {
+  connectSocket?.close?.();
+
+  connectSocket = null;
+}
 
 export const globalHook = (dispatch: CustomRenderDispatch) => {
   set.add(dispatch);

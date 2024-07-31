@@ -111,16 +111,20 @@ export const useWebDev = () => {
 
         if (data.type === DevToolMessageEnum.detail) {
           safeAction(() => {
-            useDetailNode.getActions().addNode(parseDetailNode(data.data));
+            if (data.data) {
+              useDetailNode.getActions().addNode(parseDetailNode(data.data));
+            }
 
             useDetailNode.getActions().setLoading(false);
           });
         }
       });
 
-      io.on('refresh', () => {
+      io.on("refresh", () => {
         window.location.reload();
-      })
+      });
+
+      return () => io.disconnect();
     }
   }, []);
 };
