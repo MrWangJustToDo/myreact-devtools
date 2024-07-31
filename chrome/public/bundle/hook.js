@@ -2155,29 +2155,31 @@
         });
     };
     var initWEB_UI = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-        var socket, unSubscribe;
+        var socket_1, unSubscribe_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js")];
+                case 0:
+                    console.log('[@my-react-devtool/hook] start a web ui devtool');
+                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js")];
                 case 1:
                     _a.sent();
-                    socket = window.io(url);
-                    unSubscribe = function () { };
-                    socket.on("connect", function () {
+                    socket_1 = window.io(url);
+                    unSubscribe_1 = function () { };
+                    socket_1.on("connect", function () {
                         {
                             console.log("[@my-react-devtool/hook] socket connected");
                         }
-                        unSubscribe = core.subscribe(function (message) {
-                            socket.emit("render", message);
+                        unSubscribe_1 = core.subscribe(function (message) {
+                            socket_1.emit("render", message);
                         });
                     });
-                    socket.on("disconnect", function () {
+                    socket_1.on("disconnect", function () {
                         {
                             console.log("[@my-react-devtool/hook] socket disconnected");
                         }
-                        unSubscribe();
+                        unSubscribe_1();
                     });
-                    socket.on("action", function (data) {
+                    socket_1.on("action", function (data) {
                         if (data.type === coreExports.MessageWorkerType.init || data.type === coreExports.MessagePanelType.show) {
                             core._forceEnable = true;
                             core.connect();
@@ -2188,7 +2190,8 @@
                             core.notifySelect();
                         }
                     });
-                    return [2 /*return*/];
+                    _a.label = 2;
+                case 2: return [2 /*return*/];
             }
         });
     }); };
@@ -2205,6 +2208,7 @@
     else {
         window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
         window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+        // support local dev
         window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
         hookPostMessageWithSource({ type: coreExports.MessageHookType.init });
     }
