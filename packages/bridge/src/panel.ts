@@ -189,6 +189,24 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       _window.useConnect.getActions().setError(typedE.message);
     }
   }
+
+  if (data.type === DevToolMessageEnum.highlight) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] highlight", data.data);
+    }
+
+    const node = data.data as { id: string; type: string };
+
+    try {
+      const { highlightNode } = _window.useHighlightNode.getActions();
+
+      highlightNode(node.id, node.type);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
 };
 
 const initSelectListen = (_window: Window) => {

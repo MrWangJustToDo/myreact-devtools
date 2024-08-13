@@ -1671,8 +1671,8 @@
     		    else {
     		        current.deep = 0;
     		    }
+    		    shallowAssignFiber(current, fiber);
     		    if (!exist) {
-    		        shallowAssignFiber(current, fiber);
     		        treeMap.set(fiber, current);
     		        fiberStore.set(current.id, fiber);
     		        plainStore.set(current.id, current);
@@ -1682,6 +1682,35 @@
     		    }
     		    if (fiber.sibling) {
     		        loopTree(fiber.sibling, parent);
+    		    }
+    		    return { current: current, directory: directory };
+    		};
+    		var loopChangedTree = function (fiber, set, parent) {
+    		    if (!fiber)
+    		        return null;
+    		    set.add(fiber);
+    		    var exist = treeMap.get(fiber);
+    		    // TODO throw a error?
+    		    if (!exist && !parent)
+    		        return null;
+    		    var current = exist || new PlainNode();
+    		    current.children = null;
+    		    if (parent) {
+    		        parent.children = parent.children || [];
+    		        parent.children.push(current);
+    		        current.deep = parent.deep + 1;
+    		    }
+    		    shallowAssignFiber(current, fiber);
+    		    if (!exist) {
+    		        treeMap.set(fiber, current);
+    		        fiberStore.set(current.id, fiber);
+    		        plainStore.set(current.id, current);
+    		    }
+    		    if (fiber.child) {
+    		        loopChangedTree(fiber.child, set, current);
+    		    }
+    		    if (fiber.sibling) {
+    		        loopChangedTree(fiber.sibling, set, parent);
     		    }
     		    return { current: current, directory: directory };
     		};
@@ -1705,6 +1734,28 @@
     		var getPlainNodeIdByFiber = function (fiber) {
     		    var node = getPlainNodeByFiber(fiber);
     		    return node === null || node === void 0 ? void 0 : node.id;
+    		};
+    		var getTreeByFiber = function (fiber) {
+    		    if (!fiber)
+    		        return null;
+    		    if (fiber.parent) {
+    		        return getTreeByFiber(fiber.parent);
+    		    }
+    		    else {
+    		        return getPlainNodeByFiber(fiber);
+    		    }
+    		};
+    		var getPlainNodeArrayByList = function (list) {
+    		    var hasViewList = new Set();
+    		    var result = [];
+    		    list.listToFoot(function (fiber) {
+    		        if (hasViewList.has(fiber))
+    		            return;
+    		        hasViewList.add(fiber);
+    		        var current = loopChangedTree(fiber, hasViewList).current;
+    		        result.push(current);
+    		    });
+    		    return { result: result, directory: directory };
     		};
     		var getDetailNodeByFiber = function (fiber) {
     		    var plainNode = getPlainNodeByFiber(fiber);
@@ -1763,6 +1814,7 @@
     		    overridePatchToFiberUnmount(dispatch);
     		};
 
+    		// 事件类型
     		exports.DevToolMessageEnum = void 0;
     		(function (DevToolMessageEnum) {
     		    // 初始化，判断是否用@my-react进行页面渲染
@@ -1770,6 +1822,8 @@
     		    DevToolMessageEnum["dir"] = "dir";
     		    DevToolMessageEnum["ready"] = "ready";
     		    DevToolMessageEnum["update"] = "update";
+    		    DevToolMessageEnum["changed"] = "changed";
+    		    DevToolMessageEnum["highlight"] = "highlight";
     		    DevToolMessageEnum["trigger"] = "trigger";
     		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["detail"] = "detail";
@@ -1852,7 +1906,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a, _b, _c;
+    		        var _a, _b, _c, _d, _e;
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
@@ -1862,6 +1916,10 @@
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
     		        }, 200);
+    		        var onChange = function (list) {
+    		            getPlainNodeArrayByList(list);
+    		            _this.notifyChanged(list);
+    		        };
     		        var onUnmount = function () {
     		            if (!_this.hasEnable)
     		                return;
@@ -1884,13 +1942,22 @@
     		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyHMR();
+    		            _this.notifyDispatch(dispatch);
+    		        };
+    		        var onPerformanceWarn = function (fiber) {
+    		            var id = getPlainNodeIdByFiber(fiber);
+    		            if (!id)
+    		                return;
+    		            _this.notifyHighlight(id, "performance");
     		        };
     		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
     		            dispatch.onAfterCommit(onLoad);
-    		            dispatch.onAfterUpdate(onLoad);
+    		            // dispatch.onAfterUpdate(onLoad);
     		            (_a = dispatch.onAfterUnmount) === null || _a === void 0 ? void 0 : _a.call(dispatch, onUnmount);
     		            (_b = dispatch.onFiberTrigger) === null || _b === void 0 ? void 0 : _b.call(dispatch, onFiberTrigger);
-    		            (_c = dispatch.onFiberHMR) === null || _c === void 0 ? void 0 : _c.call(dispatch, onFiberHMR);
+    		            (_c = dispatch.onPerformanceWarn) === null || _c === void 0 ? void 0 : _c.call(dispatch, onPerformanceWarn);
+    		            (_d = dispatch.onFiberChange) === null || _d === void 0 ? void 0 : _d.call(dispatch, onChange);
+    		            (_e = dispatch.onFiberHMR) === null || _e === void 0 ? void 0 : _e.call(dispatch, onFiberHMR);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
@@ -1962,6 +2029,17 @@
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: this._trigger });
+    		    };
+    		    DevToolCore.prototype.notifyHighlight = function (id, type) {
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.highlight, data: { id: id, type: type } });
+    		    };
+    		    DevToolCore.prototype.notifyChanged = function (list) {
+    		        if (!this.hasEnable)
+    		            return;
+    		        var tree = getTreeByFiber(list.head.value);
+    		        this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
     		    };
     		    DevToolCore.prototype.notifyHMR = function () {
     		        if (!this.hasEnable)
@@ -2051,12 +2129,15 @@
     		exports.getHookName = getHookName;
     		exports.getHook_v2 = getHook_v2;
     		exports.getObj = getObj;
+    		exports.getPlainNodeArrayByList = getPlainNodeArrayByList;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
     		exports.getSource = getSource;
     		exports.getStackName = getStackName;
     		exports.getTree = getTree;
+    		exports.getTreeByFiber = getTreeByFiber;
     		exports.getTypeName = getTypeName;
+    		exports.loopChangedTree = loopChangedTree;
     		exports.loopTree = loopTree;
     		exports.parseDetailNode = parseDetailNode;
     		exports.parseHook = parseHook;
@@ -2233,6 +2314,20 @@
                     addNode(node);
                     setLoading(false);
                 }
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
+        if (data.type === coreExports.DevToolMessageEnum.highlight) {
+            {
+                console.log("[@my-react-devtool/panel] highlight", data.data);
+            }
+            var node = data.data;
+            try {
+                var highlightNode = _window.useHighlightNode.getActions().highlightNode;
+                highlightNode(node.id, node.type);
             }
             catch (e) {
                 var typedE = e;

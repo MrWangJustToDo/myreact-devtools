@@ -3,6 +3,7 @@ import { NODE_TYPE } from "./type";
 import { getFiberName, getHook, getObj, getSource, getTree, parseHook, parseProps, parseState } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
+import type { ListTree } from "@my-react/react-shared";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
 
@@ -74,9 +75,9 @@ export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): { current
     current.deep = 0;
   }
 
-  if (!exist) {
-    shallowAssignFiber(current, fiber);
+  shallowAssignFiber(current, fiber);
 
+  if (!exist) {
     treeMap.set(fiber, current);
 
     fiberStore.set(current.id, fiber);
@@ -90,6 +91,54 @@ export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): { current
 
   if (fiber.sibling) {
     loopTree(fiber.sibling, parent);
+  }
+
+  return { current, directory };
+};
+
+export const loopChangedTree = (
+  fiber: MyReactFiberNode,
+  set: Set<MyReactFiberNode>,
+  parent?: PlainNode
+): { current: PlainNode; directory: Record<string, string> } | null => {
+  if (!fiber) return null;
+
+  set.add(fiber);
+
+  const exist = treeMap.get(fiber);
+
+  // TODO throw a error?
+  if (!exist && !parent) return null;
+
+  const current = exist || new PlainNode();
+
+  current.children = null;
+
+  if (parent) {
+    parent.children = parent.children || [];
+
+    parent.children.push(current);
+
+    current.deep = parent.deep! + 1;
+  }
+
+  shallowAssignFiber(current, fiber);
+
+  if (!exist) {
+
+    treeMap.set(fiber, current);
+
+    fiberStore.set(current.id, fiber);
+
+    plainStore.set(current.id, current);
+  }
+
+  if (fiber.child) {
+    loopChangedTree(fiber.child, set, current);
+  }
+
+  if (fiber.sibling) {
+    loopChangedTree(fiber.sibling, set, parent);
   }
 
   return { current, directory };
@@ -126,6 +175,33 @@ export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
 export const getPlainNodeIdByFiber = (fiber: MyReactFiberNode) => {
   const node = getPlainNodeByFiber(fiber);
   return node?.id;
+};
+
+export const getTreeByFiber = (fiber: MyReactFiberNode) => {
+  if (!fiber) return null;
+  if (fiber.parent) {
+    return getTreeByFiber(fiber.parent);
+  } else {
+    return getPlainNodeByFiber(fiber);
+  }
+}
+
+export const getPlainNodeArrayByList = (list: ListTree<MyReactFiberNode>) => {
+  const hasViewList = new Set<MyReactFiberNode>();
+
+  const result: PlainNode[] = [];
+
+  list.listToFoot((fiber) => {
+    if (hasViewList.has(fiber)) return;
+
+    hasViewList.add(fiber);
+
+    const { current } = loopChangedTree(fiber, hasViewList);
+
+    result.push(current);
+  });
+
+  return { result, directory };
 };
 
 export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {

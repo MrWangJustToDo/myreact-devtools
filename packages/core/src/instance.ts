@@ -2,17 +2,21 @@
 import { isNormalEquals } from "@my-react/react-shared";
 
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import { generateTreeMap, getDetailNodeById, getPlainNodeIdByFiber } from "./tree";
+import { generateTreeMap, getDetailNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
 
 import type { Tree } from "./tree";
 import type { MyReactFiberNode } from "@my-react/react-reconciler";
+import type { ListTree } from "@my-react/react-shared";
 
+// 事件类型
 export enum DevToolMessageEnum {
   // 初始化，判断是否用@my-react进行页面渲染
   init = "init",
   dir = "dir",
   ready = "ready",
   update = "update",
+  changed = "changed",
+  highlight = "highlight",
   trigger = "trigger",
   hmr = "hmr",
   detail = "detail",
@@ -75,7 +79,7 @@ export class DevToolCore {
   }
 
   get hasEnable() {
-    return this._enabled || this._forceEnable
+    return this._enabled || this._forceEnable;
   }
 
   addDispatch(dispatch: DevToolRenderDispatch) {
@@ -103,11 +107,17 @@ export class DevToolCore {
       this.notifySelect();
     }, 200);
 
+    const onChange = (list: ListTree<MyReactFiberNode>) => {
+      getPlainNodeArrayByList(list);
+
+      this.notifyChanged(list);
+    }
+
     const onUnmount = () => {
       if (!this.hasEnable) return;
 
       this.delDispatch(dispatch);
-    }
+    };
 
     const onFiberTrigger = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
@@ -131,19 +141,32 @@ export class DevToolCore {
       if (!this.hasEnable) return;
 
       this.notifyHMR();
+
+      this.notifyDispatch(dispatch);
+    };
+
+    const onPerformanceWarn = (fiber: MyReactFiberNode) => {
+      const id = getPlainNodeIdByFiber(fiber);
+
+      if (!id) return;
+
+      this.notifyHighlight(id, "performance");
     };
 
     if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
       dispatch.onAfterCommit(onLoad);
 
-      dispatch.onAfterUpdate(onLoad);
+      // dispatch.onAfterUpdate(onLoad);
 
       dispatch.onAfterUnmount?.(onUnmount);
 
       dispatch.onFiberTrigger?.(onFiberTrigger);
 
-      dispatch.onFiberHMR?.(onFiberHMR);
+      dispatch.onPerformanceWarn?.(onPerformanceWarn);
 
+      dispatch.onFiberChange?.(onChange);
+
+      dispatch.onFiberHMR?.(onFiberHMR);
     } else {
       const originalAfterCommit = dispatch.afterCommit;
 
@@ -168,7 +191,7 @@ export class DevToolCore {
         originalAfterUnmount?.call?.(this);
 
         onUnmount();
-      }
+      };
     }
   }
 
@@ -236,6 +259,20 @@ export class DevToolCore {
     if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
+  }
+
+  notifyHighlight(id: string, type: "performance") {
+    if (!this.hasEnable) return;
+
+    this._notify({ type: DevToolMessageEnum.highlight, data: { id, type } });
+  }
+
+  notifyChanged(list: ListTree<MyReactFiberNode>) {
+    if (!this.hasEnable) return;
+
+    const tree = getTreeByFiber(list.head.value);
+
+    this._notify({ type: DevToolMessageEnum.ready, data: tree });
   }
 
   notifyHMR() {

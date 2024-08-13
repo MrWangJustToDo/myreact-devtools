@@ -39,6 +39,8 @@ declare global {
 
     useNodeName: UseSelectorWithState<{ state: Record<string, string> }, { set: (s: Record<string, string>) => void }>;
 
+    useHighlightNode: UseSelectorWithState<{}, { highlightNode: (id: string, type: string) => void }>;
+
     io: typeof io;
   }
 }

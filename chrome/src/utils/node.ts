@@ -22,3 +22,23 @@ export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => b
   return list;
 };
 
+export function getLastChild(nodes: PlainNode[], node: PlainNode): PlainNode {
+  const stack = [node];
+
+  let item: PlainNode | undefined;
+
+  let last = node;
+
+  while ((item = stack.pop()) != null) {
+    last = item;
+    if (item && item.children && item.children.length > 0) {
+      let index = item.children.length - 1;
+      while (index >= 0 && !nodes.some((i) => i.id === item!.children[index]?.id)) {
+        index--;
+      }
+      index >= 0 && stack.push(item.children[index]);
+    }
+  }
+
+  return last;
+}

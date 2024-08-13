@@ -5,6 +5,7 @@ import { useTreeNode } from "@/hooks/useTreeNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
+import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { io } from "socket.io-client";
 import type { CustomRenderDispatch, CustomRenderPlatform, initHMR } from "@my-react/react-reconciler";
 
@@ -31,6 +32,8 @@ declare global {
     useNodeName: typeof useNodeName;
 
     useHMRNode: typeof useHMRNode;
+
+    useHighlightNode: typeof useHighlightNode;
   }
 
   namespace NodeJS {

@@ -63,6 +63,9 @@ export const useAppTree = createState(
             .flat(1);
           useTreeNode.getActions().updateSelectList();
         },
+        // change: (node: PlainNode) => {
+        //   void 0;
+        // }
       };
     },
     // withNamespace: "useAppTree",

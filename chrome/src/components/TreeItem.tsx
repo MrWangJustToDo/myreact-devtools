@@ -4,6 +4,7 @@ import { Chip, Spacer, Tooltip } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { memo, useCallback, useMemo } from "react";
 
+import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useTreeNode } from "@/hooks/useTreeNode";
@@ -85,6 +86,8 @@ export const RenderItem = ({
 
   const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.id], [node.id]));
 
+  const highlightType = useHighlightNode(useCallback((s) => s.state?.[node.id], [node.id]));
+
   const finalName = useNodeName(useCallback((s) => s.map[current.name], [current.name]));
 
   const { select, closeList, selectList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []));
@@ -106,7 +109,7 @@ export const RenderItem = ({
 
   return (
     <div
-      id={current.id.toString()}
+      id={"node-" + current.id.toString()}
       data-depth={current.deep}
       onClick={() => {
         withSelect && setSelect(node.id);
@@ -172,6 +175,14 @@ export const RenderItem = ({
                   {hmrCount}
                 </Chip>
               </Tooltip>
+            </>
+          )}
+          {highlightType && (
+            <>
+              <Spacer x={1} />
+              <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
+                {highlightType}
+              </Chip>
             </>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { unmountPlainNode } from "./tree";
 
 import type { CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
+import type { ListTree } from "@my-react/react-shared";
 
 export interface DevToolRenderDispatch extends CustomRenderDispatch {
   hasDevToolInject?: boolean;
@@ -9,6 +10,8 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
   onFiberUnmount?: (cb: (fiber: MyReactFiberNode) => void) => void;
   onFiberTrigger?: (cb: (fiber: MyReactFiberNode) => void) => void;
   onFiberHMR?: (cb: (fiber: MyReactFiberNode) => void) => void;
+  onFiberChange?: (cb: (fiber: ListTree<MyReactFiberNode>) => void) => void;
+  onPerformanceWarn?: (cb: (fiber: MyReactFiberNode) => void) => void;
   onAfterCommit?: (cb: () => void) => void;
   onAfterUpdate?: (cb: () => void) => void;
   onAfterUnmount?: (cb: () => void) => void;
