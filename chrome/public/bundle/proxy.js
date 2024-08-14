@@ -1681,8 +1681,10 @@
     		        if (hasViewList.has(fiber))
     		            return;
     		        hasViewList.add(fiber);
-    		        var current = loopChangedTree(fiber, hasViewList).current;
-    		        result.push(current);
+    		        var re = loopChangedTree(fiber, hasViewList);
+    		        if (re && re.current) {
+    		            result.push(re.current);
+    		        }
     		    });
     		    return { result: result, directory: directory };
     		};
@@ -1846,8 +1848,13 @@
     		            _this.notifySelect();
     		        }, 200);
     		        var onChange = function (list) {
-    		            getPlainNodeArrayByList(list);
+    		            var directory = getPlainNodeArrayByList(list).directory;
+    		            if (!reactShared.isNormalEquals(_this._dir, directory)) {
+    		                _this._dir = __assign({}, directory);
+    		                _this.notifyDir();
+    		            }
     		            _this.notifyChanged(list);
+    		            _this.notifySelect();
     		        };
     		        var onUnmount = function () {
     		            if (!_this.hasEnable)

@@ -177,7 +177,7 @@ export const getPlainNodeIdByFiber = (fiber: MyReactFiberNode) => {
   return node?.id;
 };
 
-export const getTreeByFiber = (fiber: MyReactFiberNode) => {
+export const getTreeByFiber = (fiber: MyReactFiberNode): null | PlainNode => {
   if (!fiber) return null;
   if (fiber.parent) {
     return getTreeByFiber(fiber.parent);
@@ -196,9 +196,11 @@ export const getPlainNodeArrayByList = (list: ListTree<MyReactFiberNode>) => {
 
     hasViewList.add(fiber);
 
-    const { current } = loopChangedTree(fiber, hasViewList);
+    const re = loopChangedTree(fiber, hasViewList);
 
-    result.push(current);
+    if (re && re.current) {
+      result.push(re.current);
+    }
   });
 
   return { result, directory };

@@ -108,10 +108,18 @@ export class DevToolCore {
     }, 200);
 
     const onChange = (list: ListTree<MyReactFiberNode>) => {
-      getPlainNodeArrayByList(list);
+      const { directory } = getPlainNodeArrayByList(list);
+
+      if (!isNormalEquals(this._dir, directory)) {
+        this._dir = { ...directory };
+
+        this.notifyDir();
+      }
 
       this.notifyChanged(list);
-    }
+
+      this.notifySelect();
+    };
 
     const onUnmount = () => {
       if (!this.hasEnable) return;
