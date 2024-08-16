@@ -108,7 +108,7 @@ export const TreeView = memo(() => {
   }, [width, height, nodes.length, onScroll]);
 
   return (
-    <div className="tree-view h-full border rounded-md border-gray-200 group transform-cpu" ref={ref}>
+    <div data-container className="tree-view h-full border rounded-md border-gray-200 group transform-cpu" ref={ref}>
       <TreeViewImpl onScroll={onScroll} data={nodes} />
       <TreeViewSetting />
     </div>

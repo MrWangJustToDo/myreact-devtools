@@ -38,16 +38,16 @@ const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: 
   const finalKey = useNodeName(useCallback((s) => s.map?.[node.key!], [node.key]));
 
   return (
-    <div className="flex items-center gap-x-[1px] text-[12px]">
+    <div data-key className="flex items-center gap-x-[1px] text-[12px]">
       <div className=" text-[#40af2c]">key</div>
       <div className=" text-gray-400">=</div>
       <div className="flex">
         {'"'}
         {isScrolling ? (
-          <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
+          <div className="text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
         ) : (
           <Tooltip content={finalKey} delay={800} showArrow>
-            <div className="text-gray-600 max-w-[40px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
+            <div className="text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
           </Tooltip>
         )}
         {'"'}
@@ -122,69 +122,77 @@ export const RenderItem = ({
         `${currentIsSelect ? " !bg-blue-200" : ""}`
       }
     >
-      <div className="flex items-center h-full px-[2px] relative">
+      <div className="flex items-center h-full w-full px-[2px] relative">
         {currentIsSelect && <div className="absolute top-0 left-[1px] h-full border-l-2 border-blue-400 rounded-sm pointer-events-none" />}
-        <div data-content className="flex items-center" style={{ transform: `translateX(calc(${current.deep} * var(--indentation-size))` }}>
-          {withCollapse && (
-            <span
-              className={" text-gray-400 min-w-[18px]" + (hasChild ? " hover:text-gray-700" : "")}
-              onClick={(e) => {
-                e.stopPropagation();
-                setClose(node.id);
-              }}
-            >
-              {hasChild ? (
-                !isScrolling ? (
-                  <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow>
-                    {StateIcon}
-                  </Tooltip>
-                ) : (
-                  StateIcon
-                )
-              ) : null}
-            </span>
-          )}
-          <p className={isNativeNode ? " text-[#f15950]" : "text-[#427af5]"}>{finalName}</p>
-          {withTag && (
-            <>
-              <Spacer x={1} />
-              <RenderTag node={current} />
-            </>
-          )}
-          {withKey && current.key && (
-            <>
-              <Spacer x={1} />
-              <RenderKey node={current} isScrolling={isScrolling} />
-            </>
-          )}
-          {withTrigger && triggerCount > 0 && (
-            <>
-              <Spacer x={1} />
-              <Tooltip content="trigger update" showArrow>
-                <Chip size="sm" radius="none" color="primary" className="rounded-md capitalize text-[8px] h-[14px]">
-                  {triggerCount}
+        <div
+          className="flex-grow"
+          style={{
+            width: `calc(100%-calc(${current.deep}*var(--indentation-size)))`,
+            marginLeft: `calc(${current.deep} * var(--indentation-size)`,
+          }}
+        >
+          <div data-content className="flex items-center w-fit">
+            {withCollapse && (
+              <span
+                className={" text-gray-400 min-w-[18px]" + (hasChild ? " hover:text-gray-700" : "")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setClose(node.id);
+                }}
+              >
+                {hasChild ? (
+                  !isScrolling ? (
+                    <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow>
+                      {StateIcon}
+                    </Tooltip>
+                  ) : (
+                    StateIcon
+                  )
+                ) : null}
+              </span>
+            )}
+            <p className={isNativeNode ? " text-[#f15950]" : "text-[#427af5]"}>{finalName}</p>
+            {withTag && (
+              <>
+                <Spacer x={1} />
+                <RenderTag node={current} />
+              </>
+            )}
+            {withTrigger && triggerCount > 0 && (
+              <>
+                <Spacer x={1} />
+                <Tooltip content="trigger update" showArrow>
+                  <Chip size="sm" radius="none" color="primary" className="rounded-md capitalize text-[8px] h-[14px]">
+                    {triggerCount}
+                  </Chip>
+                </Tooltip>
+              </>
+            )}
+            {withHMR && hmrCount > 0 && (
+              <>
+                <Spacer x={1} />
+                <Tooltip content="hmr update" showArrow>
+                  <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
+                    {hmrCount}
+                  </Chip>
+                </Tooltip>
+              </>
+            )}
+            {highlightType && (
+              <>
+                <Spacer x={1} />
+                <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
+                  {highlightType}
                 </Chip>
-              </Tooltip>
-            </>
-          )}
-          {withHMR && hmrCount > 0 && (
-            <>
-              <Spacer x={1} />
-              <Tooltip content="hmr update" showArrow>
-                <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
-                  {hmrCount}
-                </Chip>
-              </Tooltip>
-            </>
-          )}
-          {highlightType && (
-            <>
-              <Spacer x={1} />
-              <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
-                {highlightType}
-              </Chip>
-            </>
-          )}
+              </>
+            )}
+            {withKey && current.key && (
+              <>
+                <Spacer x={1} />
+                <RenderKey node={current} isScrolling={isScrolling} />
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
