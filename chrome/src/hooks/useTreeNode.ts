@@ -29,8 +29,8 @@ export const useTreeNode = createState(
         }, {});
       }, 16);
       return {
-        setSelect: (node: string | null) => {
-          if (node === s.select) {
+        setSelect: (node: string | null, force?: boolean) => {
+          if (node === s.select && !force) {
             s.select = null;
             s.selectList = {};
           } else {

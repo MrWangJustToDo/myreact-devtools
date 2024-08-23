@@ -44,10 +44,10 @@ const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: 
       <div className="flex">
         {'"'}
         {isScrolling ? (
-          <div className="text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
+          <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
         ) : (
           <Tooltip content={finalKey} delay={800} showArrow>
-            <div className="text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
+            <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
           </Tooltip>
         )}
         {'"'}

@@ -1,16 +1,32 @@
 import { getTypeName, typeKeys } from "@my-react-devtool/core";
-import { Button, Modal, useDisclosure, ModalContent, ModalHeader, ModalBody, ModalFooter, Select, SelectItem, ButtonGroup, Tooltip } from "@nextui-org/react";
+import {
+  Button,
+  Modal,
+  useDisclosure,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Select,
+  SelectItem,
+  ButtonGroup,
+  Tooltip,
+  Spacer,
+} from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon, GearIcon } from "@radix-ui/react-icons";
 import { memo } from "react";
 
 import { useConnect } from "@/hooks/useConnect";
 import { useFilterNode } from "@/hooks/useFilterNode";
 
+import { TreeViewSearch } from "./TreeViewSearch";
+
 import type { ChangeEvent } from "react";
+import type { VirtuosoHandle } from "react-virtuoso";
 
 const onChange = useFilterNode.getActions().onChange;
 
-export const TreeViewSetting = memo(() => {
+export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) => {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const { state, cb } = useConnect((s) => ({ state: s.state, cb: s.cb }));
@@ -23,18 +39,22 @@ export const TreeViewSetting = memo(() => {
 
   return (
     <>
-      <ButtonGroup className="fixed top-3 right-3 z-10">
-        <Tooltip content={<p className={state ? "text-green-400" : "text-red-400"}>{state ? "DevTool Connect" : "DevTool DisConnect"}</p>} showArrow>
-          <Button isIconOnly onClick={() => cb?.()} disabled={state}>
-            {state ? <CheckCircledIcon className="text-green-500" /> : <CrossCircledIcon className=" text-red-500" />}
-          </Button>
-        </Tooltip>
-        <Tooltip content="Setting" showArrow>
-          <Button isIconOnly onClick={onOpen}>
-            <GearIcon className=" text-gray-500" />
-          </Button>
-        </Tooltip>
-      </ButtonGroup>
+      <div className="fixed top-3 right-3 z-10 flex">
+        <TreeViewSearch handle={handle} />
+        <Spacer x={2} />
+        <ButtonGroup variant="flat">
+          <Tooltip content={<p className={state ? "text-green-400" : "text-red-400"}>{state ? "DevTool Connect" : "DevTool DisConnect"}</p>} showArrow>
+            <Button isIconOnly onClick={() => cb?.()} disabled={state}>
+              {state ? <CheckCircledIcon className="text-green-500" /> : <CrossCircledIcon className=" text-red-500" />}
+            </Button>
+          </Tooltip>
+          <Tooltip content="Setting" showArrow>
+            <Button isIconOnly onClick={onOpen}>
+              <GearIcon className=" text-gray-500" />
+            </Button>
+          </Tooltip>
+        </ButtonGroup>
+      </div>
 
       <Modal isOpen={isOpen} onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">
         <ModalContent className=" text-[16px]">

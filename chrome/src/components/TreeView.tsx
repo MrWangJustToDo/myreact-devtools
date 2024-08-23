@@ -46,7 +46,7 @@ const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: 
   container.style.setProperty("--width-size", `${listWidth}px`);
 };
 
-const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: PlainNode[] }) => {
+const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; data: PlainNode[]; onMount: (s?: VirtuosoHandle) => void }) => {
   const [isScrolling, setIsScrolling] = useState(false);
 
   const ref = useRef<VirtuosoHandle>(null);
@@ -68,6 +68,18 @@ const TreeViewImpl = memo(({ onScroll, data }: { onScroll: () => void; data: Pla
       ref.current?.scrollIntoView({ index });
     }
   }, [index]);
+
+  const hasLength = data.length > 0;
+
+  useEffect(() => {
+    if (hasLength) {
+      onMount(ref.current as VirtuosoHandle);
+    }
+
+    return () => {
+      onMount();
+    };
+  }, [hasLength, onMount]);
 
   if (!data.length) return null;
 
@@ -93,6 +105,8 @@ export const TreeView = memo(() => {
 
   const { width, height } = useDomSize({ ref });
 
+  const [r, setR] = useState<VirtuosoHandle>();
+
   const lastIndentSizeRef = useRef(12);
 
   const lastContainerWidthRef = useRef(width);
@@ -109,8 +123,8 @@ export const TreeView = memo(() => {
 
   return (
     <div data-container className="tree-view h-full border rounded-md border-gray-200 group transform-cpu" ref={ref}>
-      <TreeViewImpl onScroll={onScroll} data={nodes} />
-      <TreeViewSetting />
+      <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />
+      <TreeViewSetting handle={r} />
     </div>
   );
 });
