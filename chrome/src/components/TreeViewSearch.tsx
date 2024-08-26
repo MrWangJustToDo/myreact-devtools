@@ -78,12 +78,12 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
         <>
           <Spacer x={2} />
           <ButtonGroup variant="flat">
-            <Tooltip content={`Total ${indexArray.length - 1}, current ${index}`} showArrow>
+            <Tooltip content={`Total ${indexArray.length}, current ${index + 1}`} showArrow>
               <Button isIconOnly onClick={() => setIndex((i) => (i - 1 + indexArray.length) % indexArray.length)} isDisabled={index === 0}>
                 <ArrowUpIcon />
               </Button>
             </Tooltip>
-            <Tooltip content={`Total ${indexArray.length - 1}, current ${index}`} showArrow>
+            <Tooltip content={`Total ${indexArray.length}, current ${index + 1}`} showArrow>
               <Button isIconOnly onClick={() => setIndex((i) => (i + 1) % indexArray.length)} isDisabled={index === indexArray.length - 1}>
                 <ArrowDownIcon />
               </Button>
