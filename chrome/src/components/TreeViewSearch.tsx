@@ -74,7 +74,7 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
           </Button>
         }
       />
-      {indexArray.length > 0 && (
+      {indexArray.length > 1 && (
         <>
           <Spacer x={2} />
           <ButtonGroup variant="flat">
