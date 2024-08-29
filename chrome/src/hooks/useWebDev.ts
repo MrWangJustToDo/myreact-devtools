@@ -2,6 +2,7 @@ import { DevToolMessageEnum, MessagePanelType, MessageWorkerType, parseDetailNod
 import { useEffect } from "react";
 
 import { useAppTree } from "./useAppTree";
+import { useConfig } from "./useConfig";
 import { useConnect } from "./useConnect";
 import { useDetailNode } from "./useDetailNode";
 import { useHMRNode } from "./useHMRNode";
@@ -28,7 +29,7 @@ export const useWebDev = () => {
 
       let id: NodeJS.Timeout | null = null;
 
-      let unSubscribe = () => {};
+      const unSubscribeArray: Array<() => void> = [];
 
       const listenBackEndReady = () => {
         if (connect) {
@@ -49,18 +50,44 @@ export const useWebDev = () => {
 
         listenBackEndReady();
 
-        unSubscribe = useTreeNode.subscribe(
-          (s) => s.select,
-          () => {
-            const currentSelect = useTreeNode.getReadonlyState().select;
+        unSubscribeArray.push(
+          useTreeNode.subscribe(
+            (s) => s.select,
+            () => {
+              const currentSelect = useTreeNode.getReadonlyState().select;
 
-            if (currentSelect) {
-              useDetailNode.getActions().setLoading(true);
+              if (currentSelect) {
+                useDetailNode.getActions().setLoading(true);
 
-              io.emit("action", { type: MessagePanelType.nodeSelect, data: currentSelect });
+                io.emit("action", { type: MessagePanelType.nodeSelect, data: currentSelect });
+              } else {
+                io.emit("action", { type: MessagePanelType.nodeSelect, data: null });
+              }
             }
-          }
+          )
         );
+
+        unSubscribeArray.push(
+          useTreeNode.subscribe(
+            (s) => s.hover,
+            () => io.emit("action", { type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
+          )
+        );
+
+        unSubscribeArray.push(
+          useConfig.subscribe(
+            (s) => s.state.enableHover,
+            () => io.emit("action", { type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
+          )
+        );
+
+        unSubscribeArray.push(
+          useConfig.subscribe(
+            (s) => s.state.enableUpdate,
+            () => io.emit("action", { type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
+          )
+        );
+        
       });
 
       io.on("disconnect", () => {
@@ -70,7 +97,7 @@ export const useWebDev = () => {
 
         id && clearTimeout(id);
 
-        unSubscribe();
+        unSubscribeArray.forEach((fn) => fn());
 
         useConnect.getActions().disconnect();
       });

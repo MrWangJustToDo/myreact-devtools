@@ -11,6 +11,8 @@ export enum MessageDetectorType {
 export enum MessagePanelType {
   show = "panel-show",
   hide = "panel-hide",
+  enableHover = "panel-enable-hover",
+  enableUpdate = "panel-enable-update",
   nodeHover = "panel-hover",
   nodeSelect = "panel-select",
 }

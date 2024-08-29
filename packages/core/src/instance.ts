@@ -3,7 +3,7 @@ import { isNormalEquals } from "@my-react/react-shared";
 
 import { HighLight, Overlay } from "./highlight";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import { generateTreeMap, getDetailNodeById, getFiberNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
+import { generateTreeMap, getDetailNodeByFiber, getFiberNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
 import { getElementNodesFromFiber } from "./utils";
 
 import type { Tree } from "./tree";
@@ -76,6 +76,10 @@ export class DevToolCore {
 
   _enabled = false;
 
+  _enableHover = false;
+
+  _enableUpdate = false;
+
   _forceEnable = false;
 
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
@@ -96,6 +100,22 @@ export class DevToolCore {
 
   get hasEnable() {
     return this._enabled || this._forceEnable;
+  }
+
+  setHoverStatus(d: boolean) {
+    if (__DEV__) {
+      console.log(`[@my-react-devtool/core] hoverStatus ${d ? "enable" : "disable"}`);
+    }
+
+    this._enableHover = d;
+  }
+
+  setUpdateStatus(d: boolean) {
+    if (__DEV__) {
+      console.log(`[@my-react-devtool/core] updateStatus ${d ? "enable" : "disable"}`);
+    }
+
+    this._enableUpdate = d;
   }
 
   addDispatch(dispatch: DevToolRenderDispatch) {
@@ -174,7 +194,29 @@ export class DevToolCore {
 
       if (!id) return;
 
+      if (this.hasEnable && this._enableUpdate) {
+        this.update.highLight(fiber, "warn");
+      }
+
       this.notifyHighlight(id, "performance");
+    };
+
+    const onDOMUpdate = (fiber: MyReactFiberNode) => {
+      if (this.hasEnable && this._enableUpdate) {
+        this.update.highLight(fiber, "update");
+      }
+    };
+
+    const onDOMAppend = (fiber: MyReactFiberNode) => {
+      if (this.hasEnable && this._enableUpdate) {
+        this.update.highLight(fiber, "append");
+      }
+    };
+
+    const onDOMSetRef = (fiber: MyReactFiberNode) => {
+      if (this.hasEnable && this._enableUpdate) {
+        this.update.highLight(fiber, "setRef");
+      }
     };
 
     if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
@@ -191,6 +233,12 @@ export class DevToolCore {
       dispatch.onFiberChange?.(onChange);
 
       dispatch.onFiberHMR?.(onFiberHMR);
+
+      dispatch.onDOMUpdate?.(onDOMUpdate);
+
+      dispatch.onDOMAppend?.(onDOMAppend);
+
+      dispatch.onDOMSetRef?.(onDOMSetRef);
     } else {
       const originalAfterCommit = dispatch.afterCommit;
 
@@ -268,6 +316,8 @@ export class DevToolCore {
   }
 
   showHover() {
+    if (!this._enableHover) return;
+
     clearTimeout(timeoutID);
 
     this.select?.remove?.();
@@ -334,19 +384,17 @@ export class DevToolCore {
       return;
     }
 
-    this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeById(id) });
-  }
+    const fiber = getFiberNodeById(id);
 
-  notifyHover() {
-    if (!this.hasEnable) return;
+    if (fiber) {
+      if (__DEV__) {
+        console.log("[@my-react-devtool/core] current select fiber", fiber);
+      }
 
-    const id = this._hoverId;
-
-    if (!id) {
-      return;
+      this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber) });
+    } else {
+      this._notify({ type: DevToolMessageEnum.detail, data: null });
     }
-
-    this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeById(id) });
   }
 
   notifyDispatch(dispatch: DevToolRenderDispatch) {
@@ -368,8 +416,6 @@ export class DevToolCore {
 
     this.notifyDir();
 
-    this.notifyHover();
-
     this.notifyTrigger();
 
     this.notifyHMR();
@@ -381,7 +427,7 @@ export class DevToolCore {
     if (this._enabled) return;
 
     if (__DEV__) {
-      console.log("[@my-react-devtool/core-instance] connect");
+      console.log("[@my-react-devtool/core] connect");
     }
 
     this._enabled = true;
@@ -391,7 +437,7 @@ export class DevToolCore {
     if (!this._enabled) return;
 
     if (__DEV__) {
-      console.log("[@my-react-devtool/core-instance] disconnect");
+      console.log("[@my-react-devtool/core] disconnect");
     }
 
     this._enabled = false;

@@ -231,7 +231,6 @@ const initSelectListen = (_window: Window) => {
   }
 };
 
-// TODO
 const initHoverListen = (_window: Window) => {
   const useTreeNode = _window.useTreeNode;
   const useDetailNode = _window.useDetailNode;
@@ -249,6 +248,40 @@ const initHoverListen = (_window: Window) => {
         }
       }
     );
+  } catch {
+    void 0;
+  }
+};
+
+const initConfigListen = (_window: Window) => {
+  const useConfig = _window.useConfig;
+
+  const cbArray: Array<() => void> = [];
+
+  try {
+    cbArray.push(
+      useConfig.subscribe(
+        (s) => s.state.enableHover,
+        () => {
+          const enableHover = useConfig.getReadonlyState().state.enableHover;
+
+          sendMessage({ type: MessagePanelType.enableHover, data: enableHover });
+        }
+      )
+    );
+    cbArray.push(
+      useConfig.subscribe(
+        (s) => s.state.enableUpdate,
+        () => {
+          const enableUpdate = useConfig.getReadonlyState().state.enableUpdate;
+
+          sendMessage({ type: MessagePanelType.enableUpdate, data: enableUpdate });
+        }
+      )
+    );
+    return () => {
+      cbArray.forEach((f) => f());
+    };
   } catch {
     void 0;
   }
@@ -312,7 +345,7 @@ const init = async (id: number) => {
 
         sendMessage({ type: MessagePanelType.show });
 
-        cleanList.push(initSelectListen(window), initHoverListen(window));
+        cleanList.push(initSelectListen(window), initHoverListen(window), initConfigListen(window));
       },
       () => {
         if (__DEV__) {

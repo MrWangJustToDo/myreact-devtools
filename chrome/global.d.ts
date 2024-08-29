@@ -4,6 +4,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useHMRNode } from "@/hooks/useHMRNode";
+import { useConfig } from "@/hooks/useConfig";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { io } from "socket.io-client";
@@ -34,6 +35,8 @@ declare global {
     useHMRNode: typeof useHMRNode;
 
     useHighlightNode: typeof useHighlightNode;
+
+    useConfig: typeof useConfig;
   }
 
   namespace NodeJS {

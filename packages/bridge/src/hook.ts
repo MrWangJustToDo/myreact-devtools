@@ -73,6 +73,14 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
     core.disconnect();
   }
 
+  if (message.data?.type === MessagePanelType.enableHover) {
+    core.setHoverStatus(message.data.data);
+  }
+
+  if (message.data?.type === MessagePanelType.enableUpdate) {
+    core.setUpdateStatus(message.data.data);
+  }
+
   if (message.data?.type === MessagePanelType.nodeSelect) {
     core.setSelect(message.data.data);
 
@@ -105,9 +113,10 @@ const loadScript = (url: string) => {
 
 let connectSocket: Socket | null = null;
 
+// TODO! 与 onMessage 保持同步
 const initWEB_UI = async (url: string) => {
   if (__DEV__) {
-    console.log('[@my-react-devtool/hook] start a web ui devtool');
+    console.log("[@my-react-devtool/hook] start a web ui devtool");
 
     await loadScript("https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js");
 
@@ -149,6 +158,20 @@ const initWEB_UI = async (url: string) => {
 
         core.notifySelect();
       }
+
+      if (data?.type === MessagePanelType.nodeHover) {
+        core.setHover(data.data);
+
+        core.showHover();
+      }
+
+      if (data?.type === MessagePanelType.enableHover) {
+        core.setHoverStatus(data.data);
+      }
+
+      if (data?.type === MessagePanelType.enableUpdate) {
+        core.setUpdateStatus(data.data);
+      }
     });
   }
 };
@@ -157,7 +180,7 @@ initWEB_UI.close = () => {
   connectSocket?.close?.();
 
   connectSocket = null;
-}
+};
 
 export const globalHook = (dispatch: CustomRenderDispatch) => {
   set.add(dispatch);

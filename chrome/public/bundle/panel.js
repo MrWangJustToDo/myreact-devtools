@@ -1395,15 +1395,6 @@
     		var getFiberNodeById = function (id) {
     		    return fiberStore.get(id);
     		};
-    		var getDetailNodeById = function (id) {
-    		    var fiber = fiberStore.get(id);
-    		    if (fiber) {
-    		        {
-    		            console.log("[@my-react-devtool/core] current select fiber", fiber);
-    		        }
-    		        return getDetailNodeByFiber(fiber);
-    		    }
-    		};
     		var parseDetailNode = function (plain) {
     		    plain.hook = parseHook(plain);
     		    plain.props = parseProps(plain);
@@ -1926,6 +1917,7 @@
     		}
 
     		/* eslint-disable @typescript-eslint/ban-ts-comment */
+    		// https://github.com/facebook/react/blob/main/packages/react-devtools-shared/src/backend/views/Highlighter/Overlay.js
     		var assign = Object.assign;
     		// Note that the Overlay components are not affected by the active Theme,
     		// because they highlight elements in the main Chrome window (outside of devtools).
@@ -2354,6 +2346,8 @@
     		        this._trigger = {};
     		        this._hmr = {};
     		        this._enabled = false;
+    		        this._enableHover = false;
+    		        this._enableUpdate = false;
     		        this._forceEnable = false;
     		        this._listeners = new Set();
     		        this.version = "0.0.1";
@@ -2363,7 +2357,6 @@
     		                _this.notifyDispatch(dispatch);
     		            });
     		            _this.notifyDir();
-    		            _this.notifyHover();
     		            _this.notifyTrigger();
     		            _this.notifyHMR();
     		            _this.notifySelect();
@@ -2380,6 +2373,18 @@
     		        enumerable: false,
     		        configurable: true
     		    });
+    		    DevToolCore.prototype.setHoverStatus = function (d) {
+    		        {
+    		            console.log("[@my-react-devtool/core] hoverStatus ".concat(d ? "enable" : "disable"));
+    		        }
+    		        this._enableHover = d;
+    		    };
+    		    DevToolCore.prototype.setUpdateStatus = function (d) {
+    		        {
+    		            console.log("[@my-react-devtool/core] updateStatus ".concat(d ? "enable" : "disable"));
+    		        }
+    		        this._enableUpdate = d;
+    		    };
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
     		        if (dispatch)
     		            this._detector = true;
@@ -2391,7 +2396,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a, _b, _c, _d, _e;
+    		        var _a, _b, _c, _d, _e, _f, _g, _h;
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
@@ -2438,7 +2443,25 @@
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
+    		            if (_this.hasEnable && _this._enableUpdate) {
+    		                _this.update.highLight(fiber, "warn");
+    		            }
     		            _this.notifyHighlight(id, "performance");
+    		        };
+    		        var onDOMUpdate = function (fiber) {
+    		            if (_this.hasEnable && _this._enableUpdate) {
+    		                _this.update.highLight(fiber, "update");
+    		            }
+    		        };
+    		        var onDOMAppend = function (fiber) {
+    		            if (_this.hasEnable && _this._enableUpdate) {
+    		                _this.update.highLight(fiber, "append");
+    		            }
+    		        };
+    		        var onDOMSetRef = function (fiber) {
+    		            if (_this.hasEnable && _this._enableUpdate) {
+    		                _this.update.highLight(fiber, "setRef");
+    		            }
     		        };
     		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
     		            dispatch.onAfterCommit(onLoad);
@@ -2448,6 +2471,9 @@
     		            (_c = dispatch.onPerformanceWarn) === null || _c === void 0 ? void 0 : _c.call(dispatch, onPerformanceWarn);
     		            (_d = dispatch.onFiberChange) === null || _d === void 0 ? void 0 : _d.call(dispatch, onChange);
     		            (_e = dispatch.onFiberHMR) === null || _e === void 0 ? void 0 : _e.call(dispatch, onFiberHMR);
+    		            (_f = dispatch.onDOMUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onDOMUpdate);
+    		            (_g = dispatch.onDOMAppend) === null || _g === void 0 ? void 0 : _g.call(dispatch, onDOMAppend);
+    		            (_h = dispatch.onDOMSetRef) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMSetRef);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
@@ -2508,6 +2534,8 @@
     		    DevToolCore.prototype.showHover = function () {
     		        var _this = this;
     		        var _a, _b;
+    		        if (!this._enableHover)
+    		            return;
     		        clearTimeout(timeoutID);
     		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        this.select = new Overlay(this);
@@ -2558,16 +2586,16 @@
     		        if (!id) {
     		            return;
     		        }
-    		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
-    		    };
-    		    DevToolCore.prototype.notifyHover = function () {
-    		        if (!this.hasEnable)
-    		            return;
-    		        var id = this._hoverId;
-    		        if (!id) {
-    		            return;
+    		        var fiber = getFiberNodeById(id);
+    		        if (fiber) {
+    		            {
+    		                console.log("[@my-react-devtool/core] current select fiber", fiber);
+    		            }
+    		            this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber) });
     		        }
-    		        this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeById(id) });
+    		        else {
+    		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
+    		        }
     		    };
     		    DevToolCore.prototype.notifyDispatch = function (dispatch) {
     		        if (!this.hasEnable)
@@ -2581,7 +2609,7 @@
     		        if (this._enabled)
     		            return;
     		        {
-    		            console.log("[@my-react-devtool/core-instance] connect");
+    		            console.log("[@my-react-devtool/core] connect");
     		        }
     		        this._enabled = true;
     		    };
@@ -2589,7 +2617,7 @@
     		        if (!this._enabled)
     		            return;
     		        {
-    		            console.log("[@my-react-devtool/core-instance] disconnect");
+    		            console.log("[@my-react-devtool/core] disconnect");
     		        }
     		        this._enabled = false;
     		    };
@@ -2610,6 +2638,8 @@
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
     		    MessagePanelType["hide"] = "panel-hide";
+    		    MessagePanelType["enableHover"] = "panel-enable-hover";
+    		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
@@ -2627,7 +2657,6 @@
     		exports.getComponentNameFromNativeNode = getComponentNameFromNativeNode;
     		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
-    		exports.getDetailNodeById = getDetailNodeById;
     		exports.getElementNodesFromFiber = getElementNodesFromFiber;
     		exports.getFiberName = getFiberName;
     		exports.getFiberNodeById = getFiberNodeById;
@@ -2858,7 +2887,6 @@
         catch (_a) {
         }
     };
-    // TODO
     var initHoverListen = function (_window) {
         var useTreeNode = _window.useTreeNode;
         var useDetailNode = _window.useDetailNode;
@@ -2870,6 +2898,25 @@
                     sendMessage({ type: coreExports.MessagePanelType.nodeHover, data: currentHover });
                 }
             });
+        }
+        catch (_a) {
+        }
+    };
+    var initConfigListen = function (_window) {
+        var useConfig = _window.useConfig;
+        var cbArray = [];
+        try {
+            cbArray.push(useConfig.subscribe(function (s) { return s.state.enableHover; }, function () {
+                var enableHover = useConfig.getReadonlyState().state.enableHover;
+                sendMessage({ type: coreExports.MessagePanelType.enableHover, data: enableHover });
+            }));
+            cbArray.push(useConfig.subscribe(function (s) { return s.state.enableUpdate; }, function () {
+                var enableUpdate = useConfig.getReadonlyState().state.enableUpdate;
+                sendMessage({ type: coreExports.MessagePanelType.enableUpdate, data: enableUpdate });
+            }));
+            return function () {
+                cbArray.forEach(function (f) { return f(); });
+            };
         }
         catch (_a) {
         }
@@ -2915,7 +2962,7 @@
                             }
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
-                            cleanList_1.push(initSelectListen(window), initHoverListen(window));
+                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window));
                         }, function () {
                             {
                                 console.log("hide panel");

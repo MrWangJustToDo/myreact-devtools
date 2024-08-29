@@ -12,10 +12,12 @@ import {
   ButtonGroup,
   Tooltip,
   Spacer,
+  Checkbox,
 } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon, GearIcon } from "@radix-ui/react-icons";
 import { memo } from "react";
 
+import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
 import { useFilterNode } from "@/hooks/useFilterNode";
 
@@ -28,6 +30,8 @@ const onChange = useFilterNode.getActions().onChange;
 
 export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) => {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+  const { state: configState, setEnableHover, setEnableUpdate } = useConfig();
 
   const { state, cb } = useConnect((s) => ({ state: s.state, cb: s.cb }));
 
@@ -59,7 +63,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
       <Modal isOpen={isOpen} onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">
         <ModalContent className=" text-[16px]">
           <ModalHeader>
-            <p className="text-[18px]">TreeView Setting</p>
+            <p className="text-[18px]">Setting</p>
           </ModalHeader>
           <ModalBody>
             <div className="flex items-center">
@@ -80,6 +84,16 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                   </SelectItem>
                 ))}
               </Select>
+            </div>
+            <div className="mt-2">
+              <Checkbox isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} color="primary">
+                Highlight Update
+              </Checkbox>
+            </div>
+            <div className="mt-2">
+              <Checkbox isSelected={configState.enableHover} onValueChange={setEnableHover} color="secondary">
+                Overlay Hover
+              </Checkbox>
             </div>
           </ModalBody>
           <ModalFooter>

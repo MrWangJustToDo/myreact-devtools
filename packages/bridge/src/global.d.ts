@@ -41,6 +41,11 @@ declare global {
 
     useHighlightNode: UseSelectorWithState<{}, { highlightNode: (id: string, type: string) => void }>;
 
+    useConfig: UseSelectorWithState<
+      { state: { enableHover: boolean; enableUpdate: boolean } },
+      { setEnableHover: (b: boolean) => void; setEnableUpdate: (b: boolean) => void }
+    >;
+
     io: typeof io;
   }
 }

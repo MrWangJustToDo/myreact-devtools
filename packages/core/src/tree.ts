@@ -234,18 +234,6 @@ export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
 }
 
-export const getDetailNodeById = (id: string) => {
-  const fiber = fiberStore.get(id);
-
-  if (fiber) {
-    if (__DEV__) {
-      console.log("[@my-react-devtool/core] current select fiber", fiber);
-    }
-
-    return getDetailNodeByFiber(fiber);
-  }
-};
-
 export const parseDetailNode = (plain: PlainNode) => {
   plain.hook = parseHook(plain);
 
