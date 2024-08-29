@@ -230,6 +230,10 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
   }
 };
 
+export const getFiberNodeById = (id: string) => {
+  return fiberStore.get(id);
+}
+
 export const getDetailNodeById = (id: string) => {
   const fiber = fiberStore.get(id);
 

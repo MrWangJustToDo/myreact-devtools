@@ -12,7 +12,7 @@ import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
-const { setSelect, setClose } = useTreeNode.getActions();
+const { setSelect, setClose, setHover } = useTreeNode.getActions();
 
 const RenderTag = memo(({ node }: { node: PlainNode }) => {
   const tag = getFiberTag(node.type);
@@ -131,7 +131,16 @@ export const RenderItem = ({
             marginLeft: `calc(${current.deep} * var(--indentation-size)`,
           }}
         >
-          <div data-content className="flex items-center w-fit">
+          <div
+            data-content
+            className="flex items-center w-fit"
+            onMouseEnter={() => {
+              withSelect && setHover(node.id);
+            }}
+            onMouseOut={() => {
+              withSelect && setHover("");
+            }}
+          >
             {withCollapse && (
               <span
                 className={" text-gray-400 min-w-[18px]" + (hasChild ? " hover:text-gray-700" : "")}

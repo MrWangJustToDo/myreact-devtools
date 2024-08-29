@@ -78,6 +78,12 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
 
     core.notifySelect();
   }
+
+  if (message.data?.type === MessagePanelType.nodeHover) {
+    core.setHover(message.data.data);
+
+    core.showHover();
+  }
 };
 
 window.addEventListener("message", onMessage);

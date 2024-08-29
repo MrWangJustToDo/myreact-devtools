@@ -1,12 +1,18 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { isNormalEquals } from "@my-react/react-shared";
 
+import { HighLight, Overlay } from "./highlight";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import { generateTreeMap, getDetailNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
+import { generateTreeMap, getDetailNodeById, getFiberNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
+import { getElementNodesFromFiber } from "./utils";
 
 import type { Tree } from "./tree";
 import type { MyReactFiberNode } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
+
+const SHOW_DURATION = 2000;
+
+let timeoutID: NodeJS.Timeout | null = null;
 
 // 事件类型
 export enum DevToolMessageEnum {
@@ -73,6 +79,16 @@ export class DevToolCore {
   _forceEnable = false;
 
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
+
+  version = __VERSION__;
+
+  select: Overlay;
+
+  update: HighLight;
+
+  constructor() {
+    this.update = new HighLight(this);
+  }
 
   getDispatch() {
     return Array.from(this._dispatch);
@@ -249,6 +265,26 @@ export class DevToolCore {
 
   setHover(id: string) {
     this._hoverId = id;
+  }
+
+  showHover() {
+    clearTimeout(timeoutID);
+
+    this.select?.remove?.();
+
+    this.select = new Overlay(this);
+
+    if (this._hoverId) {
+      const fiber = getFiberNodeById(this._hoverId);
+
+      this.select.inspect(getElementNodesFromFiber(fiber));
+
+      timeoutID = setTimeout(() => {
+        this.select.remove();
+
+        this.select = null;
+      }, SHOW_DURATION);
+    }
   }
 
   notifyDir() {

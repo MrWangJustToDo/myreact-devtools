@@ -1171,6 +1171,179 @@
     		    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
     		})(NODE_TYPE || (NODE_TYPE = {}));
 
+    		var treeMap = new Map();
+    		var detailMap = new Map();
+    		var fiberStore = new Map();
+    		var plainStore = new Map();
+    		var directory = {};
+    		var count = 0;
+    		var shallowAssignFiber = function (plain, fiber) {
+    		    var hasKey = fiber.key !== null && fiber.key !== undefined;
+    		    if (hasKey && !directory[fiber.key]) {
+    		        directory[fiber.key] = ++count + "";
+    		    }
+    		    var name = getFiberName(fiber);
+    		    if (!directory[name]) {
+    		        directory[name] = ++count + "";
+    		    }
+    		    plain.key = hasKey ? directory[fiber.key] : undefined;
+    		    plain.type = fiber.type;
+    		    plain.name = directory[name];
+    		};
+    		var assignFiber = function (plain, fiber) {
+    		    shallowAssignFiber(plain, fiber);
+    		    plain.source = getSource(fiber);
+    		    plain.hook = getHook(fiber);
+    		    // plain.hook_v2 = getHook_v2(fiber as MyReactFiberNodeDev);
+    		    plain.props = getObj(fiber.pendingProps);
+    		    plain.tree = getTree(fiber);
+    		    if (fiber.type & NODE_TYPE.__class__) {
+    		        plain.state = getObj(fiber.pendingState);
+    		    }
+    		};
+    		// TODO improve performance
+    		var loopTree = function (fiber, parent) {
+    		    if (!fiber)
+    		        return null;
+    		    var exist = treeMap.get(fiber);
+    		    var current = exist || new PlainNode();
+    		    current.children = null;
+    		    if (parent) {
+    		        parent.children = parent.children || [];
+    		        parent.children.push(current);
+    		        current.deep = parent.deep + 1;
+    		    }
+    		    else {
+    		        current.deep = 0;
+    		    }
+    		    shallowAssignFiber(current, fiber);
+    		    if (!exist) {
+    		        treeMap.set(fiber, current);
+    		        fiberStore.set(current.id, fiber);
+    		        plainStore.set(current.id, current);
+    		    }
+    		    if (fiber.child) {
+    		        loopTree(fiber.child, current);
+    		    }
+    		    if (fiber.sibling) {
+    		        loopTree(fiber.sibling, parent);
+    		    }
+    		    return { current: current, directory: directory };
+    		};
+    		var loopChangedTree = function (fiber, set, parent) {
+    		    if (!fiber)
+    		        return null;
+    		    set.add(fiber);
+    		    var exist = treeMap.get(fiber);
+    		    // TODO throw a error?
+    		    if (!exist && !parent)
+    		        return null;
+    		    var current = exist || new PlainNode();
+    		    current.children = null;
+    		    if (parent) {
+    		        parent.children = parent.children || [];
+    		        parent.children.push(current);
+    		        current.deep = parent.deep + 1;
+    		    }
+    		    shallowAssignFiber(current, fiber);
+    		    if (!exist) {
+    		        treeMap.set(fiber, current);
+    		        fiberStore.set(current.id, fiber);
+    		        plainStore.set(current.id, current);
+    		    }
+    		    if (fiber.child) {
+    		        loopChangedTree(fiber.child, set, current);
+    		    }
+    		    if (fiber.sibling) {
+    		        loopChangedTree(fiber.sibling, set, parent);
+    		    }
+    		    return { current: current, directory: directory };
+    		};
+    		var generateTreeMap = function (dispatch) {
+    		    var rootFiber = dispatch.rootFiber;
+    		    var rootNode = loopTree(rootFiber);
+    		    return rootNode;
+    		};
+    		var unmountPlainNode = function (fiber) {
+    		    var plain = treeMap.get(fiber);
+    		    if (plain) {
+    		        fiberStore.delete(plain.id);
+    		        plainStore.delete(plain.id);
+    		    }
+    		    treeMap.delete(fiber);
+    		    detailMap.delete(fiber);
+    		};
+    		var getPlainNodeByFiber = function (fiber) {
+    		    return treeMap.get(fiber);
+    		};
+    		var getPlainNodeIdByFiber = function (fiber) {
+    		    var node = getPlainNodeByFiber(fiber);
+    		    return node === null || node === void 0 ? void 0 : node.id;
+    		};
+    		var getTreeByFiber = function (fiber) {
+    		    if (!fiber)
+    		        return null;
+    		    if (fiber.parent) {
+    		        return getTreeByFiber(fiber.parent);
+    		    }
+    		    else {
+    		        return getPlainNodeByFiber(fiber);
+    		    }
+    		};
+    		var getPlainNodeArrayByList = function (list) {
+    		    var hasViewList = new Set();
+    		    var result = [];
+    		    list.listToFoot(function (fiber) {
+    		        if (hasViewList.has(fiber))
+    		            return;
+    		        hasViewList.add(fiber);
+    		        var re = loopChangedTree(fiber, hasViewList);
+    		        if (re && re.current) {
+    		            result.push(re.current);
+    		        }
+    		    });
+    		    return { result: result, directory: directory };
+    		};
+    		var getDetailNodeByFiber = function (fiber) {
+    		    var plainNode = getPlainNodeByFiber(fiber);
+    		    if (!plainNode) {
+    		        throw new Error("plainNode not found, look like a bug for @my-react/devtools");
+    		    }
+    		    var exist = detailMap.get(fiber);
+    		    if (exist) {
+    		        assignFiber(exist, fiber);
+    		        return exist;
+    		    }
+    		    else {
+    		        var created = new PlainNode(plainNode.id);
+    		        assignFiber(created, fiber);
+    		        detailMap.set(fiber, created);
+    		        return created;
+    		    }
+    		};
+    		var getFiberNodeById = function (id) {
+    		    return fiberStore.get(id);
+    		};
+    		var getDetailNodeById = function (id) {
+    		    var fiber = fiberStore.get(id);
+    		    if (fiber) {
+    		        {
+    		            console.log("[@my-react-devtool/core] current select fiber", fiber);
+    		        }
+    		        return getDetailNodeByFiber(fiber);
+    		    }
+    		};
+    		var parseDetailNode = function (plain) {
+    		    plain.hook = parseHook(plain);
+    		    plain.props = parseProps(plain);
+    		    if (plain.state) {
+    		        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    		        // @ts-ignore
+    		        plain.state = parseState(plain);
+    		    }
+    		    return plain;
+    		};
+
     		var replacer = function (key, value) {
     		    if (key === "_owner" || key === "__fiber__" || key === "__props__") {
     		        return null;
@@ -1554,176 +1727,482 @@
     		    var state = plain.state;
     		    return safeParse(state);
     		};
+    		var getComponentNameFromNativeNode = function (node) {
+    		    var fiber = node === null || node === void 0 ? void 0 : node.__fiber__;
+    		    if (!fiber)
+    		        return "";
+    		    return getFiberName(typeof fiber._debugElement === "object" ? fiber._debugElement._owner || fiber : fiber);
+    		};
+    		var getElementNodesFromFiber = function (fiber) {
+    		    var nodes = [];
+    		    var fibers = [fiber];
+    		    while (fibers.length) {
+    		        var c = fibers.shift();
+    		        if (c.nativeNode) {
+    		            nodes.push(c.nativeNode);
+    		        }
+    		        else {
+    		            var l = c.child;
+    		            while (l) {
+    		                fibers.push(l);
+    		                l = l.sibling;
+    		            }
+    		        }
+    		    }
+    		    return nodes;
+    		};
 
-    		var treeMap = new Map();
-    		var detailMap = new Map();
-    		var fiberStore = new Map();
-    		var plainStore = new Map();
-    		var directory = {};
-    		var count = 0;
-    		var shallowAssignFiber = function (plain, fiber) {
-    		    var hasKey = fiber.key !== null && fiber.key !== undefined;
-    		    if (hasKey && !directory[fiber.key]) {
-    		        directory[fiber.key] = ++count + "";
-    		    }
-    		    var name = getFiberName(fiber);
-    		    if (!directory[name]) {
-    		        directory[name] = ++count + "";
-    		    }
-    		    plain.key = hasKey ? directory[fiber.key] : undefined;
-    		    plain.type = fiber.type;
-    		    plain.name = directory[name];
-    		};
-    		var assignFiber = function (plain, fiber) {
-    		    shallowAssignFiber(plain, fiber);
-    		    plain.source = getSource(fiber);
-    		    plain.hook = getHook(fiber);
-    		    // plain.hook_v2 = getHook_v2(fiber as MyReactFiberNodeDev);
-    		    plain.props = getObj(fiber.pendingProps);
-    		    plain.tree = getTree(fiber);
-    		    if (fiber.type & NODE_TYPE.__class__) {
-    		        plain.state = getObj(fiber.pendingState);
-    		    }
-    		};
-    		// TODO improve performance
-    		var loopTree = function (fiber, parent) {
-    		    if (!fiber)
+    		// Get the window object for the document that a node belongs to,
+    		// or return null if it cannot be found (node not attached to DOM,
+    		// etc).
+    		function getOwnerWindow(node) {
+    		    if (!node.ownerDocument) {
     		        return null;
-    		    var exist = treeMap.get(fiber);
-    		    var current = exist || new PlainNode();
-    		    current.children = null;
-    		    if (parent) {
-    		        parent.children = parent.children || [];
-    		        parent.children.push(current);
-    		        current.deep = parent.deep + 1;
     		    }
-    		    else {
-    		        current.deep = 0;
+    		    return node.ownerDocument.defaultView;
+    		}
+    		// Get the iframe containing a node, or return null if it cannot
+    		// be found (node not within iframe, etc).
+    		function getOwnerIframe(node) {
+    		    var nodeWindow = getOwnerWindow(node);
+    		    if (nodeWindow) {
+    		        return nodeWindow.frameElement;
     		    }
-    		    shallowAssignFiber(current, fiber);
-    		    if (!exist) {
-    		        treeMap.set(fiber, current);
-    		        fiberStore.set(current.id, fiber);
-    		        plainStore.set(current.id, current);
-    		    }
-    		    if (fiber.child) {
-    		        loopTree(fiber.child, current);
-    		    }
-    		    if (fiber.sibling) {
-    		        loopTree(fiber.sibling, parent);
-    		    }
-    		    return { current: current, directory: directory };
-    		};
-    		var loopChangedTree = function (fiber, set, parent) {
-    		    if (!fiber)
-    		        return null;
-    		    set.add(fiber);
-    		    var exist = treeMap.get(fiber);
-    		    // TODO throw a error?
-    		    if (!exist && !parent)
-    		        return null;
-    		    var current = exist || new PlainNode();
-    		    current.children = null;
-    		    if (parent) {
-    		        parent.children = parent.children || [];
-    		        parent.children.push(current);
-    		        current.deep = parent.deep + 1;
-    		    }
-    		    shallowAssignFiber(current, fiber);
-    		    if (!exist) {
-    		        treeMap.set(fiber, current);
-    		        fiberStore.set(current.id, fiber);
-    		        plainStore.set(current.id, current);
-    		    }
-    		    if (fiber.child) {
-    		        loopChangedTree(fiber.child, set, current);
-    		    }
-    		    if (fiber.sibling) {
-    		        loopChangedTree(fiber.sibling, set, parent);
-    		    }
-    		    return { current: current, directory: directory };
-    		};
-    		var generateTreeMap = function (dispatch) {
-    		    var rootFiber = dispatch.rootFiber;
-    		    var rootNode = loopTree(rootFiber);
-    		    return rootNode;
-    		};
-    		var unmountPlainNode = function (fiber) {
-    		    var plain = treeMap.get(fiber);
-    		    if (plain) {
-    		        fiberStore.delete(plain.id);
-    		        plainStore.delete(plain.id);
-    		    }
-    		    treeMap.delete(fiber);
-    		    detailMap.delete(fiber);
-    		};
-    		var getPlainNodeByFiber = function (fiber) {
-    		    return treeMap.get(fiber);
-    		};
-    		var getPlainNodeIdByFiber = function (fiber) {
-    		    var node = getPlainNodeByFiber(fiber);
-    		    return node === null || node === void 0 ? void 0 : node.id;
-    		};
-    		var getTreeByFiber = function (fiber) {
-    		    if (!fiber)
-    		        return null;
-    		    if (fiber.parent) {
-    		        return getTreeByFiber(fiber.parent);
-    		    }
-    		    else {
-    		        return getPlainNodeByFiber(fiber);
-    		    }
-    		};
-    		var getPlainNodeArrayByList = function (list) {
-    		    var hasViewList = new Set();
-    		    var result = [];
-    		    list.listToFoot(function (fiber) {
-    		        if (hasViewList.has(fiber))
-    		            return;
-    		        hasViewList.add(fiber);
-    		        var re = loopChangedTree(fiber, hasViewList);
-    		        if (re && re.current) {
-    		            result.push(re.current);
-    		        }
-    		    });
-    		    return { result: result, directory: directory };
-    		};
-    		var getDetailNodeByFiber = function (fiber) {
-    		    var plainNode = getPlainNodeByFiber(fiber);
-    		    if (!plainNode) {
-    		        throw new Error("plainNode not found, look like a bug for @my-react/devtools");
-    		    }
-    		    var exist = detailMap.get(fiber);
-    		    if (exist) {
-    		        assignFiber(exist, fiber);
-    		        return exist;
-    		    }
-    		    else {
-    		        var created = new PlainNode(plainNode.id);
-    		        assignFiber(created, fiber);
-    		        detailMap.set(fiber, created);
-    		        return created;
-    		    }
-    		};
-    		var getDetailNodeById = function (id) {
-    		    var fiber = fiberStore.get(id);
-    		    if (fiber) {
+    		    return null;
+    		}
+    		// Get a bounding client rect for a node, with an
+    		// offset added to compensate for its border.
+    		function getBoundingClientRectWithBorderOffset(node) {
+    		    var dimensions = getElementDimensions(node);
+    		    return mergeRectOffsets([
+    		        node.getBoundingClientRect(),
     		        {
-    		            console.log("[@my-react-devtool/core] current select fiber", fiber);
+    		            top: dimensions.borderTop,
+    		            left: dimensions.borderLeft,
+    		            bottom: dimensions.borderBottom,
+    		            right: dimensions.borderRight,
+    		            // This width and height won't get used by mergeRectOffsets (since this
+    		            // is not the first rect in the array), but we set them so that this
+    		            // object type checks as a ClientRect.
+    		            width: 0,
+    		            height: 0,
+    		        },
+    		    ]);
+    		}
+    		// Add together the top, left, bottom, and right properties of
+    		// each ClientRect, but keep the width and height of the first one.
+    		function mergeRectOffsets(rects) {
+    		    return rects.reduce(function (previousRect, rect) {
+    		        if (previousRect == null) {
+    		            return rect;
     		        }
-    		        return getDetailNodeByFiber(fiber);
+    		        return {
+    		            top: previousRect.top + rect.top,
+    		            left: previousRect.left + rect.left,
+    		            width: previousRect.width,
+    		            height: previousRect.height,
+    		            bottom: previousRect.bottom + rect.bottom,
+    		            right: previousRect.right + rect.right,
+    		        };
+    		    });
+    		}
+    		// Calculate a boundingClientRect for a node relative to boundaryWindow,
+    		// taking into account any offsets caused by intermediate iframes.
+    		function getNestedBoundingClientRect(node, boundaryWindow) {
+    		    var ownerIframe = getOwnerIframe(node);
+    		    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    		    // @ts-ignore
+    		    if (ownerIframe && ownerIframe !== boundaryWindow) {
+    		        var rects = [node.getBoundingClientRect()];
+    		        var currentIframe = ownerIframe;
+    		        var onlyOneMore = false;
+    		        while (currentIframe) {
+    		            var rect = getBoundingClientRectWithBorderOffset(currentIframe);
+    		            rects.push(rect);
+    		            currentIframe = getOwnerIframe(currentIframe);
+    		            if (onlyOneMore) {
+    		                break;
+    		            }
+    		            // We don't want to calculate iframe offsets upwards beyond
+    		            // the iframe containing the boundaryWindow, but we
+    		            // need to calculate the offset relative to the boundaryWindow.
+    		            if (currentIframe && getOwnerWindow(currentIframe) === boundaryWindow) {
+    		                onlyOneMore = true;
+    		            }
+    		        }
+    		        return mergeRectOffsets(rects);
     		    }
-    		};
-    		var parseDetailNode = function (plain) {
-    		    plain.hook = parseHook(plain);
-    		    plain.props = parseProps(plain);
-    		    if (plain.state) {
-    		        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    		    else {
+    		        return node.getBoundingClientRect();
+    		    }
+    		}
+    		function getElementDimensions(domElement) {
+    		    var calculatedStyle = window.getComputedStyle(domElement);
+    		    return {
+    		        borderLeft: parseInt(calculatedStyle.borderLeftWidth, 10),
+    		        borderRight: parseInt(calculatedStyle.borderRightWidth, 10),
+    		        borderTop: parseInt(calculatedStyle.borderTopWidth, 10),
+    		        borderBottom: parseInt(calculatedStyle.borderBottomWidth, 10),
+    		        marginLeft: parseInt(calculatedStyle.marginLeft, 10),
+    		        marginRight: parseInt(calculatedStyle.marginRight, 10),
+    		        marginTop: parseInt(calculatedStyle.marginTop, 10),
+    		        marginBottom: parseInt(calculatedStyle.marginBottom, 10),
+    		        paddingLeft: parseInt(calculatedStyle.paddingLeft, 10),
+    		        paddingRight: parseInt(calculatedStyle.paddingRight, 10),
+    		        paddingTop: parseInt(calculatedStyle.paddingTop, 10),
+    		        paddingBottom: parseInt(calculatedStyle.paddingBottom, 10),
+    		    };
+    		}
+
+    		/* eslint-disable @typescript-eslint/ban-ts-comment */
+    		var assign = Object.assign;
+    		// Note that the Overlay components are not affected by the active Theme,
+    		// because they highlight elements in the main Chrome window (outside of devtools).
+    		// The colors below were chosen to roughly match those used by Chrome devtools.
+    		var OverlayRect = /** @class */ (function () {
+    		    function OverlayRect(doc, container) {
+    		        this.node = doc.createElement("div");
+    		        this.border = doc.createElement("div");
+    		        this.padding = doc.createElement("div");
+    		        this.content = doc.createElement("div");
+    		        this.border.style.borderColor = overlayStyles.border;
+    		        this.padding.style.borderColor = overlayStyles.padding;
+    		        this.content.style.backgroundColor = overlayStyles.background;
+    		        assign(this.node.style, {
+    		            borderColor: overlayStyles.margin,
+    		            pointerEvents: "none",
+    		            position: "fixed",
+    		        });
+    		        this.node.style.zIndex = "10000000";
+    		        this.node.appendChild(this.border);
+    		        this.border.appendChild(this.padding);
+    		        this.padding.appendChild(this.content);
+    		        container.appendChild(this.node);
+    		    }
+    		    OverlayRect.prototype.remove = function () {
+    		        if (this.node.parentNode) {
+    		            this.node.parentNode.removeChild(this.node);
+    		        }
+    		    };
+    		    OverlayRect.prototype.update = function (box, dims) {
+    		        boxWrap(dims, "margin", this.node);
+    		        boxWrap(dims, "border", this.border);
+    		        boxWrap(dims, "padding", this.padding);
+    		        assign(this.content.style, {
+    		            height: box.height - dims.borderTop - dims.borderBottom - dims.paddingTop - dims.paddingBottom + "px",
+    		            width: box.width - dims.borderLeft - dims.borderRight - dims.paddingLeft - dims.paddingRight + "px",
+    		        });
+    		        assign(this.node.style, {
+    		            top: box.top - dims.marginTop + "px",
+    		            left: box.left - dims.marginLeft + "px",
+    		        });
+    		    };
+    		    return OverlayRect;
+    		}());
+    		var OverlayTip = /** @class */ (function () {
+    		    function OverlayTip(doc, container) {
+    		        this.tip = doc.createElement("div");
+    		        assign(this.tip.style, {
+    		            display: "flex",
+    		            flexFlow: "row nowrap",
+    		            backgroundColor: "#333740",
+    		            borderRadius: "2px",
+    		            fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
+    		            fontWeight: "bold",
+    		            padding: "3px 5px",
+    		            pointerEvents: "none",
+    		            position: "fixed",
+    		            fontSize: "12px",
+    		            whiteSpace: "nowrap",
+    		        });
+    		        this.nameSpan = doc.createElement("span");
+    		        this.tip.appendChild(this.nameSpan);
+    		        assign(this.nameSpan.style, {
+    		            color: "#ee78e6",
+    		            borderRight: "1px solid #aaaaaa",
+    		            paddingRight: "0.5rem",
+    		            marginRight: "0.5rem",
+    		        });
+    		        this.dimSpan = doc.createElement("span");
+    		        this.tip.appendChild(this.dimSpan);
+    		        assign(this.dimSpan.style, {
+    		            color: "#d7d7d7",
+    		        });
+    		        this.tip.style.zIndex = "10000000";
+    		        container.appendChild(this.tip);
+    		    }
+    		    OverlayTip.prototype.remove = function () {
+    		        if (this.tip.parentNode) {
+    		            this.tip.parentNode.removeChild(this.tip);
+    		        }
+    		    };
+    		    OverlayTip.prototype.updateText = function (name, width, height) {
+    		        this.nameSpan.textContent = name;
+    		        this.dimSpan.textContent = Math.round(width) + "px × " + Math.round(height) + "px";
+    		    };
+    		    OverlayTip.prototype.updatePosition = function (dims, bounds) {
+    		        var tipRect = this.tip.getBoundingClientRect();
+    		        var tipPos = findTipPos(dims, bounds, {
+    		            width: tipRect.width,
+    		            height: tipRect.height,
+    		        });
+    		        assign(this.tip.style, tipPos.style);
+    		    };
+    		    return OverlayTip;
+    		}());
+    		var Overlay = /** @class */ (function () {
+    		    function Overlay(agent) {
+    		        this.agent = agent;
+    		        // Find the root window, because overlays are positioned relative to it.
     		        // @ts-ignore
-    		        plain.state = parseState(plain);
+    		        var currentWindow = window.__REACT_DEVTOOLS_TARGET_WINDOW__ || window;
+    		        this.window = currentWindow;
+    		        // When opened in shells/dev, the tooltip should be bound by the app iframe, not by the topmost window.
+    		        // @ts-ignore
+    		        var tipBoundsWindow = window.__REACT_DEVTOOLS_TARGET_WINDOW__ || window;
+    		        this.tipBoundsWindow = tipBoundsWindow;
+    		        var doc = currentWindow.document;
+    		        this.container = doc.createElement("div");
+    		        this.container.style.zIndex = "10000000";
+    		        this.container.setAttribute("data-select", "@my-react");
+    		        this.tip = new OverlayTip(doc, this.container);
+    		        this.rects = [];
+    		        this.agent = agent;
+    		        doc.body.appendChild(this.container);
     		    }
-    		    return plain;
+    		    Overlay.prototype.remove = function () {
+    		        this.tip.remove();
+    		        this.rects.forEach(function (rect) {
+    		            rect.remove();
+    		        });
+    		        this.rects.length = 0;
+    		        if (this.container.parentNode) {
+    		            this.container.parentNode.removeChild(this.container);
+    		        }
+    		    };
+    		    Overlay.prototype.inspect = function (nodes, name) {
+    		        var _this = this;
+    		        // We can't get the size of text nodes or comment nodes. React as of v15
+    		        // heavily uses comment nodes to delimit text.
+    		        var elements = nodes.filter(function (node) { return node.nodeType === Node.ELEMENT_NODE; });
+    		        while (this.rects.length > elements.length) {
+    		            var rect = this.rects.pop();
+    		            rect.remove();
+    		        }
+    		        if (elements.length === 0) {
+    		            return;
+    		        }
+    		        while (this.rects.length < elements.length) {
+    		            this.rects.push(new OverlayRect(this.window.document, this.container));
+    		        }
+    		        var outerBox = {
+    		            top: Number.POSITIVE_INFINITY,
+    		            right: Number.NEGATIVE_INFINITY,
+    		            bottom: Number.NEGATIVE_INFINITY,
+    		            left: Number.POSITIVE_INFINITY,
+    		        };
+    		        elements.forEach(function (element, index) {
+    		            var box = getNestedBoundingClientRect(element, _this.window);
+    		            var dims = getElementDimensions(element);
+    		            outerBox.top = Math.min(outerBox.top, box.top - dims.marginTop);
+    		            outerBox.right = Math.max(outerBox.right, box.left + box.width + dims.marginRight);
+    		            outerBox.bottom = Math.max(outerBox.bottom, box.top + box.height + dims.marginBottom);
+    		            outerBox.left = Math.min(outerBox.left, box.left - dims.marginLeft);
+    		            var rect = _this.rects[index];
+    		            rect.update(box, dims);
+    		        });
+    		        if (!name) {
+    		            name = elements[0].nodeName.toLowerCase();
+    		            var node = elements[0];
+    		            var ownerName = getComponentNameFromNativeNode(node);
+    		            if (ownerName) {
+    		                name += " (in " + ownerName + ")";
+    		            }
+    		        }
+    		        this.tip.updateText(name, outerBox.right - outerBox.left, outerBox.bottom - outerBox.top);
+    		        var tipBounds = getNestedBoundingClientRect(this.tipBoundsWindow.document.documentElement, this.window);
+    		        this.tip.updatePosition({
+    		            top: outerBox.top,
+    		            left: outerBox.left,
+    		            height: outerBox.bottom - outerBox.top,
+    		            width: outerBox.right - outerBox.left,
+    		        }, {
+    		            top: tipBounds.top + this.tipBoundsWindow.scrollY,
+    		            left: tipBounds.left + this.tipBoundsWindow.scrollX,
+    		            height: this.tipBoundsWindow.innerHeight,
+    		            width: this.tipBoundsWindow.innerWidth,
+    		        });
+    		    };
+    		    return Overlay;
+    		}());
+    		function findTipPos(dims, bounds, tipSize) {
+    		    var tipHeight = Math.max(tipSize.height, 20);
+    		    var tipWidth = Math.max(tipSize.width, 60);
+    		    var margin = 5;
+    		    var top;
+    		    if (dims.top + dims.height + tipHeight <= bounds.top + bounds.height) {
+    		        if (dims.top + dims.height < bounds.top + 0) {
+    		            top = bounds.top + margin;
+    		        }
+    		        else {
+    		            top = dims.top + dims.height + margin;
+    		        }
+    		    }
+    		    else if (dims.top - tipHeight <= bounds.top + bounds.height) {
+    		        if (dims.top - tipHeight - margin < bounds.top + margin) {
+    		            top = bounds.top + margin;
+    		        }
+    		        else {
+    		            top = dims.top - tipHeight - margin;
+    		        }
+    		    }
+    		    else {
+    		        top = bounds.top + bounds.height - tipHeight - margin;
+    		    }
+    		    var left = dims.left + margin;
+    		    if (dims.left < bounds.left) {
+    		        left = bounds.left + margin;
+    		    }
+    		    if (dims.left + tipWidth > bounds.left + bounds.width) {
+    		        left = bounds.left + bounds.width - tipWidth - margin;
+    		    }
+    		    // @ts-ignore
+    		    top += "px";
+    		    // @ts-ignore
+    		    left += "px";
+    		    return {
+    		        style: { top: top, left: left },
+    		    };
+    		}
+    		function boxWrap(dims, what, node) {
+    		    assign(node.style, {
+    		        borderTopWidth: dims[what + "Top"] + "px",
+    		        borderLeftWidth: dims[what + "Left"] + "px",
+    		        borderRightWidth: dims[what + "Right"] + "px",
+    		        borderBottomWidth: dims[what + "Bottom"] + "px",
+    		        borderStyle: "solid",
+    		    });
+    		}
+    		var overlayStyles = {
+    		    background: "rgba(120, 170, 210, 0.7)",
+    		    padding: "rgba(77, 200, 0, 0.3)",
+    		    margin: "rgba(255, 155, 0, 0.3)",
+    		    border: "rgba(255, 200, 50, 0.3)",
     		};
+
+    		var color = {
+    		    update: "rgba(200,50,50,0.8)",
+    		    append: "rgba(50,200,50,0.8)",
+    		    setRef: "rgba(50,50,200,0.8)",
+    		    warn: "rgba(230,150,40,0.8)",
+    		};
+    		/**
+    		 * @internal
+    		 */
+    		var HighLight = /** @class */ (function () {
+    		    function HighLight(agent) {
+    		        var _this = this;
+    		        this.agent = agent;
+    		        this.mask = null;
+    		        this.range = document.createRange();
+    		        this.running = false;
+    		        this.__pendingUpdate__ = new Set();
+    		        this.__pendingAppend__ = new Set();
+    		        this.__pendingSetRef__ = new Set();
+    		        this.__pendingWarn__ = new Set();
+    		        this.width = 0;
+    		        this.height = 0;
+    		        this.setSize = debounce(function () {
+    		            _this.width = window.innerWidth || document.documentElement.clientWidth;
+    		            _this.height = window.innerHeight || document.documentElement.clientHeight;
+    		            _this.mask.width = _this.width;
+    		            _this.mask.height = _this.height;
+    		        });
+    		        this.highLight = function (fiber, type) {
+    		            if (fiber.nativeNode) {
+    		                switch (type) {
+    		                    case "update":
+    		                        _this.__pendingUpdate__.add(fiber);
+    		                        break;
+    		                    case "append":
+    		                        _this.__pendingAppend__.add(fiber);
+    		                        break;
+    		                    case "setRef":
+    		                        _this.__pendingSetRef__.add(fiber);
+    		                        break;
+    		                    case "warn":
+    		                        _this.__pendingWarn__.add(fiber);
+    		                }
+    		            }
+    		            if (!_this.running) {
+    		                _this.running = true;
+    		                requestAnimationFrame(_this.flashPending);
+    		            }
+    		        };
+    		        this.processHighlight = function (fiber, context) {
+    		            if (reactShared.include(fiber.state, reactShared.STATE_TYPE.__unmount__) || !fiber.nativeNode)
+    		                return;
+    		            try {
+    		                var node = fiber.nativeNode;
+    		                if (node.nodeType === Node.TEXT_NODE) {
+    		                    _this.range.selectNodeContents(node);
+    		                }
+    		                else {
+    		                    _this.range.selectNode(node);
+    		                }
+    		                var rect = _this.range.getBoundingClientRect();
+    		                if ((rect.width || rect.height) &&
+    		                    rect.top >= 0 &&
+    		                    rect.left >= 0 &&
+    		                    rect.right <= (window.innerWidth || document.documentElement.clientWidth) &&
+    		                    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)) {
+    		                    // do the highlight paint
+    		                    var left = rect.left - 0.5;
+    		                    var top_1 = rect.top - 0.5;
+    		                    var width = rect.width + 1;
+    		                    var height = rect.height + 1;
+    		                    context.strokeRect(left < 0 ? 0 : left, top_1 < 0 ? 0 : top_1, width > window.innerWidth ? window.innerWidth : width, height > window.innerHeight ? window.innerHeight : height);
+    		                }
+    		            }
+    		            catch (_a) {
+    		            }
+    		        };
+    		        this.flashPending = function () {
+    		            var context = _this.mask.getContext("2d");
+    		            var allPendingUpdate = new Set(_this.__pendingUpdate__);
+    		            _this.__pendingUpdate__.clear();
+    		            context.strokeStyle = color.update;
+    		            allPendingUpdate.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
+    		            var allPendingAppend = new Set(_this.__pendingAppend__);
+    		            _this.__pendingAppend__.clear();
+    		            context.strokeStyle = color.append;
+    		            allPendingAppend.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
+    		            var allPendingSetRef = new Set(_this.__pendingSetRef__);
+    		            _this.__pendingSetRef__.clear();
+    		            context.strokeStyle = color.setRef;
+    		            allPendingSetRef.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
+    		            var allPendingWarn = new Set(_this.__pendingWarn__);
+    		            _this.__pendingWarn__.clear();
+    		            context.strokeStyle = color.warn;
+    		            allPendingWarn.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
+    		            setTimeout(function () {
+    		                context.clearRect(0, 0, _this.width, _this.height);
+    		                _this.running = false;
+    		                if (_this.__pendingUpdate__.size || _this.__pendingAppend__.size || _this.__pendingSetRef__.size) {
+    		                    _this.running = true;
+    		                    _this.flashPending();
+    		                }
+    		            }, 100);
+    		        };
+    		        this.mask = document.createElement("canvas");
+    		        this.mask.setAttribute("data-update", "@my-react");
+    		        this.mask.style.cssText = "\n      position: fixed;\n      z-index: 99999999;\n      left: 0;\n      top: 0;\n      pointer-events: none;\n      ";
+    		        document.documentElement.prepend(this.mask);
+    		        this.setSize();
+    		        window.addEventListener("resize", this.setSize);
+    		    }
+    		    return HighLight;
+    		}());
 
     		// TODO use 'eventListener' instead of 'patchFunction'
     		function overridePatchToFiberUnmount(dispatch) {
@@ -1745,6 +2224,8 @@
     		    overridePatchToFiberUnmount(dispatch);
     		};
 
+    		var SHOW_DURATION = 2000;
+    		var timeoutID = null;
     		// 事件类型
     		exports.DevToolMessageEnum = void 0;
     		(function (DevToolMessageEnum) {
@@ -1804,6 +2285,7 @@
     		        this._enabled = false;
     		        this._forceEnable = false;
     		        this._listeners = new Set();
+    		        this.version = "0.0.1";
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
     		            _this._dispatch.forEach(function (dispatch) {
@@ -1815,6 +2297,7 @@
     		            _this.notifyHMR();
     		            _this.notifySelect();
     		        }, 200);
+    		        this.update = new HighLight(this);
     		    }
     		    DevToolCore.prototype.getDispatch = function () {
     		        return Array.from(this._dispatch);
@@ -1951,6 +2434,21 @@
     		    DevToolCore.prototype.setHover = function (id) {
     		        this._hoverId = id;
     		    };
+    		    DevToolCore.prototype.showHover = function () {
+    		        var _this = this;
+    		        var _a, _b;
+    		        clearTimeout(timeoutID);
+    		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		        this.select = new Overlay(this);
+    		        if (this._hoverId) {
+    		            var fiber = getFiberNodeById(this._hoverId);
+    		            this.select.inspect(getElementNodesFromFiber(fiber));
+    		            timeoutID = setTimeout(function () {
+    		                _this.select.remove();
+    		                _this.select = null;
+    		            }, SHOW_DURATION);
+    		        }
+    		    };
     		    DevToolCore.prototype.notifyDir = function () {
     		        if (!this.hasEnable)
     		            return;
@@ -2055,10 +2553,13 @@
     		exports.assignFiber = assignFiber;
     		exports.debounce = debounce;
     		exports.generateTreeMap = generateTreeMap;
+    		exports.getComponentNameFromNativeNode = getComponentNameFromNativeNode;
     		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getDetailNodeById = getDetailNodeById;
+    		exports.getElementNodesFromFiber = getElementNodesFromFiber;
     		exports.getFiberName = getFiberName;
+    		exports.getFiberNodeById = getFiberNodeById;
     		exports.getFiberTag = getFiberTag;
     		exports.getFiberType = getFiberType;
     		exports.getHook = getHook;

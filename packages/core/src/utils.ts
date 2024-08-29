@@ -14,7 +14,7 @@ import type {
   createContext,
   lazy,
 } from "@my-react/react";
-import type { MyReactFiberContainer, MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
+import type { MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
 
 const replacer = (key: string, value: any) => {
   if (key === "_owner" || key === "__fiber__" || key === "__props__") {
@@ -423,4 +423,33 @@ export const parseState = (plain: PlainNode) => {
   const state = plain.state as any;
 
   return safeParse(state);
+};
+
+export const getComponentNameFromNativeNode = (node: any) => {
+  const fiber = node?.__fiber__ as MyReactFiberNodeDev;
+
+  if (!fiber) return "";
+
+  return getFiberName(typeof fiber._debugElement === "object" ? (fiber._debugElement._owner as MyReactFiberNodeDev) || fiber : fiber);
+};
+
+export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
+  const nodes: HTMLElement[] = [];
+
+  const fibers = [fiber];
+
+  while (fibers.length) {
+    const c = fibers.shift();
+    if (c.nativeNode) {
+      nodes.push(c.nativeNode as HTMLElement);
+    } else {
+      let l = c.child;
+      while (l) {
+        fibers.push(l);
+        l = l.sibling;
+      }
+    }
+  }
+
+  return nodes;
 };
