@@ -145,6 +145,14 @@ export const useWebDev = () => {
             useDetailNode.getActions().setLoading(false);
           });
         }
+
+        if (data.type === DevToolMessageEnum.config) {
+          safeAction(() => {
+            useConfig.getActions().setEnableHover(data.data?.enableHover);
+
+            useConfig.getActions().setEnableUpdate(data.data?.enableUpdate);
+          });
+        }
       });
 
       io.on("refresh", () => {
