@@ -330,7 +330,7 @@ export class DevToolCore {
       this.select.inspect(getElementNodesFromFiber(fiber));
 
       timeoutID = setTimeout(() => {
-        this.select.remove();
+        this.select?.remove?.();
 
         this.select = null;
       }, SHOW_DURATION);
@@ -435,6 +435,10 @@ export class DevToolCore {
 
   disconnect() {
     if (!this._enabled) return;
+
+    this.select?.remove?.();
+
+    this.select = null;
 
     if (__DEV__) {
       console.log("[@my-react-devtool/core] disconnect");

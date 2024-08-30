@@ -223,6 +223,10 @@ const initSelectListen = (_window: Window) => {
           useDetailNode.getActions().setLoading(true);
 
           sendMessage({ type: MessagePanelType.nodeSelect, data: currentSelect });
+        } else {
+          useDetailNode.getActions().setLoading(false);
+
+          sendMessage({ type: MessagePanelType.nodeSelect, data: currentSelect });
         }
       }
     );
@@ -233,7 +237,6 @@ const initSelectListen = (_window: Window) => {
 
 const initHoverListen = (_window: Window) => {
   const useTreeNode = _window.useTreeNode;
-  const useDetailNode = _window.useDetailNode;
 
   try {
     return useTreeNode.subscribe(
@@ -241,11 +244,7 @@ const initHoverListen = (_window: Window) => {
       () => {
         const currentHover = useTreeNode.getReadonlyState().hover;
 
-        if (currentHover) {
-          useDetailNode.getActions().setLoading(true);
-
-          sendMessage({ type: MessagePanelType.nodeHover, data: currentHover });
-        }
+        sendMessage({ type: MessagePanelType.nodeHover, data: currentHover });
       }
     );
   } catch {

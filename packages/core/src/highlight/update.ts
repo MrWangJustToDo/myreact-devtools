@@ -34,6 +34,10 @@ export class HighLight {
   height = 0;
 
   constructor(public agent: DevToolCore) {
+    
+  }
+
+  ready = () => {
     this.mask = document.createElement("canvas");
     this.mask.setAttribute("data-update", "@my-react");
     this.mask.style.cssText = `
@@ -59,6 +63,10 @@ export class HighLight {
   });
 
   highLight = (fiber: MyReactFiberNode, type: "update" | "append" | "setRef" | "warn") => {
+    if (!this.mask) {
+      this.ready();
+    }
+
     if (fiber.nativeNode) {
       switch (type) {
         case "update":

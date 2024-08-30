@@ -114,6 +114,12 @@ export const RenderItem = ({
       onClick={() => {
         withSelect && setSelect(node.id);
       }}
+      onMouseEnter={() => {
+        withSelect && setHover(node.id);
+      }}
+      onMouseOut={() => {
+        withSelect && setHover("");
+      }}
       className={
         "w-full h-full whitespace-nowrap cursor-pointer rounded-sm select-none transition-background" +
         (className || "") +
@@ -131,16 +137,7 @@ export const RenderItem = ({
             marginLeft: `calc(${current.deep} * var(--indentation-size)`,
           }}
         >
-          <div
-            data-content
-            className="flex items-center w-fit"
-            onMouseEnter={() => {
-              withSelect && setHover(node.id);
-            }}
-            onMouseOut={() => {
-              withSelect && setHover("");
-            }}
-          >
+          <div data-content className="flex items-center w-fit">
             {withCollapse && (
               <span
                 className={" text-gray-400 min-w-[18px]" + (hasChild ? " hover:text-gray-700" : "")}

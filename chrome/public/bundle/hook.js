@@ -2169,6 +2169,14 @@
     		        this.__pendingWarn__ = new Set();
     		        this.width = 0;
     		        this.height = 0;
+    		        this.ready = function () {
+    		            _this.mask = document.createElement("canvas");
+    		            _this.mask.setAttribute("data-update", "@my-react");
+    		            _this.mask.style.cssText = "\n      position: fixed;\n      z-index: 99999999;\n      left: 0;\n      top: 0;\n      pointer-events: none;\n      ";
+    		            document.documentElement.prepend(_this.mask);
+    		            _this.setSize();
+    		            window.addEventListener("resize", _this.setSize);
+    		        };
     		        this.setSize = debounce(function () {
     		            _this.width = window.innerWidth || document.documentElement.clientWidth;
     		            _this.height = window.innerHeight || document.documentElement.clientHeight;
@@ -2176,6 +2184,9 @@
     		            _this.mask.height = _this.height;
     		        });
     		        this.highLight = function (fiber, type) {
+    		            if (!_this.mask) {
+    		                _this.ready();
+    		            }
     		            if (fiber.nativeNode) {
     		                switch (type) {
     		                    case "update":
@@ -2251,12 +2262,6 @@
     		                }
     		            }, 100);
     		        };
-    		        this.mask = document.createElement("canvas");
-    		        this.mask.setAttribute("data-update", "@my-react");
-    		        this.mask.style.cssText = "\n      position: fixed;\n      z-index: 99999999;\n      left: 0;\n      top: 0;\n      pointer-events: none;\n      ";
-    		        document.documentElement.prepend(this.mask);
-    		        this.setSize();
-    		        window.addEventListener("resize", this.setSize);
     		    }
     		    return HighLight;
     		}());
@@ -2537,7 +2542,8 @@
     		            var fiber = getFiberNodeById(this._hoverId);
     		            this.select.inspect(getElementNodesFromFiber(fiber));
     		            timeoutID = setTimeout(function () {
-    		                _this.select.remove();
+    		                var _a, _b;
+    		                (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		                _this.select = null;
     		            }, SHOW_DURATION);
     		        }
@@ -2608,8 +2614,11 @@
     		        this._enabled = true;
     		    };
     		    DevToolCore.prototype.disconnect = function () {
+    		        var _a, _b;
     		        if (!this._enabled)
     		            return;
+    		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		        this.select = null;
     		        {
     		            console.log("[@my-react-devtool/core] disconnect");
     		        }
