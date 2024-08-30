@@ -19,6 +19,7 @@ export enum DevToolMessageEnum {
   // 初始化，判断是否用@my-react进行页面渲染
   init = "init",
   dir = "dir",
+  config = "config",
   ready = "ready",
   update = "update",
   changed = "changed",
@@ -375,6 +376,12 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.hmr, data: this._hmr });
   }
 
+  notifyConfig() {
+    if (!this.hasEnable) return;
+
+    this._notify({ type: DevToolMessageEnum.config, data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate } });
+  }
+
   notifySelect() {
     if (!this.hasEnable) return;
 
@@ -413,6 +420,8 @@ export class DevToolCore {
     this._dispatch.forEach((dispatch) => {
       this.notifyDispatch(dispatch);
     });
+
+    this.notifyConfig();
 
     this.notifyDir();
 

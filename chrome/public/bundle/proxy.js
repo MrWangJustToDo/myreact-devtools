@@ -2229,6 +2229,7 @@
     		    // 初始化，判断是否用@my-react进行页面渲染
     		    DevToolMessageEnum["init"] = "init";
     		    DevToolMessageEnum["dir"] = "dir";
+    		    DevToolMessageEnum["config"] = "config";
     		    DevToolMessageEnum["ready"] = "ready";
     		    DevToolMessageEnum["update"] = "update";
     		    DevToolMessageEnum["changed"] = "changed";
@@ -2290,6 +2291,7 @@
     		            _this._dispatch.forEach(function (dispatch) {
     		                _this.notifyDispatch(dispatch);
     		            });
+    		            _this.notifyConfig();
     		            _this.notifyDir();
     		            _this.notifyTrigger();
     		            _this.notifyHMR();
@@ -2513,6 +2515,11 @@
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.hmr, data: this._hmr });
+    		    };
+    		    DevToolCore.prototype.notifyConfig = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.config, data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate } });
     		    };
     		    DevToolCore.prototype.notifySelect = function () {
     		        if (!this.hasEnable)

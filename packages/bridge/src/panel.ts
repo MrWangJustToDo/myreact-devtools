@@ -207,6 +207,26 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       _window.useConnect.getActions().setError(typedE.message);
     }
   }
+
+  if (data.type === DevToolMessageEnum.config) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] config", data.data);
+    }
+
+    const config = data.data as { enableHover: boolean; enableUpdate: boolean };
+
+    try {
+      const { setEnableHover, setEnableUpdate } = _window.useConfig.getActions();
+
+      setEnableHover(config?.enableHover);
+
+      setEnableUpdate(config?.enableUpdate);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
 };
 
 const initSelectListen = (_window: Window) => {
