@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // https://github.com/facebook/react/blob/main/packages/react-devtools-shared/src/backend/views/Highlighter/Overlay.js
-import { getComponentNameFromNativeNode } from "../utils";
+import { getFiberName } from "../utils";
 
 import { getElementDimensions, getNestedBoundingClientRect } from "./utils";
 
 import type { Rect } from "./utils";
 import type { DevToolCore } from "../instance";
+import type { MyReactFiberNodeDev } from "@my-react/react-reconciler";
 
 type Box = { top: number; left: number; width: number; height: number };
 
@@ -170,7 +171,7 @@ export class Overlay {
     }
   }
 
-  inspect(nodes: Array<HTMLElement>, name?: string) {
+  inspect(fiber: MyReactFiberNodeDev, nodes: Array<HTMLElement>, name?: string) {
     // We can't get the size of text nodes or comment nodes. React as of v15
     // heavily uses comment nodes to delimit text.
     const elements = nodes.filter((node) => node.nodeType === Node.ELEMENT_NODE);
@@ -209,15 +210,14 @@ export class Overlay {
     if (!name) {
       name = elements[0].nodeName.toLowerCase();
 
-      const node = elements[0];
-      const ownerName = getComponentNameFromNativeNode(node);
+      const ownerName = getFiberName(fiber);
       if (ownerName) {
         name += " (in " + ownerName + ")";
       }
     }
 
     this.tip.updateText(name, outerBox.right - outerBox.left, outerBox.bottom - outerBox.top);
-    
+
     const tipBounds = getNestedBoundingClientRect(this.tipBoundsWindow.document.documentElement, this.window);
 
     this.tip.updatePosition(

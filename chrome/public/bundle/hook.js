@@ -1783,12 +1783,6 @@
     		    var state = plain.state;
     		    return safeParse(state);
     		};
-    		var getComponentNameFromNativeNode = function (node) {
-    		    var fiber = node === null || node === void 0 ? void 0 : node.__fiber__;
-    		    if (!fiber)
-    		        return "";
-    		    return getFiberName(typeof fiber._debugElement === "object" ? fiber._debugElement._owner || fiber : fiber);
-    		};
     		var getElementNodesFromFiber = function (fiber) {
     		    var nodes = [];
     		    var fibers = [fiber];
@@ -2037,7 +2031,7 @@
     		            this.container.parentNode.removeChild(this.container);
     		        }
     		    };
-    		    Overlay.prototype.inspect = function (nodes, name) {
+    		    Overlay.prototype.inspect = function (fiber, nodes, name) {
     		        var _this = this;
     		        // We can't get the size of text nodes or comment nodes. React as of v15
     		        // heavily uses comment nodes to delimit text.
@@ -2070,8 +2064,7 @@
     		        });
     		        if (!name) {
     		            name = elements[0].nodeName.toLowerCase();
-    		            var node = elements[0];
-    		            var ownerName = getComponentNameFromNativeNode(node);
+    		            var ownerName = getFiberName(fiber);
     		            if (ownerName) {
     		                name += " (in " + ownerName + ")";
     		            }
@@ -2542,7 +2535,7 @@
     		        this.select = new Overlay(this);
     		        if (this._hoverId) {
     		            var fiber = getFiberNodeById(this._hoverId);
-    		            this.select.inspect(getElementNodesFromFiber(fiber));
+    		            this.select.inspect(fiber, getElementNodesFromFiber(fiber));
     		            timeoutID = setTimeout(function () {
     		                var _a, _b;
     		                (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
@@ -2664,7 +2657,6 @@
     		exports.assignFiber = assignFiber;
     		exports.debounce = debounce;
     		exports.generateTreeMap = generateTreeMap;
-    		exports.getComponentNameFromNativeNode = getComponentNameFromNativeNode;
     		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getElementNodesFromFiber = getElementNodesFromFiber;

@@ -7,7 +7,7 @@ import { generateTreeMap, getDetailNodeByFiber, getFiberNodeById, getPlainNodeAr
 import { getElementNodesFromFiber } from "./utils";
 
 import type { Tree } from "./tree";
-import type { MyReactFiberNode } from "@my-react/react-reconciler";
+import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
 const SHOW_DURATION = 2000;
@@ -328,7 +328,7 @@ export class DevToolCore {
     if (this._hoverId) {
       const fiber = getFiberNodeById(this._hoverId);
 
-      this.select.inspect(getElementNodesFromFiber(fiber));
+      this.select.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
 
       timeoutID = setTimeout(() => {
         this.select?.remove?.();

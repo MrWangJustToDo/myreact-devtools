@@ -92,7 +92,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
             </div>
             <div className="mt-2">
               <Checkbox isSelected={configState.enableHover} onValueChange={setEnableHover} color="secondary">
-                Overlay Hover
+                Hover Overlay
               </Checkbox>
             </div>
           </ModalBody>

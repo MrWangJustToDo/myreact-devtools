@@ -425,14 +425,6 @@ export const parseState = (plain: PlainNode) => {
   return safeParse(state);
 };
 
-export const getComponentNameFromNativeNode = (node: any) => {
-  const fiber = node?.__fiber__ as MyReactFiberNodeDev;
-
-  if (!fiber) return "";
-
-  return getFiberName(typeof fiber._debugElement === "object" ? (fiber._debugElement._owner as MyReactFiberNodeDev) || fiber : fiber);
-};
-
 export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
   const nodes: HTMLElement[] = [];
 
