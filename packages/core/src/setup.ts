@@ -7,14 +7,14 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
   hasDevToolInject?: boolean;
   hasDevToolPatch?: boolean;
   // next version
-  onFiberUnmount?: (cb: (fiber: MyReactFiberNode) => void) => void;
-  onFiberTrigger?: (cb: (fiber: MyReactFiberNode) => void) => void;
-  onFiberHMR?: (cb: (fiber: MyReactFiberNode) => void) => void;
-  onFiberChange?: (cb: (fiber: ListTree<MyReactFiberNode>) => void) => void;
-  onPerformanceWarn?: (cb: (fiber: MyReactFiberNode) => void) => void;
-  onAfterCommit?: (cb: () => void) => void;
-  onAfterUpdate?: (cb: () => void) => void;
-  onAfterUnmount?: (cb: () => void) => void;
+  // onFiberUnmount?: (cb: (fiber: MyReactFiberNode) => void) => void;
+  // onFiberTrigger?: (cb: (fiber: MyReactFiberNode) => void) => void;
+  // onFiberHMR?: (cb: (fiber: MyReactFiberNode) => void) => void;
+  // onFiberChange?: (cb: (fiber: ListTree<MyReactFiberNode>) => void) => void;
+  // onPerformanceWarn?: (cb: (fiber: MyReactFiberNode) => void) => void;
+  // onAfterCommit?: (cb: () => void) => void;
+  // onAfterUpdate?: (cb: () => void) => void;
+  // onAfterUnmount?: (cb: () => void) => void;
   onDOMUpdate?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMAppend?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMSetRef?: (cb: (f: MyReactFiberNode) => void) => void;

@@ -1102,7 +1102,7 @@
     		OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     		PERFORMANCE OF THIS SOFTWARE.
     		***************************************************************************** */
-    		/* global Reflect, Promise, SuppressedError, Symbol */
+    		/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
 
     		var __assign = function() {
@@ -2663,7 +2663,7 @@
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
 
     var __assign = function() {

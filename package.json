@@ -14,12 +14,12 @@
     "purge": "pnpm -p -r -c exec rm -rf node_modules"
   },
   "devDependencies": {
-    "@my-react/react": "^0.3.1",
-    "@my-react/react-dom": "^0.3.1",
-    "@my-react/react-reconciler": "^0.3.1",
-    "@types/node": "^20.12.10",
+    "@my-react/react": "^0.3.2",
+    "@my-react/react-dom": "^0.3.2",
+    "@my-react/react-reconciler": "^0.3.2",
+    "@types/node": "^22.5.2",
     "eslint": "^8.57.0",
-    "prettier": "^3.2.5",
+    "prettier": "^3.3.3",
     "project-tool": "https://github.com/MrWangJustToDo/project-tool.git",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
