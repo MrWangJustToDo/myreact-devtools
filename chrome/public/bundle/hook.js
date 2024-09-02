@@ -2031,7 +2031,7 @@
     		            this.container.parentNode.removeChild(this.container);
     		        }
     		    };
-    		    Overlay.prototype.inspect = function (fiber, nodes, name) {
+    		    Overlay.prototype.inspect = function (fiber, nodes) {
     		        var _this = this;
     		        // We can't get the size of text nodes or comment nodes. React as of v15
     		        // heavily uses comment nodes to delimit text.
@@ -2062,12 +2062,12 @@
     		            var rect = _this.rects[index];
     		            rect.update(box, dims);
     		        });
-    		        if (!name) {
-    		            name = elements[0].nodeName.toLowerCase();
-    		            var ownerName = getFiberName(fiber);
-    		            if (ownerName) {
-    		                name += " (in " + ownerName + ")";
-    		            }
+    		        var name = getFiberName(fiber);
+    		        var typedEle = fiber._debugElement;
+    		        var owner = typedEle === null || typedEle === void 0 ? void 0 : typedEle._owner;
+    		        var ownerName = owner ? getFiberName(owner) : null;
+    		        if (ownerName) {
+    		            name += " (in " + ownerName + ")";
     		        }
     		        this.tip.updateText(name, outerBox.right - outerBox.left, outerBox.bottom - outerBox.top);
     		        var tipBounds = getNestedBoundingClientRect(this.tipBoundsWindow.document.documentElement, this.window);
@@ -2279,8 +2279,6 @@
     		    overridePatchToFiberUnmount(dispatch);
     		};
 
-    		var SHOW_DURATION = 2000;
-    		var timeoutID = null;
     		// 事件类型
     		exports.DevToolMessageEnum = void 0;
     		(function (DevToolMessageEnum) {
@@ -2526,21 +2524,18 @@
     		        this._hoverId = id;
     		    };
     		    DevToolCore.prototype.showHover = function () {
-    		        var _this = this;
-    		        var _a, _b;
+    		        var _a, _b, _c, _d;
     		        if (!this._enableHover)
     		            return;
-    		        clearTimeout(timeoutID);
     		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        this.select = new Overlay(this);
     		        if (this._hoverId) {
     		            var fiber = getFiberNodeById(this._hoverId);
     		            this.select.inspect(fiber, getElementNodesFromFiber(fiber));
-    		            timeoutID = setTimeout(function () {
-    		                var _a, _b;
-    		                (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
-    		                _this.select = null;
-    		            }, SHOW_DURATION);
+    		        }
+    		        else {
+    		            (_d = (_c = this.select) === null || _c === void 0 ? void 0 : _c.remove) === null || _d === void 0 ? void 0 : _d.call(_c);
+    		            this.select = null;
     		        }
     		    };
     		    DevToolCore.prototype.notifyDir = function () {

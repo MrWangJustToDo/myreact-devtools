@@ -10,10 +10,6 @@ import type { Tree } from "./tree";
 import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
-const SHOW_DURATION = 2000;
-
-let timeoutID: NodeJS.Timeout | null = null;
-
 // 事件类型
 export enum DevToolMessageEnum {
   // 初始化，判断是否用@my-react进行页面渲染
@@ -319,8 +315,6 @@ export class DevToolCore {
   showHover() {
     if (!this._enableHover) return;
 
-    clearTimeout(timeoutID);
-
     this.select?.remove?.();
 
     this.select = new Overlay(this);
@@ -329,12 +323,10 @@ export class DevToolCore {
       const fiber = getFiberNodeById(this._hoverId);
 
       this.select.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
+    } else {
+      this.select?.remove?.();
 
-      timeoutID = setTimeout(() => {
-        this.select?.remove?.();
-
-        this.select = null;
-      }, SHOW_DURATION);
+      this.select = null;
     }
   }
 

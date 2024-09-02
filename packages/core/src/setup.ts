@@ -1,7 +1,6 @@
 import { unmountPlainNode } from "./tree";
 
 import type { CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
-import type { ListTree } from "@my-react/react-shared";
 
 export interface DevToolRenderDispatch extends CustomRenderDispatch {
   hasDevToolInject?: boolean;
