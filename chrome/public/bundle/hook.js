@@ -2748,7 +2748,7 @@
             return;
         if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.from) === sourceFrom.hook)
             return;
-        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type)) {
+        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) && message.data.type !== coreExports.MessagePanelType.nodeHover) {
             console.log("[@my-react-devtool/hook] message from proxy", message.data);
         }
         if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === coreExports.MessageDetectorType.init) {

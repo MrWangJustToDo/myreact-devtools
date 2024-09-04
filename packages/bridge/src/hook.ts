@@ -46,7 +46,7 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
 
   if (message.data?.from === sourceFrom.hook) return;
 
-  if (__DEV__ && message.data?.type) {
+  if (__DEV__ && message.data?.type && message.data.type !== MessagePanelType.nodeHover) {
     console.log("[@my-react-devtool/hook] message from proxy", message.data);
   }
 
