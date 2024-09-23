@@ -428,7 +428,7 @@ export const parseState = (plain: PlainNode) => {
 export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
   const nodes: HTMLElement[] = [];
 
-  const fibers = [fiber];
+  const fibers = fiber ? [fiber] : [];
 
   while (fibers.length) {
     const c = fibers.shift();

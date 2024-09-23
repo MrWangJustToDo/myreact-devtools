@@ -1791,7 +1791,7 @@
     		};
     		var getElementNodesFromFiber = function (fiber) {
     		    var nodes = [];
-    		    var fibers = [fiber];
+    		    var fibers = fiber ? [fiber] : [];
     		    while (fibers.length) {
     		        var c = fibers.shift();
     		        if (c.nativeNode) {
@@ -2472,6 +2472,9 @@
     		            (_f = dispatch.onDOMUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onDOMUpdate);
     		            (_g = dispatch.onDOMAppend) === null || _g === void 0 ? void 0 : _g.call(dispatch, onDOMAppend);
     		            (_h = dispatch.onDOMSetRef) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMSetRef);
+    		            dispatch.onFiberHMR(function (f) {
+    		                console.log("[@my-react-devtool/core] hmr", f, f.elementType, f.pendingProps);
+    		            });
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
@@ -2537,7 +2540,9 @@
     		        this.select = new Overlay(this);
     		        if (this._hoverId) {
     		            var fiber = getFiberNodeById(this._hoverId);
-    		            this.select.inspect(fiber, getElementNodesFromFiber(fiber));
+    		            if (fiber) {
+    		                this.select.inspect(fiber, getElementNodesFromFiber(fiber));
+    		            }
     		        }
     		        else {
     		            (_d = (_c = this.select) === null || _c === void 0 ? void 0 : _c.remove) === null || _d === void 0 ? void 0 : _d.call(_c);

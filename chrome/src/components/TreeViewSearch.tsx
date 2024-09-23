@@ -8,6 +8,7 @@ import { useNodeName } from "@/hooks/useNodeName";
 import { useTreeNode } from "@/hooks/useTreeNode";
 
 import type { PlainNode } from "@my-react-devtool/core";
+import type { FormEvent } from "react";
 import type { VirtuosoHandle } from "react-virtuoso";
 
 const { setSelect } = useTreeNode.getActions();
@@ -29,7 +30,9 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
 
   const id = nodeList[itemIndex]?.id;
 
-  const onSearch = () => {
+  const onSearch = (e?: FormEvent) => {
+    e?.preventDefault();
+
     if (v) {
       setIndex(0);
 
@@ -43,6 +46,8 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
 
       if (_indexArray.length === 0) {
         toast.error(`Can't find current name`, { position: "top-right" });
+      } else {
+        toast.success(`Find ${_indexArray.length} items`, { position: "top-right" });
       }
     }
   };
@@ -62,18 +67,21 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
 
   return (
     <>
-      <Input
-        placeholder="Search component"
-        className="w-full"
-        value={v}
-        variant="faded"
-        onChange={(e) => setV(e.target.value)}
-        endContent={
-          <Button isIconOnly variant="light" onClick={onSearch}>
-            <MagnifyingGlassIcon className="text-black/50 dark:text-white/90 text-slate-400 flex-shrink-0" />
-          </Button>
-        }
-      />
+      <form onSubmit={onSearch}>
+        <Input
+          placeholder="Search component"
+          className="w-full"
+          value={v}
+          variant="faded"
+          onChange={(e) => setV(e.target.value)}
+          endContent={
+            <Button isIconOnly variant="light" onClick={onSearch}>
+              <MagnifyingGlassIcon className="text-black/50 dark:text-white/90 text-slate-400 flex-shrink-0" />
+            </Button>
+          }
+        />
+      </form>
+
       {indexArray.length > 1 && (
         <>
           <Spacer x={2} />

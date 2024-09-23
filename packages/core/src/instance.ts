@@ -322,7 +322,9 @@ export class DevToolCore {
     if (this._hoverId) {
       const fiber = getFiberNodeById(this._hoverId);
 
-      this.select.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
+      if (fiber) {
+        this.select.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
+      }
     } else {
       this.select?.remove?.();
 
