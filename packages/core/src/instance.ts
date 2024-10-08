@@ -63,13 +63,15 @@ export class DevToolCore {
   // 字符串字典
   _dir = {};
 
+  _run = {};
+
+  _hmr = {};
+
   _hoverId = "";
 
   _selectId = "";
 
   _trigger = {};
-
-  _hmr = {};
 
   _enabled = false;
 
@@ -186,6 +188,14 @@ export class DevToolCore {
       this.notifyDispatch(dispatch);
     };
 
+    const onFiberRun = (fiber: MyReactFiberNodeDev) => {
+      const id = getPlainNodeIdByFiber(fiber);
+
+      if (!id) return;
+
+      this._run[id] = fiber._debugRenderState.timeForUpdate ?? fiber._debugRenderState.timeForRender;
+    }
+
     const onPerformanceWarn = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
 
@@ -230,6 +240,8 @@ export class DevToolCore {
       dispatch.onFiberChange?.(onChange);
 
       dispatch.onFiberHMR?.(onFiberHMR);
+
+      dispatch.onFiberRun?.(onFiberRun);
 
       dispatch.onDOMUpdate?.(onDOMUpdate);
 

@@ -2332,10 +2332,11 @@
     		        this._map = new Map();
     		        // 字符串字典
     		        this._dir = {};
+    		        this._run = {};
+    		        this._hmr = {};
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._trigger = {};
-    		        this._hmr = {};
     		        this._enabled = false;
     		        this._enableHover = false;
     		        this._enableUpdate = false;
@@ -2388,7 +2389,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a, _b, _c, _d, _e, _f, _g, _h;
+    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
@@ -2431,6 +2432,13 @@
     		            _this.notifyHMR();
     		            _this.notifyDispatch(dispatch);
     		        };
+    		        var onFiberRun = function (fiber) {
+    		            var _a;
+    		            var id = getPlainNodeIdByFiber(fiber);
+    		            if (!id)
+    		                return;
+    		            _this._run[id] = (_a = fiber._debugRenderState.timeForUpdate) !== null && _a !== void 0 ? _a : fiber._debugRenderState.timeForRender;
+    		        };
     		        var onPerformanceWarn = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
@@ -2463,12 +2471,10 @@
     		            (_c = dispatch.onPerformanceWarn) === null || _c === void 0 ? void 0 : _c.call(dispatch, onPerformanceWarn);
     		            (_d = dispatch.onFiberChange) === null || _d === void 0 ? void 0 : _d.call(dispatch, onChange);
     		            (_e = dispatch.onFiberHMR) === null || _e === void 0 ? void 0 : _e.call(dispatch, onFiberHMR);
-    		            (_f = dispatch.onDOMUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onDOMUpdate);
-    		            (_g = dispatch.onDOMAppend) === null || _g === void 0 ? void 0 : _g.call(dispatch, onDOMAppend);
-    		            (_h = dispatch.onDOMSetRef) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMSetRef);
-    		            dispatch.onFiberHMR(function (f) {
-    		                console.log("[@my-react-devtool/core] hmr", f, f.elementType, f.pendingProps);
-    		            });
+    		            (_f = dispatch.onFiberRun) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberRun);
+    		            (_g = dispatch.onDOMUpdate) === null || _g === void 0 ? void 0 : _g.call(dispatch, onDOMUpdate);
+    		            (_h = dispatch.onDOMAppend) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMAppend);
+    		            (_j = dispatch.onDOMSetRef) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMSetRef);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;

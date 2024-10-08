@@ -6,6 +6,7 @@ import type { MessageHookDataType } from "./type";
 
 let port: chrome.runtime.Port | null = null;
 
+// TODO avoid using window
 let panelWindow: Window = window;
 
 let workerReady = false;
@@ -17,7 +18,9 @@ let messageId = 0;
 
 let id = null;
 
-const tabId = chrome.devtools.inspectedWindow.tabId;
+const getTabId = () => chrome.devtools.inspectedWindow.tabId;
+
+// const tabId = chrome.devtools.inspectedWindow.tabId;
 
 const runWhenWorkerReady = (fn: () => void, count?: number) => {
   clearTimeout(id);
@@ -40,7 +43,7 @@ const runWhenWorkerReady = (fn: () => void, count?: number) => {
 const showPanel = (onShow: (_window: Window) => void, onHide: () => void): Promise<{ window: Window; panel: chrome.devtools.panels.ExtensionPanel }> => {
   return new Promise((resolve) => {
     if (__DEV__) {
-      console.log("[@my-react-devtool/panel] create panel", tabId);
+      console.log("[@my-react-devtool/panel] create panel", getTabId());
     }
     chrome.devtools.panels.create(`@my-react`, "", "devTool.html", (panel) => {
       const f1 = (_window: Window) => {
@@ -313,7 +316,7 @@ const initPort = () => {
 
   setConnectHandler(() => initPort());
 
-  port = chrome.runtime.connect({ name: tabId.toString() });
+  port = chrome.runtime.connect({ name: getTabId().toString() });
 
   const onMessage = (message: MessageHookDataType | { type: MessageWorkerType }) => {
     workerConnecting = false;
@@ -376,7 +379,39 @@ const init = async (id: number) => {
         cleanList.forEach((f) => f());
       }
     );
+  } else {
+    if (__DEV__) {
+      console.error("[@my-react-devtool/panel] tabId is empty");
+    }
   }
 };
 
-init(tabId);
+const clear = () => {
+  workerConnecting = false;
+
+  if (port) {
+    port.disconnect();
+  }
+
+  port = null;
+
+  if (panelWindow) {
+    panelWindow.useAppTree.getActions().clear();
+    panelWindow.useNodeName.getActions().clear();
+    panelWindow.useTreeNode.getActions().clear();
+    panelWindow.useDetailNode.getActions().clear();
+  }
+}
+
+init(getTabId());
+
+// TODO! fix this
+chrome.devtools.network.onNavigated.addListener(() => {
+  if (__DEV__) {
+    console.log("[@my-react-devtool/panel] onNavigated");
+  }
+
+  clear();
+
+  sendMessage({ type: MessagePanelType.show });
+});

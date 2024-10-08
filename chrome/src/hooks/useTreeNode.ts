@@ -8,7 +8,7 @@ import { useAppTree } from "./useAppTree";
 
 export const useTreeNode = createState(
   () =>
-    ({ select: null, hover: null, closeList: {} }) as {
+    ({ select: null, hover: null, closeList: {}, selectList: {}, }) as {
       select: string | null;
       hover: string | null;
       closeList: Record<string, boolean>;
@@ -54,6 +54,12 @@ export const useTreeNode = createState(
             s.closeList = { ...s.closeList, [node]: true };
           }
           useAppTree.getActions().update();
+        },
+        clear: () => {
+          s.hover = null;
+          s.select = null;
+          s.closeList = {};
+          s.selectList = {};
         },
       };
     },

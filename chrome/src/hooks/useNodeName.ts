@@ -12,6 +12,10 @@ export const useNodeName = createState(() => ({ map: {}, state: {} }) as { map: 
         return p;
       }, {});
     },
+    clear: () => {
+      state.state = {};
+      state.map = {};
+    }
   }),
 });
 

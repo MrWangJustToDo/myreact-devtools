@@ -63,6 +63,10 @@ export const useAppTree = createState(
             .flat(1);
           useTreeNode.getActions().updateSelectList();
         },
+        clear: () => {
+          state.nodes = [];
+          state.list = [];
+        },
         // change: (node: PlainNode) => {
         //   void 0;
         // }

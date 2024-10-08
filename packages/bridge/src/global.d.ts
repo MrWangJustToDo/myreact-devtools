@@ -13,13 +13,18 @@ declare global {
   }
 
   interface Window {
-    useAppTree: UseSelectorWithState<{ nodes: Tree[] }, { addNode: (node: Tree) => void }>;
+    useAppTree: UseSelectorWithState<{ nodes: Tree[] }, { addNode: (node: Tree) => void; clear: () => void }>;
 
-    useTreeNode: UseSelectorWithState<{ select: string | null; hover: string | null }, {}>;
+    useTreeNode: UseSelectorWithState<
+      { select: string | null; hover: string | null },
+      {
+        clear: () => void;
+      }
+    >;
 
     useDetailNode: UseSelectorWithState<
       { nodes: PlainNode[]; loading: boolean; error: Error | null },
-      { addNode: (node: PlainNode) => void; setLoading: (loading: boolean) => void; setError: (e: Error | null) => void }
+      { addNode: (node: PlainNode) => void; setLoading: (loading: boolean) => void; setError: (e: Error | null) => void; clear: () => void }
     >;
 
     useConnect: UseSelectorWithState<
@@ -37,7 +42,7 @@ declare global {
 
     useHMRNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;
 
-    useNodeName: UseSelectorWithState<{ state: Record<string, string> }, { set: (s: Record<string, string>) => void }>;
+    useNodeName: UseSelectorWithState<{ state: Record<string, string> }, { set: (s: Record<string, string>) => void; clear: () => void }>;
 
     useHighlightNode: UseSelectorWithState<{}, { highlightNode: (id: string, type: string) => void }>;
 

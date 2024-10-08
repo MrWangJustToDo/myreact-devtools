@@ -23,6 +23,12 @@ export const useDetailNode = createState(() => ({ nodes: [], loading: false, err
     setError: (error: Error | null) => {
       s.error = error;
     },
+    
+    clear: () => {
+      s.nodes = [];
+      s.loading = false;
+      s.error = null;
+    }
   }),
   withDeepSelector: false,
 });
