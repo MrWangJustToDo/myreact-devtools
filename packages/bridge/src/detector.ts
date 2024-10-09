@@ -20,7 +20,7 @@ const runWhenHookReady = (fn: () => void, count?: number) => {
       }
       return;
     }
-    id = setTimeout(() => runWhenHookReady(fn, count ? count + 1 : 1), 2000);
+    id = setTimeout(() => runWhenHookReady(fn, count ? count + 1 : 1), 1000);
   }
 };
 

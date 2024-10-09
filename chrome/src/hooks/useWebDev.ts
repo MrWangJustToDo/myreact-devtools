@@ -87,7 +87,6 @@ export const useWebDev = () => {
             () => io.emit("action", { type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
           )
         );
-        
       });
 
       io.on("disconnect", () => {
@@ -157,6 +156,12 @@ export const useWebDev = () => {
 
       io.on("refresh", () => {
         window.location.reload();
+      });
+
+      io.on("web-dev", (data) => {
+        console.log("[Dev mode] web-dev", data);
+
+        useConnect.getActions().setWebDev(data.name || "", data.url || "");
       });
 
       return () => {

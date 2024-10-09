@@ -2709,7 +2709,7 @@
                 }
                 return;
             }
-            id = setTimeout(function () { return runWhenHookReady(fn, count ? count + 1 : 1); }, 2000);
+            id = setTimeout(function () { return runWhenHookReady(fn, count ? count + 1 : 1); }, 1000);
         }
     };
     var onMessage = function (message) {

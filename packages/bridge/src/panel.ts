@@ -36,7 +36,7 @@ const runWhenWorkerReady = (fn: () => void, count?: number) => {
       }
       return;
     }
-    id = setTimeout(() => runWhenWorkerReady(fn, count ? count + 1 : 1), 2000);
+    id = setTimeout(() => runWhenWorkerReady(fn, count ? count + 1 : 1), 1000);
   }
 };
 
@@ -346,6 +346,8 @@ const initPort = () => {
     port = null;
 
     workerReady = false;
+
+    workerConnecting = false;
   };
 
   port.onMessage.addListener(onMessage);
@@ -387,14 +389,6 @@ const init = async (id: number) => {
 };
 
 const clear = () => {
-  workerConnecting = false;
-
-  if (port) {
-    port.disconnect();
-  }
-
-  port = null;
-
   if (panelWindow) {
     panelWindow.useAppTree.getActions().clear();
     panelWindow.useNodeName.getActions().clear();
@@ -405,7 +399,6 @@ const clear = () => {
 
 init(getTabId());
 
-// TODO! fix this
 chrome.devtools.network.onNavigated.addListener(() => {
   if (__DEV__) {
     console.log("[@my-react-devtool/panel] onNavigated");
@@ -413,5 +406,11 @@ chrome.devtools.network.onNavigated.addListener(() => {
 
   clear();
 
-  sendMessage({ type: MessagePanelType.show });
+  // 不会触发onShow事件 ？
+  init(getTabId());
+
+  // TODO! fix this
+  setTimeout(() => {
+    sendMessage({ type: MessagePanelType.show });
+  }, 60);
 });

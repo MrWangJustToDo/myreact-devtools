@@ -2748,7 +2748,7 @@
                     console.error("[@my-react-devtool/hook] detector not ready");
                 }
             }
-            id = setTimeout(function () { return runWhenDetectorReady(fn, count ? count + 1 : 1); }, 2000);
+            id = setTimeout(function () { return runWhenDetectorReady(fn, count ? count + 1 : 1); }, 1000);
         }
     };
     var onMessage = function (message) {
@@ -2857,6 +2857,7 @@
                             core.setUpdateStatus(data.data);
                         }
                     });
+                    socket_1.emit("web-dev", { name: window.document.title, url: window.location.href });
                     _a.label = 2;
                 case 2: return [2 /*return*/];
             }

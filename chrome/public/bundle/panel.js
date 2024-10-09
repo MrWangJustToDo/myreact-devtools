@@ -2750,7 +2750,7 @@
                 }
                 return;
             }
-            id = setTimeout(function () { return runWhenWorkerReady(fn, count ? count + 1 : 1); }, 2000);
+            id = setTimeout(function () { return runWhenWorkerReady(fn, count ? count + 1 : 1); }, 1000);
         }
     };
     var showPanel = function (onShow, onHide) {
@@ -2976,6 +2976,7 @@
             disconnect();
             port = null;
             workerReady = false;
+            workerConnecting = false;
         };
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);
@@ -3014,11 +3015,6 @@
         });
     }); };
     var clear = function () {
-        workerConnecting = false;
-        if (port) {
-            port.disconnect();
-        }
-        port = null;
         if (panelWindow) {
             panelWindow.useAppTree.getActions().clear();
             panelWindow.useNodeName.getActions().clear();
@@ -3027,13 +3023,17 @@
         }
     };
     init(getTabId());
-    // TODO! fix this
     chrome.devtools.network.onNavigated.addListener(function () {
         {
             console.log("[@my-react-devtool/panel] onNavigated");
         }
         clear();
-        sendMessage({ type: coreExports.MessagePanelType.show });
+        // 不会触发onShow事件 ？
+        init(getTabId());
+        // TODO! fix this
+        setTimeout(function () {
+            sendMessage({ type: coreExports.MessagePanelType.show });
+        }, 60);
     });
 
 })();

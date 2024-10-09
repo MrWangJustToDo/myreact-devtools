@@ -35,7 +35,7 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
         console.error("[@my-react-devtool/hook] detector not ready");
       }
     }
-    id = setTimeout(() => runWhenDetectorReady(fn, count ? count + 1 : 1), 2000);
+    id = setTimeout(() => runWhenDetectorReady(fn, count ? count + 1 : 1), 1000);
   }
 };
 
@@ -173,6 +173,8 @@ const initWEB_UI = async (url: string) => {
         core.setUpdateStatus(data.data);
       }
     });
+
+    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
   }
 };
 
