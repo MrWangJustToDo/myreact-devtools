@@ -73,6 +73,8 @@ export class DevToolCore {
 
   _trigger = {};
 
+  _state = {};
+
   _enabled = false;
 
   _enableHover = false;
@@ -174,6 +176,14 @@ export class DevToolCore {
       this.notifyTrigger();
     };
 
+    const onFiberState = (fiber: MyReactFiberNode) => {
+      const id = getPlainNodeIdByFiber(fiber);
+
+      if (!id) return;
+
+      this._state[id] = this._state[id] ? this._state[id] + 1 : 1;
+    };
+
     const onFiberHMR = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
 
@@ -193,8 +203,12 @@ export class DevToolCore {
 
       if (!id) return;
 
-      this._run[id] = fiber._debugRenderState.timeForUpdate ?? fiber._debugRenderState.timeForRender;
-    }
+      if (this._run[id]) {
+        this._run[id] = { c: this._run[id].c + 1, t: fiber._debugRenderState?.timeForUpdate ?? fiber._debugRenderState?.timeForRender };
+      } else {
+        this._run[id] = { c: 1, t: fiber._debugRenderState?.timeForUpdate ?? fiber._debugRenderState?.timeForRender };
+      }
+    };
 
     const onPerformanceWarn = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
@@ -232,6 +246,8 @@ export class DevToolCore {
       // dispatch.onAfterUpdate(onLoad);
 
       dispatch.onAfterUnmount?.(onUnmount);
+
+      dispatch.onFiberState?.(onFiberState);
 
       dispatch.onFiberTrigger?.(onFiberTrigger);
 

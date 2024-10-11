@@ -14,6 +14,7 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
   // onAfterCommit?: (cb: () => void) => void;
   // onAfterUpdate?: (cb: () => void) => void;
   // onAfterUnmount?: (cb: () => void) => void;
+  onFiberState?: (cb: (fiber: MyReactFiberNode) => void) => void;
   onFiberRun?: (cb: (fiber: MyReactFiberNode) => void) => void;
   onDOMUpdate?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMAppend?: (cb: (f: MyReactFiberNode) => void) => void;
