@@ -2272,6 +2272,7 @@
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._trigger = {};
+    		        this._state = {};
     		        this._enabled = false;
     		        this._enableHover = false;
     		        this._enableUpdate = false;
@@ -2324,7 +2325,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
@@ -2357,6 +2358,12 @@
     		                return;
     		            _this.notifyTrigger();
     		        };
+    		        var onFiberState = function (fiber) {
+    		            var id = getPlainNodeIdByFiber(fiber);
+    		            if (!id)
+    		                return;
+    		            _this._state[id] = _this._state[id] ? _this._state[id] + 1 : 1;
+    		        };
     		        var onFiberHMR = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
@@ -2368,11 +2375,16 @@
     		            _this.notifyDispatch(dispatch);
     		        };
     		        var onFiberRun = function (fiber) {
-    		            var _a;
+    		            var _a, _b, _c, _d, _e, _f;
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
-    		            _this._run[id] = (_a = fiber._debugRenderState.timeForUpdate) !== null && _a !== void 0 ? _a : fiber._debugRenderState.timeForRender;
+    		            if (_this._run[id]) {
+    		                _this._run[id] = { c: _this._run[id].c + 1, t: (_b = (_a = fiber._debugRenderState) === null || _a === void 0 ? void 0 : _a.timeForUpdate) !== null && _b !== void 0 ? _b : (_c = fiber._debugRenderState) === null || _c === void 0 ? void 0 : _c.timeForRender };
+    		            }
+    		            else {
+    		                _this._run[id] = { c: 1, t: (_e = (_d = fiber._debugRenderState) === null || _d === void 0 ? void 0 : _d.timeForUpdate) !== null && _e !== void 0 ? _e : (_f = fiber._debugRenderState) === null || _f === void 0 ? void 0 : _f.timeForRender };
+    		            }
     		        };
     		        var onPerformanceWarn = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
@@ -2402,14 +2414,15 @@
     		            dispatch.onAfterCommit(onLoad);
     		            // dispatch.onAfterUpdate(onLoad);
     		            (_a = dispatch.onAfterUnmount) === null || _a === void 0 ? void 0 : _a.call(dispatch, onUnmount);
-    		            (_b = dispatch.onFiberTrigger) === null || _b === void 0 ? void 0 : _b.call(dispatch, onFiberTrigger);
-    		            (_c = dispatch.onPerformanceWarn) === null || _c === void 0 ? void 0 : _c.call(dispatch, onPerformanceWarn);
-    		            (_d = dispatch.onFiberChange) === null || _d === void 0 ? void 0 : _d.call(dispatch, onChange);
-    		            (_e = dispatch.onFiberHMR) === null || _e === void 0 ? void 0 : _e.call(dispatch, onFiberHMR);
-    		            (_f = dispatch.onFiberRun) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberRun);
-    		            (_g = dispatch.onDOMUpdate) === null || _g === void 0 ? void 0 : _g.call(dispatch, onDOMUpdate);
-    		            (_h = dispatch.onDOMAppend) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMAppend);
-    		            (_j = dispatch.onDOMSetRef) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMSetRef);
+    		            (_b = dispatch.onFiberState) === null || _b === void 0 ? void 0 : _b.call(dispatch, onFiberState);
+    		            (_c = dispatch.onFiberTrigger) === null || _c === void 0 ? void 0 : _c.call(dispatch, onFiberTrigger);
+    		            (_d = dispatch.onPerformanceWarn) === null || _d === void 0 ? void 0 : _d.call(dispatch, onPerformanceWarn);
+    		            (_e = dispatch.onFiberChange) === null || _e === void 0 ? void 0 : _e.call(dispatch, onChange);
+    		            (_f = dispatch.onFiberHMR) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberHMR);
+    		            (_g = dispatch.onFiberRun) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberRun);
+    		            (_h = dispatch.onDOMUpdate) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMUpdate);
+    		            (_j = dispatch.onDOMAppend) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMAppend);
+    		            (_k = dispatch.onDOMSetRef) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMSetRef);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
