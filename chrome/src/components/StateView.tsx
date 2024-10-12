@@ -5,6 +5,7 @@ import { JSONTree } from "react-json-tree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
+import { useUISize } from "@/hooks/useUISize";
 import { getText } from "@/utils/treeValue";
 
 import { theme } from "./HookView";
@@ -14,16 +15,20 @@ export const StateView = () => {
 
   const nodeList = useDetailNode((s) => s.nodes);
 
+  const size = useUISize.useShallowStableSelector((s) => s.state);
+
   const currentSelectDetail = nodeList.find((i) => i.id === select);
 
   const stateKeys = Object.keys(currentSelectDetail?.state || {});
 
   const hasStates = stateKeys.length > 0;
 
+  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
+
   const render = useCallbackRef((index: number) => {
     const key = stateKeys[index];
     return (
-      <div className="text-[11px] ml-2 font-mono tree-wrapper" key={index}>
+      <div className={`${sizeClass} ml-2 font-mono tree-wrapper`} key={index}>
         <JSONTree
           data={currentSelectDetail?.state?.[key]}
           theme={{

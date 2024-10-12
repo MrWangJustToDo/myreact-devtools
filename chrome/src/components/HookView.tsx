@@ -5,6 +5,7 @@ import { JSONTree } from "react-json-tree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
+import { useUISize } from "@/hooks/useUISize";
 import { getText } from "@/utils/treeValue";
 
 export const theme = getBase16Theme("google:inverted")!;
@@ -14,16 +15,20 @@ export const HookView = () => {
 
   const nodeList = useDetailNode((s) => s.nodes);
 
+  const size = useUISize.useShallowStableSelector((s) => s.state);
+
   const currentSelectDetail = nodeList.find((i) => i.id === select);
 
   const hookList = currentSelectDetail?.hook || [];
 
   const hasHook = hookList.length > 0;
 
+  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
+
   const render = useCallbackRef((index: number) => {
     const node = hookList[index];
     return (
-      <div className="text-[11px] ml-2 font-mono tree-wrapper" key={index}>
+      <div className={`${sizeClass} ml-2 font-mono tree-wrapper`} key={index}>
         <JSONTree
           data={node.value}
           theme={{

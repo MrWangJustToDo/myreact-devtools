@@ -92,6 +92,12 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
 
     core.showHover();
   }
+
+  if (message.data.type === MessagePanelType.nodeSubscriber) {
+    core.setSubscribe(message.data.data);
+
+    core.notifyRun();
+  }
 };
 
 window.addEventListener("message", onMessage);
@@ -165,6 +171,12 @@ const initWEB_UI = async (url: string) => {
         core.showHover();
       }
 
+      if (data?.type === MessagePanelType.nodeSubscriber) {
+        core.setSubscribe(data.data);
+
+        core.notifyRun();
+      }
+
       if (data?.type === MessagePanelType.enableHover) {
         core.setHoverStatus(data.data);
       }
@@ -184,7 +196,7 @@ initWEB_UI.close = () => {
   connectSocket = null;
 };
 
-export const globalHook = (dispatch: CustomRenderDispatch) => {
+const globalHook = (dispatch: CustomRenderDispatch) => {
   set.add(dispatch);
 
   core.addDispatch(dispatch);

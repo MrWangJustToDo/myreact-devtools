@@ -1,12 +1,14 @@
-import { DevToolMessageEnum, MessagePanelType, MessageWorkerType, parseDetailNode } from "@my-react-devtool/core";
+import { debounce, DevToolMessageEnum, MessagePanelType, MessageWorkerType, parseDetailNode } from "@my-react-devtool/core";
 import { useEffect } from "react";
 
+import { useActiveNode } from "./useActiveNode";
 import { useAppTree } from "./useAppTree";
 import { useConfig } from "./useConfig";
 import { useConnect } from "./useConnect";
 import { useDetailNode } from "./useDetailNode";
 import { useHMRNode } from "./useHMRNode";
 import { useNodeName } from "./useNodeName";
+import { useRunNode } from "./useRunNode";
 import { useTreeNode } from "./useTreeNode";
 import { useTriggerNode } from "./useTriggerNode";
 
@@ -75,6 +77,13 @@ export const useWebDev = () => {
         );
 
         unSubscribeArray.push(
+          useActiveNode.subscribe(
+            (s) => s.state,
+            debounce(() => io.emit("action", { type: MessagePanelType.nodeSubscriber, data: useActiveNode.getReadonlyState().state }), 100)
+          )
+        );
+
+        unSubscribeArray.push(
           useConfig.subscribe(
             (s) => s.state.enableHover,
             () => io.emit("action", { type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
@@ -132,6 +141,12 @@ export const useWebDev = () => {
         if (data.type === DevToolMessageEnum.trigger) {
           safeAction(() => {
             useTriggerNode.getActions().update(data.data);
+          });
+        }
+
+        if (data.type === DevToolMessageEnum.run) {
+          safeAction(() => {
+            useRunNode.getActions().update(data.data);
           });
         }
 

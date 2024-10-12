@@ -5,6 +5,8 @@ import { useTreeNode } from "@/hooks/useTreeNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useConfig } from "@/hooks/useConfig";
+import { useRunNode } from "@/hooks/useRunNode";
+import { useActiveNode } from "@/hooks/useActiveNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { io } from "socket.io-client";
@@ -33,6 +35,10 @@ declare global {
     useNodeName: typeof useNodeName;
 
     useHMRNode: typeof useHMRNode;
+
+    useRunNode: typeof useRunNode;
+
+    useActiveNode: typeof useActiveNode;
 
     useHighlightNode: typeof useHighlightNode;
 

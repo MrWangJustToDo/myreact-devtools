@@ -15,6 +15,7 @@ export enum MessagePanelType {
   enableUpdate = "panel-enable-update",
   nodeHover = "panel-hover",
   nodeSelect = "panel-select",
+  nodeSubscriber = "panel-subscriber",
 }
 
 export enum MessageWorkerType {

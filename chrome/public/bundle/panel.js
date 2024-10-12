@@ -2298,6 +2298,7 @@
     		    DevToolMessageEnum["highlight"] = "highlight";
     		    DevToolMessageEnum["trigger"] = "trigger";
     		    DevToolMessageEnum["hmr"] = "hmr";
+    		    DevToolMessageEnum["run"] = "run";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
@@ -2349,7 +2350,19 @@
     		        this._enableUpdate = false;
     		        this._forceEnable = false;
     		        this._listeners = new Set();
+    		        this._activeIds = {};
     		        this.version = "0.0.1";
+    		        this.notifyRun = debounce(function () {
+    		            if (!_this.hasEnable)
+    		                return;
+    		            var data = {};
+    		            Object.keys(_this._activeIds)
+    		                .filter(function (id) { return Number(_this._activeIds[id]) > 0; })
+    		                .forEach(function (id) {
+    		                data[id] = _this._run[id];
+    		            });
+    		            _this._notify({ type: exports.DevToolMessageEnum.run, data: data });
+    		        }, 100);
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
     		            _this._dispatch.forEach(function (dispatch) {
@@ -2446,16 +2459,17 @@
     		            _this.notifyDispatch(dispatch);
     		        };
     		        var onFiberRun = function (fiber) {
-    		            var _a, _b, _c, _d, _e, _f;
+    		            var _a, _b;
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
     		            if (_this._run[id]) {
-    		                _this._run[id] = { c: _this._run[id].c + 1, t: (_b = (_a = fiber._debugRenderState) === null || _a === void 0 ? void 0 : _a.timeForUpdate) !== null && _b !== void 0 ? _b : (_c = fiber._debugRenderState) === null || _c === void 0 ? void 0 : _c.timeForRender };
+    		                _this._run[id] = { c: _this._run[id].c + 1, t: (_a = fiber._debugRenderState) === null || _a === void 0 ? void 0 : _a.timeForRender };
     		            }
     		            else {
-    		                _this._run[id] = { c: 1, t: (_e = (_d = fiber._debugRenderState) === null || _d === void 0 ? void 0 : _d.timeForUpdate) !== null && _e !== void 0 ? _e : (_f = fiber._debugRenderState) === null || _f === void 0 ? void 0 : _f.timeForRender };
+    		                _this._run[id] = { c: 1, t: (_b = fiber._debugRenderState) === null || _b === void 0 ? void 0 : _b.timeForRender };
     		            }
+    		            _this.notifyRun();
     		        };
     		        var onPerformanceWarn = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
@@ -2550,6 +2564,9 @@
     		    };
     		    DevToolCore.prototype.setHover = function (id) {
     		        this._hoverId = id;
+    		    };
+    		    DevToolCore.prototype.setSubscribe = function (state) {
+    		        this._activeIds = state;
     		    };
     		    DevToolCore.prototype.showHover = function () {
     		        var _a, _b, _c, _d;
@@ -2670,6 +2687,7 @@
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
+    		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
     		exports.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -2915,6 +2933,20 @@
                 _window.useConnect.getActions().setError(typedE.message);
             }
         }
+        if (data.type === coreExports.DevToolMessageEnum.run) {
+            {
+                console.log("[@my-react-devtool/panel] run", data.data);
+            }
+            var nodes = data.data;
+            try {
+                var update = _window.useRunNode.getActions().update;
+                update(nodes);
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
     };
     var initSelectListen = function (_window) {
         var useTreeNode = _window.useTreeNode;
@@ -2942,6 +2974,17 @@
                 var currentHover = useTreeNode.getReadonlyState().hover;
                 sendMessage({ type: coreExports.MessagePanelType.nodeHover, data: currentHover });
             });
+        }
+        catch (_a) {
+        }
+    };
+    var initSubscribeListen = function (_window) {
+        var useActiveNode = _window.useActiveNode;
+        try {
+            return useActiveNode.subscribe(function (s) { return s.state; }, coreExports.debounce(function () {
+                var state = useActiveNode.getReadonlyState().state;
+                sendMessage({ type: coreExports.MessagePanelType.nodeSubscriber, data: state });
+            }, 100), true);
         }
         catch (_a) {
         }
@@ -3007,7 +3050,7 @@
                             }
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
-                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window));
+                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window));
                         }, function () {
                             {
                                 console.log("hide panel");

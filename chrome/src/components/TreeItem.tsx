@@ -2,17 +2,22 @@ import { NODE_TYPE } from "@my-react/react-reconciler";
 import { getFiberTag } from "@my-react-devtool/core";
 import { Chip, Spacer, Tooltip } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useLayoutEffect, useMemo } from "react";
 
+import { useActiveNode } from "@/hooks/useActiveNode";
+import { useConfig } from "@/hooks/useConfig";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
+import { useRunNode } from "@/hooks/useRunNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
 const { setSelect, setClose, setHover } = useTreeNode.getActions();
+
+const { add, remove } = useActiveNode.getActions();
 
 const RenderTag = memo(({ node }: { node: PlainNode }) => {
   const tag = getFiberTag(node.type);
@@ -82,6 +87,27 @@ export const RenderItem = ({
 }) => {
   const current = node;
 
+  const { enableCount, enableMis } = useConfig.useShallowStableSelector((s) => ({
+    enableCount: s.state.enableRuntimeCount,
+    enableMis: s.state.enableRuntimeMis,
+  }));
+
+  useLayoutEffect(() => {
+    if (!enableCount) {
+      return () => {
+        remove(current.id);
+      };
+    }
+
+    add(current.id);
+
+    return () => {
+      remove(current.id);
+    };
+  }, [current, enableCount]);
+
+  const { c, t } = useRunNode.useShallowStableSelector((s) => (enableCount ? s.state?.[node.id] || {} : {}) as { c: number; t?: number });
+
   const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.id], [node.id]));
 
   const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.id], [node.id]));
@@ -121,7 +147,7 @@ export const RenderItem = ({
         withSelect && setHover("");
       }}
       className={
-        "w-full h-full whitespace-nowrap cursor-pointer rounded-sm select-none transition-background" +
+        "w-full h-full whitespace-nowrap cursor-pointer rounded-sm select-none transition-background " +
         (className || "") +
         `${withSelect ? " hover:bg-blue-50" : ""}` +
         `${hasSelect ? " bg-blue-50" : ""}` +
@@ -170,6 +196,17 @@ export const RenderItem = ({
                 <Tooltip content="trigger update" showArrow>
                   <Chip size="sm" radius="none" color="primary" className="rounded-md capitalize text-[8px] h-[14px]">
                     {triggerCount}
+                  </Chip>
+                </Tooltip>
+              </>
+            )}
+            {enableCount && c && c > 0 && (
+              <>
+                <Spacer x={1} />
+                <Tooltip content="run count" showArrow>
+                  <Chip size="sm" radius="none" color="secondary" className="rounded-md capitalize text-[8px] h-[14px]">
+                    {c}
+                    {enableMis && t ? ` (${t}ms)` : ""}
                   </Chip>
                 </Tooltip>
               </>

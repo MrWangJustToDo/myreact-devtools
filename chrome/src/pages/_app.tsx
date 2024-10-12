@@ -1,3 +1,4 @@
+import { __my_react_shared__ } from "@my-react/react";
 import { Code, NextUIProvider, Snippet, Spacer, Spinner, Tooltip, Button } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { JetBrains_Mono } from "next/font/google";
@@ -33,6 +34,8 @@ const getWebTitle = (name?: string, url?: string) => {
 
   return "unknown";
 };
+
+__my_react_shared__.enableLoopFromRoot.current = true;
 
 export default function App({ Component, pageProps, router }: AppProps) {
   const { render, state, name, url, reconnect } = useConnect((s) => ({ render: s.render, state: s.state, name: s.name, url: s.url, reconnect: s.cb }));
@@ -103,7 +106,13 @@ export default function App({ Component, pageProps, router }: AppProps) {
         }
       `}</style>
       {/* <ThemeProvider attribute="class" defaultTheme="dark"> */}
-      {children}
+      {isMounted ? (
+        children
+      ) : (
+        <div className="fixed w-full h-full flex items-center justify-center">
+          <Spinner color="primary" size="lg" />
+        </div>
+      )}
       {/* </ThemeProvider> */}
     </NextUIProvider>
   );

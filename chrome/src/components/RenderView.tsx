@@ -7,6 +7,7 @@ import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
+import { useUISize } from "@/hooks/useUISize";
 import { checkHasInclude } from "@/utils/node";
 
 import { RenderItem } from "./TreeItem";
@@ -17,6 +18,10 @@ export const RenderView = () => {
   const select = useTreeNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
+
+  const size = useUISize.useShallowStableSelector((s) => s.state);
+
+  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
   const currentSelectDetail = nodeList.find((i) => i.id === select);
 
@@ -48,7 +53,7 @@ export const RenderView = () => {
     if (!node) return null;
 
     return (
-      <div className="text-[11px] ml-2 font-mono" key={node.id}>
+      <div className={`${sizeClass} ml-2 font-mono`} key={node.id}>
         <RenderItem node={node} withCollapse={false} />
       </div>
     );
@@ -61,7 +66,7 @@ export const RenderView = () => {
         <Spacer y={1} />
         <div className="w-full">
           {data.map((_, index) => render(index))}
-          <div className="text-[11px] ml-2 font-mono px-[2px]">{last || "@my-react"}</div>
+          <div className={`${sizeClass} ml-2 font-mono px-[2px]`}>{last || "@my-react"}</div>
           {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
         </div>
         <Divider />

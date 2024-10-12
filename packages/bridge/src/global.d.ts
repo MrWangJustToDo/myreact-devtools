@@ -38,6 +38,13 @@ declare global {
       }
     >;
 
+    useActiveNode: UseSelectorWithState<{ state: Record<string, number> }, { clear: () => void }>;
+
+    useRunNode: UseSelectorWithState<
+      { state: Record<string, { c: number; t?: number }> },
+      { update: (state: Record<string, { c: number; t?: number }>) => void }
+    >;
+
     useTriggerNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;
 
     useHMRNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;

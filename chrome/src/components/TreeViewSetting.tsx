@@ -13,6 +13,8 @@ import {
   Tooltip,
   Spacer,
   Checkbox,
+  RadioGroup,
+  Radio,
 } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon, GearIcon } from "@radix-ui/react-icons";
 import { memo } from "react";
@@ -20,6 +22,7 @@ import { memo } from "react";
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
 import { useFilterNode } from "@/hooks/useFilterNode";
+import { UISize, useUISize } from "@/hooks/useUISize";
 
 import { TreeViewSearch } from "./TreeViewSearch";
 
@@ -31,7 +34,9 @@ const onChange = useFilterNode.getActions().onChange;
 export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) => {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const { state: configState, setEnableHover, setEnableUpdate } = useConfig();
+  const { state: configState, setEnableHover, setEnableUpdate, setEnableRuntimeCount, setEnableRuntimeMis } = useConfig();
+
+  const { state: size, setUISize } = useUISize();
 
   const { state, cb } = useConnect((s) => ({ state: s.state, cb: s.cb }));
 
@@ -60,7 +65,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
         </ButtonGroup>
       </div>
 
-      <Modal isOpen={isOpen} onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">
+      <Modal isOpen={isOpen} size="xl" onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">
         <ModalContent className=" text-[16px]">
           <ModalHeader>
             <p className="text-[18px]">Setting</p>
@@ -85,14 +90,36 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                 ))}
               </Select>
             </div>
-            <div className="mt-2">
+            <div className="mt-1">
+              <RadioGroup value={size} onValueChange={(l) => setUISize(l as UISize)} orientation="horizontal" label="UI Size">
+                <Radio value={UISize.sm}>Small Size</Radio>
+                <Radio value={UISize.md}>Medium Size</Radio>
+                <Radio value={UISize.lg}>Large Size</Radio>
+              </RadioGroup>
+            </div>
+            <div className="mt-1">
               <Checkbox isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} color="primary">
-                Highlight Update
+                Enable Highlight Update
               </Checkbox>
             </div>
-            <div className="mt-2">
+            <div className="mt-1">
               <Checkbox isSelected={configState.enableHover} onValueChange={setEnableHover} color="secondary">
-                Hover Overlay
+                Enable Hover Overlay
+              </Checkbox>
+            </div>
+            <div className="mt-1">
+              <Checkbox isSelected={configState.enableRuntimeCount} onValueChange={setEnableRuntimeCount} color="success">
+                Enable RuntimeCount (DevMode only)
+              </Checkbox>
+            </div>
+            <div className="mt-1">
+              <Checkbox
+                isSelected={configState.enableRuntimeMis}
+                isDisabled={!configState.enableRuntimeCount}
+                onValueChange={setEnableRuntimeMis}
+                color="warning"
+              >
+                Enable RuntimeMis (DevMode only)
               </Checkbox>
             </div>
           </ModalBody>

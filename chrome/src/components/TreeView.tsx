@@ -5,6 +5,7 @@ import { useAppTree } from "@/hooks/useAppTree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDomSize } from "@/hooks/useSize";
 import { useTreeNode } from "@/hooks/useTreeNode";
+import { UISize, useUISize } from "@/hooks/useUISize";
 
 import { RenderItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
@@ -51,14 +52,18 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
   const ref = useRef<VirtuosoHandle>(null);
 
-  const select = useTreeNode((s) => s.select);
+  const select = useTreeNode.useShallowStableSelector((s) => s.select);
+
+  const size = useUISize.useShallowStableSelector((s) => s.state);
 
   const render = useCallbackRef((index: number, _: unknown, { isScrolling }: { isScrolling?: boolean }) => {
     const node = data[index];
 
     if (!node) return null;
 
-    return <RenderItem node={node} isScrolling={isScrolling} className=" text-[12px]" />;
+    return (
+      <RenderItem node={node} isScrolling={isScrolling} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[14px]" : "text-[16px]"} />
+    );
   });
 
   const index = useMemo(() => data.findIndex((item) => item.id === select), [data, select]);
@@ -101,7 +106,7 @@ TreeViewImpl.displayName = "TreeViewImpl";
 export const TreeView = memo(() => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const nodes = useAppTree(useCallback((s) => s.list, [])) as PlainNode[];
+  const nodes = useAppTree.useShallowStableSelector((s) => s.list) as PlainNode[];
 
   const { width, height } = useDomSize({ ref });
 

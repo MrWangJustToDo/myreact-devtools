@@ -22,6 +22,7 @@ export enum DevToolMessageEnum {
   highlight = "highlight",
   trigger = "trigger",
   hmr = "hmr",
+  run = "run",
   detail = "detail",
   unmount = "unmount",
 }
@@ -84,6 +85,8 @@ export class DevToolCore {
   _forceEnable = false;
 
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
+
+  _activeIds = {};
 
   version = __VERSION__;
 
@@ -204,10 +207,12 @@ export class DevToolCore {
       if (!id) return;
 
       if (this._run[id]) {
-        this._run[id] = { c: this._run[id].c + 1, t: fiber._debugRenderState?.timeForUpdate ?? fiber._debugRenderState?.timeForRender };
+        this._run[id] = { c: this._run[id].c + 1, t: fiber._debugRenderState?.timeForRender };
       } else {
-        this._run[id] = { c: 1, t: fiber._debugRenderState?.timeForUpdate ?? fiber._debugRenderState?.timeForRender };
+        this._run[id] = { c: 1, t: fiber._debugRenderState?.timeForRender };
       }
+
+      this.notifyRun();
     };
 
     const onPerformanceWarn = (fiber: MyReactFiberNode) => {
@@ -340,6 +345,10 @@ export class DevToolCore {
     this._hoverId = id;
   }
 
+  setSubscribe(state: Record<string, number>) {
+    this._activeIds = state;
+  }
+
   showHover() {
     if (!this._enableHover) return;
 
@@ -377,6 +386,20 @@ export class DevToolCore {
 
     this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
   }
+
+  notifyRun = debounce(() => {
+    if (!this.hasEnable) return;
+
+    const data = {};
+
+    Object.keys(this._activeIds)
+      .filter((id) => Number(this._activeIds[id]) > 0)
+      .forEach((id) => {
+        data[id] = this._run[id];
+      });
+
+    this._notify({ type: DevToolMessageEnum.run, data });
+  }, 100);
 
   notifyHighlight(id: string, type: "performance") {
     if (!this.hasEnable) return;

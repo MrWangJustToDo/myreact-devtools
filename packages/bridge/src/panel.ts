@@ -1,4 +1,4 @@
-import { DevToolMessageEnum, parseDetailNode, type DevToolMessageType, type PlainNode, type Tree } from "@my-react-devtool/core";
+import { debounce, DevToolMessageEnum, parseDetailNode, type DevToolMessageType, type PlainNode, type Tree } from "@my-react-devtool/core";
 
 import { MessageHookType, MessagePanelType, MessageWorkerType, sourceFrom } from "./type";
 
@@ -230,6 +230,24 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       _window.useConnect.getActions().setError(typedE.message);
     }
   }
+
+  if (data.type === DevToolMessageEnum.run) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] run", data.data);
+    }
+
+    const nodes = data.data as Record<string, { c: number; t?: number }>;
+
+    try {
+      const { update } = _window.useRunNode.getActions();
+
+      update(nodes);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
 };
 
 const initSelectListen = (_window: Window) => {
@@ -269,6 +287,24 @@ const initHoverListen = (_window: Window) => {
 
         sendMessage({ type: MessagePanelType.nodeHover, data: currentHover });
       }
+    );
+  } catch {
+    void 0;
+  }
+};
+
+const initSubscribeListen = (_window: Window) => {
+  const useActiveNode = _window.useActiveNode;
+
+  try {
+    return useActiveNode.subscribe(
+      (s) => s.state,
+      debounce(() => {
+        const state = useActiveNode.getReadonlyState().state;
+
+        sendMessage({ type: MessagePanelType.nodeSubscriber, data: state });
+      }, 100),
+      true
     );
   } catch {
     void 0;
@@ -369,7 +405,7 @@ const init = async (id: number) => {
 
         sendMessage({ type: MessagePanelType.show });
 
-        cleanList.push(initSelectListen(window), initHoverListen(window), initConfigListen(window));
+        cleanList.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window));
       },
       () => {
         if (__DEV__) {
@@ -395,7 +431,7 @@ const clear = () => {
     panelWindow.useTreeNode.getActions().clear();
     panelWindow.useDetailNode.getActions().clear();
   }
-}
+};
 
 init(getTabId());
 
