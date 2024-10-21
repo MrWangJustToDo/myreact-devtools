@@ -15,6 +15,7 @@ import {
   Checkbox,
   RadioGroup,
   Radio,
+  Divider,
 } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon, GearIcon } from "@radix-ui/react-icons";
 import { memo } from "react";
@@ -71,56 +72,58 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
             <p className="text-[18px]">Setting</p>
           </ModalHeader>
           <ModalBody>
-            <div className="flex items-center">
-              <Select
-                label={<p className=" whitespace-nowrap text-[14px]">Filter Node: </p>}
-                selectionMode="multiple"
-                placeholder="Select a Type"
-                selectedKeys={values}
-                className="flex items-center"
-                radius="sm"
-                variant="bordered"
-                size="lg"
-                onChange={handleSelectionChange}
-              >
-                {typeKeys.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {getTypeName(type)}
-                  </SelectItem>
-                ))}
-              </Select>
-            </div>
-            <div className="mt-1">
-              <RadioGroup value={size} onValueChange={(l) => setUISize(l as UISize)} orientation="horizontal" label="UI Size">
-                <Radio value={UISize.sm}>Small Size</Radio>
-                <Radio value={UISize.md}>Medium Size</Radio>
-                <Radio value={UISize.lg}>Large Size</Radio>
-              </RadioGroup>
-            </div>
-            <div className="mt-1">
-              <Checkbox isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} color="primary">
-                Enable Highlight Update
-              </Checkbox>
-            </div>
-            <div className="mt-1">
-              <Checkbox isSelected={configState.enableHover} onValueChange={setEnableHover} color="secondary">
-                Enable Hover Overlay
-              </Checkbox>
-            </div>
-            <div className="mt-1">
-              <Checkbox isSelected={configState.enableRuntimeCount} onValueChange={setEnableRuntimeCount} color="success">
-                Enable RuntimeCount (DevMode only)
-              </Checkbox>
-            </div>
-            <div className="mt-1">
-              <Checkbox
-                isSelected={configState.enableRuntimeMis}
-                isDisabled={!configState.enableRuntimeCount}
-                onValueChange={setEnableRuntimeMis}
-                color="warning"
-              >
-                Enable RuntimeMis (DevMode only)
-              </Checkbox>
+            <div className="flex flex-col gap-y-4">
+              <div className="flex flex-col gap-y-2">
+                <p className="whitespace-nowrap text-[14px] text-foreground-500">Filter Node: </p>
+                <div className="flex items-center">
+                  <Select
+                    selectionMode="multiple"
+                    placeholder="Select a Type"
+                    selectedKeys={values}
+                    aria-label="Filter Node"
+                    className="flex items-center"
+                    radius="sm"
+                    variant="bordered"
+                    size="lg"
+                    onChange={handleSelectionChange}
+                  >
+                    {typeKeys.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {getTypeName(type)}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              <Divider />
+              <div className="flex flex-col gap-y-2">
+                <p className="whitespace-nowrap text-[14px] text-foreground-500">UI Size: </p>
+                <RadioGroup value={size} onValueChange={(l) => setUISize(l as UISize)} orientation="horizontal">
+                  <Radio value={UISize.sm}>Small Size</Radio>
+                  <Radio value={UISize.md}>Medium Size</Radio>
+                  <Radio value={UISize.lg}>Large Size</Radio>
+                </RadioGroup>
+              </div>
+              <Divider />
+              <div className="flex flex-col gap-y-2">
+                <Checkbox isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} color="primary">
+                  Enable Highlight Update
+                </Checkbox>
+                <Checkbox isSelected={configState.enableHover} onValueChange={setEnableHover} color="secondary">
+                  Enable Hover Overlay
+                </Checkbox>
+                <Checkbox isSelected={configState.enableRuntimeCount} onValueChange={setEnableRuntimeCount} color="success">
+                  Enable RuntimeCount (DevMode only)
+                </Checkbox>
+                <Checkbox
+                  isSelected={configState.enableRuntimeMis}
+                  isDisabled={!configState.enableRuntimeCount}
+                  onValueChange={setEnableRuntimeMis}
+                  color="warning"
+                >
+                  Enable RuntimeMis (DevMode only)
+                </Checkbox>
+              </div>
             </div>
           </ModalBody>
           <ModalFooter>
