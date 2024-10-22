@@ -72,7 +72,7 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
           placeholder="Search component"
           className="w-full"
           value={v}
-          variant="faded"
+          variant="flat"
           onChange={(e) => setV(e.target.value)}
           endContent={
             <Button isIconOnly variant="light" onClick={onSearch}>

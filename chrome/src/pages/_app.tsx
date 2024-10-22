@@ -2,8 +2,8 @@ import { __my_react_shared__ } from "@my-react/react";
 import { Code, NextUIProvider, Snippet, Spacer, Spinner, Tooltip, Button } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { JetBrains_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 
-// import { ThemeProvider } from "next-themes";
 import { useConnect } from "@/hooks/useConnect";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { useWebDev } from "@/hooks/useWebDev";
@@ -94,6 +94,14 @@ export default function App({ Component, pageProps, router }: AppProps) {
 
   useWebDev();
 
+  const rendered = isMounted ? (
+    children
+  ) : (
+    <div className="fixed w-full h-full flex items-center justify-center">
+      <Spinner color="primary" size="lg" />
+    </div>
+  );
+
   return (
     <NextUIProvider>
       <style jsx global>{`
@@ -105,15 +113,9 @@ export default function App({ Component, pageProps, router }: AppProps) {
           font-family: ${roboto.style.fontFamily} !important;
         }
       `}</style>
-      {/* <ThemeProvider attribute="class" defaultTheme="dark"> */}
-      {isMounted ? (
-        children
-      ) : (
-        <div className="fixed w-full h-full flex items-center justify-center">
-          <Spinner color="primary" size="lg" />
-        </div>
-      )}
-      {/* </ThemeProvider> */}
+      <ThemeProvider attribute="class" defaultTheme="light">
+        {rendered}
+      </ThemeProvider>
     </NextUIProvider>
   );
 }

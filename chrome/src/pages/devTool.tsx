@@ -1,3 +1,4 @@
+import { useTheme } from "next-themes";
 import { useEffect } from "react";
 import { Toaster, toast } from "sonner";
 
@@ -9,6 +10,8 @@ import { useConnect } from "@/hooks/useConnect";
 export default function Page() {
   const error = useConnect((s) => s.error);
 
+  const { theme } = useTheme();
+
   useEffect(() => {
     if (error) {
       toast.error(error, { position: "top-right" });
@@ -16,8 +19,8 @@ export default function Page() {
   }, [error]);
 
   return (
-    <main className="flex p-2 h-screen">
-      <Toaster richColors />
+    <main className="flex p-1 h-screen">
+      <Toaster richColors theme={theme === "dark" ? "dark" : "light"} />
       <Layout left={<TreeView />} right={<NodeView />} />
     </main>
   );

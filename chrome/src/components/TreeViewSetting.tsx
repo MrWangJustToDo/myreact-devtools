@@ -1,4 +1,4 @@
-import { getTypeName, typeKeys } from "@my-react-devtool/core";
+import { color, getTypeName, typeKeys } from "@my-react-devtool/core";
 import {
   Button,
   Modal,
@@ -16,6 +16,7 @@ import {
   RadioGroup,
   Radio,
   Divider,
+  Chip,
 } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon, GearIcon } from "@radix-ui/react-icons";
 import { memo } from "react";
@@ -67,11 +68,13 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
       </div>
 
       <Modal isOpen={isOpen} size="xl" onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">
-        <ModalContent className=" text-[16px]">
+        <ModalContent>
           <ModalHeader>
-            <p className="text-[18px]">Setting</p>
+            <h3 className="text-[1em]">
+              Setting <small>@my-react</small>
+            </h3>
           </ModalHeader>
-          <ModalBody>
+          <ModalBody className="text-[14px]">
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-col gap-y-2">
                 <p className="whitespace-nowrap text-[14px] text-foreground-500">Filter Node: </p>
@@ -98,7 +101,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               <Divider />
               <div className="flex flex-col gap-y-2">
                 <p className="whitespace-nowrap text-[14px] text-foreground-500">UI Size: </p>
-                <RadioGroup value={size} onValueChange={(l) => setUISize(l as UISize)} orientation="horizontal">
+                <RadioGroup value={size} onValueChange={(l) => setUISize(l as UISize)} orientation="horizontal" classNames={{ wrapper: "gap-x-6" }}>
                   <Radio value={UISize.sm}>Small Size</Radio>
                   <Radio value={UISize.md}>Medium Size</Radio>
                   <Radio value={UISize.lg}>Large Size</Radio>
@@ -107,13 +110,21 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               <Divider />
               <div className="flex flex-col gap-y-2">
                 <Checkbox isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} color="primary">
-                  Enable Highlight Update
+                  <div className="flex">
+                    Highlight Update
+                    <div className="ml-4 gap-x-2 flex">
+                      <Chip style={{ backgroundColor: color.update, mixBlendMode: "difference" }}>update</Chip>
+                      <Chip style={{ backgroundColor: color.append, mixBlendMode: "difference" }}>append</Chip>
+                      <Chip style={{ backgroundColor: color.setRef, mixBlendMode: "difference" }}>setRef</Chip>
+                      <Chip style={{ backgroundColor: color.warn, mixBlendMode: "difference" }}>warn</Chip>
+                    </div>
+                  </div>
                 </Checkbox>
                 <Checkbox isSelected={configState.enableHover} onValueChange={setEnableHover} color="secondary">
-                  Enable Hover Overlay
+                  Hover Overlay
                 </Checkbox>
                 <Checkbox isSelected={configState.enableRuntimeCount} onValueChange={setEnableRuntimeCount} color="success">
-                  Enable RuntimeCount (DevMode only)
+                  RuntimeCount (DevMode only)
                 </Checkbox>
                 <Checkbox
                   isSelected={configState.enableRuntimeMis}
@@ -121,7 +132,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                   onValueChange={setEnableRuntimeMis}
                   color="warning"
                 >
-                  Enable RuntimeMis (DevMode only)
+                  RuntimeMis (DevMode only)
                 </Checkbox>
               </div>
             </div>

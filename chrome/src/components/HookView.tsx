@@ -1,17 +1,17 @@
 import { Divider, Spacer } from "@nextui-org/react";
-import { getBase16Theme } from "react-base16-styling";
 import { JSONTree } from "react-json-tree";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
+import { useJsonTheme } from "@/hooks/useJsonTheme";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 import { getText } from "@/utils/treeValue";
 
-export const theme = getBase16Theme("google:inverted")!;
-
 export const HookView = () => {
   const select = useTreeNode((s) => s.select);
+
+  const theme = useJsonTheme();
 
   const nodeList = useDetailNode((s) => s.nodes);
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { isNormalEquals } from "@my-react/react-shared";
 
-import { HighLight, Overlay } from "./highlight";
+import { HighLight, Overlay, color as _color } from "./highlight";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import { generateTreeMap, getDetailNodeByFiber, getFiberNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
 import { getElementNodesFromFiber } from "./utils";
@@ -501,3 +501,5 @@ export class DevToolCore {
     this._enabled = false;
   }
 }
+
+export const color = _color;

@@ -2075,7 +2075,7 @@
     		    border: "rgba(255, 200, 50, 0.3)",
     		};
 
-    		var color = {
+    		var color$1 = {
     		    update: "rgba(200,50,50,0.8)",
     		    append: "rgba(50,200,50,0.8)",
     		    setRef: "rgba(50,50,200,0.8)",
@@ -2167,19 +2167,19 @@
     		            var context = _this.mask.getContext("2d");
     		            var allPendingUpdate = new Set(_this.__pendingUpdate__);
     		            _this.__pendingUpdate__.clear();
-    		            context.strokeStyle = color.update;
+    		            context.strokeStyle = color$1.update;
     		            allPendingUpdate.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
     		            var allPendingAppend = new Set(_this.__pendingAppend__);
     		            _this.__pendingAppend__.clear();
-    		            context.strokeStyle = color.append;
+    		            context.strokeStyle = color$1.append;
     		            allPendingAppend.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
     		            var allPendingSetRef = new Set(_this.__pendingSetRef__);
     		            _this.__pendingSetRef__.clear();
-    		            context.strokeStyle = color.setRef;
+    		            context.strokeStyle = color$1.setRef;
     		            allPendingSetRef.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
     		            var allPendingWarn = new Set(_this.__pendingWarn__);
     		            _this.__pendingWarn__.clear();
-    		            context.strokeStyle = color.warn;
+    		            context.strokeStyle = color$1.warn;
     		            allPendingWarn.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
     		            setTimeout(function () {
     		                context.clearRect(0, 0, _this.width, _this.height);
@@ -2597,6 +2597,7 @@
     		    };
     		    return DevToolCore;
     		}());
+    		var color = color$1;
 
     		exports.MessageHookType = void 0;
     		(function (MessageHookType) {
@@ -2627,6 +2628,7 @@
     		exports.DevToolCore = DevToolCore;
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
+    		exports.color = color;
     		exports.debounce = debounce;
     		exports.generateTreeMap = generateTreeMap;
     		exports.getContextName = getContextName;

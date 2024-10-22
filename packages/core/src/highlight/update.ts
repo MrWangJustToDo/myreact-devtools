@@ -4,7 +4,7 @@ import { debounce, type DevToolCore } from "../instance";
 
 import type { MyReactFiberNode } from "@my-react/react-reconciler";
 
-const color = {
+export const color = {
   update: "rgba(200,50,50,0.8)",
   append: "rgba(50,200,50,0.8)",
   setRef: "rgba(50,50,200,0.8)",

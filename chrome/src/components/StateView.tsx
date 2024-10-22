@@ -4,16 +4,17 @@ import { JSONTree } from "react-json-tree";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
+import { useJsonTheme } from "@/hooks/useJsonTheme";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 import { getText } from "@/utils/treeValue";
-
-import { theme } from "./HookView";
 
 export const StateView = () => {
   const select = useTreeNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
+
+  const theme = useJsonTheme();
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 

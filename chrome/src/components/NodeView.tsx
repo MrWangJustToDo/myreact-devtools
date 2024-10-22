@@ -1,4 +1,4 @@
-import { Spinner } from "@nextui-org/react";
+import { Card, CardBody, Spinner } from "@nextui-org/react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
@@ -21,20 +21,30 @@ export const NodeView = () => {
 
   if (isLoading) {
     return (
-      <div className="node-view h-full border rounded-md border-gray-200 group overflow-auto flex items-center justify-center">
-        <Spinner color="primary" />
+      <div className="node-view h-full p-1">
+        <Card shadow="sm" radius="md" className="h-full">
+          <CardBody className="flex h-full items-center justify-center">
+            <Spinner color="primary" />
+          </CardBody>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="node-view h-full border rounded-md border-gray-200 group overflow-auto">
-      <NameView />
-      <PropsView />
-      <StateView />
-      <HookView />
-      <RenderView />
-      <SourceView />
+    <div className="node-view h-full px-1 py-0.5">
+      <Card shadow="sm" radius="md" className="h-full">
+        <CardBody className="h-full">
+          <div className="group h-full overflow-auto">
+            <NameView />
+            <PropsView />
+            <StateView />
+            <HookView />
+            <RenderView />
+            <SourceView />
+          </div>
+        </CardBody>
+      </Card>
     </div>
   );
 };
