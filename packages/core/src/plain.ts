@@ -10,10 +10,14 @@ export type HOOK = {
 };
 
 export type HOOKTree = {
-  id: string;
+  index?: number;
+  isHook?: boolean;
+  deep: number;
+  path?: string;
   name: string;
-  node?: HOOK;
-  value?: HOOKTree[];
+  value?: unknown;
+  // used for stack
+  children?: HOOKTree[];
 };
 
 // PlainNode is a simplified version of FiberNode just for show the structure

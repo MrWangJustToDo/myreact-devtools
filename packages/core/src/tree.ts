@@ -1,6 +1,6 @@
 import { PlainNode } from "./plain";
 import { NODE_TYPE } from "./type";
-import { getFiberName, getHook, getObj, getSource, getTree, parseHook, parseProps, parseState } from "./utils";
+import { getFiberName, getHook, getHook_v2, getObj, getSource, getTree, parseHook, parseProps, parseState } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
@@ -44,7 +44,7 @@ export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
 
   plain.hook = getHook(fiber as MyReactFiberNodeDev);
 
-  // plain.hook_v2 = getHook_v2(fiber as MyReactFiberNodeDev);
+  plain.hook_v2 = getHook_v2(fiber as MyReactFiberNodeDev);
 
   plain.props = getObj(fiber.pendingProps);
 

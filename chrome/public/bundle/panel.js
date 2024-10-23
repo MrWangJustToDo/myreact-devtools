@@ -1187,6 +1187,18 @@
     		    return __assign.apply(this, arguments);
     		};
 
+    		function __rest(s, e) {
+    		    var t = {};
+    		    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+    		        t[p] = s[p];
+    		    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+    		        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+    		            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+    		                t[p[i]] = s[p[i]];
+    		        }
+    		    return t;
+    		}
+
     		function __spreadArray(to, from, pack) {
     		    if (arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
     		        if (ar || !(i in from)) {
@@ -1265,7 +1277,7 @@
     		    shallowAssignFiber(plain, fiber);
     		    plain.source = getSource(fiber);
     		    plain.hook = getHook(fiber);
-    		    // plain.hook_v2 = getHook_v2(fiber as MyReactFiberNodeDev);
+    		    plain.hook_v2 = getHook_v2(fiber);
     		    plain.props = getObj(fiber.pendingProps);
     		    plain.tree = getTree(fiber);
     		    if (fiber.type & NODE_TYPE.__class__) {
@@ -1655,15 +1667,6 @@
     		var getContextName = function (value) {
     		    return value.displayName || "Context";
     		};
-    		var getStackName = function (value) {
-    		    if (value.startsWith("use")) {
-    		        return value.slice(3);
-    		    }
-    		    if (value[0] === value[0].toUpperCase()) {
-    		        return value;
-    		    }
-    		    return value[0].toUpperCase() + value.slice(1);
-    		};
     		var getSource = function (fiber) {
     		    if (fiber._debugElement) {
     		        var element = fiber._debugElement;
@@ -1714,62 +1717,53 @@
     		};
     		var getHook_v2 = function (fiber) {
     		    var _a;
-    		    var tree = [];
     		    var final = [];
     		    var hookList = fiber.hookList;
-    		    var parseHook = function (hook) {
+    		    var obj = {};
+    		    var processStack = function (hook, index) {
     		        var stack = hook._debugStack;
-    		        if (!stack || !Array.isArray(stack) || stack.length === 0)
-    		            return;
-    		        if (stack.length === 1) {
-    		            tree.push(__assign(__assign({}, stack[0]), { node: parseHookDetail(hook) }));
-    		            return;
+    		        if (!stack || !Array.isArray(stack) || stack.length === 0) {
+    		            final.push({ isHook: true, index: index, name: getHookName(hook.type), value: "hookValue", deep: 0 });
     		        }
-    		        var obj = tree.at(-1);
-    		        for (var i = 0; i < stack.length; i++) {
-    		            var item = stack[i];
-    		            if (i === 0) {
-    		                if (item.id !== (obj === null || obj === void 0 ? void 0 : obj.id)) {
-    		                    var next = __assign(__assign({}, item), { value: [] });
-    		                    tree.push(next);
-    		                    obj = next;
+    		        else {
+    		            var prevKey = "";
+    		            for (var i = 0; i < stack.length; i++) {
+    		                var isHook = i === stack.length - 1;
+    		                var key = prevKey + stack[i].id + stack[i].name;
+    		                var _a = stack[i]; _a.id; var currentStack = __rest(_a, ["id"]);
+    		                var hasInclude = true;
+    		                if (!obj[key]) {
+    		                    if (isHook) {
+    		                        obj[key] = __assign(__assign({}, currentStack), { index: index, isHook: isHook, deep: 0 });
+    		                    }
+    		                    else {
+    		                        obj[key] = __assign(__assign({}, currentStack), { deep: 0 });
+    		                    }
+    		                    hasInclude = false;
     		                }
-    		            }
-    		            else if (i === stack.length - 1) {
-    		                obj["value"] = obj["value"] || [];
-    		                obj["value"].push(__assign(__assign({}, item), { node: parseHookDetail(hook) }));
-    		            }
-    		            else {
-    		                obj["value"] = obj["value"] || [];
-    		                var next = obj["value"].at(-1);
-    		                if ((next === null || next === void 0 ? void 0 : next.id) === item.id) {
-    		                    obj = next;
+    		                var item = obj[key];
+    		                var prevItem = obj[prevKey];
+    		                if (!hasInclude) {
+    		                    if (prevItem) {
+    		                        prevItem.children = prevItem.children || [];
+    		                        prevItem.children.push(item);
+    		                        item.deep = prevItem.deep + 1;
+    		                    }
+    		                    else {
+    		                        final.push(item);
+    		                    }
+    		                    item.name = item.name.substring(3);
     		                }
-    		                else {
-    		                    obj["value"].push(__assign(__assign({}, item), { value: [] }));
-    		                    obj = obj["value"].at(-1);
+    		                if (isHook) {
+    		                    // overwrite name
+    		                    item.name = getHookName(hook.type);
+    		                    item.value = typeof hook.value;
     		                }
+    		                prevKey = key;
     		            }
     		        }
     		    };
-    		    var processChildren = function (item) {
-    		        if (item.value && Array.isArray(item.value) && item.value.length) {
-    		            return { name: getStackName(item.name), isStack: true, children: item.value.map(processChildren) };
-    		        }
-    		        else if (item.node) {
-    		            return item.node;
-    		        }
-    		    };
-    		    var processTree = function (item) {
-    		        if (item.value && Array.isArray(item.value) && item.value.length) {
-    		            final.push({ name: getStackName(item.name), isStack: true, children: item.value.map(processChildren) });
-    		        }
-    		        else if (item.node) {
-    		            final.push(item.node);
-    		        }
-    		    };
-    		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return parseHook(h); });
-    		    tree.forEach(processTree);
+    		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.toArray()) === null || _a === void 0 ? void 0 : _a.forEach(processStack);
     		    return final;
     		};
     		var parseHook = function (plain) {
@@ -2717,7 +2711,6 @@
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
     		exports.getSource = getSource;
-    		exports.getStackName = getStackName;
     		exports.getTree = getTree;
     		exports.getTreeByFiber = getTreeByFiber;
     		exports.getTypeName = getTypeName;

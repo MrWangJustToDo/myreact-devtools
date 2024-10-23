@@ -14,7 +14,7 @@ import type {
   createContext,
   lazy,
 } from "@my-react/react";
-import type { MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
+import type { MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode, MyReactHookNodeDev } from "@my-react/react-reconciler";
 
 const replacer = (key: string, value: any) => {
   if (key === "_owner" || key === "__fiber__" || key === "__props__") {
@@ -260,16 +260,6 @@ export const getContextName = (value: ReturnType<typeof createContext>) => {
   return value.displayName || "Context";
 };
 
-export const getStackName = (value: string) => {
-  if (value.startsWith("use")) {
-    return value.slice(3);
-  }
-  if (value[0] === value[0].toUpperCase()) {
-    return value;
-  }
-  return value[0].toUpperCase() + value.slice(1);
-};
-
 export const getSource = (fiber: MyReactFiberNodeDev) => {
   if (fiber._debugElement) {
     const element = fiber._debugElement as MyReactElement;
@@ -335,68 +325,55 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
 };
 
 export const getHook_v2 = (fiber: MyReactFiberNodeDev) => {
-  const tree: HOOKTree[] = [];
-
-  const final: any[] = [];
+  const final: HOOKTree[] = [];
 
   const hookList = fiber.hookList;
 
-  const parseHook = (hook: MyReactHookNode & { _debugStack: { id: string; name: string }[] }) => {
+  const obj: Record<string, HOOKTree> = {};
+
+  const processStack = (hook: MyReactHookNodeDev, index: number) => {
     const stack = hook._debugStack;
 
-    if (!stack || !Array.isArray(stack) || stack.length === 0) return;
-
-    if (stack.length === 1) {
-      tree.push({ ...stack[0], node: parseHookDetail(hook) });
-      return;
-    }
-
-    let obj = tree.at(-1);
-
-    for (let i = 0; i < stack.length; i++) {
-      const item = stack[i];
-
-      if (i === 0) {
-        if (item.id !== obj?.id) {
-          const next = { ...item, value: [] };
-          tree.push(next);
-          obj = next;
+    if (!stack || !Array.isArray(stack) || stack.length === 0) {
+      final.push({ isHook: true, index, name: getHookName(hook.type), value: "hookValue", deep: 0 });
+    } else {
+      let prevKey: string = "";
+      for (let i = 0; i < stack.length; i++) {
+        const isHook = i === stack.length - 1;
+        const key = prevKey + stack[i].id + stack[i].name;
+        const { id, ...currentStack } = stack[i];
+        let hasInclude = true;
+        if (!obj[key]) {
+          if (isHook) {
+            obj[key] = { ...currentStack, index, isHook, deep: 0 };
+          } else {
+            obj[key] = { ...currentStack, deep: 0 };
+          }
+          hasInclude = false;
         }
-      } else if (i === stack.length - 1) {
-        obj["value"] = obj["value"] || [];
-        obj["value"].push({ ...item, node: parseHookDetail(hook) });
-      } else {
-        obj["value"] = obj["value"] || [];
-        const next = obj["value"].at(-1);
-        if (next?.id === item.id) {
-          obj = next;
-        } else {
-          obj["value"].push({ ...item, value: [] });
-          obj = obj["value"].at(-1);
+        const item = obj[key];
+        const prevItem = obj[prevKey];
+        if (!hasInclude) {
+          if (prevItem) {
+            prevItem.children = prevItem.children || [];
+            prevItem.children.push(item);
+            item.deep = prevItem.deep + 1;
+          } else {
+            final.push(item);
+          }
+          item.name = item.name.substring(3);
         }
+        if (isHook) {
+          // overwrite name
+          item.name = getHookName(hook.type);
+          item.value = typeof hook.value;
+        }
+        prevKey = key;
       }
     }
   };
 
-  const processChildren = (item: HOOKTree) => {
-    if (item.value && Array.isArray(item.value) && item.value.length) {
-      return { name: getStackName(item.name), isStack: true, children: item.value.map(processChildren) };
-    } else if (item.node) {
-      return item.node;
-    }
-  };
-
-  const processTree = (item: HOOKTree) => {
-    if (item.value && Array.isArray(item.value) && item.value.length) {
-      final.push({ name: getStackName(item.name), isStack: true, children: item.value.map(processChildren) });
-    } else if (item.node) {
-      final.push(item.node);
-    }
-  };
-
-  hookList?.listToFoot?.((h) => parseHook(h as MyReactHookNode & { _debugStack: { id: string; name: string }[] }));
-
-  tree.forEach(processTree);
+  hookList?.toArray()?.forEach(processStack);
 
   return final;
 };
