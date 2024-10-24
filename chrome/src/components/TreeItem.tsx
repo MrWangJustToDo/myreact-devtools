@@ -20,7 +20,7 @@ const { setSelect, setClose, setHover } = useTreeNode.getActions();
 const { add, remove } = useActiveNode.getActions();
 
 const RenderTag = memo(({ node }: { node: PlainNode }) => {
-  const tag = getFiberTag(node.type);
+  const tag = getFiberTag(node.t);
 
   if (tag?.length) {
     return (
@@ -40,7 +40,7 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
 RenderTag.displayName = "RenderTag";
 
 const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: boolean }) => {
-  const finalKey = useNodeName(useCallback((s) => s.map?.[node.key!], [node.key]));
+  const finalKey = useNodeName(useCallback((s) => s.map?.[node.k!], [node.k]));
 
   return (
     <div data-key className="flex items-center gap-x-[1px] text-[12px]">
@@ -95,53 +95,53 @@ export const RenderItem = ({
   useLayoutEffect(() => {
     if (!enableCount) {
       return () => {
-        remove(current.id);
+        remove(current.i);
       };
     }
 
-    add(current.id);
+    add(current.i);
 
     return () => {
-      remove(current.id);
+      remove(current.i);
     };
   }, [current, enableCount]);
 
-  const { c, t } = useRunNode.useShallowStableSelector((s) => (enableCount ? s.state?.[node.id] || {} : {}) as { c: number; t?: number });
+  const { c, t } = useRunNode.useShallowStableSelector((s) => (enableCount ? s.state?.[node.i] || {} : {}) as { c: number; t?: number });
 
-  const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.id], [node.id]));
+  const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
-  const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.id], [node.id]));
+  const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
-  const highlightType = useHighlightNode(useCallback((s) => s.state?.[node.id], [node.id]));
+  const highlightType = useHighlightNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
-  const finalName = useNodeName(useCallback((s) => s.map[current.name], [current.name]));
+  const finalName = useNodeName(useCallback((s) => s.map[current.n], [current.n]));
 
   const { select, closeList, selectList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []));
 
-  const currentIsSelect = withSelect && node.id === select;
+  const currentIsSelect = withSelect && node.i === select;
 
-  const currentIsClose = withCollapse && closeList?.[node.id];
+  const currentIsClose = withCollapse && closeList?.[node.i];
 
   const hasSelect = useMemo(
-    () => withSelect && select && !currentIsSelect && selectList?.[node.id],
-    [withSelect, select, currentIsSelect, selectList, node.id]
+    () => withSelect && select && !currentIsSelect && selectList?.[node.i],
+    [withSelect, select, currentIsSelect, selectList, node.i]
   );
 
   // const isNativeNode = current.type & NODE_TYPE.__plain__ || current.type & NODE_TYPE.__text__;
 
-  const hasChild = Array.isArray(current?.children);
+  const hasChild = Array.isArray(current?.c);
 
   const StateIcon = hasChild ? !currentIsClose ? <TriangleDownIcon width={16} height={16} /> : <TriangleRightIcon width={16} height={16} /> : null;
 
   return (
     <div
-      id={"node-" + current.id.toString()}
-      data-depth={current.deep}
+      id={"node-" + current.i.toString()}
+      data-depth={current._d}
       onClick={() => {
-        withSelect && setSelect(node.id);
+        withSelect && setSelect(node.i);
       }}
       onMouseEnter={() => {
-        withSelect && setHover(node.id);
+        withSelect && setHover(node.i);
       }}
       onMouseOut={() => {
         withSelect && setHover("");
@@ -159,8 +159,8 @@ export const RenderItem = ({
         <div
           className="flex-grow"
           style={{
-            width: `calc(100%-calc(${current.deep}*var(--indentation-size)))`,
-            marginLeft: `calc(${current.deep} * var(--indentation-size)`,
+            width: `calc(100%-calc(${current._d}*var(--indentation-size)))`,
+            marginLeft: `calc(${current._d} * var(--indentation-size)`,
           }}
         >
           <div data-content className="flex items-center w-fit">
@@ -169,7 +169,7 @@ export const RenderItem = ({
                 className={" text-gray-400 min-w-[18px]" + (hasChild ? " hover:text-gray-700" : "")}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setClose(node.id);
+                  setClose(node.i);
                 }}
               >
                 {hasChild ? (
@@ -229,7 +229,7 @@ export const RenderItem = ({
                 </Chip>
               </>
             )}
-            {withKey && current.key && (
+            {withKey && current.k && (
               <>
                 <Spacer x={1} />
                 <RenderKey node={current} isScrolling={isScrolling} />

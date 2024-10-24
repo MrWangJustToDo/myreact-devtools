@@ -22,32 +22,45 @@ export type HOOKTree = {
 
 // PlainNode is a simplified version of FiberNode just for show the structure
 export class PlainNode {
-  props: MyReactFiberNode["pendingProps"];
+  p: MyReactFiberNode["pendingProps"];
+  // props: MyReactFiberNode["pendingProps"];
 
-  state: MyReactFiberNode["pendingState"];
+  s: MyReactFiberNode["pendingState"];
+  // state: MyReactFiberNode["pendingState"];
 
-  key: MyReactElement["key"];
+  k: MyReactElement["key"];
+  // key: MyReactElement["key"];
 
-  source: MyReactElement["_source"];
+  n: string;
+  // name: string;
 
-  name: string;
+  c: PlainNode[];
+  // children: PlainNode[];
 
-  children: PlainNode[];
+  d?: number;
+  // deep?: number;
 
-  deep?: number;
+  t: NODE_TYPE
+  // type: NODE_TYPE;
 
-  type: NODE_TYPE;
+  i: string;
+  // id: string;
 
-  id: string;
+  _t: string[];
+  // tree: string[];
 
-  tree: string[];
+  _s: MyReactElement["_source"];
+  // source: MyReactElement["_source"];
+
+  _d?: number;
+  // deep?: number;
 
   hook: HOOK[];
 
   hook_v2: HOOKTree[];
 
   constructor(_id?: string) {
-    this.id = _id || `${id++}`;
+    this.i = _id || `${id++}`;
   }
 }
 

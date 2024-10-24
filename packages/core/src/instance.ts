@@ -16,7 +16,9 @@ export enum DevToolMessageEnum {
   init = "init",
   dir = "dir",
   config = "config",
+  // tree ready
   ready = "ready",
+  // tree update
   update = "update",
   changed = "changed",
   highlight = "highlight",
@@ -407,6 +409,7 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.highlight, data: { id, type } });
   }
 
+  // TODO
   notifyChanged(list: ListTree<MyReactFiberNode>) {
     if (!this.hasEnable) return;
 

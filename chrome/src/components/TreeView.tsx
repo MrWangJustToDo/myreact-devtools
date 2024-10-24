@@ -66,7 +66,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     );
   });
 
-  const index = useMemo(() => data.findIndex((item) => item.id === select), [data, select]);
+  const index = useMemo(() => data.findIndex((item) => item.i === select), [data, select]);
 
   useEffect(() => {
     if (index !== -1) {

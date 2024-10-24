@@ -1212,7 +1212,7 @@
     		// PlainNode is a simplified version of FiberNode just for show the structure
     		var PlainNode = /** @class */ (function () {
     		    function PlainNode(_id) {
-    		        this.id = _id || "".concat(id++);
+    		        this.i = _id || "".concat(id++);
     		    }
     		    return PlainNode;
     		}());
@@ -1263,19 +1263,19 @@
     		    if (!directory[name]) {
     		        directory[name] = ++count + "";
     		    }
-    		    plain.key = hasKey ? directory[fiber.key] : undefined;
-    		    plain.type = fiber.type;
-    		    plain.name = directory[name];
+    		    plain.k = hasKey ? directory[fiber.key] : undefined;
+    		    plain.t = fiber.type;
+    		    plain.n = directory[name];
     		};
     		var assignFiber = function (plain, fiber) {
     		    shallowAssignFiber(plain, fiber);
-    		    plain.source = getSource(fiber);
     		    plain.hook = getHook(fiber);
     		    plain.hook_v2 = getHook_v2(fiber);
-    		    plain.props = getObj(fiber.pendingProps);
-    		    plain.tree = getTree(fiber);
+    		    plain.p = getObj(fiber.pendingProps);
+    		    plain._s = getSource(fiber);
+    		    plain._t = getTree(fiber);
     		    if (fiber.type & NODE_TYPE.__class__) {
-    		        plain.state = getObj(fiber.pendingState);
+    		        plain.s = getObj(fiber.pendingState);
     		    }
     		};
     		// TODO improve performance
@@ -1284,20 +1284,20 @@
     		        return null;
     		    var exist = treeMap.get(fiber);
     		    var current = exist || new PlainNode();
-    		    current.children = null;
+    		    current.c = null;
     		    if (parent) {
-    		        parent.children = parent.children || [];
-    		        parent.children.push(current);
-    		        current.deep = parent.deep + 1;
+    		        parent.c = parent.c || [];
+    		        parent.c.push(current);
+    		        current._d = parent._d + 1;
     		    }
     		    else {
-    		        current.deep = 0;
+    		        current._d = 0;
     		    }
     		    shallowAssignFiber(current, fiber);
     		    if (!exist) {
     		        treeMap.set(fiber, current);
-    		        fiberStore.set(current.id, fiber);
-    		        plainStore.set(current.id, current);
+    		        fiberStore.set(current.i, fiber);
+    		        plainStore.set(current.i, current);
     		    }
     		    if (fiber.child) {
     		        loopTree(fiber.child, current);
@@ -1316,17 +1316,17 @@
     		    if (!exist && !parent)
     		        return null;
     		    var current = exist || new PlainNode();
-    		    current.children = null;
+    		    current.c = null;
     		    if (parent) {
-    		        parent.children = parent.children || [];
-    		        parent.children.push(current);
-    		        current.deep = parent.deep + 1;
+    		        parent.c = parent.c || [];
+    		        parent.c.push(current);
+    		        current._d = parent._d + 1;
     		    }
     		    shallowAssignFiber(current, fiber);
     		    if (!exist) {
     		        treeMap.set(fiber, current);
-    		        fiberStore.set(current.id, fiber);
-    		        plainStore.set(current.id, current);
+    		        fiberStore.set(current.i, fiber);
+    		        plainStore.set(current.i, current);
     		    }
     		    if (fiber.child) {
     		        loopChangedTree(fiber.child, set, current);
@@ -1344,8 +1344,8 @@
     		var unmountPlainNode = function (fiber) {
     		    var plain = treeMap.get(fiber);
     		    if (plain) {
-    		        fiberStore.delete(plain.id);
-    		        plainStore.delete(plain.id);
+    		        fiberStore.delete(plain.i);
+    		        plainStore.delete(plain.i);
     		    }
     		    treeMap.delete(fiber);
     		    detailMap.delete(fiber);
@@ -1355,7 +1355,7 @@
     		};
     		var getPlainNodeIdByFiber = function (fiber) {
     		    var node = getPlainNodeByFiber(fiber);
-    		    return node === null || node === void 0 ? void 0 : node.id;
+    		    return node === null || node === void 0 ? void 0 : node.i;
     		};
     		var getTreeByFiber = function (fiber) {
     		    if (!fiber)
@@ -1368,7 +1368,7 @@
     		    }
     		};
     		var getPlainNodeArrayByList = function (list) {
-    		    var hasViewList = new Set();
+    		    var hasViewList = new WeakSet();
     		    var result = [];
     		    list.listToFoot(function (fiber) {
     		        if (hasViewList.has(fiber))
@@ -1392,7 +1392,7 @@
     		        return exist;
     		    }
     		    else {
-    		        var created = new PlainNode(plainNode.id);
+    		        var created = new PlainNode(plainNode.i);
     		        assignFiber(created, fiber);
     		        detailMap.set(fiber, created);
     		        return created;
@@ -1403,11 +1403,11 @@
     		};
     		var parseDetailNode = function (plain) {
     		    plain.hook = parseHook(plain);
-    		    plain.props = parseProps(plain);
-    		    if (plain.state) {
+    		    plain.p = parseProps(plain);
+    		    if (plain.s) {
     		        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     		        // @ts-ignore
-    		        plain.state = parseState(plain);
+    		        plain.s = parseState(plain);
     		    }
     		    return plain;
     		};
@@ -1674,7 +1674,7 @@
     		    var parent = fiber === null || fiber === void 0 ? void 0 : fiber.parent;
     		    while (parent) {
     		        var plain = getPlainNodeByFiber(parent);
-    		        var id = plain.id;
+    		        var id = plain.i;
     		        tree.push(id);
     		        if (!parent.parent) {
     		            // next version
@@ -1770,11 +1770,11 @@
     		    return safeStringify(obj);
     		};
     		var parseProps = function (plain) {
-    		    var obj = plain.props;
+    		    var obj = plain.p;
     		    return safeParse(obj);
     		};
     		var parseState = function (plain) {
-    		    var state = plain.state;
+    		    var state = plain.s;
     		    return safeParse(state);
     		};
     		var getElementNodesFromFiber = function (fiber) {
@@ -2280,7 +2280,9 @@
     		    DevToolMessageEnum["init"] = "init";
     		    DevToolMessageEnum["dir"] = "dir";
     		    DevToolMessageEnum["config"] = "config";
+    		    // tree ready
     		    DevToolMessageEnum["ready"] = "ready";
+    		    // tree update
     		    DevToolMessageEnum["update"] = "update";
     		    DevToolMessageEnum["changed"] = "changed";
     		    DevToolMessageEnum["highlight"] = "highlight";

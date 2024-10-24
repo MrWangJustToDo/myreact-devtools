@@ -17,14 +17,14 @@ export const useTreeNode = createState(
   {
     withActions: (s) => {
       const updateSelectList = debounce(() => {
-        const plainNode = useAppTree.getReadonlyState().list.find((i) => i.id === s.select) as PlainNode;
+        const plainNode = useAppTree.getReadonlyState().list.find((i) => i.i === s.select) as PlainNode;
         if (!plainNode) return;
         s.selectList = flattenNode(
           plainNode,
           () => false,
           () => false
         ).reduce<Record<string, boolean>>((p, c) => {
-          p[c.id] = true;
+          p[c.i] = true;
           return p;
         }, {});
       }, 16);

@@ -18,9 +18,9 @@ export const StateView = () => {
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select);
+  const currentSelectDetail = nodeList.find((i) => i.i === select);
 
-  const stateKeys = Object.keys(currentSelectDetail?.state || {});
+  const stateKeys = Object.keys(currentSelectDetail?.s || {});
 
   const hasStates = stateKeys.length > 0;
 
@@ -31,7 +31,7 @@ export const StateView = () => {
     return (
       <div className={`${sizeClass} ml-2 font-mono tree-wrapper`} key={index}>
         <JSONTree
-          data={currentSelectDetail?.state?.[key]}
+          data={currentSelectDetail?.s?.[key]}
           theme={{
             extend: theme,
             arrowContainer: ({ style }, arrowStyle) => ({ style: { ...style, width: "1.125em", paddingRight: arrowStyle === "double" ? "1em" : "0.5em" } }),

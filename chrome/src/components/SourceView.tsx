@@ -11,9 +11,9 @@ export const SourceView = () => {
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select);
+  const currentSelectDetail = nodeList.find((i) => i.i === select);
 
-  const renderSource = currentSelectDetail?.["source"];
+  const renderSource = currentSelectDetail?.["_s"];
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 

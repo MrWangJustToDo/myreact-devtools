@@ -4,7 +4,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 
 import { HookView } from "./HookView";
-import { HookView_v2 } from "./HookView_v2";
+// import { HookView_v2 } from "./HookView_v2";
 import { NameView } from "./NameView";
 import { PropsView } from "./PropsView";
 import { RenderView } from "./RenderView";
@@ -16,7 +16,7 @@ export const NodeView = () => {
 
   const { nodeList, loading } = useDetailNode((s) => ({ nodeList: s.nodes, loading: s.loading }));
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select);
+  const currentSelectDetail = nodeList.find((i) => i.i === select);
 
   const isLoading = !currentSelectDetail && loading;
 
@@ -35,7 +35,7 @@ export const NodeView = () => {
         <PropsView />
         <StateView />
         <HookView />
-        <HookView_v2 />
+        {/* <HookView_v2 /> */}
         <RenderView />
         <SourceView />
       </div>

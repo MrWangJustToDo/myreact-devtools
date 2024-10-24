@@ -30,28 +30,28 @@ export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) =>
     directory[name] = ++count + "";
   }
 
-  plain.key = hasKey ? directory[fiber.key] : undefined;
+  plain.k = hasKey ? directory[fiber.key] : undefined;
 
-  plain.type = fiber.type;
+  plain.t = fiber.type;
 
-  plain.name = directory[name];
+  plain.n = directory[name];
 };
 
 export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   shallowAssignFiber(plain, fiber);
 
-  plain.source = getSource(fiber as MyReactFiberNodeDev);
-
   plain.hook = getHook(fiber as MyReactFiberNodeDev);
 
   plain.hook_v2 = getHook_v2(fiber as MyReactFiberNodeDev);
 
-  plain.props = getObj(fiber.pendingProps);
+  plain.p = getObj(fiber.pendingProps);
 
-  plain.tree = getTree(fiber as MyReactFiberNodeDev);
+  plain._s = getSource(fiber as MyReactFiberNodeDev);
+
+  plain._t = getTree(fiber as MyReactFiberNodeDev);
 
   if (fiber.type & NODE_TYPE.__class__) {
-    plain.state = getObj(fiber.pendingState);
+    plain.s = getObj(fiber.pendingState);
   }
 };
 
@@ -63,16 +63,16 @@ export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): { current
 
   const current = exist || new PlainNode();
 
-  current.children = null;
+  current.c = null;
 
   if (parent) {
-    parent.children = parent.children || [];
+    parent.c = parent.c || [];
 
-    parent.children.push(current);
+    parent.c.push(current);
 
-    current.deep = parent.deep! + 1;
+    current._d = parent._d! + 1;
   } else {
-    current.deep = 0;
+    current._d = 0;
   }
 
   shallowAssignFiber(current, fiber);
@@ -80,9 +80,9 @@ export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): { current
   if (!exist) {
     treeMap.set(fiber, current);
 
-    fiberStore.set(current.id, fiber);
+    fiberStore.set(current.i, fiber);
 
-    plainStore.set(current.id, current);
+    plainStore.set(current.i, current);
   }
 
   if (fiber.child) {
@@ -98,7 +98,7 @@ export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): { current
 
 export const loopChangedTree = (
   fiber: MyReactFiberNode,
-  set: Set<MyReactFiberNode>,
+  set: WeakSet<MyReactFiberNode>,
   parent?: PlainNode
 ): { current: PlainNode; directory: Record<string, string> } | null => {
   if (!fiber) return null;
@@ -112,14 +112,14 @@ export const loopChangedTree = (
 
   const current = exist || new PlainNode();
 
-  current.children = null;
+  current.c = null;
 
   if (parent) {
-    parent.children = parent.children || [];
+    parent.c = parent.c || [];
 
-    parent.children.push(current);
+    parent.c.push(current);
 
-    current.deep = parent.deep! + 1;
+    current._d = parent._d! + 1;
   }
 
   shallowAssignFiber(current, fiber);
@@ -128,9 +128,9 @@ export const loopChangedTree = (
 
     treeMap.set(fiber, current);
 
-    fiberStore.set(current.id, fiber);
+    fiberStore.set(current.i, fiber);
 
-    plainStore.set(current.id, current);
+    plainStore.set(current.i, current);
   }
 
   if (fiber.child) {
@@ -158,9 +158,9 @@ export const unmountPlainNode = (fiber: MyReactFiberNode) => {
   const plain = treeMap.get(fiber);
 
   if (plain) {
-    fiberStore.delete(plain.id);
+    fiberStore.delete(plain.i);
 
-    plainStore.delete(plain.id);
+    plainStore.delete(plain.i);
   }
 
   treeMap.delete(fiber);
@@ -174,7 +174,7 @@ export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
 
 export const getPlainNodeIdByFiber = (fiber: MyReactFiberNode) => {
   const node = getPlainNodeByFiber(fiber);
-  return node?.id;
+  return node?.i;
 };
 
 export const getTreeByFiber = (fiber: MyReactFiberNode): null | PlainNode => {
@@ -187,7 +187,7 @@ export const getTreeByFiber = (fiber: MyReactFiberNode): null | PlainNode => {
 }
 
 export const getPlainNodeArrayByList = (list: ListTree<MyReactFiberNode>) => {
-  const hasViewList = new Set<MyReactFiberNode>();
+  const hasViewList = new WeakSet<MyReactFiberNode>();
 
   const result: PlainNode[] = [];
 
@@ -220,7 +220,7 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
 
     return exist;
   } else {
-    const created = new PlainNode(plainNode.id);
+    const created = new PlainNode(plainNode.i);
 
     assignFiber(created, fiber);
 
@@ -237,12 +237,12 @@ export const getFiberNodeById = (id: string) => {
 export const parseDetailNode = (plain: PlainNode) => {
   plain.hook = parseHook(plain);
 
-  plain.props = parseProps(plain);
+  plain.p = parseProps(plain);
 
-  if (plain.state) {
+  if (plain.s) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    plain.state = parseState(plain);
+    plain.s = parseState(plain);
   }
 
   return plain;

@@ -19,9 +19,9 @@ export const PropsView = () => {
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select);
+  const currentSelectDetail = nodeList.find((i) => i.i === select);
 
-  const propsKeys = Object.keys(currentSelectDetail?.props || {});
+  const propsKeys = Object.keys(currentSelectDetail?.p || {});
 
   const hasProps = propsKeys.length > 0;
 
@@ -32,7 +32,7 @@ export const PropsView = () => {
     return (
       <div className={`${sizeClass} ml-2 font-mono tree-wrapper`} key={index}>
         <JSONTree
-          data={currentSelectDetail?.props?.[key]}
+          data={currentSelectDetail?.p?.[key]}
           theme={{
             extend: theme,
             arrowContainer: ({ style }, arrowStyle) => ({ style: { ...style, width: "1.125em", paddingRight: arrowStyle === "double" ? "1em" : "0.5em" } }),

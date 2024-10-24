@@ -9,6 +9,7 @@ import { useTreeNode } from "./useTreeNode";
 
 type AppTreeType = { nodes: Tree[]; list: PlainNode[] };
 
+// TODO
 export const useAppTree = createState(
   () => {
     return { nodes: [], list: [] } as AppTreeType;
@@ -21,16 +22,16 @@ export const useAppTree = createState(
           const closeList = useTreeNode.getReadonlyState().closeList;
           const filterSet = useFilterNode.getReadonlyState().filter;
           const filterArray = Array.from(filterSet);
-          const exist = state.nodes.find((n) => n.id === node.id);
+          const exist = state.nodes.find((n) => n.i === node.i);
           // TODO! improve
           if (exist) {
-            state.nodes = state.nodes.map((n) => (n.id === node.id ? node : n));
+            state.nodes = state.nodes.map((n) => (n.i === node.i ? node : n));
             state.list = state.nodes
               .map((n) =>
                 flattenNode(
                   n,
-                  (node) => closeList?.[node.id],
-                  (node) => filterArray.some((i) => +i & node.type)
+                  (node) => closeList?.[node.i],
+                  (node) => filterArray.some((i) => +i & node.t)
                 )
               )
               .flat(1);
@@ -41,8 +42,8 @@ export const useAppTree = createState(
               ...state.list,
               ...flattenNode(
                 node,
-                (node) => closeList?.[node.id],
-                (node) => filterArray.some((i) => +i & node.type)
+                (node) => closeList?.[node.i],
+                (node) => filterArray.some((i) => +i & node.t)
               ),
             ];
             useTreeNode.getActions().updateSelectList();
@@ -56,8 +57,8 @@ export const useAppTree = createState(
             .map((n) =>
               flattenNode(
                 n,
-                (node) => closeList?.[node.id],
-                (node) => filterArray.some((i) => +i & node.type)
+                (node) => closeList?.[node.i],
+                (node) => filterArray.some((i) => +i & node.t)
               )
             )
             .flat(1);

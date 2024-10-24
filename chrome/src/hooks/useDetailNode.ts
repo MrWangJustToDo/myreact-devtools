@@ -7,7 +7,7 @@ import type { PlainNode } from "@my-react-devtool/core";
 export const useDetailNode = createState(() => ({ nodes: [], loading: false, error: null }) as { nodes: PlainNode[]; loading: boolean; error: Error | null }, {
   withActions: (s) => ({
     addNode: (node: PlainNode) => {
-      const list = s.nodes.filter((i) => i.id !== node.id);
+      const list = s.nodes.filter((i) => i.i !== node.i);
 
       list.push(node);
 

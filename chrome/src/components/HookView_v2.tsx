@@ -48,7 +48,7 @@ export const HookView_v2 = () => {
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select);
+  const currentSelectDetail = nodeList.find((i) => i.i === select);
 
   const hookList = currentSelectDetail?.hook_v2 || [];
 

@@ -15,7 +15,7 @@ export const NameView = () => {
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select) as PlainNode;
+  const currentSelectDetail = nodeList.find((i) => i.i === select) as PlainNode;
 
   const sizeClass = size === "sm" ? "text-[15px]" : size === "md" ? "text-[16px]" : "text-[17px]";
 

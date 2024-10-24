@@ -23,9 +23,9 @@ export const RenderView = () => {
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
-  const currentSelectDetail = nodeList.find((i) => i.id === select);
+  const currentSelectDetail = nodeList.find((i) => i.i === select);
 
-  let renderTree = currentSelectDetail?.["tree"];
+  let renderTree = currentSelectDetail?.["_t"];
 
   // const [isScrolling, setIsScrolling] = useState(false);
 
@@ -43,7 +43,7 @@ export const RenderView = () => {
     last = undefined;
   }
 
-  const renderTreeNode = useMemo(() => renderTree?.map((item) => allTreeNode.find((i) => i.id === item)), [allTreeNode, renderTree]) as PlainNode[];
+  const renderTreeNode = useMemo(() => renderTree?.map((item) => allTreeNode.find((i) => i.i === item)), [allTreeNode, renderTree]) as PlainNode[];
 
   const data = useMemo(() => renderTreeNode?.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, renderTreeNode]);
 
@@ -53,7 +53,7 @@ export const RenderView = () => {
     if (!node) return null;
 
     return (
-      <div className={`${sizeClass} ml-2 font-mono`} key={node.id}>
+      <div className={`${sizeClass} ml-2 font-mono`} key={node.i}>
         <RenderItem node={node} withCollapse={false} />
       </div>
     );

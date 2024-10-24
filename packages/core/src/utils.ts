@@ -276,7 +276,7 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
   while (parent) {
     const plain = getPlainNodeByFiber(parent);
 
-    const id = plain.id;
+    const id = plain.i;
 
     tree.push(id);
 
@@ -391,13 +391,13 @@ export const getObj = (obj: any) => {
 };
 
 export const parseProps = (plain: PlainNode) => {
-  const obj = plain.props;
+  const obj = plain.p;
 
   return safeParse(obj);
 };
 
 export const parseState = (plain: PlainNode) => {
-  const state = plain.state as any;
+  const state = plain.s as any;
 
   return safeParse(state);
 };

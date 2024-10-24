@@ -28,7 +28,7 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
 
   const itemIndex = indexArray[index];
 
-  const id = nodeList[itemIndex]?.id;
+  const id = nodeList[itemIndex]?.i;
 
   const onSearch = (e?: FormEvent) => {
     e?.preventDefault();
@@ -36,7 +36,7 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
     if (v) {
       setIndex(0);
 
-      const _list = list.map((i) => ({ ...i, _name: map[i.name] }));
+      const _list = list.map((i) => ({ ...i, _name: map[i.n] }));
 
       const _indexArray = _list.map((i, index) => (i._name.includes(v) ? index : -1)).filter((i) => i !== -1);
 
