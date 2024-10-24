@@ -59,7 +59,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               {state ? <CheckCircledIcon className="text-green-500" /> : <CrossCircledIcon className=" text-red-500" />}
             </Button>
           </Tooltip>
-          <Tooltip content="Setting" showArrow>
+          <Tooltip content="Setting" showArrow color="foreground">
             <Button isIconOnly onClick={onOpen}>
               <GearIcon className=" text-gray-500" />
             </Button>

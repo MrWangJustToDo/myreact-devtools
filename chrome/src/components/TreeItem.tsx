@@ -1,4 +1,4 @@
-import { NODE_TYPE } from "@my-react/react-reconciler";
+// import { NODE_TYPE } from "@my-react/react-reconciler";
 import { getFiberTag } from "@my-react-devtool/core";
 import { Chip, Spacer, Tooltip } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
@@ -51,7 +51,7 @@ const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: 
         {isScrolling ? (
           <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
         ) : (
-          <Tooltip content={finalKey} delay={800} showArrow>
+          <Tooltip content={finalKey} delay={800} showArrow color="foreground">
             <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
           </Tooltip>
         )}
@@ -127,7 +127,7 @@ export const RenderItem = ({
     [withSelect, select, currentIsSelect, selectList, node.id]
   );
 
-  const isNativeNode = current.type & NODE_TYPE.__plain__ || current.type & NODE_TYPE.__text__;
+  // const isNativeNode = current.type & NODE_TYPE.__plain__ || current.type & NODE_TYPE.__text__;
 
   const hasChild = Array.isArray(current?.children);
 
@@ -147,11 +147,11 @@ export const RenderItem = ({
         withSelect && setHover("");
       }}
       className={
-        "w-full h-full whitespace-nowrap cursor-pointer rounded-sm select-none transition-background " +
+        "w-full h-full node-item cursor-pointer rounded-sm select-none transition-background " +
         (className || "") +
-        `${withSelect ? " hover:bg-blue-50" : ""}` +
-        `${hasSelect ? " bg-blue-50" : ""}` +
-        `${currentIsSelect ? " !bg-blue-200" : ""}`
+        `${withSelect ? " node-item-hover" : ""}` +
+        `${hasSelect ? " node-item-select" : ""}` +
+        `${currentIsSelect ? " node-item-selected" : ""}`
       }
     >
       <div className="flex items-center h-full w-full px-[2px] relative">
@@ -174,7 +174,7 @@ export const RenderItem = ({
               >
                 {hasChild ? (
                   !isScrolling ? (
-                    <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow>
+                    <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow color="foreground">
                       {StateIcon}
                     </Tooltip>
                   ) : (
@@ -183,7 +183,7 @@ export const RenderItem = ({
                 ) : null}
               </span>
             )}
-            <p className={isNativeNode ? " text-[#f15950]" : "text-[#427af5]"}>{finalName}</p>
+            <p className="node-name line-clamp-1">{finalName}</p>
             {withTag && (
               <>
                 <Spacer x={1} />
@@ -193,7 +193,7 @@ export const RenderItem = ({
             {withTrigger && triggerCount > 0 && (
               <>
                 <Spacer x={1} />
-                <Tooltip content="trigger update" showArrow>
+                <Tooltip content="trigger update" showArrow color="primary">
                   <Chip size="sm" radius="none" color="primary" className="rounded-md capitalize text-[8px] h-[14px]">
                     {triggerCount}
                   </Chip>
@@ -203,7 +203,7 @@ export const RenderItem = ({
             {enableCount && c && c > 0 && (
               <>
                 <Spacer x={1} />
-                <Tooltip content="run count" showArrow>
+                <Tooltip content="run count" showArrow color="secondary">
                   <Chip size="sm" radius="none" color="secondary" className="rounded-md capitalize text-[8px] h-[14px]">
                     {c}
                     {enableMis && t ? ` (${t}ms)` : ""}
@@ -214,7 +214,7 @@ export const RenderItem = ({
             {withHMR && hmrCount > 0 && (
               <>
                 <Spacer x={1} />
-                <Tooltip content="hmr update" showArrow>
+                <Tooltip content="hmr update" showArrow color="success">
                   <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
                     {hmrCount}
                   </Chip>

@@ -11,6 +11,7 @@ import { useWebDev } from "@/hooks/useWebDev";
 import type { AppProps } from "next/app";
 
 import "@/styles/globals.css";
+import "allotment/dist/style.css";
 
 const roboto = JetBrains_Mono({
   weight: "400",

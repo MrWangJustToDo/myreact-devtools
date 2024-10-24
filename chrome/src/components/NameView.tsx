@@ -21,7 +21,7 @@ export const NameView = () => {
 
   if (currentSelectDetail) {
     return (
-      <div className={`p-2 ${sizeClass} whitespace-nowrap text-ellipsis overflow-hidden sticky top-0 bg-content1 z-50`}>
+      <div className={`p-2 ${sizeClass} sticky top-0 bg-content1 z-50`}>
         <RenderItem node={currentSelectDetail} withCollapse={false} withSelect={false} withKey={false} />
         <Divider />
       </div>

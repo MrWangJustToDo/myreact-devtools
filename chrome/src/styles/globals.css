@@ -16,3 +16,35 @@ svg {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
+
+.node-item-hover:hover {
+  @apply bg-blue-50;
+}
+
+.node-item-select {
+  @apply bg-blue-50;
+}
+
+.node-item-selected {
+  @apply !bg-blue-200;
+}
+
+.dark .node-item-hover:hover {
+  @apply bg-neutral-800;
+}
+
+.dark .node-item-select {
+  @apply bg-neutral-800;
+}
+
+.dark .node-item-selected {
+  @apply !bg-gray-800;
+}
+
+.node-name {
+  @apply text-blue-500
+}
+
+.dark .node-name {
+  @apply text-cyan-700;
+}

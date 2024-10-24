@@ -1,4 +1,3 @@
-import { Card, CardBody } from "@nextui-org/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
@@ -128,15 +127,11 @@ export const TreeView = memo(() => {
   }, [width, height, nodes.length, onScroll]);
 
   return (
-    <div className="h-full px-1 py-0.5">
-      <Card className="tree-view h-full" shadow="sm" radius="md">
-        <CardBody data-container className="group h-full">
-          <div className="group h-full transform-gpu" ref={ref}>
-            <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />
-            <TreeViewSetting handle={r} />
-          </div>
-        </CardBody>
-      </Card>
+    <div className="tree-view h-full px-1 py-0.5">
+      <div className="group h-full transform-gpu" ref={ref}>
+        <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />
+        <TreeViewSetting handle={r} />
+      </div>
     </div>
   );
 });

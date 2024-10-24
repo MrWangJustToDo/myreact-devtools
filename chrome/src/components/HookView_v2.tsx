@@ -1,4 +1,4 @@
-import { Divider, Spacer } from "@nextui-org/react";
+import { Chip, Divider, Spacer } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
@@ -18,25 +18,24 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
   if (!currentIsExpand) {
     return (
       <div className="text-[#427af5] flex items-center" style={{ paddingLeft: `${item.deep * 18}px` }}>
-        <span className="rounded-sm w-[var(--index-width)] border border-solid">{item.index}</span> {item.name}: {item.value as string}
+        <Chip size="sm" className="rounded-sm mr-1 w-[var(--index-width)] h-[calc(var(--index-width)*2)] leading-none p-1">
+          {item.index}
+        </Chip>
+        {item.name}: {item.value as string}
       </div>
     );
   } else {
     return (
       <>
-        <div className="flex text-[#427af5]" style={{ paddingLeft: `${item.deep * 18}px`, marginLeft: "-6px" }}>
-          <span
-            className={"text-gray-400 min-w-[18px] hover:text-gray-700"}
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpand(!expand);
-            }}
-          >
-            {StateIcon}
-          </span>
-          {item.name}: {item.children?.length}
+        <div className="flex w-full text-[#427bf5b8]" style={{ paddingLeft: `${item.deep * 18}px`, marginLeft: "-6px" }}>
+          <div className="flex w-full">
+            <span className={"text-gray-400 w-[18px] hover:text-gray-700"} onClick={() => setExpand(!expand)}>
+              {StateIcon}
+            </span>
+            <div className="max-w-full line-clamp-1">{item.name}:</div>
+          </div>
         </div>
-        {expand && item.children?.map((i) => <HookViewTree key={i.name} item={i} />)}
+        <div className={expand ? "block" : "hidden"}>{item.children?.map((i) => <HookViewTree key={i.name} item={i} />)}</div>
       </>
     );
   }
