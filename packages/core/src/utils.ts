@@ -1,6 +1,7 @@
 import { HOOK_TYPE } from "@my-react/react-shared";
 import * as Jsan from "jsan";
 
+import { getNode } from "./data";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
@@ -335,19 +336,27 @@ export const getHook_v2 = (fiber: MyReactFiberNodeDev) => {
     const stack = hook._debugStack;
 
     if (!stack || !Array.isArray(stack) || stack.length === 0) {
-      final.push({ isHook: true, index, name: getHookName(hook.type), value: "hookValue", deep: 0 });
+      const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
+      const isContext = hook.type === HOOK_TYPE.useContext;
+      final.push({
+        h: true,
+        i: index,
+        n: isContext ? getContextName(hook.value) : getHookName(hook.type),
+        v: getNode(isEffect ? hook.value : hook.result, 0),
+        d: 0,
+      });
     } else {
       let prevKey: string = "";
       for (let i = 0; i < stack.length; i++) {
         const isHook = i === stack.length - 1;
-        const key = prevKey + stack[i].id + stack[i].name;
-        const { id, ...currentStack } = stack[i];
+        const key = prevKey + stack[i].id + stack[i].name + (isHook ? `-${index}` : "");
+        const { name } = stack[i];
         let hasInclude = true;
         if (!obj[key]) {
           if (isHook) {
-            obj[key] = { ...currentStack, index, isHook, deep: 0 };
+            obj[key] = { n: name, i: index, h: true, d: 0 };
           } else {
-            obj[key] = { ...currentStack, deep: 0 };
+            obj[key] = { n: name, d: 0 };
           }
           hasInclude = false;
         }
@@ -355,18 +364,20 @@ export const getHook_v2 = (fiber: MyReactFiberNodeDev) => {
         const prevItem = obj[prevKey];
         if (!hasInclude) {
           if (prevItem) {
-            prevItem.children = prevItem.children || [];
-            prevItem.children.push(item);
-            item.deep = prevItem.deep + 1;
+            prevItem.c = prevItem.c || [];
+            prevItem.c.push(item);
+            item.d = prevItem.d + 1;
           } else {
             final.push(item);
           }
-          item.name = item.name.substring(3);
+          item.n = item.n.substring(3);
         }
         if (isHook) {
+          const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
+          const isContext = hook.type === HOOK_TYPE.useContext;
           // overwrite name
-          item.name = getHookName(hook.type);
-          item.value = typeof hook.value;
+          item.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
+          item.v = getNode(isEffect ? hook.value : hook.result, item.d);
         }
         prevKey = key;
       }

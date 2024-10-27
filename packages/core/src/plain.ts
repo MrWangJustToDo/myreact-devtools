@@ -1,3 +1,4 @@
+import type { NodeValue } from "./data";
 import type { MyReactElement } from "@my-react/react";
 import type { MyReactFiberNode, NODE_TYPE } from "@my-react/react-reconciler";
 
@@ -10,14 +11,19 @@ export type HOOK = {
 };
 
 export type HOOKTree = {
-  index?: number;
-  isHook?: boolean;
-  deep: number;
-  path?: string;
-  name: string;
-  value?: unknown;
+  // index
+  i?: number;
+  // isHook
+  h?: boolean;
+  // deep
+  d: number;
+  // name
+  n: string;
+  // value
+  v?: NodeValue;
   // used for stack
-  children?: HOOKTree[];
+  // children
+  c?: HOOKTree[];
 };
 
 // PlainNode is a simplified version of FiberNode just for show the structure
@@ -57,7 +63,7 @@ export class PlainNode {
 
   hook: HOOK[];
 
-  hook_v2: HOOKTree[];
+  _h: HOOKTree[];
 
   constructor(_id?: string) {
     this.i = _id || `${id++}`;

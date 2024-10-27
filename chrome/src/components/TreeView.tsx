@@ -127,7 +127,7 @@ export const TreeView = memo(() => {
   }, [width, height, nodes.length, onScroll]);
 
   return (
-    <div className="tree-view h-full px-1 py-0.5">
+    <div className="tree-view h-full p-1">
       <div className="group h-full transform-gpu" ref={ref}>
         <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />
         <TreeViewSetting handle={r} />

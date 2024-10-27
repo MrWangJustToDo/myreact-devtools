@@ -25,14 +25,14 @@ function getShortTypeString(val: any) {
   }
 }
 
-export function getText(type: string, data: any) {
+export function getText(type: string, data: any, mode = "old") {
   if (type === "Object") {
     // eslint-disable-next-line @typescript-eslint/ban-types
     const keys = Object.keys(data as {});
 
     const str = keys
       .slice(0, 3)
-      .map((key) => `${key}: ${getShortTypeString(data[key]) as string}`)
+      .map((key) => `${key}: ${getShortTypeString(mode === "old" ? data[key] : data[key].v) as string}`)
       .concat(keys.length > 3 ? ["…"] : [])
       .join(", ");
 
@@ -40,7 +40,7 @@ export function getText(type: string, data: any) {
   } else if (type === "Array") {
     const str = data
       .slice(0, 4)
-      .map((val: any) => getShortTypeString(val))
+      .map((val: any) => getShortTypeString(mode === "old" ? val : val.v))
       .concat(data.length > 4 ? ["…"] : [])
       .join(", ");
 

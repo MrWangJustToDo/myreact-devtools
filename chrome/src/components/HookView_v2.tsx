@@ -1,41 +1,154 @@
 import { Chip, Divider, Spacer } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
+import { getText } from "@/utils/treeValue";
 
 import type { HOOKTree } from "@my-react-devtool/core";
+import type { ReactNode } from "react";
 
 const HookViewTree = ({ item }: { item: HOOKTree }) => {
   const [expand, setExpand] = useState(false);
 
-  const currentIsExpand = !item.isHook;
+  const currentIsExpand = item.h;
+
+  const StateIcon = expand ? <TriangleDownIcon width="16" height="16" /> : <TriangleRightIcon width="16" height="16" />;
+
+  if (currentIsExpand) {
+    return (
+      <ValueViewTree
+        name={item.n}
+        item={item.v}
+        prefix={
+          <Chip
+            classNames={{ content: "p-0" }}
+            size="sm"
+            className="rounded-sm text-center mr-1 flex-shrink-0 !w-[calc(var(--index-width)*1)] !h-[calc(var(--index-width)*1)] !p-0 !max-w-[initial] !min-w-[initial]"
+          >
+            {item.i}
+          </Chip>
+        }
+      />
+    );
+  } else {
+    return (
+      <>
+        <div className="text-[#427bf5b8]">
+          <div className="flex w-full my-0.5">
+            <span className={"text-gray-400 hover:text-gray-700"} onClick={() => setExpand(!expand)}>
+              {StateIcon}
+            </span>
+            <div className="max-w-full line-clamp-1">{item.n}:</div>
+          </div>
+          <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>{item.c?.map((i) => <HookViewTree key={i.n} item={i} />)}</div>
+        </div>
+      </>
+    );
+  }
+};
+
+const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v"]; prefix?: ReactNode }) => {
+  const [expand, setExpand] = useState(false);
+
+  const text = useMemo(() => {
+    if (item?.t === "Array" || item?.t === "Set") {
+      return getText("Array", item.v, "new");
+    }
+    if (item?.t === "Iterable" || item?.t === "Map" || item?.t === "Object") {
+      return getText("Object", item.v, "new");
+    }
+  }, [item]);
+
+  if (!item) return null;
+
+  const currentIsExpand = item.e;
 
   const StateIcon = expand ? <TriangleDownIcon width="16" height="16" /> : <TriangleRightIcon width="16" height="16" />;
 
   if (!currentIsExpand) {
+    let element = null;
+    if (item.t === "Element") {
+      element = <span className="node-element">{item.v as string}</span>;
+    }
+    if (item.t === "String") {
+      element = <span className="node-string">{`"${item.v as string}"`}</span>;
+    }
+    if (item.t === "Boolean") {
+      element = <span className="node-boolean">{item.v as string}</span>;
+    }
+    if (item.t === "Date") {
+      element = <span className="node-date">{item.v as string}</span>;
+    }
+    if (item.t === "Error") {
+      element = <span className="node-error">{item.v as string}</span>;
+    }
+    if (item.t === "Function") {
+      element = <span className="node-function">{item.v as string}</span>;
+    }
+    if (item.t === "Undefined") {
+      element = <span className="node-undefined">{item.v as string}</span>;
+    }
+    if (item.t === "Null") {
+      element = <span className="node-null">{item.v as string}</span>;
+    }
+    if (item.t === "Number") {
+      element = <span className="node-number">{item.v as string}</span>;
+    }
+    if (item.t === "Promise") {
+      element = <span className="node-promise">{item.v as string}</span>;
+    }
+    if (item.t === "WeakMap" || item.t === "WeakSet") {
+      element = <span className="node-weak">{item.v as string}</span>;
+    }
+    if (item.t === "RegExp") {
+      element = <span className="node-regexp">{item.v as string}</span>;
+    }
+    if (item.t === "Symbol") {
+      element = <span className="node-symbol">{item.v as string}</span>;
+    }
     return (
-      <div className="text-[#427af5] flex items-center" style={{ paddingLeft: `${item.deep * 18}px` }}>
-        <Chip size="sm" className="rounded-sm mr-1 w-[var(--index-width)] h-[calc(var(--index-width)*2)] leading-none p-1">
-          {item.index}
-        </Chip>
-        {item.name}: {item.value as string}
+      <div className="text-[#427af5]">
+        <div className="flex w-full my-0.5">
+          <span className="text-transparent">{StateIcon}</span>
+          {prefix}
+          <div className="max-w-full line-clamp-1">
+            {name}: {element}
+          </div>
+        </div>
       </div>
     );
   } else {
     return (
       <>
-        <div className="flex w-full text-[#427bf5b8]" style={{ paddingLeft: `${item.deep * 18}px`, marginLeft: "-6px" }}>
-          <div className="flex w-full">
-            <span className={"text-gray-400 w-[18px] hover:text-gray-700"} onClick={() => setExpand(!expand)}>
+        <div className="text-[#427bf5b8]">
+          <div className="flex w-full my-0.5">
+            <span className={"text-gray-400 hover:text-gray-700"} onClick={() => setExpand(!expand)}>
               {StateIcon}
             </span>
-            <div className="max-w-full line-clamp-1">{item.name}:</div>
+            {prefix}
+            <div className="max-w-full line-clamp-1">
+              {name}: {text}
+            </div>
+          </div>
+          <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
+            {Array.isArray(item.v) ? (
+              <>
+                {item.v.map((i: HOOKTree["v"], index: number) => (
+                  <ValueViewTree key={index} name={index.toString()} item={i} />
+                ))}
+              </>
+            ) : (
+              <>
+                {Object.keys(item.v).map((key) => (
+                  <ValueViewTree key={key} name={key} item={item.v[key]} />
+                ))}
+              </>
+            )}
           </div>
         </div>
-        <div className={expand ? "block" : "hidden"}>{item.children?.map((i) => <HookViewTree key={i.name} item={i} />)}</div>
       </>
     );
   }
@@ -50,7 +163,7 @@ export const HookView_v2 = () => {
 
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
-  const hookList = currentSelectDetail?.hook_v2 || [];
+  const hookList = currentSelectDetail?._h || [];
 
   const maxLength = currentSelectDetail?.hook?.length;
 
@@ -63,8 +176,11 @@ export const HookView_v2 = () => {
       <div className="p-2">
         <div>hooks_v2</div>
         <Spacer y={1} />
-        {/* @ts-expect-error css变量 */}
-        <div className={`w-full ${sizeClass} ml-2 font-mono tree-wrapper`} style={{ ["--index-width"]: `${(maxLength?.toString()?.length || 0) * 0.8}em` }}>
+        <div
+          className={`w-full ${sizeClass} font-mono tree-wrapper`}
+          // @ts-expect-error css 变量
+          style={{ ["--index-width"]: `${Math.max(maxLength?.toString()?.length || 0, 2) * 0.8}em` }}
+        >
           {hookList.map((item, index) => (
             <HookViewTree item={item as HOOKTree} key={index} />
           ))}

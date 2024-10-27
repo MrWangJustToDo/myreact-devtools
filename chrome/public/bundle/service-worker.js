@@ -1116,18 +1116,6 @@
     		    return __assign.apply(this, arguments);
     		};
 
-    		function __rest(s, e) {
-    		    var t = {};
-    		    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-    		        t[p] = s[p];
-    		    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-    		        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-    		            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-    		                t[p[i]] = s[p[i]];
-    		        }
-    		    return t;
-    		}
-
     		function __spreadArray(to, from, pack) {
     		    if (arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
     		        if (ar || !(i in from)) {
@@ -1141,6 +1129,142 @@
     		typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
     		    var e = new Error(message);
     		    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    		};
+
+    		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
+    		var id$1 = 0;
+    		var valueMap = new Map();
+    		var deepMap = new Map();
+    		var getType = function (value) {
+    		    if (isInBrowser && value && value instanceof Element) {
+    		        return "Element";
+    		    }
+    		    var type = Object.prototype.toString.call(value).slice(8, -1);
+    		    if (type === "Object" && typeof value[Symbol.iterator] === "function") {
+    		        return "Iterable";
+    		    }
+    		    if (type === "Custom" && value.constructor !== Object && value instanceof Object) {
+    		        // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
+    		        return "Object";
+    		    }
+    		    return type;
+    		};
+    		var isObject = function (value) {
+    		    return (value === "Object" ||
+    		        value === "Error" ||
+    		        value === "WeakMap" ||
+    		        value === "WeakSet" ||
+    		        value === "Array" ||
+    		        value === "Iterable" ||
+    		        value === "Map" ||
+    		        value === "Promise" ||
+    		        value === "Set");
+    		};
+    		var getNode = function (value, parentDeep, deep) {
+    		    var _a;
+    		    if (deep === void 0) { deep = 4; }
+    		    var type = getType(value);
+    		    var expandable = isObject(type);
+    		    if (expandable) {
+    		        // full deep to load
+    		        if (deep === 0) {
+    		            var currentId = id$1++;
+    		            valueMap.set(currentId, value);
+    		            deepMap.set(currentId, parentDeep);
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                d: parentDeep + 1,
+    		                v: ((_a = value === null || value === void 0 ? void 0 : value.construct) === null || _a === void 0 ? void 0 : _a.name) || (value === null || value === void 0 ? void 0 : value.name),
+    		                e: expandable,
+    		                l: false,
+    		            };
+    		        }
+    		        else {
+    		            if (type === "Array") {
+    		                return {
+    		                    t: type,
+    		                    d: parentDeep + 1,
+    		                    v: value.map(function (val) { return getNode(val, deep - 1); }),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            else if (type === "Iterable") {
+    		                return {
+    		                    t: type,
+    		                    d: parentDeep + 1,
+    		                    v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            else if (type === "Error") {
+    		                return {
+    		                    t: type,
+    		                    d: parentDeep + 1,
+    		                    v: value.message,
+    		                    e: false,
+    		                };
+    		            }
+    		            else if (type === "Map") {
+    		                return {
+    		                    t: type,
+    		                    d: parentDeep + 1,
+    		                    v: Array.from(value).map(function (_a) {
+    		                        var key = _a[0], val = _a[1];
+    		                        return ({
+    		                            k: getNode(key, deep - 1),
+    		                            v: getNode(val, deep - 1),
+    		                        });
+    		                    }),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            else if (type === "Set") {
+    		                return {
+    		                    t: type,
+    		                    d: parentDeep + 1,
+    		                    v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            else if (type === "Object") {
+    		                return {
+    		                    t: type,
+    		                    d: parentDeep + 1,
+    		                    v: Object.keys(value).reduce(function (acc, key) {
+    		                        acc[key] = getNode(value[key], deep - 1);
+    		                        return acc;
+    		                    }, {}),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            else if (type === "Promise") {
+    		                // TODO
+    		                return {
+    		                    t: type,
+    		                    d: parentDeep + 1,
+    		                    v: "Promise",
+    		                    e: false,
+    		                };
+    		            }
+    		            else {
+    		                return {
+    		                    t: type,
+    		                    d: parentDeep + 1,
+    		                    v: "WeakObject",
+    		                    e: false,
+    		                };
+    		            }
+    		        }
+    		    }
+    		    else {
+    		        return {
+    		            t: type,
+    		            d: parentDeep + 1,
+    		            v: type === "Element" ? "<".concat(value.tagName.toLowerCase(), " />") : String(value),
+    		            e: expandable,
+    		        };
+    		    }
     		};
 
     		var id = 0;
@@ -1205,10 +1329,10 @@
     		var assignFiber = function (plain, fiber) {
     		    shallowAssignFiber(plain, fiber);
     		    plain.hook = getHook(fiber);
-    		    plain.hook_v2 = getHook_v2(fiber);
     		    plain.p = getObj(fiber.pendingProps);
     		    plain._s = getSource(fiber);
     		    plain._t = getTree(fiber);
+    		    plain._h = getHook_v2(fiber);
     		    if (fiber.type & NODE_TYPE.__class__) {
     		        plain.s = getObj(fiber.pendingState);
     		    }
@@ -1652,21 +1776,29 @@
     		    var processStack = function (hook, index) {
     		        var stack = hook._debugStack;
     		        if (!stack || !Array.isArray(stack) || stack.length === 0) {
-    		            final.push({ isHook: true, index: index, name: getHookName(hook.type), value: "hookValue", deep: 0 });
+    		            var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
+    		            var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
+    		            final.push({
+    		                h: true,
+    		                i: index,
+    		                n: isContext ? getContextName(hook.value) : getHookName(hook.type),
+    		                v: getNode(isEffect ? hook.value : hook.result, 0),
+    		                d: 0,
+    		            });
     		        }
     		        else {
     		            var prevKey = "";
     		            for (var i = 0; i < stack.length; i++) {
     		                var isHook = i === stack.length - 1;
-    		                var key = prevKey + stack[i].id + stack[i].name;
-    		                var _a = stack[i]; _a.id; var currentStack = __rest(_a, ["id"]);
+    		                var key = prevKey + stack[i].id + stack[i].name + (isHook ? "-".concat(index) : "");
+    		                var name_6 = stack[i].name;
     		                var hasInclude = true;
     		                if (!obj[key]) {
     		                    if (isHook) {
-    		                        obj[key] = __assign(__assign({}, currentStack), { index: index, isHook: isHook, deep: 0 });
+    		                        obj[key] = { n: name_6, i: index, h: true, d: 0 };
     		                    }
     		                    else {
-    		                        obj[key] = __assign(__assign({}, currentStack), { deep: 0 });
+    		                        obj[key] = { n: name_6, d: 0 };
     		                    }
     		                    hasInclude = false;
     		                }
@@ -1674,19 +1806,21 @@
     		                var prevItem = obj[prevKey];
     		                if (!hasInclude) {
     		                    if (prevItem) {
-    		                        prevItem.children = prevItem.children || [];
-    		                        prevItem.children.push(item);
-    		                        item.deep = prevItem.deep + 1;
+    		                        prevItem.c = prevItem.c || [];
+    		                        prevItem.c.push(item);
+    		                        item.d = prevItem.d + 1;
     		                    }
     		                    else {
     		                        final.push(item);
     		                    }
-    		                    item.name = item.name.substring(3);
+    		                    item.n = item.n.substring(3);
     		                }
     		                if (isHook) {
+    		                    var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
+    		                    var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
     		                    // overwrite name
-    		                    item.name = getHookName(hook.type);
-    		                    item.value = typeof hook.value;
+    		                    item.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
+    		                    item.v = getNode(isEffect ? hook.value : hook.result, item.d);
     		                }
     		                prevKey = key;
     		            }
@@ -2530,6 +2664,7 @@
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.highlight, data: { id: id, type: type } });
     		    };
+    		    // TODO
     		    DevToolCore.prototype.notifyChanged = function (list) {
     		        if (!this.hasEnable)
     		            return;
