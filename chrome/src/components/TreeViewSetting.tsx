@@ -18,7 +18,8 @@ import {
   Divider,
   Chip,
 } from "@nextui-org/react";
-import { CheckCircledIcon, CrossCircledIcon, GearIcon } from "@radix-ui/react-icons";
+import { CheckCircledIcon, CrossCircledIcon, GearIcon, MoonIcon, SunIcon } from "@radix-ui/react-icons";
+import { useTheme } from "next-themes";
 import { memo } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
@@ -35,6 +36,8 @@ const onChange = useFilterNode.getActions().onChange;
 
 export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) => {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+  const { theme, setTheme } = useTheme();
 
   const { state: configState, setEnableHover, setEnableUpdate, setEnableRuntimeCount, setEnableRuntimeMis } = useConfig();
 
@@ -59,6 +62,9 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               {state ? <CheckCircledIcon className="text-green-500" /> : <CrossCircledIcon className=" text-red-500" />}
             </Button>
           </Tooltip>
+          <Button isIconOnly onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+            {theme === "dark" ? <MoonIcon className="text-gray-500" /> : <SunIcon className="text-yellow-500" />}
+          </Button>
           <Tooltip content="Setting" showArrow color="foreground">
             <Button isIconOnly onClick={onOpen}>
               <GearIcon className=" text-gray-500" />

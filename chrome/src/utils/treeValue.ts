@@ -41,7 +41,7 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
     return "null";
   } else if (type === "Undefined") {
     return "undef";
-  } else if (typeof val === "object") {
+  } else if (typeof val === "object" && item?.l !== false) {
     // eslint-disable-next-line @typescript-eslint/ban-types
     return Object.keys(val as {}).length > 0 ? "{…}" : "{}";
   } else if (type === 'Function') {

@@ -76,7 +76,7 @@ const isObject = (value: NodeValue["t"]) => {
   );
 };
 
-export const getNode = (value: any, parentDeep: number, deep = 4): NodeValue => {
+export const getNode = (value: any, parentDeep: number, deep = 3): NodeValue => {
   const type = getType(value);
 
   const expandable = isObject(type);
@@ -100,14 +100,14 @@ export const getNode = (value: any, parentDeep: number, deep = 4): NodeValue => 
         return {
           t: type,
           d: parentDeep + 1,
-          v: value.map((val: any) => getNode(val, deep - 1)),
+          v: value.map((val: any) => getNode(val, parentDeep + 1, deep - 1)),
           e: expandable,
         };
       } else if (type === "Iterable") {
         return {
           t: type,
           d: parentDeep + 1,
-          v: Array.from(value).map((val: any) => getNode(val, deep - 1)),
+          v: Array.from(value).map((val: any) => getNode(val, parentDeep + 1, deep - 1)),
           e: expandable,
         };
       } else if (type === "Error") {
@@ -122,8 +122,8 @@ export const getNode = (value: any, parentDeep: number, deep = 4): NodeValue => 
           t: type,
           d: parentDeep + 1,
           v: Array.from(value).map(([key, val]) => ({
-            k: getNode(key, deep - 1),
-            v: getNode(val, deep - 1),
+            k: getNode(key, parentDeep + 1, deep - 1),
+            v: getNode(val, parentDeep + 1, deep - 1),
           })),
           e: expandable,
         };
@@ -131,7 +131,7 @@ export const getNode = (value: any, parentDeep: number, deep = 4): NodeValue => 
         return {
           t: type,
           d: parentDeep + 1,
-          v: Array.from(value).map((val: any) => getNode(val, deep - 1)),
+          v: Array.from(value).map((val: any) => getNode(val, parentDeep + 1, deep - 1)),
           e: expandable,
         };
       } else if (type === "Object") {
@@ -139,7 +139,7 @@ export const getNode = (value: any, parentDeep: number, deep = 4): NodeValue => 
           t: type,
           d: parentDeep + 1,
           v: Object.keys(value).reduce((acc, key) => {
-            acc[key] = getNode(value[key], deep - 1);
+            acc[key] = getNode(value[key], parentDeep + 1, deep - 1);
             return acc;
           }, {}),
           e: expandable,

@@ -1162,7 +1162,7 @@
     		};
     		var getNode = function (value, parentDeep, deep) {
     		    var _a;
-    		    if (deep === void 0) { deep = 4; }
+    		    if (deep === void 0) { deep = 3; }
     		    var type = getType(value);
     		    var expandable = isObject(type);
     		    if (expandable) {
@@ -1185,7 +1185,7 @@
     		                return {
     		                    t: type,
     		                    d: parentDeep + 1,
-    		                    v: value.map(function (val) { return getNode(val, deep - 1); }),
+    		                    v: value.map(function (val) { return getNode(val, parentDeep + 1, deep - 1); }),
     		                    e: expandable,
     		                };
     		            }
@@ -1193,7 +1193,7 @@
     		                return {
     		                    t: type,
     		                    d: parentDeep + 1,
-    		                    v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                    v: Array.from(value).map(function (val) { return getNode(val, parentDeep + 1, deep - 1); }),
     		                    e: expandable,
     		                };
     		            }
@@ -1212,8 +1212,8 @@
     		                    v: Array.from(value).map(function (_a) {
     		                        var key = _a[0], val = _a[1];
     		                        return ({
-    		                            k: getNode(key, deep - 1),
-    		                            v: getNode(val, deep - 1),
+    		                            k: getNode(key, parentDeep + 1, deep - 1),
+    		                            v: getNode(val, parentDeep + 1, deep - 1),
     		                        });
     		                    }),
     		                    e: expandable,
@@ -1223,7 +1223,7 @@
     		                return {
     		                    t: type,
     		                    d: parentDeep + 1,
-    		                    v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                    v: Array.from(value).map(function (val) { return getNode(val, parentDeep + 1, deep - 1); }),
     		                    e: expandable,
     		                };
     		            }
@@ -1232,7 +1232,7 @@
     		                    t: type,
     		                    d: parentDeep + 1,
     		                    v: Object.keys(value).reduce(function (acc, key) {
-    		                        acc[key] = getNode(value[key], deep - 1);
+    		                        acc[key] = getNode(value[key], parentDeep + 1, deep - 1);
     		                        return acc;
     		                    }, {}),
     		                    e: expandable,

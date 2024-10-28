@@ -55,14 +55,17 @@ const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v
 
   const text = useMemo(() => {
     if (item?.t === "Array" || item?.t === "Set") {
-      return getText("Array", item.v, "new");
+      return getText("Array", item.l === false ? [] : item.v, "new");
     }
     if (item?.t === "Iterable" || item?.t === "Map" || item?.t === "Object") {
-      return getText("Object", item.v, "new");
+      return getText("Object", item.l === false ? {} : item.v, "new");
     }
   }, [item]);
 
   if (!item) return null;
+
+  // TODO! load the data
+  if (item.l === false) return null;
 
   const currentIsExpand = item.e;
 

@@ -64,3 +64,7 @@ svg {
 .dark .hook-value-placeholder {
   @apply text-cyan-700;
 }
+
+.transition-background, .transition-transform-background {
+  transition-duration: 0ms !important;
+}
