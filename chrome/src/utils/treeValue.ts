@@ -1,3 +1,5 @@
+import type { HOOKTree } from "@my-react-devtool/core";
+
 function isIterable(obj: any) {
   return obj !== null && typeof obj === "object" && !Array.isArray(obj) && typeof obj[window.Symbol.iterator] === "function";
 }
@@ -25,6 +27,32 @@ function getShortTypeString(val: any) {
   }
 }
 
+const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
+  const val = item?.v;
+  const type = item?.t;
+  if (type === "Element" || type === "Date" || type === "Boolean" || type === "Error" || type === "Number" || type === "Symbol") {
+    return val;
+  }
+  if (isIterable(val)) {
+    return "(…)";
+  } else if (Array.isArray(val)) {
+    return val.length > 0 ? "[…]" : "[]";
+  } else if (type === "Null") {
+    return "null";
+  } else if (type === "Undefined") {
+    return "undef";
+  } else if (typeof val === "object") {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    return Object.keys(val as {}).length > 0 ? "{…}" : "{}";
+  } else if (type === 'Function') {
+    return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`
+  } else if (typeof val === "string") {
+    return `"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`;
+  } else {
+    return val;
+  }
+};
+
 export function getText(type: string, data: any, mode = "old") {
   if (type === "Object") {
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -32,7 +60,7 @@ export function getText(type: string, data: any, mode = "old") {
 
     const str = keys
       .slice(0, 3)
-      .map((key) => `${key}: ${getShortTypeString(mode === "old" ? data[key] : data[key].v) as string}`)
+      .map((key) => `${key}: ${mode === "old" ? getShortTypeString(data[key]) : getShortTextFromHookValue(data[key])}`)
       .concat(keys.length > 3 ? ["…"] : [])
       .join(", ");
 
@@ -40,7 +68,7 @@ export function getText(type: string, data: any, mode = "old") {
   } else if (type === "Array") {
     const str = data
       .slice(0, 4)
-      .map((val: any) => getShortTypeString(mode === "old" ? val : val.v))
+      .map((val: any) => (mode === "old" ? getShortTypeString(val) : getShortTextFromHookValue(val)))
       .concat(data.length > 4 ? ["…"] : [])
       .join(", ");
 

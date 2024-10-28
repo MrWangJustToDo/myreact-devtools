@@ -159,8 +159,6 @@ export class DevToolCore {
       }
 
       this.notifyChanged(list);
-
-      this.notifySelect();
     };
 
     const onUnmount = () => {
@@ -180,6 +178,18 @@ export class DevToolCore {
 
       this.notifyTrigger();
     };
+
+    const onFiberUpdate = (fiber: MyReactFiberNode) => {
+      const id = getPlainNodeIdByFiber(fiber);
+
+      if (!id) return;
+
+      if (!this.hasEnable) return;
+
+      if (id === this._selectId) {
+        this.notifySelect();
+      }
+    }
 
     const onFiberState = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
@@ -261,6 +271,8 @@ export class DevToolCore {
       dispatch.onPerformanceWarn?.(onPerformanceWarn);
 
       dispatch.onFiberChange?.(onChange);
+
+      dispatch.onFiberUpdate?.(onFiberUpdate);
 
       dispatch.onFiberHMR?.(onFiberHMR);
 

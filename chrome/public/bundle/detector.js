@@ -2468,7 +2468,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     		        if (dispatch.hasDevToolPatch)
     		            return;
     		        dispatch.hasDevToolPatch = true;
@@ -2485,7 +2485,6 @@
     		                _this.notifyDir();
     		            }
     		            _this.notifyChanged(list);
-    		            _this.notifySelect();
     		        };
     		        var onUnmount = function () {
     		            if (!_this.hasEnable)
@@ -2500,6 +2499,16 @@
     		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyTrigger();
+    		        };
+    		        var onFiberUpdate = function (fiber) {
+    		            var id = getPlainNodeIdByFiber(fiber);
+    		            if (!id)
+    		                return;
+    		            if (!_this.hasEnable)
+    		                return;
+    		            if (id === _this._selectId) {
+    		                _this.notifySelect();
+    		            }
     		        };
     		        var onFiberState = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
@@ -2562,11 +2571,12 @@
     		            (_c = dispatch.onFiberTrigger) === null || _c === void 0 ? void 0 : _c.call(dispatch, onFiberTrigger);
     		            (_d = dispatch.onPerformanceWarn) === null || _d === void 0 ? void 0 : _d.call(dispatch, onPerformanceWarn);
     		            (_e = dispatch.onFiberChange) === null || _e === void 0 ? void 0 : _e.call(dispatch, onChange);
-    		            (_f = dispatch.onFiberHMR) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberHMR);
-    		            (_g = dispatch.onFiberRun) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberRun);
-    		            (_h = dispatch.onDOMUpdate) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMUpdate);
-    		            (_j = dispatch.onDOMAppend) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMAppend);
-    		            (_k = dispatch.onDOMSetRef) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMSetRef);
+    		            (_f = dispatch.onFiberUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberUpdate);
+    		            (_g = dispatch.onFiberHMR) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberHMR);
+    		            (_h = dispatch.onFiberRun) === null || _h === void 0 ? void 0 : _h.call(dispatch, onFiberRun);
+    		            (_j = dispatch.onDOMUpdate) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMUpdate);
+    		            (_k = dispatch.onDOMAppend) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMAppend);
+    		            (_l = dispatch.onDOMSetRef) === null || _l === void 0 ? void 0 : _l.call(dispatch, onDOMSetRef);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;

@@ -36,7 +36,7 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
   } else {
     return (
       <>
-        <div className="text-[#427bf5b8]">
+        <div className="hook-stack-view">
           <div className="flex w-full my-0.5">
             <span className={"text-gray-400 hover:text-gray-700"} onClick={() => setExpand(!expand)}>
               {StateIcon}
@@ -110,12 +110,12 @@ const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v
       element = <span className="node-symbol">{item.v as string}</span>;
     }
     return (
-      <div className="text-[#427af5]">
+      <div className="hook-value-view">
         <div className="flex w-full my-0.5">
           <span className="text-transparent">{StateIcon}</span>
           {prefix}
           <div className="max-w-full line-clamp-1">
-            {name}: {element}
+            {name}: <span className="hook-value-placeholder">{element}</span>
           </div>
         </div>
       </div>
@@ -123,14 +123,14 @@ const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v
   } else {
     return (
       <>
-        <div className="text-[#427bf5b8]">
+        <div className="hook-value-view">
           <div className="flex w-full my-0.5">
             <span className={"text-gray-400 hover:text-gray-700"} onClick={() => setExpand(!expand)}>
               {StateIcon}
             </span>
             {prefix}
             <div className="max-w-full line-clamp-1">
-              {name}: {text}
+              {name}: <span className="hook-value-placeholder">{text}</span>
             </div>
           </div>
           <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
@@ -163,6 +163,8 @@ export const HookView_v2 = () => {
 
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
+  const id = currentSelectDetail?.i;
+
   const hookList = currentSelectDetail?._h || [];
 
   const maxLength = currentSelectDetail?.hook?.length;
@@ -182,7 +184,7 @@ export const HookView_v2 = () => {
           style={{ ["--index-width"]: `${Math.max(maxLength?.toString()?.length || 0, 2) * 0.8}em` }}
         >
           {hookList.map((item, index) => (
-            <HookViewTree item={item as HOOKTree} key={index} />
+            <HookViewTree item={item as HOOKTree} key={id + "-" + index} />
           ))}
         </div>
         <Divider />

@@ -48,3 +48,19 @@ svg {
 .dark .node-name {
   @apply text-cyan-700;
 }
+
+.hook-stack-view {
+  @apply text-slate-900;
+}
+
+.dark .hook-stack-view {
+  @apply text-slate-100;
+}
+
+.hook-value-placeholder {
+  @apply text-blue-500;
+}
+
+.dark .hook-value-placeholder {
+  @apply text-cyan-700;
+}
