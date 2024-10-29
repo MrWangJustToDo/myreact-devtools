@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { isNormalEquals } from "@my-react/react-shared";
 
+import { getNodeFromId } from "./data";
 import { HighLight, Overlay, color as _color } from "./highlight";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import { generateTreeMap, getDetailNodeByFiber, getFiberNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
@@ -27,6 +28,8 @@ export enum DevToolMessageEnum {
   run = "run",
   detail = "detail",
   unmount = "unmount",
+
+  chunk = "chunk",
 }
 
 export type DevToolMessageType = {
@@ -189,7 +192,7 @@ export class DevToolCore {
       if (id === this._selectId) {
         this.notifySelect();
       }
-    }
+    };
 
     const onFiberState = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
@@ -462,6 +465,14 @@ export class DevToolCore {
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
     }
+  }
+
+  notifyChunk(id: number | string) {
+    if (!this.hasEnable) return;
+
+    const data = getNodeFromId(Number(id));
+
+    this._notify({ type: DevToolMessageEnum.chunk, data: { [id]: { loaded: data } } });
   }
 
   notifyDispatch(dispatch: DevToolRenderDispatch) {

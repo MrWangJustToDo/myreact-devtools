@@ -58,6 +58,15 @@ declare global {
       { setEnableHover: (b: boolean) => void; setEnableUpdate: (b: boolean) => void }
     >;
 
+    useChunk: UseSelectorWithState<
+      { id: number | string | null; data: Record<number | string, { loaded: any }> },
+      {
+        clear: () => void;
+        setLoaded: () => void;
+        setChunk: (data: Record<number | string, { loaded: any }>) => void;
+      }
+    >;
+
     io: typeof io;
   }
 }

@@ -37,7 +37,7 @@ export type NodeValue = {
 
 const isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
 
-let id = 0;
+let id = 1;
 
 const valueMap = new Map<number, any>();
 

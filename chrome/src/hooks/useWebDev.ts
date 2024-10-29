@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import { useActiveNode } from "./useActiveNode";
 import { useAppTree } from "./useAppTree";
+import { useChunk } from "./useChunk";
 import { useConfig } from "./useConfig";
 import { useConnect } from "./useConnect";
 import { useDetailNode } from "./useDetailNode";
@@ -96,6 +97,18 @@ export const useWebDev = () => {
             () => io.emit("action", { type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
           )
         );
+
+        unSubscribeArray.push(
+          useChunk.subscribe(
+            (s) => s.id,
+            () => {
+              const id = useChunk.getReadonlyState().id;
+              if (id) {
+                io.emit("action", { type: MessagePanelType.chunk, data: id });
+              }
+            }
+          )
+        );
       });
 
       io.on("disconnect", () => {
@@ -165,6 +178,12 @@ export const useWebDev = () => {
             useConfig.getActions().setEnableHover(data.data?.enableHover);
 
             useConfig.getActions().setEnableUpdate(data.data?.enableUpdate);
+          });
+        }
+
+        if (data.type === DevToolMessageEnum.chunk) {
+          safeAction(() => {
+            useChunk.getActions().setChunk(data.data);
           });
         }
       });

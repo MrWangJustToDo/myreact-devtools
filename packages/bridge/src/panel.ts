@@ -248,6 +248,24 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       _window.useConnect.getActions().setError(typedE.message);
     }
   }
+
+  if (data.type === DevToolMessageEnum.chunk) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] chunk", data.data);
+    }
+
+    const chunk = data.data as Record<number | string, { loaded: any }>;
+
+    try {
+      const { setChunk } = _window.useChunk.getActions();
+
+      setChunk(chunk);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
 };
 
 const initSelectListen = (_window: Window) => {
@@ -345,6 +363,25 @@ const initConfigListen = (_window: Window) => {
   }
 };
 
+const initChunkListen = (_window: Window) => {
+  const useChunk = _window.useChunk;
+
+  try {
+    return useChunk.subscribe(
+      (s) => s.id,
+      () => {
+        const id = useChunk.getReadonlyState().id;
+
+        if (id) {
+          sendMessage({ type: MessagePanelType.chunk, data: id });
+        }
+      }
+    );
+  } catch {
+    void 0;
+  }
+};
+
 const initPort = () => {
   workerConnecting = true;
 
@@ -405,7 +442,7 @@ const init = async (id: number) => {
 
         sendMessage({ type: MessagePanelType.show });
 
-        cleanList.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window));
+        cleanList.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window));
       },
       () => {
         if (__DEV__) {
@@ -426,10 +463,12 @@ const init = async (id: number) => {
 
 const clear = () => {
   if (panelWindow) {
+    panelWindow.useChunk.getActions().clear();
     panelWindow.useAppTree.getActions().clear();
     panelWindow.useNodeName.getActions().clear();
     panelWindow.useTreeNode.getActions().clear();
     panelWindow.useDetailNode.getActions().clear();
+    panelWindow.useActiveNode.getActions().clear();
   }
 };
 

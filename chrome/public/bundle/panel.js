@@ -1203,7 +1203,7 @@
     		};
 
     		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
-    		var id$1 = 0;
+    		var id$1 = 1;
     		var valueMap = new Map();
     		var deepMap = new Map();
     		var getType = function (value) {
@@ -1335,6 +1335,13 @@
     		            v: type === "Element" ? "<".concat(value.tagName.toLowerCase(), " />") : String(value),
     		            e: expandable,
     		        };
+    		    }
+    		};
+    		var getNodeFromId = function (id) {
+    		    var value = valueMap.get(id);
+    		    var deep = deepMap.get(id);
+    		    if (value) {
+    		        return getNode(value, deep);
     		    }
     		};
 
@@ -2431,6 +2438,7 @@
     		    DevToolMessageEnum["run"] = "run";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["chunk"] = "chunk";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
     		var debounce = function (callback, time) {
     		    var id = null;
@@ -2780,6 +2788,13 @@
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
     		        }
     		    };
+    		    DevToolCore.prototype.notifyChunk = function (id) {
+    		        var _a;
+    		        if (!this.hasEnable)
+    		            return;
+    		        var data = getNodeFromId(Number(id));
+    		        this._notify({ type: exports.DevToolMessageEnum.chunk, data: (_a = {}, _a[id] = { loaded: data }, _a) });
+    		    };
     		    DevToolCore.prototype.notifyDispatch = function (dispatch) {
     		        if (!this.hasEnable)
     		            return;
@@ -2830,6 +2845,7 @@
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
     		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
+    		    MessagePanelType["chunk"] = "panel-chunk";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
     		exports.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -3089,6 +3105,20 @@
                 _window.useConnect.getActions().setError(typedE.message);
             }
         }
+        if (data.type === coreExports.DevToolMessageEnum.chunk) {
+            {
+                console.log("[@my-react-devtool/panel] chunk", data.data);
+            }
+            var chunk = data.data;
+            try {
+                var setChunk = _window.useChunk.getActions().setChunk;
+                setChunk(chunk);
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
     };
     var initSelectListen = function (_window) {
         var useTreeNode = _window.useTreeNode;
@@ -3150,6 +3180,17 @@
         catch (_a) {
         }
     };
+    var initChunkListen = function (_window) {
+        var useChunk = _window.useChunk;
+        try {
+            return useChunk.subscribe(function (s) { return s.id; }, function () {
+                var id = useChunk.getReadonlyState().id;
+                sendMessage({ type: coreExports.MessagePanelType.chunk, data: id });
+            });
+        }
+        catch (_a) {
+        }
+    };
     var initPort = function () {
         workerConnecting = true;
         var _a = panelWindow.useConnect.getActions(), disconnect = _a.disconnect, setConnectHandler = _a.setConnectHandler;
@@ -3192,7 +3233,7 @@
                             }
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
-                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window));
+                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window));
                         }, function () {
                             {
                                 console.log("hide panel");
@@ -3214,10 +3255,12 @@
     }); };
     var clear = function () {
         if (panelWindow) {
+            panelWindow.useChunk.getActions().clear();
             panelWindow.useAppTree.getActions().clear();
             panelWindow.useNodeName.getActions().clear();
             panelWindow.useTreeNode.getActions().clear();
             panelWindow.useDetailNode.getActions().clear();
+            panelWindow.useActiveNode.getActions().clear();
         }
     };
     init(getTabId());

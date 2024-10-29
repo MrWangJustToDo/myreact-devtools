@@ -5,6 +5,7 @@ import { useTreeNode } from "@/hooks/useTreeNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useConfig } from "@/hooks/useConfig";
+import { useChunk } from "@/hooks/useChunk";
 import { useRunNode } from "@/hooks/useRunNode";
 import { useActiveNode } from "@/hooks/useActiveNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
@@ -43,6 +44,8 @@ declare global {
     useHighlightNode: typeof useHighlightNode;
 
     useConfig: typeof useConfig;
+
+    useChunk: typeof useChunk;
   }
 
   namespace NodeJS {

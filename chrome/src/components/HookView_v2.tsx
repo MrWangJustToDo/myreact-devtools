@@ -1,7 +1,8 @@
-import { Chip, Divider, Spacer } from "@nextui-org/react";
+import { Chip, Divider, Spacer, Spinner } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { useChunk } from "@/hooks/useChunk";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
@@ -43,7 +44,7 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
             </span>
             <div className="max-w-full line-clamp-1">{item.n}:</div>
           </div>
-          <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>{item.c?.map((i) => <HookViewTree key={i.n} item={i} />)}</div>
+          <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>{item.c?.map((i, index) => <HookViewTree key={i.n + "-" + index} item={i} />)}</div>
         </div>
       </>
     );
@@ -53,19 +54,26 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
 const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v"]; prefix?: ReactNode }) => {
   const [expand, setExpand] = useState(false);
 
+  const chunkData = useChunk.useShallowStableSelector((s) => s.data?.[item?.i || ""]?.loaded);
+
+  const data = chunkData?.v ?? item?.v;
+
   const text = useMemo(() => {
     if (item?.t === "Array" || item?.t === "Set") {
-      return getText("Array", item.l === false ? [] : item.v, "new");
+      return getText("Array", data ?? [], "new");
     }
     if (item?.t === "Iterable" || item?.t === "Map" || item?.t === "Object") {
-      return getText("Object", item.l === false ? {} : item.v, "new");
+      return getText("Object", data ?? {}, "new");
     }
-  }, [item]);
+  }, [item?.t, data]);
+
+  useEffect(() => {
+    if (expand && item?.l === false && item.i && !chunkData) {
+      useChunk.getActions().setLoading(item.i);
+    }
+  }, [chunkData, expand, item?.i, item?.l]);
 
   if (!item) return null;
-
-  // TODO! load the data
-  if (item.l === false) return null;
 
   const currentIsExpand = item.e;
 
@@ -114,7 +122,7 @@ const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v
     }
     return (
       <div className="hook-value-view">
-        <div className="flex w-full my-0.5">
+        <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent">{StateIcon}</span>
           {prefix}
           <div className="max-w-full line-clamp-1">
@@ -127,7 +135,7 @@ const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v
     return (
       <>
         <div className="hook-value-view">
-          <div className="flex w-full my-0.5">
+          <div className="flex w-full my-0.5 items-center">
             <span className={"text-gray-400 hover:text-gray-700"} onClick={() => setExpand(!expand)}>
               {StateIcon}
             </span>
@@ -137,18 +145,22 @@ const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v
             </div>
           </div>
           <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
-            {Array.isArray(item.v) ? (
-              <>
-                {item.v.map((i: HOOKTree["v"], index: number) => (
-                  <ValueViewTree key={index} name={index.toString()} item={i} />
-                ))}
-              </>
+            {data ? (
+              Array.isArray(data) ? (
+                <>
+                  {data.map((i: HOOKTree["v"], index: number) => (
+                    <ValueViewTree key={index} name={index.toString()} item={i} />
+                  ))}
+                </>
+              ) : (
+                <>
+                  {Object.keys(data).map((key) => (
+                    <ValueViewTree key={key} name={key} item={data[key]} />
+                  ))}
+                </>
+              )
             ) : (
-              <>
-                {Object.keys(item.v).map((key) => (
-                  <ValueViewTree key={key} name={key} item={item.v[key]} />
-                ))}
-              </>
+              <Spinner size="sm" />
             )}
           </div>
         </div>
@@ -184,7 +196,7 @@ export const HookView_v2 = () => {
         <div
           className={`w-full ${sizeClass} font-mono tree-wrapper`}
           // @ts-expect-error css 变量
-          style={{ ["--index-width"]: `${Math.max(maxLength?.toString()?.length || 0, 2) * 0.8}em` }}
+          style={{ ["--index-width"]: `${Math.max(maxLength?.toString()?.length || 0, 2) * 0.65}em` }}
         >
           {hookList.map((item, index) => (
             <HookViewTree item={item as HOOKTree} key={id + "-" + index} />
