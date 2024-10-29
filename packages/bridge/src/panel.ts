@@ -1,4 +1,4 @@
-import { debounce, DevToolMessageEnum, parseDetailNode, type DevToolMessageType, type PlainNode, type Tree } from "@my-react-devtool/core";
+import { debounce, DevToolMessageEnum, type DevToolMessageType, type PlainNode, type Tree } from "@my-react-devtool/core";
 
 import { MessageHookType, MessagePanelType, MessageWorkerType, sourceFrom } from "./type";
 
@@ -172,16 +172,6 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       const { addNode, setLoading } = _window.useDetailNode.getActions();
 
       if (node) {
-        if (__DEV__) {
-          console.log("[@my-react-devtool/panel] before parse detail node", node);
-        }
-
-        parseDetailNode(node);
-
-        if (__DEV__) {
-          console.log("[@my-react-devtool/panel] after parse detail node", node);
-        }
-
         addNode(node);
 
         setLoading(false);

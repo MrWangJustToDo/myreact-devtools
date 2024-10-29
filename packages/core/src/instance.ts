@@ -467,6 +467,7 @@ export class DevToolCore {
     }
   }
 
+  // TODO! cache or not?
   notifyChunk(id: number | string) {
     if (!this.hasEnable) return;
 

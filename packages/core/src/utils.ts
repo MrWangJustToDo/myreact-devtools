@@ -1,11 +1,10 @@
 import { HOOK_TYPE } from "@my-react/react-shared";
-import * as Jsan from "jsan";
 
 import { getNode } from "./data";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
-import type { HOOK, HOOKTree, PlainNode } from "./plain";
+import type { HOOKTree } from "./plain";
 import type { DevToolRenderDispatch } from "./setup";
 import type {
   MixinMyReactClassComponent,
@@ -15,31 +14,7 @@ import type {
   createContext,
   lazy,
 } from "@my-react/react";
-import type { MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode, MyReactHookNodeDev } from "@my-react/react-reconciler";
-
-const replacer = (key: string, value: any) => {
-  if (key === "_owner" || key === "__fiber__" || key === "__props__") {
-    return null;
-  }
-  if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && value instanceof HTMLElement) {
-    return { type: "nativeNode", value: `<${value.tagName.toLowerCase()} />` };
-  }
-  return value;
-};
-
-const options = {
-  refs: false, // references can't be resolved on the original Immutable structure
-  date: true,
-  function: true,
-  regex: true,
-  undefined: true,
-  error: true,
-  symbol: true,
-  map: true,
-  set: true,
-  nan: true,
-  infinity: true,
-};
+import type { MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNodeDev } from "@my-react/react-reconciler";
 
 export const typeKeys: number[] = [];
 
@@ -48,54 +23,6 @@ Object.keys(NODE_TYPE).forEach((key) => {
     typeKeys.push(+key);
   }
 });
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-export const safeStringify = (obj: Object | Function, _deepIndex?: number) => {
-  try {
-    if (typeof obj === "function") {
-      return { type: "function", name: obj.name, value: Jsan.stringify(obj, replacer, undefined, options) } as const;
-    } else if (typeof obj === "object") {
-      if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && obj instanceof HTMLElement) {
-        return { type: "nativeNode", value: `<${obj.tagName.toLowerCase()} />` };
-      } else {
-        return { type: "object", name: "object", value: Jsan.stringify(obj, replacer, undefined, options) } as const;
-      }
-    } else {
-      return obj;
-    }
-  } catch (e) {
-    return { type: "object", name: "object", value: Jsan.stringify({ error: (e as Error).message }, replacer, undefined, options) };
-  }
-};
-
-export type FiberObj = ReturnType<typeof safeStringify>;
-
-export const safeParse = (val: FiberObj) => {
-  try {
-    if (typeof val === "object") {
-      if (val.type === "function") {
-        const re = Jsan.parse(val.value);
-        Object.defineProperty(re, "name", {
-          value: val.name,
-        });
-        Object.defineProperty(re, "displayName", {
-          value: val.name,
-        });
-        return re;
-      } else if (val.type === "object") {
-        return Jsan.parse(val.value);
-      } else if (val.type === "nativeNode") {
-        return val;
-      } else {
-        return Jsan.parse(val as any);
-      }
-    } else {
-      return val;
-    }
-  } catch (e) {
-    console.log((e as Error).message);
-  }
-};
 
 export const getTypeName = (type: number) => {
   switch (type) {
@@ -301,31 +228,7 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
   return tree;
 };
 
-const parseHookDetail = (hook: MyReactHookNode) => {
-  const name = hook.type === HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
-
-  const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
-
-  const value = safeStringify(isEffect ? hook.value : hook.result);
-
-  const deps = safeStringify(hook.deps);
-
-  return { name, value, deps };
-};
-
 export const getHook = (fiber: MyReactFiberNodeDev) => {
-  const tree: HOOK[] = [];
-
-  const hookList = fiber.hookList;
-
-  const parseHook = (hook: MyReactHookNode) => parseHookDetail(hook);
-
-  hookList?.listToFoot?.((h) => tree.push(parseHook(h as MyReactHookNode)));
-
-  return tree;
-};
-
-export const getHook_v2 = (fiber: MyReactFiberNodeDev) => {
   const final: HOOKTree[] = [];
 
   const hookList = fiber.hookList;
@@ -389,29 +292,13 @@ export const getHook_v2 = (fiber: MyReactFiberNodeDev) => {
   return final;
 };
 
-export const parseHook = (plain: PlainNode) => {
-  const hook = plain.hook;
+export const getProps = (fiber: MyReactFiberNodeDev) => {
+  return getNode(fiber.memoizedProps, 0);
+}
 
-  if (!hook || hook.length === 0) return [];
-
-  return hook.map((item) => ({ ...item, value: safeParse(item.value), deps: safeParse(item.deps) }));
-};
-
-export const getObj = (obj: any) => {
-  return safeStringify(obj);
-};
-
-export const parseProps = (plain: PlainNode) => {
-  const obj = plain.p;
-
-  return safeParse(obj);
-};
-
-export const parseState = (plain: PlainNode) => {
-  const state = plain.s as any;
-
-  return safeParse(state);
-};
+export const getState = (fiber: MyReactFiberNodeDev) => {
+  return getNode(fiber.memoizedState, 0);
+}
 
 export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
   const nodes: HTMLElement[] = [];

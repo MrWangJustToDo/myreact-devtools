@@ -1,4 +1,4 @@
-import { debounce, DevToolMessageEnum, MessagePanelType, MessageWorkerType, parseDetailNode } from "@my-react-devtool/core";
+import { debounce, DevToolMessageEnum, MessagePanelType, MessageWorkerType } from "@my-react-devtool/core";
 import { useEffect } from "react";
 
 import { useActiveNode } from "./useActiveNode";
@@ -166,7 +166,7 @@ export const useWebDev = () => {
         if (data.type === DevToolMessageEnum.detail) {
           safeAction(() => {
             if (data.data) {
-              useDetailNode.getActions().addNode(parseDetailNode(data.data));
+              useDetailNode.getActions().addNode(data.data);
             }
 
             useDetailNode.getActions().setLoading(false);

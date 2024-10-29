@@ -61,9 +61,8 @@ export class PlainNode {
   _d?: number;
   // deep?: number;
 
-  hook: HOOK[];
-
   _h: HOOKTree[];
+  // hooks: HOOKTree[];
 
   constructor(_id?: string) {
     this.i = _id || `${id++}`;

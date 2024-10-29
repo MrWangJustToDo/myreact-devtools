@@ -1,6 +1,6 @@
 import { PlainNode } from "./plain";
 import { NODE_TYPE } from "./type";
-import { getFiberName, getHook, getHook_v2, getObj, getSource, getTree, parseHook, parseProps, parseState } from "./utils";
+import { getFiberName, getHook, getProps, getSource, getState, getTree } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
@@ -40,18 +40,16 @@ export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) =>
 export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   shallowAssignFiber(plain, fiber);
 
-  plain.hook = getHook(fiber as MyReactFiberNodeDev);
-
-  plain.p = getObj(fiber.pendingProps);
+  plain.p = getProps(fiber as MyReactFiberNodeDev);
 
   plain._s = getSource(fiber as MyReactFiberNodeDev);
 
   plain._t = getTree(fiber as MyReactFiberNodeDev);
 
-  plain._h = getHook_v2(fiber as MyReactFiberNodeDev);
+  plain._h = getHook(fiber as MyReactFiberNodeDev);
 
   if (fiber.type & NODE_TYPE.__class__) {
-    plain.s = getObj(fiber.pendingState);
+    plain.s = getState(fiber as MyReactFiberNodeDev);
   }
 };
 
@@ -125,7 +123,6 @@ export const loopChangedTree = (
   shallowAssignFiber(current, fiber);
 
   if (!exist) {
-
     treeMap.set(fiber, current);
 
     fiberStore.set(current.i, fiber);
@@ -184,7 +181,7 @@ export const getTreeByFiber = (fiber: MyReactFiberNode): null | PlainNode => {
   } else {
     return getPlainNodeByFiber(fiber);
   }
-}
+};
 
 export const getPlainNodeArrayByList = (list: ListTree<MyReactFiberNode>) => {
   const hasViewList = new WeakSet<MyReactFiberNode>();
@@ -232,18 +229,5 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
 
 export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
-}
-
-export const parseDetailNode = (plain: PlainNode) => {
-  plain.hook = parseHook(plain);
-
-  plain.p = parseProps(plain);
-
-  if (plain.s) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    plain.s = parseState(plain);
-  }
-
-  return plain;
 };
+

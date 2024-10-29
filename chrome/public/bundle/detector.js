@@ -660,403 +660,6 @@
     	return reactShared.exports;
     }
 
-    var lib = {};
-
-    var cycle = {};
-
-    var pathGetter_1;
-    var hasRequiredPathGetter;
-
-    function requirePathGetter () {
-    	if (hasRequiredPathGetter) return pathGetter_1;
-    	hasRequiredPathGetter = 1;
-    	pathGetter_1 = pathGetter;
-
-    	function pathGetter(obj, path) {
-    	  if (path !== '$') {
-    	    var paths = getPaths(path);
-    	    for (var i = 0; i < paths.length; i++) {
-    	      path = paths[i].toString().replace(/\\"/g, '"');
-    	      if (typeof obj[path] === 'undefined' && i !== paths.length - 1) continue;
-    	      obj = obj[path];
-    	    }
-    	  }
-    	  return obj;
-    	}
-
-    	function getPaths(pathString) {
-    	  var regex = /(?:\.(\w+))|(?:\[(\d+)\])|(?:\["((?:[^\\"]|\\.)*)"\])/g;
-    	  var matches = [];
-    	  var match;
-    	  while (match = regex.exec(pathString)) {
-    	    matches.push( match[1] || match[2] || match[3] );
-    	  }
-    	  return matches;
-    	}
-    	return pathGetter_1;
-    }
-
-    var utils = {};
-
-    var hasRequiredUtils;
-
-    function requireUtils () {
-    	if (hasRequiredUtils) return utils;
-    	hasRequiredUtils = 1;
-    	var pathGetter = requirePathGetter();
-    	var jsan = requireLib();
-
-    	utils.getRegexFlags = function getRegexFlags(regex) {
-    	  var flags = '';
-    	  if (regex.ignoreCase) flags += 'i';
-    	  if (regex.global) flags += 'g';
-    	  if (regex.multiline) flags += 'm';
-    	  return flags;
-    	};
-
-    	utils.stringifyFunction = function stringifyFunction(fn, customToString) {
-    	  if (typeof customToString === 'function') {
-    	    return customToString(fn);
-    	  }
-    	  var str = fn.toString();
-    	  var match = str.match(/^[^{]*{|^[^=]*=>/);
-    	  var start = match ? match[0] : '<function> ';
-    	  var end = str[str.length - 1] === '}' ? '}' : '';
-    	  return start.replace(/\r\n|\n/g, ' ').replace(/\s+/g, ' ') + ' /* ... */ ' + end;
-    	};
-
-    	utils.restore = function restore(obj, root) {
-    	  var type = obj[0];
-    	  var rest = obj.slice(1);
-    	  switch(type) {
-    	    case '$':
-    	      return pathGetter(root, obj);
-    	    case 'r':
-    	      var comma = rest.indexOf(',');
-    	      var flags = rest.slice(0, comma);
-    	      var source = rest.slice(comma + 1);
-    	      return RegExp(source, flags);
-    	    case 'd':
-    	      return new Date(+rest);
-    	    case 'f':
-    	      var fn = function() { throw new Error("can't run jsan parsed function") };
-    	      fn.toString = function() { return rest; };
-    	      return fn;
-    	    case 'u':
-    	      return undefined;
-    	    case 'e':
-    	      var error = new Error(rest);
-    	      error.stack = 'Stack is unavailable for jsan parsed errors';
-    	      return error;
-    	    case 's':
-    	      return Symbol(rest);
-    	    case 'g':
-    	      return Symbol.for(rest);
-    	    case 'm':
-    	      return new Map(jsan.parse(rest));
-    	    case 'l':
-    	      return new Set(jsan.parse(rest));
-    	    case 'n':
-    	      return NaN;
-    	    case 'i':
-    	      return Infinity;
-    	    case 'y':
-    	      return -Infinity;
-    	    default:
-    	      console.warn('unknown type', obj);
-    	      return obj;
-    	  }
-    	};
-    	return utils;
-    }
-
-    var hasRequiredCycle;
-
-    function requireCycle () {
-    	if (hasRequiredCycle) return cycle;
-    	hasRequiredCycle = 1;
-    	requirePathGetter();
-    	var utils = requireUtils();
-
-    	var WMap = typeof WeakMap !== 'undefined'?
-    	  WeakMap:
-    	  function() {
-    	    var keys = [];
-    	    var values = [];
-    	    return {
-    	      set: function(key, value) {
-    	        keys.push(key);
-    	        values.push(value);
-    	      },
-    	      get: function(key) {
-    	        for (var i = 0; i < keys.length; i++) {
-    	          if (keys[i] === key) {
-    	            return values[i];
-    	          }
-    	        }
-    	      }
-    	    }
-    	  };
-
-    	// Based on https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
-
-    	cycle.decycle = function decycle(object, options, replacer, map) {
-
-    	  map = map || new WMap();
-
-    	  var noCircularOption = !Object.prototype.hasOwnProperty.call(options, 'circular');
-    	  var withRefs = options.refs !== false;
-
-    	  return (function derez(_value, path, key) {
-
-    	    // The derez recurses through the object, producing the deep copy.
-
-    	    var i,        // The loop counter
-    	      name,       // Property name
-    	      nu;         // The new object or array
-
-    	    // typeof null === 'object', so go on if this value is really an object but not
-    	    // one of the weird builtin objects.
-
-    	    var value = typeof replacer === 'function' ? replacer(key || '', _value) : _value;
-
-    	    if (options.date && value instanceof Date) {
-    	      return {$jsan: 'd' + value.getTime()};
-    	    }
-    	    if (options.regex && value instanceof RegExp) {
-    	      return {$jsan: 'r' + utils.getRegexFlags(value) + ',' + value.source};
-    	    }
-    	    if (options['function'] && typeof value === 'function') {
-    	      return {$jsan: 'f' + utils.stringifyFunction(value, options['function'])}
-    	    }
-    	    if (options['nan'] && typeof value === 'number' && isNaN(value)) {
-    	      return {$jsan: 'n'}
-    	    }
-    	    if (options['infinity']) {
-    	      if (Number.POSITIVE_INFINITY === value) return {$jsan: 'i'}
-    	      if (Number.NEGATIVE_INFINITY === value) return {$jsan: 'y'}
-    	    }
-    	    if (options['undefined'] && value === undefined) {
-    	      return {$jsan: 'u'}
-    	    }
-    	    if (options['error'] && value instanceof Error) {
-    	      return {$jsan: 'e' + value.message}
-    	    }
-    	    if (options['symbol'] && typeof value === 'symbol') {
-    	      var symbolKey = Symbol.keyFor(value);
-    	      if (symbolKey !== undefined) {
-    	        return {$jsan: 'g' + symbolKey}
-    	      }
-
-    	      // 'Symbol(foo)'.slice(7, -1) === 'foo'
-    	      return {$jsan: 's' + value.toString().slice(7, -1)}
-    	    }
-
-    	    if (options['map'] && typeof Map === 'function' && value instanceof Map && typeof Array.from === 'function') {
-    	      return {$jsan: 'm' + JSON.stringify(decycle(Array.from(value), options, replacer, map))}
-    	    }
-
-    	    if (options['set'] && typeof Set === 'function' && value instanceof Set && typeof Array.from === 'function') {
-    	      return {$jsan: 'l' + JSON.stringify(decycle(Array.from(value), options, replacer, map))}
-    	    }
-
-    	    if (value && typeof value.toJSON === 'function') {
-    	      try {
-    	        value = value.toJSON(key);
-    	      } catch (error) {
-    	        var keyString = (key || '$');
-    	        return "toJSON failed for '" + (map.get(value) || keyString) + "'";
-    	      }
-    	    }
-
-    	    if (typeof value === 'object' && value !== null &&
-    	      !(value instanceof Boolean) &&
-    	      !(value instanceof Date)    &&
-    	      !(value instanceof Number)  &&
-    	      !(value instanceof RegExp)  &&
-    	      !(value instanceof String)  &&
-    	      !(typeof value === 'symbol')  &&
-    	      !(value instanceof Error)) {
-
-    	        // If the value is an object or array, look to see if we have already
-    	        // encountered it. If so, return a $ref/path object.
-
-    	      if (typeof value === 'object') {
-    	        var foundPath = map.get(value);
-    	        if (foundPath) {
-    	          if (noCircularOption && withRefs) {
-    	            return {$jsan: foundPath};
-    	          }
-    	          
-    	          // This is only a true circular reference if the parent path is inside of foundPath
-    	          // drop the last component of the current path and check if it starts with foundPath
-    	          var parentPath = path.split('.').slice(0, -1).join('.');
-    	          if (parentPath.indexOf(foundPath) === 0) {
-    	            if (!noCircularOption) {
-    	              return typeof options.circular === 'function'?
-    	              options.circular(value, path, foundPath):
-    	              options.circular;
-    	            }
-    	            return {$jsan: foundPath};
-    	          }
-    	          if (withRefs) return {$jsan: foundPath};
-    	        }
-    	        map.set(value, path);
-    	      }
-
-
-    	      // If it is an array, replicate the array.
-
-    	      if (Object.prototype.toString.apply(value) === '[object Array]') {
-    	          nu = [];
-    	          for (i = 0; i < value.length; i += 1) {
-    	              nu[i] = derez(value[i], path + '[' + i + ']', i);
-    	          }
-    	      } else {
-
-    	        // If it is an object, replicate the object.
-
-    	        nu = {};
-    	        for (name in value) {
-    	          if (Object.prototype.hasOwnProperty.call(value, name)) {
-    	            var nextPath = /^\w+$/.test(name) ?
-    	              '.' + name :
-    	              '[' + JSON.stringify(name) + ']';
-    	            nu[name] = name === '$jsan' ? [derez(value[name], path + nextPath)] : derez(value[name], path + nextPath, name);
-    	          }
-    	        }
-    	      }
-    	      return nu;
-    	    }
-    	    return value;
-    	  }(object, '$'));
-    	};
-
-
-    	cycle.retrocycle = function retrocycle($) {
-
-
-    	  return (function rez(value) {
-
-    	    // The rez function walks recursively through the object looking for $jsan
-    	    // properties. When it finds one that has a value that is a path, then it
-    	    // replaces the $jsan object with a reference to the value that is found by
-    	    // the path.
-
-    	    var i, item, name;
-
-    	    if (value && typeof value === 'object') {
-    	      if (Object.prototype.toString.apply(value) === '[object Array]') {
-    	        for (i = 0; i < value.length; i += 1) {
-    	          item = value[i];
-    	          if (item && typeof item === 'object') {
-    	            if (item.$jsan) {
-    	              value[i] = utils.restore(item.$jsan, $);
-    	            } else {
-    	              rez(item);
-    	            }
-    	          }
-    	        }
-    	      } else {
-    	        for (name in value) {
-    	          // base case passed raw object
-    	          if(typeof value[name] === 'string' && name === '$jsan'){
-    	            return utils.restore(value.$jsan, $);
-    	          }
-    	          else {
-    	            if (name === '$jsan') {
-    	              value[name] = value[name][0];
-    	            }
-    	            if (typeof value[name] === 'object') {
-    	              item = value[name];
-    	              if (item && typeof item === 'object') {
-    	                if (item.$jsan) {
-    	                  value[name] = utils.restore(item.$jsan, $);
-    	                } else {
-    	                  rez(item);
-    	                }
-    	              }
-    	            }
-    	          }
-    	        }
-    	      }
-    	    }
-    	    return value;
-    	  }($));
-    	};
-    	return cycle;
-    }
-
-    var hasRequiredLib;
-
-    function requireLib () {
-    	if (hasRequiredLib) return lib;
-    	hasRequiredLib = 1;
-    	var cycle = requireCycle();
-
-    	lib.stringify = function stringify(value, replacer, space, _options) {
-
-    	  if (arguments.length < 4) {
-    	    try {
-    	      if (arguments.length === 1) {
-    	        return JSON.stringify(value);
-    	      } else {
-    	        return JSON.stringify.apply(JSON, arguments);
-    	      }
-    	    } catch (e) {}
-    	  }
-
-    	  var options = _options || false;
-    	  if (typeof options === 'boolean') {
-    	    options = {
-    	      'date': options,
-    	      'function': options,
-    	      'regex': options,
-    	      'undefined': options,
-    	      'error': options,
-    	      'symbol': options,
-    	      'map': options,
-    	      'set': options,
-    	      'nan': options,
-    	      'infinity': options
-    	    };
-    	  }
-
-    	  var decycled = cycle.decycle(value, options, replacer);
-    	  if (arguments.length === 1) {
-    	    return JSON.stringify(decycled);
-    	  } else {
-    	    // decycle already handles when replacer is a function.
-    	    return JSON.stringify(decycled, Array.isArray(replacer) ? replacer : null, space);
-    	  }
-    	};
-
-    	lib.parse = function parse(text, reviver) {
-    	  var needsRetrocycle = /"\$jsan"/.test(text);
-    	  var parsed;
-    	  if (arguments.length === 1) {
-    	    parsed = JSON.parse(text);
-    	  } else {
-    	    parsed = JSON.parse(text, reviver);
-    	  }
-    	  if (needsRetrocycle) {
-    	    parsed = cycle.retrocycle(parsed);
-    	  }
-    	  return parsed;
-    	};
-    	return lib;
-    }
-
-    var jsan;
-    var hasRequiredJsan;
-
-    function requireJsan () {
-    	if (hasRequiredJsan) return jsan;
-    	hasRequiredJsan = 1;
-    	jsan = requireLib();
-    	return jsan;
-    }
-
     var index_development = {};
 
     var hasRequiredIndex_development;
@@ -1067,26 +670,6 @@
     	(function (exports) {
 
     		var reactShared = requireReactShared();
-    		var Jsan = requireJsan();
-
-    		function _interopNamespaceDefault(e) {
-    		    var n = Object.create(null);
-    		    if (e) {
-    		        Object.keys(e).forEach(function (k) {
-    		            if (k !== 'default') {
-    		                var d = Object.getOwnPropertyDescriptor(e, k);
-    		                Object.defineProperty(n, k, d.get ? d : {
-    		                    enumerable: true,
-    		                    get: function () { return e[k]; }
-    		                });
-    		            }
-    		        });
-    		    }
-    		    n.default = e;
-    		    return Object.freeze(n);
-    		}
-
-    		var Jsan__namespace = /*#__PURE__*/_interopNamespaceDefault(Jsan);
 
     		/******************************************************************************
     		Copyright (c) Microsoft Corporation.
@@ -1277,6 +860,7 @@
     		var id = 0;
     		// PlainNode is a simplified version of FiberNode just for show the structure
     		var PlainNode = /** @class */ (function () {
+    		    // hooks: HOOKTree[];
     		    function PlainNode(_id) {
     		        this.i = _id || "".concat(id++);
     		    }
@@ -1335,13 +919,12 @@
     		};
     		var assignFiber = function (plain, fiber) {
     		    shallowAssignFiber(plain, fiber);
-    		    plain.hook = getHook(fiber);
-    		    plain.p = getObj(fiber.pendingProps);
+    		    plain.p = getProps(fiber);
     		    plain._s = getSource(fiber);
     		    plain._t = getTree(fiber);
-    		    plain._h = getHook_v2(fiber);
+    		    plain._h = getHook(fiber);
     		    if (fiber.type & NODE_TYPE.__class__) {
-    		        plain.s = getObj(fiber.pendingState);
+    		        plain.s = getState(fiber);
     		    }
     		};
     		// TODO improve performance
@@ -1467,98 +1050,13 @@
     		var getFiberNodeById = function (id) {
     		    return fiberStore.get(id);
     		};
-    		var parseDetailNode = function (plain) {
-    		    plain.hook = parseHook(plain);
-    		    plain.p = parseProps(plain);
-    		    if (plain.s) {
-    		        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    		        // @ts-ignore
-    		        plain.s = parseState(plain);
-    		    }
-    		    return plain;
-    		};
 
-    		var replacer = function (key, value) {
-    		    if (key === "_owner" || key === "__fiber__" || key === "__props__") {
-    		        return null;
-    		    }
-    		    if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && value instanceof HTMLElement) {
-    		        return { type: "nativeNode", value: "<".concat(value.tagName.toLowerCase(), " />") };
-    		    }
-    		    return value;
-    		};
-    		var options = {
-    		    refs: false, // references can't be resolved on the original Immutable structure
-    		    date: true,
-    		    function: true,
-    		    regex: true,
-    		    undefined: true,
-    		    error: true,
-    		    symbol: true,
-    		    map: true,
-    		    set: true,
-    		    nan: true,
-    		    infinity: true,
-    		};
     		var typeKeys = [];
     		Object.keys(NODE_TYPE).forEach(function (key) {
     		    if (!key.startsWith("__")) {
     		        typeKeys.push(+key);
     		    }
     		});
-    		// eslint-disable-next-line @typescript-eslint/ban-types
-    		var safeStringify = function (obj, _deepIndex) {
-    		    try {
-    		        if (typeof obj === "function") {
-    		            return { type: "function", name: obj.name, value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
-    		        }
-    		        else if (typeof obj === "object") {
-    		            if (typeof document !== "undefined" && typeof HTMLElement !== "undefined" && obj instanceof HTMLElement) {
-    		                return { type: "nativeNode", value: "<".concat(obj.tagName.toLowerCase(), " />") };
-    		            }
-    		            else {
-    		                return { type: "object", name: "object", value: Jsan__namespace.stringify(obj, replacer, undefined, options) };
-    		            }
-    		        }
-    		        else {
-    		            return obj;
-    		        }
-    		    }
-    		    catch (e) {
-    		        return { type: "object", name: "object", value: Jsan__namespace.stringify({ error: e.message }, replacer, undefined, options) };
-    		    }
-    		};
-    		var safeParse = function (val) {
-    		    try {
-    		        if (typeof val === "object") {
-    		            if (val.type === "function") {
-    		                var re = Jsan__namespace.parse(val.value);
-    		                Object.defineProperty(re, "name", {
-    		                    value: val.name,
-    		                });
-    		                Object.defineProperty(re, "displayName", {
-    		                    value: val.name,
-    		                });
-    		                return re;
-    		            }
-    		            else if (val.type === "object") {
-    		                return Jsan__namespace.parse(val.value);
-    		            }
-    		            else if (val.type === "nativeNode") {
-    		                return val;
-    		            }
-    		            else {
-    		                return Jsan__namespace.parse(val);
-    		            }
-    		        }
-    		        else {
-    		            return val;
-    		        }
-    		    }
-    		    catch (e) {
-    		        console.log(e.message);
-    		    }
-    		};
     		var getTypeName = function (type) {
     		    switch (type) {
     		        case NODE_TYPE.__keepLive__:
@@ -1760,22 +1258,7 @@
     		    }
     		    return tree;
     		};
-    		var parseHookDetail = function (hook) {
-    		    var name = hook.type === reactShared.HOOK_TYPE.useContext ? getContextName(hook.value) : getHookName(hook.type);
-    		    var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
-    		    var value = safeStringify(isEffect ? hook.value : hook.result);
-    		    var deps = safeStringify(hook.deps);
-    		    return { name: name, value: value, deps: deps };
-    		};
     		var getHook = function (fiber) {
-    		    var _a;
-    		    var tree = [];
-    		    var hookList = fiber.hookList;
-    		    var parseHook = function (hook) { return parseHookDetail(hook); };
-    		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.listToFoot) === null || _a === void 0 ? void 0 : _a.call(hookList, function (h) { return tree.push(parseHook(h)); });
-    		    return tree;
-    		};
-    		var getHook_v2 = function (fiber) {
     		    var _a;
     		    var final = [];
     		    var hookList = fiber.hookList;
@@ -1836,22 +1319,11 @@
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.toArray()) === null || _a === void 0 ? void 0 : _a.forEach(processStack);
     		    return final;
     		};
-    		var parseHook = function (plain) {
-    		    var hook = plain.hook;
-    		    if (!hook || hook.length === 0)
-    		        return [];
-    		    return hook.map(function (item) { return (__assign(__assign({}, item), { value: safeParse(item.value), deps: safeParse(item.deps) })); });
+    		var getProps = function (fiber) {
+    		    return getNode(fiber.memoizedProps, 0);
     		};
-    		var getObj = function (obj) {
-    		    return safeStringify(obj);
-    		};
-    		var parseProps = function (plain) {
-    		    var obj = plain.p;
-    		    return safeParse(obj);
-    		};
-    		var parseState = function (plain) {
-    		    var state = plain.s;
-    		    return safeParse(state);
+    		var getState = function (fiber) {
+    		    return getNode(fiber.memoizedState, 0);
     		};
     		var getElementNodesFromFiber = function (fiber) {
     		    var nodes = [];
@@ -2717,6 +2189,7 @@
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
     		        }
     		    };
+    		    // TODO! cache or not?
     		    DevToolCore.prototype.notifyChunk = function (id) {
     		        var _a;
     		        if (!this.hasEnable)
@@ -2797,23 +2270,17 @@
     		exports.getFiberType = getFiberType;
     		exports.getHook = getHook;
     		exports.getHookName = getHookName;
-    		exports.getHook_v2 = getHook_v2;
-    		exports.getObj = getObj;
     		exports.getPlainNodeArrayByList = getPlainNodeArrayByList;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
+    		exports.getProps = getProps;
     		exports.getSource = getSource;
+    		exports.getState = getState;
     		exports.getTree = getTree;
     		exports.getTreeByFiber = getTreeByFiber;
     		exports.getTypeName = getTypeName;
     		exports.loopChangedTree = loopChangedTree;
     		exports.loopTree = loopTree;
-    		exports.parseDetailNode = parseDetailNode;
-    		exports.parseHook = parseHook;
-    		exports.parseProps = parseProps;
-    		exports.parseState = parseState;
-    		exports.safeParse = safeParse;
-    		exports.safeStringify = safeStringify;
     		exports.shallowAssignFiber = shallowAssignFiber;
     		exports.throttle = throttle;
     		exports.typeKeys = typeKeys;
