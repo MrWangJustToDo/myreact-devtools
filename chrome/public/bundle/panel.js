@@ -3185,7 +3185,9 @@
         try {
             return useChunk.subscribe(function (s) { return s.id; }, function () {
                 var id = useChunk.getReadonlyState().id;
-                sendMessage({ type: coreExports.MessagePanelType.chunk, data: id });
+                if (id) {
+                    sendMessage({ type: coreExports.MessagePanelType.chunk, data: id });
+                }
             });
         }
         catch (_a) {
