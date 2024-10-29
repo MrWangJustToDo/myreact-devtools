@@ -18,6 +18,8 @@ export const PropsView = () => {
 
   const propsKeys = Object.keys(currentSelectDetail?.p?.v || {});
 
+  const id = currentSelectDetail?.i;
+
   const hasProps = propsKeys.length > 0;
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
@@ -25,7 +27,7 @@ export const PropsView = () => {
   const render = useCallbackRef((index: number) => {
     const key = propsKeys[index];
     return (
-      <div className={`${sizeClass} font-mono tree-wrapper`} key={index}>
+      <div className={`${sizeClass} font-mono tree-wrapper`} key={id + "-" + index}>
         <ValueViewTree name={key} item={currentSelectDetail?.p?.v?.[key]} />
       </div>
     );
@@ -36,9 +38,7 @@ export const PropsView = () => {
       <div className="p-2">
         <div>props</div>
         <Spacer y={1} />
-        <div className="w-full">
-          {propsKeys.map((key, index) => render(index))}
-        </div>
+        <div className="w-full">{propsKeys.map((key, index) => render(index))}</div>
         <Divider />
       </div>
     );

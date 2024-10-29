@@ -19,6 +19,8 @@ export const StateView = () => {
 
   const stateKeys = Object.keys(currentSelectDetail?.s?.v || {});
 
+  const id = currentSelectDetail?.i;
+
   const hasStates = stateKeys.length > 0;
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
@@ -26,7 +28,7 @@ export const StateView = () => {
   const render = useCallbackRef((index: number) => {
     const key = stateKeys[index];
     return (
-      <div className={`${sizeClass} font-mono tree-wrapper`} key={index}>
+      <div className={`${sizeClass} font-mono tree-wrapper`} key={id + "-" + index}>
         {/* @ts-ignore */}
         <ValueViewTree name={key} item={currentSelectDetail?.s?.v?.[key]} />
       </div>
@@ -38,9 +40,7 @@ export const StateView = () => {
       <div className="p-2">
         <div>states</div>
         <Spacer y={1} />
-        <div className="w-full">
-          {stateKeys.map((key, index) => render(index))}
-        </div>
+        <div className="w-full">{stateKeys.map((key, index) => render(index))}</div>
         <Divider />
       </div>
     );
