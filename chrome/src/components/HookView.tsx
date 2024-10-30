@@ -58,14 +58,21 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
 
   const data = chunkData?.v ?? item?.v;
 
+  const n = chunkData?.n ?? item?.n;
+
+  const t = chunkData?.t ?? item?.t;
+
   const text = useMemo(() => {
-    if (item?.t === "Array" || item?.t === "Set") {
+    if (n) {
+      return n;
+    }
+    if (t === "Array" || t === "Set") {
       return getText("Array", data ?? [], "new");
     }
-    if (item?.t === "Iterable" || item?.t === "Map" || item?.t === "Object") {
+    if (t === "Iterable" || t === "Map" || t === "Object") {
       return getText("Object", data ?? {}, "new");
     }
-  }, [item?.t, data]);
+  }, [t, n, data]);
 
   useEffect(() => {
     if (expand && item?.l === false && item.i && !chunkData) {
@@ -125,7 +132,7 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent">{StateIcon}</span>
           {prefix}
-          <div className="max-w-full line-clamp-1">
+          <div className="max-w-full line-clamp-1 break-all">
             {name}: <span className="hook-value-placeholder">{element}</span>
           </div>
         </div>
@@ -140,7 +147,7 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
               {StateIcon}
             </span>
             {prefix}
-            <div className="max-w-full line-clamp-1">
+            <div className="max-w-full line-clamp-1 break-all">
               {name}: <span className="hook-value-placeholder">{data ? text : <DotsHorizontalIcon className="inline-block" />}</span>
             </div>
           </div>
@@ -191,11 +198,7 @@ export const HookView = () => {
       <div className="p-2">
         <div>hooks</div>
         <Spacer y={1} />
-        <div
-          className={`w-full ${sizeClass}  tree-wrapper`}
-          // @ts-expect-error css 变量
-          style={{ ["--index-width"]: `${3 * 0.65}em` }}
-        >
+        <div className={`w-full ${sizeClass} tree-wrapper`}>
           {hookList.map((item, index) => (
             <HookViewTree item={item as HOOKTree} key={id + "-" + index} />
           ))}

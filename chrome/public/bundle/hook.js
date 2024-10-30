@@ -780,6 +780,7 @@
     		};
 
     		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
+    		var emptyConstructor = {}.constructor;
     		var id$1 = 1;
     		var valueMap = new Map();
     		var deepMap = new Map();
@@ -809,7 +810,6 @@
     		        value === "Set");
     		};
     		var getNode = function (value, parentDeep, deep) {
-    		    var _a;
     		    if (deep === void 0) { deep = 3; }
     		    var type = getType(value);
     		    var expandable = isObject(type);
@@ -823,7 +823,7 @@
     		                i: currentId,
     		                t: type,
     		                d: parentDeep + 1,
-    		                v: ((_a = value === null || value === void 0 ? void 0 : value.construct) === null || _a === void 0 ? void 0 : _a.name) || (value === null || value === void 0 ? void 0 : value.name),
+    		                v: undefined,
     		                e: expandable,
     		                l: false,
     		            };
@@ -876,6 +876,18 @@
     		                };
     		            }
     		            else if (type === "Object") {
+    		                if (typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
+    		                    return {
+    		                        t: type,
+    		                        d: parentDeep + 1,
+    		                        n: value.constructor.name,
+    		                        v: Object.keys(value).reduce(function (acc, key) {
+    		                            acc[key] = getNode(value[key], parentDeep + 1, deep - 1);
+    		                            return acc;
+    		                        }, {}),
+    		                        e: expandable,
+    		                    };
+    		                }
     		                return {
     		                    t: type,
     		                    d: parentDeep + 1,
@@ -2479,7 +2491,7 @@
             switch (_a.label) {
                 case 0:
                     console.log("[@my-react-devtool/hook] start a web ui devtool");
-                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js")];
+                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
                 case 1:
                     _a.sent();
                     socket_1 = window.io(url);

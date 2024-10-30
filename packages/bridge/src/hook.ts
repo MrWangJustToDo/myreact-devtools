@@ -128,7 +128,7 @@ const initWEB_UI = async (url: string) => {
   if (__DEV__) {
     console.log("[@my-react-devtool/hook] start a web ui devtool");
 
-    await loadScript("https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js");
+    await loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js");
 
     const socket = window.io(url);
 

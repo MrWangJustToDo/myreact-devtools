@@ -33,9 +33,13 @@ export type NodeValue = {
   e: boolean;
   // loaded
   l?: boolean;
+  // name
+  n?: string;
 };
 
 const isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
+
+const emptyConstructor = {}.constructor;
 
 let id = 1;
 
@@ -91,7 +95,7 @@ export const getNode = (value: any, parentDeep: number, deep = 3): NodeValue => 
         i: currentId,
         t: type,
         d: parentDeep + 1,
-        v: value?.construct?.name || value?.name,
+        v: undefined,
         e: expandable,
         l: false,
       };
@@ -135,6 +139,18 @@ export const getNode = (value: any, parentDeep: number, deep = 3): NodeValue => 
           e: expandable,
         };
       } else if (type === "Object") {
+        if (typeof value?.constructor === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
+          return {
+            t: type,
+            d: parentDeep + 1,
+            n: value.constructor.name,
+            v: Object.keys(value).reduce((acc, key) => {
+              acc[key] = getNode(value[key], parentDeep + 1, deep - 1);
+              return acc;
+            }, {}),
+            e: expandable,
+          };
+        }
         return {
           t: type,
           d: parentDeep + 1,

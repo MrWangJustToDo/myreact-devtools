@@ -1,7 +1,7 @@
 import { __my_react_shared__ } from "@my-react/react";
 import { Code, NextUIProvider, Snippet, Spacer, Spinner, Tooltip, Button } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
-import { JetBrains_Mono } from "next/font/google";
+import { Fira_Code } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 
 import { useConnect } from "@/hooks/useConnect";
@@ -13,9 +13,9 @@ import type { AppProps } from "next/app";
 import "@/styles/globals.css";
 import "allotment/dist/style.css";
 
-const roboto = JetBrains_Mono({
+const roboto = Fira_Code({
   weight: "400",
-  subsets: ["latin"],
+  subsets: ["greek-ext", "cyrillic-ext", "latin-ext"],
   display: "swap",
   variable: "--root-font--",
 });
