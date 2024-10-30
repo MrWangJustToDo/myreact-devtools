@@ -17,7 +17,9 @@ export const StateView = () => {
 
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
-  const stateKeys = Object.keys(currentSelectDetail?.s?.v || {});
+  const hasState = currentSelectDetail?.s?.t !== "Null" && currentSelectDetail?.s?.t !== "Undefined";
+
+  const stateKeys = Object.keys(hasState ? currentSelectDetail?.s?.v || {} : {});
 
   const id = currentSelectDetail?.i;
 

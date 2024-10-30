@@ -717,11 +717,19 @@
     	return index_development$1;
     }
 
-    {
-      reactShared.exports = requireIndex_development$1();
+    var hasRequiredReactShared;
+
+    function requireReactShared () {
+    	if (hasRequiredReactShared) return reactShared.exports;
+    	hasRequiredReactShared = 1;
+
+    	{
+    	  reactShared.exports = requireIndex_development$1();
+    	}
+    	return reactShared.exports;
     }
 
-    var reactSharedExports = reactShared.exports;
+    var reactSharedExports = requireReactShared();
 
     var core$1 = {exports: {}};
 
@@ -734,7 +742,7 @@
     	hasRequiredIndex_development = 1;
     	(function (exports) {
 
-    		var reactShared = reactSharedExports;
+    		var reactShared = requireReactShared();
 
     		/******************************************************************************
     		Copyright (c) Microsoft Corporation.
@@ -2367,11 +2375,19 @@
     	return index_development;
     }
 
-    {
-      core$1.exports = requireIndex_development();
+    var hasRequiredCore;
+
+    function requireCore () {
+    	if (hasRequiredCore) return core$1.exports;
+    	hasRequiredCore = 1;
+
+    	{
+    	  core$1.exports = requireIndex_development();
+    	}
+    	return core$1.exports;
     }
 
-    var coreExports = core$1.exports;
+    var coreExports = requireCore();
 
     var PortName;
     (function (PortName) {

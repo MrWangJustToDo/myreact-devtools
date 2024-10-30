@@ -2373,11 +2373,19 @@
     	return index_development;
     }
 
-    {
-      core.exports = requireIndex_development();
+    var hasRequiredCore;
+
+    function requireCore () {
+    	if (hasRequiredCore) return core.exports;
+    	hasRequiredCore = 1;
+
+    	{
+    	  core.exports = requireIndex_development();
+    	}
+    	return core.exports;
     }
 
-    var coreExports = core.exports;
+    var coreExports = requireCore();
 
     var PortName;
     (function (PortName) {
