@@ -1320,10 +1320,10 @@
     		    return final;
     		};
     		var getProps = function (fiber) {
-    		    return getNode(fiber.memoizedProps, 0);
+    		    return getNode(fiber.pendingProps, 0);
     		};
     		var getState = function (fiber) {
-    		    return getNode(fiber.memoizedState, 0);
+    		    return getNode(fiber.pendingState, 0);
     		};
     		var getElementNodesFromFiber = function (fiber) {
     		    var nodes = [];

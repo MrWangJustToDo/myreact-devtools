@@ -293,11 +293,11 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
 };
 
 export const getProps = (fiber: MyReactFiberNodeDev) => {
-  return getNode(fiber.memoizedProps, 0);
+  return getNode(fiber.pendingProps, 0);
 }
 
 export const getState = (fiber: MyReactFiberNodeDev) => {
-  return getNode(fiber.memoizedState, 0);
+  return getNode(fiber.pendingState, 0);
 }
 
 export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
