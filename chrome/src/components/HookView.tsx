@@ -27,7 +27,7 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
           <Chip
             classNames={{ content: "p-0" }}
             size="sm"
-            className="rounded-sm text-center mr-1 flex-shrink-0 !w-[calc(var(--index-width)*1)] !h-[calc(var(--index-width)*1)] !p-0 !max-w-[initial] !min-w-[initial]"
+            className="rounded-sm text-center mr-1 flex-shrink-0 font-[300] !px-1 text-gray-800 dark:text-gray-200 !h-[1.4em] !max-w-[initial] !min-w-[initial]"
           >
             {item.i}
           </Chip>
@@ -192,7 +192,7 @@ export const HookView = () => {
         <div>hooks</div>
         <Spacer y={1} />
         <div
-          className={`w-full ${sizeClass} font-mono tree-wrapper`}
+          className={`w-full ${sizeClass}  tree-wrapper`}
           // @ts-expect-error css 变量
           style={{ ["--index-width"]: `${3 * 0.65}em` }}
         >

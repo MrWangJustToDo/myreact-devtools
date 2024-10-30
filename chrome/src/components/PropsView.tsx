@@ -27,7 +27,7 @@ export const PropsView = () => {
   const render = useCallbackRef((index: number) => {
     const key = propsKeys[index];
     return (
-      <div className={`${sizeClass} font-mono tree-wrapper`} key={id + "-" + index}>
+      <div className={`${sizeClass}  tree-wrapper`} key={id + "-" + index}>
         <ValueViewTree name={key} item={currentSelectDetail?.p?.v?.[key]} />
       </div>
     );

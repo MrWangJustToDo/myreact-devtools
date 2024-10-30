@@ -53,7 +53,7 @@ export const RenderView = () => {
     if (!node) return null;
 
     return (
-      <div className={`${sizeClass} ml-2 font-mono`} key={node.i}>
+      <div className={`${sizeClass} ml-2 `} key={node.i}>
         <RenderItem node={node} withCollapse={false} />
       </div>
     );
@@ -66,7 +66,7 @@ export const RenderView = () => {
         <Spacer y={1} />
         <div className="w-full">
           {data.map((_, index) => render(index))}
-          <div className={`${sizeClass} ml-2 font-mono px-[2px]`}>{last || "@my-react"}</div>
+          <div className={`${sizeClass} ml-2  px-[2px]`}>{last || "@my-react"}</div>
           {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
         </div>
         <Divider />

@@ -23,7 +23,7 @@ export const SourceView = () => {
         <div>source</div>
         <Spacer y={1} />
         <div className="w-full">
-          <div className={`${sizeClass} ml-2 font-mono px-[2px] text-gray-600`}>
+          <div className={`${sizeClass} ml-2  px-[2px] text-gray-600`}>
             {renderSource?.fileName +
               `${renderSource?.lineNumber ? ":" + renderSource?.lineNumber : ""}` +
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment

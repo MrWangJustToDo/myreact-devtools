@@ -28,7 +28,7 @@ export const StateView = () => {
   const render = useCallbackRef((index: number) => {
     const key = stateKeys[index];
     return (
-      <div className={`${sizeClass} font-mono tree-wrapper`} key={id + "-" + index}>
+      <div className={`${sizeClass}  tree-wrapper`} key={id + "-" + index}>
         {/* @ts-ignore */}
         <ValueViewTree name={key} item={currentSelectDetail?.s?.v?.[key]} />
       </div>
