@@ -1388,7 +1388,7 @@
     		                    else {
     		                        final.push(item);
     		                    }
-    		                    item.n = item.n.substring(3);
+    		                    item.n = item.n.startsWith("use") ? item.n.substring(3) : item.n;
     		                }
     		                if (isHook) {
     		                    var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
