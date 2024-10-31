@@ -273,7 +273,7 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
           } else {
             final.push(item);
           }
-          item.n = item.n.substring(3);
+          item.n = item.n.startsWith("use") ? item.n.substring(3) : item.n;
         }
         if (isHook) {
           const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
@@ -294,11 +294,11 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
 
 export const getProps = (fiber: MyReactFiberNodeDev) => {
   return getNode(fiber.pendingProps, 0);
-}
+};
 
 export const getState = (fiber: MyReactFiberNodeDev) => {
   return getNode(fiber.pendingState, 0);
-}
+};
 
 export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
   const nodes: HTMLElement[] = [];
