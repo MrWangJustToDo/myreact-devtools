@@ -67,10 +67,10 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
       return n;
     }
     if (t === "Array" || t === "Set") {
-      return getText("Array", data ?? [], "new");
+      return getText("Array", data ?? []);
     }
     if (t === "Iterable" || t === "Map" || t === "Object") {
-      return getText("Object", data ?? {}, "new");
+      return getText("Object", data ?? {});
     }
   }, [t, n, data]);
 
