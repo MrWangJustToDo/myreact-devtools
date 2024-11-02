@@ -218,8 +218,12 @@ if (window.parent && window.parent !== window) {
   }
 } else {
   window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
+  
   window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
   // support local dev
   window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
+
   hookPostMessageWithSource({ type: MessageHookType.init });
+
+  globalHook.init = () => hookPostMessageWithSource({ type: MessageHookType.init });
 }

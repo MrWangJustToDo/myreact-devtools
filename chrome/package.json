@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "dev:web": "NEXT_PUBLIC_MODE=web node server.mjs",
+    "dev:local": "NEXT_PUBLIC_MODE=local next dev",
     "dev:extension": "npm-watch",
     "build": "next build",
+    "build:local": "NEXT_PUBLIC_MODE=local next build",
     "start": "next start",
     "lint": "next lint",
     "build:extension": "next build && npm run lint:build",

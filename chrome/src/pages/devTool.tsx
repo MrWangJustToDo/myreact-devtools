@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
 import { Toaster, toast } from "sonner";
@@ -20,6 +21,9 @@ export default function Page() {
 
   return (
     <main className="flex p-1 h-screen">
+      <Head>
+        <title>@my-react devtools</title>
+      </Head>
       <Toaster richColors theme={theme === "dark" ? "dark" : "light"} />
       <Layout left={<TreeView />} right={<NodeView />} />
     </main>

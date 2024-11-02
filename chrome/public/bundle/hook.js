@@ -2582,6 +2582,7 @@
         // support local dev
         window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
         hookPostMessageWithSource({ type: coreExports.MessageHookType.init });
+        globalHook.init = function () { return hookPostMessageWithSource({ type: coreExports.MessageHookType.init }); };
     }
 
 })();

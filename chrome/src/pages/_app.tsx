@@ -5,6 +5,7 @@ import { Fira_Code } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 
 import { useConnect } from "@/hooks/useConnect";
+import { useIframeDev } from "@/hooks/useIframeDev";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { useWebDev } from "@/hooks/useWebDev";
 
@@ -94,6 +95,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
   }
 
   useWebDev();
+
+  useIframeDev();
 
   const rendered = isMounted ? (
     children

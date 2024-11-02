@@ -1,4 +1,4 @@
-import { debounce, DevToolMessageEnum, MessagePanelType, MessageWorkerType } from "@my-react-devtool/core";
+import { MessageWorkerType, MessagePanelType, debounce, DevToolMessageEnum } from "@my-react-devtool/core";
 import { useEffect } from "react";
 
 import { useActiveNode } from "./useActiveNode";
@@ -12,25 +12,19 @@ import { useNodeName } from "./useNodeName";
 import { useRunNode } from "./useRunNode";
 import { useTreeNode } from "./useTreeNode";
 import { useTriggerNode } from "./useTriggerNode";
+import { DevToolSource, safeAction } from "./useWebDev";
 
-// SEE packages/bridge/src/hook.ts:42 onMessage
-export const DevToolSource = "@my-react/devtool";
+const from = "iframe";
 
-export const safeAction = (cb: () => void) => {
-  try {
-    cb();
-  } catch (e) {
-    const typedE = e as Error;
-
-    useConnect.getActions().setError(typedE.message);
-  }
+const poseMessageFromIframe = (data: any) => {
+  window.top?.postMessage({ from, ...data, source: DevToolSource }, "*");
 };
 
-export const useWebDev = () => {
+export const useIframeDev = () => {
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_MODE === "web") {
-      const io = window.io();
+    const currentIsIframe = window !== window.top;
 
+    if (process.env.NEXT_PUBLIC_MODE === "local" && currentIsIframe && window.top) {
       let connect = false;
 
       let id: NodeJS.Timeout | null = null;
@@ -41,16 +35,16 @@ export const useWebDev = () => {
         if (connect) {
           return;
         } else {
-          io.emit("action", { type: MessageWorkerType.init });
+          poseMessageFromIframe({ type: MessageWorkerType.init });
 
-          io.emit("action", { type: MessagePanelType.show });
+          poseMessageFromIframe({ type: MessagePanelType.show });
 
           id = setTimeout(listenBackEndReady, 1000);
         }
       };
 
-      io.on("connect", () => {
-        console.log("[Dev mode] client connect");
+      const onConnect = () => {
+        console.log("[Dev mode] iframe connect");
 
         useConnect.getActions().connect();
 
@@ -65,9 +59,9 @@ export const useWebDev = () => {
               if (currentSelect) {
                 useDetailNode.getActions().setLoading(true);
 
-                io.emit("action", { type: MessagePanelType.nodeSelect, data: currentSelect });
+                poseMessageFromIframe({ type: MessagePanelType.nodeSelect, data: currentSelect });
               } else {
-                io.emit("action", { type: MessagePanelType.nodeSelect, data: null });
+                poseMessageFromIframe({ type: MessagePanelType.nodeSelect, data: null });
               }
             }
           )
@@ -76,28 +70,28 @@ export const useWebDev = () => {
         unSubscribeArray.push(
           useTreeNode.subscribe(
             (s) => s.hover,
-            () => io.emit("action", { type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
+            () => poseMessageFromIframe({ type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
           )
         );
 
         unSubscribeArray.push(
           useActiveNode.subscribe(
             (s) => s.state,
-            debounce(() => io.emit("action", { type: MessagePanelType.nodeSubscriber, data: useActiveNode.getReadonlyState().state }), 100)
+            debounce(() => poseMessageFromIframe({ type: MessagePanelType.nodeSubscriber, data: useActiveNode.getReadonlyState().state }), 100)
           )
         );
 
         unSubscribeArray.push(
           useConfig.subscribe(
             (s) => s.state.enableHover,
-            () => io.emit("action", { type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
+            () => poseMessageFromIframe({ type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
           )
         );
 
         unSubscribeArray.push(
           useConfig.subscribe(
             (s) => s.state.enableUpdate,
-            () => io.emit("action", { type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
+            () => poseMessageFromIframe({ type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
           )
         );
 
@@ -107,15 +101,15 @@ export const useWebDev = () => {
             () => {
               const id = useChunk.getReadonlyState().id;
               if (id) {
-                io.emit("action", { type: MessagePanelType.chunk, data: id });
+                poseMessageFromIframe({ type: MessagePanelType.chunk, data: id });
               }
             }
           )
         );
-      });
+      };
 
-      io.on("disconnect", () => {
-        console.log("[Dev mode] client disconnect");
+      const onDisconnect = () => {
+        console.log("[Dev mode] iframe disconnect");
 
         connect = false;
 
@@ -124,13 +118,22 @@ export const useWebDev = () => {
         unSubscribeArray.forEach((fn) => fn());
 
         useConnect.getActions().disconnect();
-      });
+      };
 
-      io.on("render", (data) => {
-        console.log("[Dev mode] render", data);
+      window.addEventListener("message", (e) => {
+        if (e.source !== window.top) return;
+
+        if (e.data?.source !== DevToolSource) return;
+
+        if (e.data?.from === from) return;
+
+        const data = e.data;
+
         if (data.type === DevToolMessageEnum.init) {
           safeAction(() => {
             connect = true;
+
+            onConnect();
 
             useConnect.getActions().setRender(data.data);
           });
@@ -191,18 +194,8 @@ export const useWebDev = () => {
         }
       });
 
-      io.on("refresh", () => {
-        window.location.reload();
-      });
-
-      io.on("web-dev", (data) => {
-        console.log("[Dev mode] web-dev", data);
-
-        useConnect.getActions().setWebDev(data.name || "", data.url || "");
-      });
-
       return () => {
-        io.disconnect();
+        onDisconnect();
       };
     }
   }, []);
