@@ -16,6 +16,8 @@ import { DevToolSource, safeAction } from "./useWebDev";
 
 const from = "iframe";
 
+const render = "hook-render";
+
 const poseMessageFromIframe = (data: any) => {
   window.top?.postMessage({ from, ...data, source: DevToolSource }, "*");
 };
@@ -25,6 +27,8 @@ export const useIframeDev = () => {
     const currentIsIframe = window !== window.top;
 
     if (process.env.NEXT_PUBLIC_MODE === "local" && currentIsIframe && window.top) {
+      console.log("[Dev mode] iframe start");
+
       let connect = false;
 
       let id: NodeJS.Timeout | null = null;
@@ -127,13 +131,11 @@ export const useIframeDev = () => {
 
         if (e.data?.from === from) return;
 
-        const data = e.data;
+        const data = e.data?.type === render ? e.data.data : e.data;
 
         if (data.type === DevToolMessageEnum.init) {
           safeAction(() => {
             connect = true;
-
-            onConnect();
 
             useConnect.getActions().setRender(data.data);
           });
@@ -147,7 +149,9 @@ export const useIframeDev = () => {
 
         if (data.type === DevToolMessageEnum.ready) {
           safeAction(() => {
-            useAppTree.getActions().addNode(data.data);
+            if (data.data) {
+              useAppTree.getActions().addNode(data.data);
+            }
           });
         }
 
@@ -193,6 +197,8 @@ export const useIframeDev = () => {
           });
         }
       });
+
+      onConnect();
 
       return () => {
         onDisconnect();

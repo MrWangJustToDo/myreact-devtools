@@ -18,6 +18,8 @@ let messageId = 0;
 
 let id = null;
 
+let hasShow = false;
+
 const getTabId = () => chrome.devtools.inspectedWindow.tabId;
 
 // const tabId = chrome.devtools.inspectedWindow.tabId;
@@ -69,6 +71,8 @@ const sendMessage = <T = any>(data: T) => {
 };
 
 const onRender = (data: DevToolMessageType, _window: Window) => {
+  if (!hasShow) return;
+
   if (data.type === DevToolMessageEnum.init) {
     if (__DEV__) {
       console.log("[@my-react-devtool/panel] init", data.data);
@@ -382,6 +386,8 @@ const initPort = () => {
   port = chrome.runtime.connect({ name: getTabId().toString() });
 
   const onMessage = (message: MessageHookDataType | { type: MessageWorkerType }) => {
+    if (!hasShow) return;
+
     workerConnecting = false;
 
     if (__DEV__) {
@@ -428,6 +434,8 @@ const init = async (id: number) => {
           console.log("show panel");
         }
 
+        hasShow = true;
+
         panelWindow = window;
 
         sendMessage({ type: MessagePanelType.show });
@@ -442,6 +450,8 @@ const init = async (id: number) => {
         sendMessage({ type: MessagePanelType.hide });
 
         cleanList.forEach((f) => f());
+
+        hasShow = false;
       }
     );
   } else {
@@ -453,12 +463,12 @@ const init = async (id: number) => {
 
 const clear = () => {
   if (panelWindow) {
-    panelWindow.useChunk.getActions().clear();
-    panelWindow.useAppTree.getActions().clear();
-    panelWindow.useNodeName.getActions().clear();
-    panelWindow.useTreeNode.getActions().clear();
-    panelWindow.useDetailNode.getActions().clear();
-    panelWindow.useActiveNode.getActions().clear();
+    panelWindow.useChunk?.getActions?.()?.clear?.();
+    panelWindow.useAppTree?.getActions?.()?.clear?.();
+    panelWindow.useNodeName?.getActions?.()?.clear?.();
+    panelWindow.useTreeNode?.getActions?.()?.clear?.();
+    panelWindow.useDetailNode?.getActions?.()?.clear?.();
+    panelWindow.useActiveNode?.getActions()?.clear?.();
   }
 };
 
@@ -476,6 +486,8 @@ chrome.devtools.network.onNavigated.addListener(() => {
 
   // TODO! fix this
   setTimeout(() => {
-    sendMessage({ type: MessagePanelType.show });
+    if (hasShow) {
+      sendMessage({ type: MessagePanelType.show });
+    }
   }, 60);
 });

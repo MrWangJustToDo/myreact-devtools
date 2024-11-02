@@ -40,7 +40,8 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
 };
 
 const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorDataType | MessageWorkerDataType>) => {
-  if (message.source !== window) return;
+  // allow iframe dev
+  if (message.source !== window && message.data?.from !== sourceFrom.iframe) return;
 
   if (message.data?.source !== DevToolSource) return;
 
@@ -218,7 +219,7 @@ if (window.parent && window.parent !== window) {
   }
 } else {
   window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
-  
+
   window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
   // support local dev
   window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;

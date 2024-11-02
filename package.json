@@ -7,6 +7,7 @@
     "build:local": "cd chrome && pnpm run build:local",
     "build": "pnpm run build:packages && pnpm run build:local",
     "dev:web": "cd chrome && pnpm run dev:web",
+    "dev:local": "cd chrome && pnpm run dev:local",
     "dev:extension": "cd chrome && pnpm run dev:extension",
     "build:extension": "cd chrome && pnpm run build:extension",
     "lint": "eslint --cache --ext ts,tsx .",

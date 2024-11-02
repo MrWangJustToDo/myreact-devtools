@@ -2401,6 +2401,7 @@
         sourceFrom["proxy"] = "proxy";
         sourceFrom["panel"] = "panel";
         sourceFrom["worker"] = "worker";
+        sourceFrom["iframe"] = "iframe";
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
 
@@ -2436,44 +2437,45 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-        if (message.source !== window)
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+        // allow iframe dev
+        if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe)
             return;
-        if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.source) !== DevToolSource)
+        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.source) !== DevToolSource)
             return;
-        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.from) === sourceFrom.hook)
+        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.from) === sourceFrom.hook)
             return;
-        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) && message.data.type !== coreExports.MessagePanelType.nodeHover) {
+        if (((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) && message.data.type !== coreExports.MessagePanelType.nodeHover) {
             console.log("[@my-react-devtool/hook] message from proxy", message.data);
         }
-        if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === coreExports.MessageDetectorType.init) {
+        if (!detectorReady && ((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === coreExports.MessageDetectorType.init) {
             {
                 console.log("[@my-react-devtool/hook] detector init");
             }
             detectorReady = true;
         }
-        if (((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === coreExports.MessageWorkerType.init) {
+        if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessageWorkerType.init) {
             core.connect();
         }
-        if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessagePanelType.show) {
+        if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === coreExports.MessagePanelType.show) {
             core.connect();
             core.notifyAll();
         }
         // 主动关闭panel / 或者worker失活
-        if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === coreExports.MessagePanelType.hide || ((_h = message.data) === null || _h === void 0 ? void 0 : _h.type) === coreExports.MessageWorkerType.close) {
+        if (((_h = message.data) === null || _h === void 0 ? void 0 : _h.type) === coreExports.MessagePanelType.hide || ((_j = message.data) === null || _j === void 0 ? void 0 : _j.type) === coreExports.MessageWorkerType.close) {
             core.disconnect();
         }
-        if (((_j = message.data) === null || _j === void 0 ? void 0 : _j.type) === coreExports.MessagePanelType.enableHover) {
+        if (((_k = message.data) === null || _k === void 0 ? void 0 : _k.type) === coreExports.MessagePanelType.enableHover) {
             core.setHoverStatus(message.data.data);
         }
-        if (((_k = message.data) === null || _k === void 0 ? void 0 : _k.type) === coreExports.MessagePanelType.enableUpdate) {
+        if (((_l = message.data) === null || _l === void 0 ? void 0 : _l.type) === coreExports.MessagePanelType.enableUpdate) {
             core.setUpdateStatus(message.data.data);
         }
-        if (((_l = message.data) === null || _l === void 0 ? void 0 : _l.type) === coreExports.MessagePanelType.nodeSelect) {
+        if (((_m = message.data) === null || _m === void 0 ? void 0 : _m.type) === coreExports.MessagePanelType.nodeSelect) {
             core.setSelect(message.data.data);
             core.notifySelect();
         }
-        if (((_m = message.data) === null || _m === void 0 ? void 0 : _m.type) === coreExports.MessagePanelType.nodeHover) {
+        if (((_o = message.data) === null || _o === void 0 ? void 0 : _o.type) === coreExports.MessagePanelType.nodeHover) {
             core.setHover(message.data.data);
             core.showHover();
         }

@@ -41,5 +41,6 @@ export enum sourceFrom {
   proxy = "proxy",
   panel = "panel",
   worker = "worker",
+  iframe = "iframe",
   detector = "detector",
 }
