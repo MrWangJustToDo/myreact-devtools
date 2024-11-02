@@ -2398,6 +2398,7 @@
         sourceFrom["proxy"] = "proxy";
         sourceFrom["panel"] = "panel";
         sourceFrom["worker"] = "worker";
+        sourceFrom["iframe"] = "iframe";
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
 
@@ -2409,6 +2410,7 @@
     // TODO use messageId to sync message
     var messageId = 0;
     var id = null;
+    var hasShow = false;
     var getTabId = function () { return chrome.devtools.inspectedWindow.tabId; };
     // const tabId = chrome.devtools.inspectedWindow.tabId;
     var runWhenWorkerReady = function (fn, count) {
@@ -2453,6 +2455,8 @@
         });
     };
     var onRender = function (data, _window) {
+        if (!hasShow)
+            return;
         if (data.type === coreExports.DevToolMessageEnum.init) {
             {
                 console.log("[@my-react-devtool/panel] init", data.data);
@@ -2679,6 +2683,8 @@
         setConnectHandler(function () { return initPort(); });
         port = chrome.runtime.connect({ name: getTabId().toString() });
         var onMessage = function (message) {
+            if (!hasShow)
+                return;
             workerConnecting = false;
             {
                 console.log("[@my-react-devtool/panel] message from port", message);
@@ -2713,6 +2719,7 @@
                             {
                                 console.log("show panel");
                             }
+                            hasShow = true;
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
                             cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window));
@@ -2722,6 +2729,7 @@
                             }
                             sendMessage({ type: coreExports.MessagePanelType.hide });
                             cleanList_1.forEach(function (f) { return f(); });
+                            hasShow = false;
                         })];
                 case 1:
                     _a.sent();
@@ -2736,13 +2744,14 @@
         });
     }); };
     var clear = function () {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
         if (panelWindow) {
-            panelWindow.useChunk.getActions().clear();
-            panelWindow.useAppTree.getActions().clear();
-            panelWindow.useNodeName.getActions().clear();
-            panelWindow.useTreeNode.getActions().clear();
-            panelWindow.useDetailNode.getActions().clear();
-            panelWindow.useActiveNode.getActions().clear();
+            (_d = (_c = (_b = (_a = panelWindow.useChunk) === null || _a === void 0 ? void 0 : _a.getActions) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c.clear) === null || _d === void 0 ? void 0 : _d.call(_c);
+            (_h = (_g = (_f = (_e = panelWindow.useAppTree) === null || _e === void 0 ? void 0 : _e.getActions) === null || _f === void 0 ? void 0 : _f.call(_e)) === null || _g === void 0 ? void 0 : _g.clear) === null || _h === void 0 ? void 0 : _h.call(_g);
+            (_m = (_l = (_k = (_j = panelWindow.useNodeName) === null || _j === void 0 ? void 0 : _j.getActions) === null || _k === void 0 ? void 0 : _k.call(_j)) === null || _l === void 0 ? void 0 : _l.clear) === null || _m === void 0 ? void 0 : _m.call(_l);
+            (_r = (_q = (_p = (_o = panelWindow.useTreeNode) === null || _o === void 0 ? void 0 : _o.getActions) === null || _p === void 0 ? void 0 : _p.call(_o)) === null || _q === void 0 ? void 0 : _q.clear) === null || _r === void 0 ? void 0 : _r.call(_q);
+            (_v = (_u = (_t = (_s = panelWindow.useDetailNode) === null || _s === void 0 ? void 0 : _s.getActions) === null || _t === void 0 ? void 0 : _t.call(_s)) === null || _u === void 0 ? void 0 : _u.clear) === null || _v === void 0 ? void 0 : _v.call(_u);
+            (_y = (_x = (_w = panelWindow.useActiveNode) === null || _w === void 0 ? void 0 : _w.getActions()) === null || _x === void 0 ? void 0 : _x.clear) === null || _y === void 0 ? void 0 : _y.call(_x);
         }
     };
     init(getTabId());
@@ -2755,7 +2764,9 @@
         init(getTabId());
         // TODO! fix this
         setTimeout(function () {
-            sendMessage({ type: coreExports.MessagePanelType.show });
+            if (hasShow) {
+                sendMessage({ type: coreExports.MessagePanelType.show });
+            }
         }, 60);
     });
 

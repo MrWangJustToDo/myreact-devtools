@@ -2328,6 +2328,7 @@
         sourceFrom["proxy"] = "proxy";
         sourceFrom["panel"] = "panel";
         sourceFrom["worker"] = "worker";
+        sourceFrom["iframe"] = "iframe";
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
 
