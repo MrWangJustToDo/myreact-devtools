@@ -2433,6 +2433,9 @@
                     console.error("[@my-react-devtool/hook] detector not ready");
                 }
             }
+            if (count && count > 18) {
+                return;
+            }
             id = setTimeout(function () { return runWhenDetectorReady(fn, count ? count + 1 : 1); }, 1000);
         }
     };
