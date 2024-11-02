@@ -2,7 +2,7 @@ const withNext = require("@my-react/react-refresh-tools/withNext");
 
 const isProd = process.env.NODE_ENV === "production";
 
-const isLocal = process.env.NODE_ENV === "local";
+const isLocal = process.env.NEXT_PUBLIC_MODE === "local";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
