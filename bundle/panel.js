@@ -789,7 +789,7 @@
     		var emptyConstructor = {}.constructor;
     		var id$1 = 1;
     		var valueMap = new Map();
-    		var deepMap = new Map();
+    		var cacheMap = new WeakMap();
     		var getType = function (value) {
     		    if (isInBrowser && value && value instanceof Element) {
     		        return "Element";
@@ -815,118 +815,124 @@
     		        value === "Promise" ||
     		        value === "Set");
     		};
-    		var getNode = function (value, parentDeep, deep) {
+    		var getTargetNode = function (value, type, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    // full deep to load
+    		    if (deep === 0) {
+    		        var currentId = id$1++;
+    		        valueMap.set(currentId, value);
+    		        return {
+    		            i: currentId,
+    		            t: type,
+    		            v: undefined,
+    		            e: true,
+    		            l: false,
+    		        };
+    		    }
+    		    else {
+    		        if (type === "Array") {
+    		            return {
+    		                t: type,
+    		                v: value.map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Iterable") {
+    		            return {
+    		                t: type,
+    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Error") {
+    		            return {
+    		                t: type,
+    		                v: value.message,
+    		                e: false,
+    		            };
+    		        }
+    		        else if (type === "Map") {
+    		            return {
+    		                t: type,
+    		                v: Array.from(value).map(function (_a) {
+    		                    var key = _a[0], val = _a[1];
+    		                    return ({
+    		                        k: getNode(key, deep - 1),
+    		                        v: getNode(val, deep - 1),
+    		                    });
+    		                }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Set") {
+    		            return {
+    		                t: type,
+    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Object") {
+    		            if (typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
+    		                return {
+    		                    t: type,
+    		                    n: value.constructor.name,
+    		                    v: Object.keys(value).reduce(function (acc, key) {
+    		                        acc[key] = getNode(value[key], deep - 1);
+    		                        return acc;
+    		                    }, {}),
+    		                    e: true,
+    		                };
+    		            }
+    		            return {
+    		                t: type,
+    		                v: Object.keys(value).reduce(function (acc, key) {
+    		                    acc[key] = getNode(value[key], deep - 1);
+    		                    return acc;
+    		                }, {}),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Promise") {
+    		            // TODO
+    		            return {
+    		                t: type,
+    		                v: "Promise",
+    		                e: false,
+    		            };
+    		        }
+    		        else {
+    		            return {
+    		                t: type,
+    		                v: "WeakObject",
+    		                e: false,
+    		            };
+    		        }
+    		    }
+    		};
+    		var getNodeWithCache = function (value, type, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    var cache = cacheMap.get(value);
+    		    if (cache) {
+    		        return cache;
+    		    }
+    		    var v = getTargetNode(value, type, deep);
+    		    if ((v === null || v === void 0 ? void 0 : v.l) === false) {
+    		        return v;
+    		    }
+    		    cacheMap.set(value, v);
+    		    return v;
+    		};
+    		var getNode = function (value, deep) {
     		    if (deep === void 0) { deep = 3; }
     		    var type = getType(value);
     		    var expandable = isObject(type);
     		    if (expandable) {
     		        // full deep to load
-    		        if (deep === 0) {
-    		            var currentId = id$1++;
-    		            valueMap.set(currentId, value);
-    		            deepMap.set(currentId, parentDeep);
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                d: parentDeep + 1,
-    		                v: undefined,
-    		                e: expandable,
-    		                l: false,
-    		            };
-    		        }
-    		        else {
-    		            if (type === "Array") {
-    		                return {
-    		                    t: type,
-    		                    d: parentDeep + 1,
-    		                    v: value.map(function (val) { return getNode(val, parentDeep + 1, deep - 1); }),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            else if (type === "Iterable") {
-    		                return {
-    		                    t: type,
-    		                    d: parentDeep + 1,
-    		                    v: Array.from(value).map(function (val) { return getNode(val, parentDeep + 1, deep - 1); }),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            else if (type === "Error") {
-    		                return {
-    		                    t: type,
-    		                    d: parentDeep + 1,
-    		                    v: value.message,
-    		                    e: false,
-    		                };
-    		            }
-    		            else if (type === "Map") {
-    		                return {
-    		                    t: type,
-    		                    d: parentDeep + 1,
-    		                    v: Array.from(value).map(function (_a) {
-    		                        var key = _a[0], val = _a[1];
-    		                        return ({
-    		                            k: getNode(key, parentDeep + 1, deep - 1),
-    		                            v: getNode(val, parentDeep + 1, deep - 1),
-    		                        });
-    		                    }),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            else if (type === "Set") {
-    		                return {
-    		                    t: type,
-    		                    d: parentDeep + 1,
-    		                    v: Array.from(value).map(function (val) { return getNode(val, parentDeep + 1, deep - 1); }),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            else if (type === "Object") {
-    		                if (typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
-    		                    return {
-    		                        t: type,
-    		                        d: parentDeep + 1,
-    		                        n: value.constructor.name,
-    		                        v: Object.keys(value).reduce(function (acc, key) {
-    		                            acc[key] = getNode(value[key], parentDeep + 1, deep - 1);
-    		                            return acc;
-    		                        }, {}),
-    		                        e: expandable,
-    		                    };
-    		                }
-    		                return {
-    		                    t: type,
-    		                    d: parentDeep + 1,
-    		                    v: Object.keys(value).reduce(function (acc, key) {
-    		                        acc[key] = getNode(value[key], parentDeep + 1, deep - 1);
-    		                        return acc;
-    		                    }, {}),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            else if (type === "Promise") {
-    		                // TODO
-    		                return {
-    		                    t: type,
-    		                    d: parentDeep + 1,
-    		                    v: "Promise",
-    		                    e: false,
-    		                };
-    		            }
-    		            else {
-    		                return {
-    		                    t: type,
-    		                    d: parentDeep + 1,
-    		                    v: "WeakObject",
-    		                    e: false,
-    		                };
-    		            }
-    		        }
+    		        return getNodeWithCache(value, type, deep);
     		    }
     		    else {
     		        return {
     		            t: type,
-    		            d: parentDeep + 1,
     		            v: type === "Element" ? "<".concat(value.tagName.toLowerCase(), " />") : String(value),
     		            e: expandable,
     		        };
@@ -934,9 +940,8 @@
     		};
     		var getNodeFromId = function (id) {
     		    var value = valueMap.get(id);
-    		    var deep = deepMap.get(id);
     		    if (value) {
-    		        return getNode(value, deep);
+    		        return getNode(value);
     		    }
     		};
 
@@ -1355,7 +1360,7 @@
     		                h: true,
     		                i: index,
     		                n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-    		                v: getNode(isEffect ? hook.value : hook.result, 0),
+    		                v: getNode(isEffect ? hook.value : hook.result),
     		                d: 0,
     		            });
     		        }
@@ -1393,7 +1398,7 @@
     		                    var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
     		                    // overwrite name
     		                    item.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
-    		                    item.v = getNode(isEffect ? hook.value : hook.result, item.d);
+    		                    item.v = getNode(isEffect ? hook.value : hook.result);
     		                }
     		                prevKey = key;
     		            }
@@ -1403,10 +1408,10 @@
     		    return final;
     		};
     		var getProps = function (fiber) {
-    		    return getNode(fiber.pendingProps, 0);
+    		    return getNode(fiber.pendingProps);
     		};
     		var getState = function (fiber) {
-    		    return getNode(fiber.pendingState, 0);
+    		    return getNode(fiber.pendingState);
     		};
     		var getElementNodesFromFiber = function (fiber) {
     		    var nodes = [];
