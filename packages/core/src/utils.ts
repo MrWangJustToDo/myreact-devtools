@@ -245,7 +245,7 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
         h: true,
         i: index,
         n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-        v: getNode(isEffect ? hook.value : hook.result, 0),
+        v: getNode(isEffect ? hook.value : hook.result),
         d: 0,
       });
     } else {
@@ -280,7 +280,7 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
           const isContext = hook.type === HOOK_TYPE.useContext;
           // overwrite name
           item.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
-          item.v = getNode(isEffect ? hook.value : hook.result, item.d);
+          item.v = getNode(isEffect ? hook.value : hook.result);
         }
         prevKey = key;
       }
@@ -293,11 +293,11 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
 };
 
 export const getProps = (fiber: MyReactFiberNodeDev) => {
-  return getNode(fiber.pendingProps, 0);
+  return getNode(fiber.pendingProps);
 };
 
 export const getState = (fiber: MyReactFiberNodeDev) => {
-  return getNode(fiber.pendingState, 0);
+  return getNode(fiber.pendingState);
 };
 
 export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
