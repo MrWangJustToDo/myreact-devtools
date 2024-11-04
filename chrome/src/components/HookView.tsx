@@ -62,14 +62,21 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
 
   const t = chunkData?.t ?? item?.t;
 
+  const isCircular = chunkData?.c ?? item?.c;
+
   const text = useMemo(() => {
     if (n) {
       return n;
     }
-    if (t === "Array" || t === "Set") {
-      return getText("Array", data ?? []);
+    if (t === "Array" || t === "Set" || t === "Map") {
+      const re = getText("Array", data ?? []);
+      if (t === "Set" || t === "Map") {
+        return `${t}(${re})`;
+      } else {
+        return re;
+      }
     }
-    if (t === "Iterable" || t === "Map" || t === "Object") {
+    if (t === "Iterable" || t === "Object") {
       return getText("Object", data ?? {});
     }
   }, [t, n, data]);
@@ -151,25 +158,27 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
               {name}: <span className="hook-value-placeholder">{data ? text : <DotsHorizontalIcon className="inline-block" />}</span>
             </div>
           </div>
-          <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
-            {data ? (
-              Array.isArray(data) ? (
-                <>
-                  {data.map((i: HOOKTree["v"], index: number) => (
-                    <ValueViewTree key={index} name={index.toString()} item={i} />
-                  ))}
-                </>
+          {(isCircular ? expand : true) && (
+            <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
+              {data ? (
+                Array.isArray(data) ? (
+                  <>
+                    {data.map((i: HOOKTree["v"], index: number) => (
+                      <ValueViewTree key={index} name={index.toString()} item={i} />
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {Object.keys(data).map((key) => (
+                      <ValueViewTree key={key} name={key} item={data[key]} />
+                    ))}
+                  </>
+                )
               ) : (
-                <>
-                  {Object.keys(data).map((key) => (
-                    <ValueViewTree key={key} name={key} item={data[key]} />
-                  ))}
-                </>
-              )
-            ) : (
-              <Spinner size="sm" />
-            )}
-          </div>
+                <Spinner size="sm" />
+              )}
+            </div>
+          )}
         </div>
       </>
     );

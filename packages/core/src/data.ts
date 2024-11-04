@@ -31,6 +31,8 @@ export type NodeValue = {
   e: boolean;
   // loaded
   l?: boolean;
+  // circular
+  c?: boolean;
   // name
   n?: string;
 };
@@ -40,6 +42,8 @@ const isInBrowser = typeof window !== "undefined" && typeof window.document !== 
 const emptyConstructor = {}.constructor;
 
 let id = 1;
+
+let loadById = false;
 
 const valueMap = new Map<number, any>();
 
@@ -67,13 +71,13 @@ const getType = (value: any): NodeValue["t"] => {
 const isObject = (value: NodeValue["t"]) => {
   return (
     value === "Object" ||
-    value === "Error" ||
-    value === "WeakMap" ||
-    value === "WeakSet" ||
+    // value === "Error" ||
+    // value === "WeakMap" ||
+    // value === "WeakSet" ||
     value === "Array" ||
     value === "Iterable" ||
     value === "Map" ||
-    value === "Promise" ||
+    // value === "Promise" ||
     value === "Set"
   );
 };
@@ -103,19 +107,10 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
         v: Array.from(value).map((val: any) => getNode(val, deep - 1)),
         e: true,
       };
-    } else if (type === "Error") {
-      return {
-        t: type,
-        v: value.message,
-        e: false,
-      };
     } else if (type === "Map") {
       return {
         t: type,
-        v: Array.from(value).map(([key, val]) => ({
-          k: getNode(key, deep - 1),
-          v: getNode(val, deep - 1),
-        })),
+        v: Array.from((value as Map<any, any>).entries()).map(([key, val]) => ({ t: "Array", e: true, v: [getNode(key, deep - 1), getNode(val, deep - 1)] })),
         e: true,
       };
     } else if (type === "Set") {
@@ -144,19 +139,6 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
         }, {}),
         e: true,
       };
-    } else if (type === "Promise") {
-      // TODO
-      return {
-        t: type,
-        v: "Promise",
-        e: false,
-      };
-    } else {
-      return {
-        t: type,
-        v: "WeakObject",
-        e: false,
-      };
     }
   }
 };
@@ -165,7 +147,18 @@ const getNodeWithCache = (value: any, type: NodeValue["t"], deep = 3): NodeValue
   const cache = cacheMap.get(value);
 
   if (cache) {
-    return cache;
+    // check circular reference
+    if (loadById) {
+      return {
+        t: type,
+        n: `${cache.n || cache.t} (Circular Reference)`,
+        c: true,
+        v: cache.v,
+        e: true,
+      };
+    } else {
+      return cache;
+    }
   }
 
   const v = getTargetNode(value, type, deep);
@@ -188,9 +181,30 @@ export const getNode = (value: any, deep = 3): NodeValue => {
     // full deep to load
     return getNodeWithCache(value, type, deep);
   } else {
+    if (type === "Element") {
+      return {
+        t: type,
+        v: `<${value.tagName.toLowerCase()} />`,
+        e: expandable,
+      };
+    }
+    if (type === "Error") {
+      return {
+        t: type,
+        v: value.message,
+        e: expandable,
+      };
+    }
+    if (type === "WeakMap" || type === "WeakSet") {
+      return {
+        t: type,
+        v: "WeakObject",
+        e: expandable,
+      };
+    }
     return {
       t: type,
-      v: type === "Element" ? `<${value.tagName.toLowerCase()} />` : String(value),
+      v: String(value),
       e: expandable,
     };
   }
@@ -199,6 +213,9 @@ export const getNode = (value: any, deep = 3): NodeValue => {
 export const getNodeFromId = (id: number) => {
   const value = valueMap.get(id);
   if (value) {
-    return getNode(value);
+    loadById = true;
+    const res = getNode(value);
+    loadById = false;
+    return res;
   }
 };

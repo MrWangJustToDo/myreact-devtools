@@ -144,7 +144,9 @@ export const useWebDev = () => {
 
         if (data.type === DevToolMessageEnum.ready) {
           safeAction(() => {
-            useAppTree.getActions().addNode(data.data);
+            if (data.data) {
+              useAppTree.getActions().addNode(data.data);
+            }
           });
         }
 
