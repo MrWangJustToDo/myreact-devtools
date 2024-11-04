@@ -790,6 +790,7 @@
     		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
     		var emptyConstructor = {}.constructor;
     		var id$1 = 1;
+    		var loadById = false;
     		var valueMap = new Map();
     		var cacheMap = new WeakMap();
     		var getType = function (value) {
@@ -808,13 +809,13 @@
     		};
     		var isObject = function (value) {
     		    return (value === "Object" ||
-    		        value === "Error" ||
-    		        value === "WeakMap" ||
-    		        value === "WeakSet" ||
+    		        // value === "Error" ||
+    		        // value === "WeakMap" ||
+    		        // value === "WeakSet" ||
     		        value === "Array" ||
     		        value === "Iterable" ||
     		        value === "Map" ||
-    		        value === "Promise" ||
+    		        // value === "Promise" ||
     		        value === "Set");
     		};
     		var getTargetNode = function (value, type, deep) {
@@ -846,22 +847,12 @@
     		                e: true,
     		            };
     		        }
-    		        else if (type === "Error") {
-    		            return {
-    		                t: type,
-    		                v: value.message,
-    		                e: false,
-    		            };
-    		        }
     		        else if (type === "Map") {
     		            return {
     		                t: type,
-    		                v: Array.from(value).map(function (_a) {
+    		                v: Array.from(value.entries()).map(function (_a) {
     		                    var key = _a[0], val = _a[1];
-    		                    return ({
-    		                        k: getNode(key, deep - 1),
-    		                        v: getNode(val, deep - 1),
-    		                    });
+    		                    return ({ t: "Array", e: true, v: [getNode(key, deep - 1), getNode(val, deep - 1)] });
     		                }),
     		                e: true,
     		            };
@@ -894,28 +885,25 @@
     		                e: true,
     		            };
     		        }
-    		        else if (type === "Promise") {
-    		            // TODO
-    		            return {
-    		                t: type,
-    		                v: "Promise",
-    		                e: false,
-    		            };
-    		        }
-    		        else {
-    		            return {
-    		                t: type,
-    		                v: "WeakObject",
-    		                e: false,
-    		            };
-    		        }
     		    }
     		};
     		var getNodeWithCache = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }
     		    var cache = cacheMap.get(value);
     		    if (cache) {
-    		        return cache;
+    		        // check circular reference
+    		        if (loadById) {
+    		            return {
+    		                t: type,
+    		                n: "".concat(cache.n || cache.t, " (Circular Reference)"),
+    		                c: true,
+    		                v: cache.v,
+    		                e: true,
+    		            };
+    		        }
+    		        else {
+    		            return cache;
+    		        }
     		    }
     		    var v = getTargetNode(value, type, deep);
     		    if ((v === null || v === void 0 ? void 0 : v.l) === false) {
@@ -933,9 +921,30 @@
     		        return getNodeWithCache(value, type, deep);
     		    }
     		    else {
+    		        if (type === "Element") {
+    		            return {
+    		                t: type,
+    		                v: "<".concat(value.tagName.toLowerCase(), " />"),
+    		                e: expandable,
+    		            };
+    		        }
+    		        if (type === "Error") {
+    		            return {
+    		                t: type,
+    		                v: value.message,
+    		                e: expandable,
+    		            };
+    		        }
+    		        if (type === "WeakMap" || type === "WeakSet") {
+    		            return {
+    		                t: type,
+    		                v: "WeakObject",
+    		                e: expandable,
+    		            };
+    		        }
     		        return {
     		            t: type,
-    		            v: type === "Element" ? "<".concat(value.tagName.toLowerCase(), " />") : String(value),
+    		            v: String(value),
     		            e: expandable,
     		        };
     		    }
@@ -943,7 +952,10 @@
     		var getNodeFromId = function (id) {
     		    var value = valueMap.get(id);
     		    if (value) {
-    		        return getNode(value);
+    		        loadById = true;
+    		        var res = getNode(value);
+    		        loadById = false;
+    		        return res;
     		    }
     		};
 
