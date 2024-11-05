@@ -745,7 +745,7 @@
     		        // value === "Promise" ||
     		        value === "Set");
     		};
-    		var getTargetNode = function (value, type, deep) {
+    		var getTargetNode = function (value, type, deep, force) {
     		    if (deep === void 0) { deep = 3; }
     		    // full deep to load
     		    if (deep === 0) {
@@ -763,14 +763,14 @@
     		        if (type === "Array") {
     		            return {
     		                t: type,
-    		                v: value.map(function (val) { return getNode(val, deep - 1); }),
+    		                v: value.map(function (val) { return (force ? getNodeForce(val, deep - 1) : getNode(val, deep - 1)); }),
     		                e: true,
     		            };
     		        }
     		        else if (type === "Iterable") {
     		            return {
     		                t: type,
-    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                v: Array.from(value).map(function (val) { return (force ? getNodeForce(val, deep - 1) : getNode(val, deep - 1)); }),
     		                e: true,
     		            };
     		        }
@@ -779,7 +779,11 @@
     		                t: type,
     		                v: Array.from(value.entries()).map(function (_a) {
     		                    var key = _a[0], val = _a[1];
-    		                    return ({ t: "Array", e: true, v: [getNode(key, deep - 1), getNode(val, deep - 1)] });
+    		                    return ({
+    		                        t: "Array",
+    		                        e: true,
+    		                        v: [force ? getNodeForce(key, deep - 1) : getNode(key, deep - 1), force ? getNodeForce(val, deep - 1) : getNode(val, deep - 1)],
+    		                    });
     		                }),
     		                e: true,
     		            };
@@ -787,7 +791,7 @@
     		        else if (type === "Set") {
     		            return {
     		                t: type,
-    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                v: Array.from(value).map(function (val) { return (force ? getNodeForce(val, deep - 1) : getNode(val, deep - 1)); }),
     		                e: true,
     		            };
     		        }
@@ -797,7 +801,7 @@
     		                    t: type,
     		                    n: value.constructor.name,
     		                    v: Object.keys(value).reduce(function (acc, key) {
-    		                        acc[key] = getNode(value[key], deep - 1);
+    		                        acc[key] = force ? getNodeForce(value[key], deep - 1) : getNode(value[key], deep - 1);
     		                        return acc;
     		                    }, {}),
     		                    e: true,
@@ -806,7 +810,7 @@
     		            return {
     		                t: type,
     		                v: Object.keys(value).reduce(function (acc, key) {
-    		                    acc[key] = getNode(value[key], deep - 1);
+    		                    acc[key] = force ? getNodeForce(value[key], deep - 1) : getNode(value[key], deep - 1);
     		                    return acc;
     		                }, {}),
     		                e: true,
@@ -832,7 +836,7 @@
     		            return cache;
     		        }
     		    }
-    		    var v = getTargetNode(value, type, deep);
+    		    var v = getTargetNode(value, type, deep, false);
     		    if ((v === null || v === void 0 ? void 0 : v.l) === false) {
     		        return v;
     		    }
@@ -846,6 +850,48 @@
     		    if (expandable) {
     		        // full deep to load
     		        return getNodeWithCache(value, type, deep);
+    		    }
+    		    else {
+    		        if (type === "Element") {
+    		            return {
+    		                t: type,
+    		                v: "<".concat(value.tagName.toLowerCase(), " />"),
+    		                e: expandable,
+    		            };
+    		        }
+    		        if (type === "Error") {
+    		            return {
+    		                t: type,
+    		                v: value.message,
+    		                e: expandable,
+    		            };
+    		        }
+    		        if (type === "WeakMap" || type === "WeakSet") {
+    		            return {
+    		                t: type,
+    		                v: "WeakObject",
+    		                e: expandable,
+    		            };
+    		        }
+    		        return {
+    		            t: type,
+    		            v: String(value),
+    		            e: expandable,
+    		        };
+    		    }
+    		};
+    		var getNodeForce = function (value, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    var type = getType(value);
+    		    var expandable = isObject(type);
+    		    if (expandable) {
+    		        // full deep to load
+    		        var v = getTargetNode(value, type, deep, true);
+    		        // also need overwrite cache
+    		        if ((v === null || v === void 0 ? void 0 : v.l) === false)
+    		            return v;
+    		        cacheMap.set(value, v);
+    		        return v;
     		    }
     		    else {
     		        if (type === "Element") {
@@ -946,14 +992,14 @@
     		    plain.t = fiber.type;
     		    plain.n = directory[name];
     		};
-    		var assignFiber = function (plain, fiber) {
+    		var assignFiber = function (plain, fiber, force) {
     		    shallowAssignFiber(plain, fiber);
-    		    plain.p = getProps(fiber);
+    		    plain.p = getProps(fiber, force);
     		    plain._s = getSource(fiber);
     		    plain._t = getTree(fiber);
-    		    plain._h = getHook(fiber);
+    		    plain._h = getHook(fiber, force);
     		    if (fiber.type & NODE_TYPE.__class__) {
-    		        plain.s = getState(fiber);
+    		        plain.s = getState(fiber, force);
     		    }
     		};
     		// TODO improve performance
@@ -1059,19 +1105,19 @@
     		    });
     		    return { result: result, directory: directory };
     		};
-    		var getDetailNodeByFiber = function (fiber) {
+    		var getDetailNodeByFiber = function (fiber, force) {
     		    var plainNode = getPlainNodeByFiber(fiber);
     		    if (!plainNode) {
     		        throw new Error("plainNode not found, look like a bug for @my-react/devtools");
     		    }
     		    var exist = detailMap.get(fiber);
     		    if (exist) {
-    		        assignFiber(exist, fiber);
+    		        assignFiber(exist, fiber, force);
     		        return exist;
     		    }
     		    else {
     		        var created = new PlainNode(plainNode.i);
-    		        assignFiber(created, fiber);
+    		        assignFiber(created, fiber, force);
     		        detailMap.set(fiber, created);
     		        return created;
     		    }
@@ -1287,7 +1333,7 @@
     		    }
     		    return tree;
     		};
-    		var getHook = function (fiber) {
+    		var getHook = function (fiber, force) {
     		    var _a;
     		    var final = [];
     		    var hookList = fiber.hookList;
@@ -1301,7 +1347,7 @@
     		                h: true,
     		                i: index,
     		                n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-    		                v: getNode(isEffect ? hook.value : hook.result),
+    		                v: force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result),
     		                d: 0,
     		            });
     		        }
@@ -1339,7 +1385,7 @@
     		                    var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
     		                    // overwrite name
     		                    item.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
-    		                    item.v = getNode(isEffect ? hook.value : hook.result);
+    		                    item.v = force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result);
     		                }
     		                prevKey = key;
     		            }
@@ -1348,11 +1394,11 @@
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.toArray()) === null || _a === void 0 ? void 0 : _a.forEach(processStack);
     		    return final;
     		};
-    		var getProps = function (fiber) {
-    		    return getNode(fiber.pendingProps);
+    		var getProps = function (fiber, force) {
+    		    return force ? getNodeForce(fiber.pendingProps) : getNode(fiber.pendingProps);
     		};
-    		var getState = function (fiber) {
-    		    return getNode(fiber.pendingState);
+    		var getState = function (fiber, force) {
+    		    return force ? getNodeForce(fiber.pendingState) : getNode(fiber.pendingState);
     		};
     		var getElementNodesFromFiber = function (fiber) {
     		    var nodes = [];
@@ -2015,9 +2061,8 @@
     		                return;
     		            if (!_this.hasEnable)
     		                return;
-    		            if (id === _this._selectId) {
+    		            if (id === _this._selectId)
     		                _this.notifySelect();
-    		            }
     		        };
     		        var onFiberState = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
@@ -2200,19 +2245,19 @@
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.config, data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate } });
     		    };
-    		    DevToolCore.prototype.notifySelect = function () {
+    		    DevToolCore.prototype.notifySelect = function (force) {
+    		        if (force === void 0) { force = false; }
     		        if (!this.hasEnable)
     		            return;
     		        var id = this._selectId;
-    		        if (!id) {
+    		        if (!id)
     		            return;
-    		        }
     		        var fiber = getFiberNodeById(id);
     		        if (fiber) {
     		            {
     		                console.log("[@my-react-devtool/core] current select fiber", fiber);
     		            }
-    		            this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber) });
+    		            this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber, force) });
     		        }
     		        else {
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
@@ -2275,6 +2320,7 @@
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
+    		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		    MessagePanelType["chunk"] = "panel-chunk";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));

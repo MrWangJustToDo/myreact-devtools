@@ -127,16 +127,16 @@ export const RenderItem = ({
     [withSelect, select, currentIsSelect, selectList, node.i]
   );
 
-  // const isNativeNode = current.type & NODE_TYPE.__plain__ || current.type & NODE_TYPE.__text__;
-
   const hasChild = Array.isArray(current?.c);
 
   const StateIcon = hasChild ? !currentIsClose ? <TriangleDownIcon width={16} height={16} /> : <TriangleRightIcon width={16} height={16} /> : null;
 
+  const deep = current._d || 0;
+
   return (
     <div
       id={"node-" + current.i.toString()}
-      data-depth={current._d}
+      data-depth={deep}
       onClick={() => {
         withSelect && setSelect(node.i);
       }}
@@ -147,7 +147,7 @@ export const RenderItem = ({
         withSelect && setHover("");
       }}
       className={
-        "w-full h-full node-item cursor-pointer rounded-sm select-none transition-background " +
+        "w-full h-full node-item cursor-pointer rounded-sm select-none" +
         (className || "") +
         `${withSelect ? " node-item-hover" : ""}` +
         `${hasSelect ? " node-item-select" : ""}` +
@@ -159,8 +159,8 @@ export const RenderItem = ({
         <div
           className="flex-grow"
           style={{
-            width: `calc(100%-calc(${current._d}*var(--indentation-size)))`,
-            marginLeft: `calc(${current._d} * var(--indentation-size)`,
+            width: `calc(100%-calc(${deep}*var(--indentation-size)))`,
+            marginLeft: `calc(${deep} * var(--indentation-size)`,
           }}
         >
           <div data-content className="flex items-center w-fit">

@@ -12,8 +12,6 @@ export const useDetailNode = createState(() => ({ nodes: [], loading: false, err
       list.push(node);
 
       s.nodes = list;
-
-      console.log('add detail node', node);
     },
 
     setLoading: (loading: boolean) => {

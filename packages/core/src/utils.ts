@@ -1,6 +1,6 @@
 import { HOOK_TYPE } from "@my-react/react-shared";
 
-import { getNode } from "./data";
+import { getNode, getNodeForce } from "./data";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
@@ -228,7 +228,7 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
   return tree;
 };
 
-export const getHook = (fiber: MyReactFiberNodeDev) => {
+export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
   const final: HOOKTree[] = [];
 
   const hookList = fiber.hookList;
@@ -245,7 +245,7 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
         h: true,
         i: index,
         n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-        v: getNode(isEffect ? hook.value : hook.result),
+        v: force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result),
         d: 0,
       });
     } else {
@@ -280,7 +280,7 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
           const isContext = hook.type === HOOK_TYPE.useContext;
           // overwrite name
           item.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
-          item.v = getNode(isEffect ? hook.value : hook.result);
+          item.v = force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result);
         }
         prevKey = key;
       }
@@ -292,12 +292,12 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
   return final;
 };
 
-export const getProps = (fiber: MyReactFiberNodeDev) => {
-  return getNode(fiber.pendingProps);
+export const getProps = (fiber: MyReactFiberNodeDev, force?: boolean) => {
+  return force ? getNodeForce(fiber.pendingProps) : getNode(fiber.pendingProps);
 };
 
-export const getState = (fiber: MyReactFiberNodeDev) => {
-  return getNode(fiber.pendingState);
+export const getState = (fiber: MyReactFiberNodeDev, force?: boolean) => {
+  return force ? getNodeForce(fiber.pendingState) : getNode(fiber.pendingState);
 };
 
 export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {

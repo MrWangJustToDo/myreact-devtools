@@ -37,19 +37,19 @@ export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) =>
   plain.n = directory[name];
 };
 
-export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
+export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode, force: boolean) => {
   shallowAssignFiber(plain, fiber);
 
-  plain.p = getProps(fiber as MyReactFiberNodeDev);
+  plain.p = getProps(fiber as MyReactFiberNodeDev, force);
 
   plain._s = getSource(fiber as MyReactFiberNodeDev);
 
   plain._t = getTree(fiber as MyReactFiberNodeDev);
 
-  plain._h = getHook(fiber as MyReactFiberNodeDev);
+  plain._h = getHook(fiber as MyReactFiberNodeDev, force);
 
   if (fiber.type & NODE_TYPE.__class__) {
-    plain.s = getState(fiber as MyReactFiberNodeDev);
+    plain.s = getState(fiber as MyReactFiberNodeDev, force);
   }
 };
 
@@ -203,7 +203,7 @@ export const getPlainNodeArrayByList = (list: ListTree<MyReactFiberNode>) => {
   return { result, directory };
 };
 
-export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
+export const getDetailNodeByFiber = (fiber: MyReactFiberNode, force?: boolean) => {
   const plainNode = getPlainNodeByFiber(fiber);
 
   if (!plainNode) {
@@ -213,13 +213,13 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
   const exist = detailMap.get(fiber);
 
   if (exist) {
-    assignFiber(exist, fiber);
+    assignFiber(exist, fiber, force);
 
     return exist;
   } else {
     const created = new PlainNode(plainNode.i);
 
-    assignFiber(created, fiber);
+    assignFiber(created, fiber, force);
 
     detailMap.set(fiber, created);
 

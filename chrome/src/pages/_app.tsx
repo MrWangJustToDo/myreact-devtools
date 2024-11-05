@@ -107,7 +107,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
   );
 
   return (
-    <NextUIProvider>
+    <NextUIProvider disableAnimation>
       <style jsx global>{`
         html {
           font-family: ${roboto.style.fontFamily} !important;

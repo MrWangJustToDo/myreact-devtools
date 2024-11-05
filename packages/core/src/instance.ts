@@ -189,9 +189,7 @@ export class DevToolCore {
 
       if (!this.hasEnable) return;
 
-      if (id === this._selectId) {
-        this.notifySelect();
-      }
+      if (id === this._selectId) this.notifySelect();
     };
 
     const onFiberState = (fiber: MyReactFiberNode) => {
@@ -445,14 +443,12 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.config, data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate } });
   }
 
-  notifySelect() {
+  notifySelect(force = false) {
     if (!this.hasEnable) return;
 
     const id = this._selectId;
 
-    if (!id) {
-      return;
-    }
+    if (!id) return;
 
     const fiber = getFiberNodeById(id);
 
@@ -461,7 +457,7 @@ export class DevToolCore {
         console.log("[@my-react-devtool/core] current select fiber", fiber);
       }
 
-      this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber) });
+      this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber, force) });
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
     }

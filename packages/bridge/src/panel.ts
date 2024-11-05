@@ -288,6 +288,28 @@ const initSelectListen = (_window: Window) => {
   }
 };
 
+const initForceReloadListen = (_window: Window) => {
+  const useTreeNode = _window.useTreeNode;
+  const useDetailNode = _window.useDetailNode;
+
+  try {
+    return useTreeNode.subscribe(
+      (s) => s.force,
+      () => {
+        const currentSelect = useTreeNode.getReadonlyState().select;
+
+        if (currentSelect) {
+          useDetailNode.getActions().setLoading(true);
+
+          sendMessage({ type: MessagePanelType.nodeSelectForce, data: currentSelect });
+        }
+      }
+    );
+  } catch {
+    void 0;
+  }
+};
+
 const initHoverListen = (_window: Window) => {
   const useTreeNode = _window.useTreeNode;
 
@@ -440,7 +462,14 @@ const init = async (id: number) => {
 
         sendMessage({ type: MessagePanelType.show });
 
-        cleanList.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window));
+        cleanList.push(
+          initSelectListen(window),
+          initHoverListen(window),
+          initConfigListen(window),
+          initSubscribeListen(window),
+          initChunkListen(window),
+          initForceReloadListen(window)
+        );
       },
       () => {
         if (__DEV__) {

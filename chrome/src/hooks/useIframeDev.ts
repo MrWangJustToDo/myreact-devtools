@@ -73,6 +73,21 @@ export const useIframeDev = () => {
 
         unSubscribeArray.push(
           useTreeNode.subscribe(
+            (s) => s.force,
+            () => {
+              const currentSelect = useTreeNode.getReadonlyState().select;
+
+              if (currentSelect) {
+                useDetailNode.getActions().setLoading(true);
+
+                poseMessageFromIframe({ type: MessagePanelType.nodeSelectForce, data: currentSelect });
+              }
+            }
+          )
+        );
+
+        unSubscribeArray.push(
+          useTreeNode.subscribe(
             (s) => s.hover,
             () => poseMessageFromIframe({ type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
           )

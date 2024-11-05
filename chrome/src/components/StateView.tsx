@@ -40,7 +40,9 @@ export const StateView = () => {
   if (hasStates) {
     return (
       <div className="p-2">
-        <div>states</div>
+        <div className="flex items-center justify-between">
+          <span>states</span>
+        </div>
         <Spacer y={1} />
         <div className="w-full">{stateKeys.map((key, index) => render(index))}</div>
         <Divider />

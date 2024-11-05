@@ -8,9 +8,10 @@ import { useAppTree } from "./useAppTree";
 
 export const useTreeNode = createState(
   () =>
-    ({ select: null, hover: null, closeList: {}, selectList: {}, }) as {
+    ({ select: null, hover: null, closeList: {}, selectList: {}, force: 0 }) as {
       select: string | null;
       hover: string | null;
+      force: number;
       closeList: Record<string, boolean>;
       selectList: Record<string, boolean>;
     },
@@ -37,6 +38,11 @@ export const useTreeNode = createState(
             s.select = node;
             updateSelectList();
           }
+        },
+        forceReload: () => {
+          console.log(s.select, s.force);
+          if (s.select) s.force++;
+          console.log(s.select, s.force);
         },
         updateSelectList,
         setHover: (node: string | null) => {

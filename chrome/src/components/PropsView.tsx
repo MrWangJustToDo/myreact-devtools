@@ -36,7 +36,9 @@ export const PropsView = () => {
   if (hasProps) {
     return (
       <div className="p-2">
-        <div>props</div>
+        <div className="flex items-center justify-between">
+          <span>props</span>
+        </div>
         <Spacer y={1} />
         <div className="w-full">{propsKeys.map((key, index) => render(index))}</div>
         <Divider />

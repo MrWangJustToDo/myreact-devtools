@@ -205,7 +205,9 @@ export const HookView = () => {
   if (hasHook) {
     return (
       <div className="p-2">
-        <div>hooks</div>
+        <div className="flex items-center justify-between">
+          <span>hooks</span>
+        </div>
         <Spacer y={1} />
         <div className={`w-full ${sizeClass} tree-wrapper`}>
           {hookList.map((item, index) => (

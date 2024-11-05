@@ -91,6 +91,10 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
     core.notifySelect();
   }
 
+  if (message.data?.type === MessagePanelType.nodeSelectForce) {
+    core.notifySelect(true);
+  }
+
   if (message.data?.type === MessagePanelType.nodeHover) {
     core.setHover(message.data.data);
 
@@ -159,7 +163,7 @@ const initWEB_UI = async (url: string) => {
     });
 
     socket.on("action", (data) => {
-      if (data.type === MessageWorkerType.init || data.type === MessagePanelType.show) {
+      if (data?.type === MessageWorkerType.init || data?.type === MessagePanelType.show) {
         core._forceEnable = true;
 
         core.connect();
@@ -167,10 +171,14 @@ const initWEB_UI = async (url: string) => {
         core.notifyAll();
       }
 
-      if (data.type === MessagePanelType.nodeSelect) {
+      if (data?.type === MessagePanelType.nodeSelect) {
         core.setSelect(data.data);
 
         core.notifySelect();
+      }
+
+      if (data?.type === MessagePanelType.nodeSelectForce) {
+        core.notifySelect(true);
       }
 
       if (data?.type === MessagePanelType.nodeHover) {
