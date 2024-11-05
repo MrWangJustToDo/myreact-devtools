@@ -1,7 +1,6 @@
 import { Spinner } from "@nextui-org/react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
-import { useTreeNode } from "@/hooks/useTreeNode";
 
 import { HookView } from "./HookView";
 import { NameView } from "./NameView";
@@ -11,13 +10,10 @@ import { SourceView } from "./SourceView";
 import { StateView } from "./StateView";
 
 export const NodeView = () => {
-  const select = useTreeNode((s) => s.select);
 
-  const { nodeList, loading } = useDetailNode((s) => ({ nodeList: s.nodes, loading: s.loading }));
+  const { loading } = useDetailNode.useShallowStableSelector((s) => ({ nodeList: s.nodes, loading: s.loading }));
 
-  const currentSelectDetail = nodeList.find((i) => i.i === select);
-
-  const isLoading = !currentSelectDetail && loading;
+  const isLoading = loading;
 
   if (isLoading) {
     return (

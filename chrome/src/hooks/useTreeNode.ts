@@ -40,9 +40,7 @@ export const useTreeNode = createState(
           }
         },
         forceReload: () => {
-          console.log(s.select, s.force);
           if (s.select) s.force++;
-          console.log(s.select, s.force);
         },
         updateSelectList,
         setHover: (node: string | null) => {
