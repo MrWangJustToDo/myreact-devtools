@@ -1929,6 +1929,11 @@
     		        this._listeners = new Set();
     		        this._activeIds = {};
     		        this.version = "0.0.1";
+    		        this.notifyTrigger = debounce(function () {
+    		            if (!_this.hasEnable)
+    		                return;
+    		            _this._notify({ type: exports.DevToolMessageEnum.trigger, data: _this._trigger });
+    		        }, 100);
     		        this.notifyRun = debounce(function () {
     		            if (!_this.hasEnable)
     		                return;
@@ -2180,11 +2185,6 @@
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
-    		    };
-    		    DevToolCore.prototype.notifyTrigger = function () {
-    		        if (!this.hasEnable)
-    		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: this._trigger });
     		    };
     		    DevToolCore.prototype.notifyHighlight = function (id, type) {
     		        if (!this.hasEnable)

@@ -18,9 +18,11 @@ const from = "iframe";
 
 const render = "hook-render";
 
-const poseMessageFromIframe = (data: any) => {
+const postMessageFromIframe = (data: any) => {
   window.top?.postMessage({ from, ...data, source: DevToolSource }, "*");
 };
+
+const debouncePostMessageFromIframe = debounce(postMessageFromIframe, 100);
 
 export const useIframeDev = () => {
   useEffect(() => {
@@ -39,9 +41,9 @@ export const useIframeDev = () => {
         if (connect) {
           return;
         } else {
-          poseMessageFromIframe({ type: MessageWorkerType.init });
+          postMessageFromIframe({ type: MessageWorkerType.init });
 
-          poseMessageFromIframe({ type: MessagePanelType.show });
+          postMessageFromIframe({ type: MessagePanelType.show });
 
           id = setTimeout(listenBackEndReady, 1000);
         }
@@ -63,9 +65,9 @@ export const useIframeDev = () => {
               if (currentSelect) {
                 useDetailNode.getActions().setLoading(true);
 
-                poseMessageFromIframe({ type: MessagePanelType.nodeSelect, data: currentSelect });
+                postMessageFromIframe({ type: MessagePanelType.nodeSelect, data: currentSelect });
               } else {
-                poseMessageFromIframe({ type: MessagePanelType.nodeSelect, data: null });
+                postMessageFromIframe({ type: MessagePanelType.nodeSelect, data: null });
               }
             }
           )
@@ -80,7 +82,7 @@ export const useIframeDev = () => {
               if (currentSelect) {
                 useDetailNode.getActions().setLoading(true);
 
-                poseMessageFromIframe({ type: MessagePanelType.nodeSelectForce, data: currentSelect });
+                debouncePostMessageFromIframe({ type: MessagePanelType.nodeSelectForce, data: currentSelect });
               }
             }
           )
@@ -89,28 +91,28 @@ export const useIframeDev = () => {
         unSubscribeArray.push(
           useTreeNode.subscribe(
             (s) => s.hover,
-            () => poseMessageFromIframe({ type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
+            () => postMessageFromIframe({ type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
           )
         );
 
         unSubscribeArray.push(
           useActiveNode.subscribe(
             (s) => s.state,
-            debounce(() => poseMessageFromIframe({ type: MessagePanelType.nodeSubscriber, data: useActiveNode.getReadonlyState().state }), 100)
+            debounce(() => postMessageFromIframe({ type: MessagePanelType.nodeSubscriber, data: useActiveNode.getReadonlyState().state }), 100)
           )
         );
 
         unSubscribeArray.push(
           useConfig.subscribe(
             (s) => s.state.enableHover,
-            () => poseMessageFromIframe({ type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
+            () => postMessageFromIframe({ type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
           )
         );
 
         unSubscribeArray.push(
           useConfig.subscribe(
             (s) => s.state.enableUpdate,
-            () => poseMessageFromIframe({ type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
+            () => postMessageFromIframe({ type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
           )
         );
 
@@ -120,7 +122,7 @@ export const useIframeDev = () => {
             () => {
               const id = useChunk.getReadonlyState().id;
               if (id) {
-                poseMessageFromIframe({ type: MessagePanelType.chunk, data: id });
+                postMessageFromIframe({ type: MessagePanelType.chunk, data: id });
               }
             }
           )
