@@ -745,7 +745,7 @@
     		        // value === "Promise" ||
     		        value === "Set");
     		};
-    		var getTargetNode = function (value, type, deep, force) {
+    		var getTargetNode = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }
     		    // full deep to load
     		    if (deep === 0) {
@@ -763,14 +763,14 @@
     		        if (type === "Array") {
     		            return {
     		                t: type,
-    		                v: value.map(function (val) { return (force ? getNodeForce(val, deep - 1) : getNode(val, deep - 1)); }),
+    		                v: value.map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
     		            };
     		        }
     		        else if (type === "Iterable") {
     		            return {
     		                t: type,
-    		                v: Array.from(value).map(function (val) { return (force ? getNodeForce(val, deep - 1) : getNode(val, deep - 1)); }),
+    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
     		            };
     		        }
@@ -782,7 +782,7 @@
     		                    return ({
     		                        t: "Array",
     		                        e: true,
-    		                        v: [force ? getNodeForce(key, deep - 1) : getNode(key, deep - 1), force ? getNodeForce(val, deep - 1) : getNode(val, deep - 1)],
+    		                        v: [getNode(key, deep - 1), getNode(val, deep - 1)],
     		                    });
     		                }),
     		                e: true,
@@ -791,7 +791,7 @@
     		        else if (type === "Set") {
     		            return {
     		                t: type,
-    		                v: Array.from(value).map(function (val) { return (force ? getNodeForce(val, deep - 1) : getNode(val, deep - 1)); }),
+    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
     		            };
     		        }
@@ -801,7 +801,7 @@
     		                    t: type,
     		                    n: value.constructor.name,
     		                    v: Object.keys(value).reduce(function (acc, key) {
-    		                        acc[key] = force ? getNodeForce(value[key], deep - 1) : getNode(value[key], deep - 1);
+    		                        acc[key] = getNode(value[key], deep - 1);
     		                        return acc;
     		                    }, {}),
     		                    e: true,
@@ -810,7 +810,7 @@
     		            return {
     		                t: type,
     		                v: Object.keys(value).reduce(function (acc, key) {
-    		                    acc[key] = force ? getNodeForce(value[key], deep - 1) : getNode(value[key], deep - 1);
+    		                    acc[key] = getNode(value[key], deep - 1);
     		                    return acc;
     		                }, {}),
     		                e: true,
@@ -836,7 +836,7 @@
     		            return cache;
     		        }
     		    }
-    		    var v = getTargetNode(value, type, deep, false);
+    		    var v = getTargetNode(value, type, deep);
     		    if ((v === null || v === void 0 ? void 0 : v.l) === false) {
     		        return v;
     		    }
@@ -882,45 +882,8 @@
     		};
     		var getNodeForce = function (value, deep) {
     		    if (deep === void 0) { deep = 3; }
-    		    var type = getType(value);
-    		    var expandable = isObject(type);
-    		    if (expandable) {
-    		        // full deep to load
-    		        var v = getTargetNode(value, type, deep, true);
-    		        // also need overwrite cache
-    		        if ((v === null || v === void 0 ? void 0 : v.l) === false)
-    		            return v;
-    		        cacheMap.set(value, v);
-    		        return v;
-    		    }
-    		    else {
-    		        if (type === "Element") {
-    		            return {
-    		                t: type,
-    		                v: "<".concat(value.tagName.toLowerCase(), " />"),
-    		                e: expandable,
-    		            };
-    		        }
-    		        if (type === "Error") {
-    		            return {
-    		                t: type,
-    		                v: value.message,
-    		                e: expandable,
-    		            };
-    		        }
-    		        if (type === "WeakMap" || type === "WeakSet") {
-    		            return {
-    		                t: type,
-    		                v: "WeakObject",
-    		                e: expandable,
-    		            };
-    		        }
-    		        return {
-    		            t: type,
-    		            v: String(value),
-    		            e: expandable,
-    		        };
-    		    }
+    		    cacheMap = new WeakMap();
+    		    return getNode(value, deep);
     		};
     		var getNodeFromId = function (id) {
     		    var value = valueMap.get(id);
