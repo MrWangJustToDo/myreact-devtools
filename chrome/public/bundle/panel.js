@@ -903,9 +903,6 @@
     		                e: true,
     		            };
     		        }
-    		        else {
-    		            return cache;
-    		        }
     		    }
     		    var v = getTargetNode(value, type, deep);
     		    if ((v === null || v === void 0 ? void 0 : v.l) === false) {
@@ -937,7 +934,7 @@
     		                e: expandable,
     		            };
     		        }
-    		        if (typeof value === 'object') {
+    		        if (typeof value === 'object' && value !== null) {
     		            return {
     		                t: type,
     		                v: Object.prototype.toString.call(value),
@@ -947,7 +944,7 @@
     		        else {
     		            return {
     		                t: type,
-    		                v: value.toString(),
+    		                v: String(value),
     		                e: expandable,
     		            };
     		        }

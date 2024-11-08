@@ -160,8 +160,6 @@ const getNodeWithCache = (value: any, type: NodeValue["t"], deep = 3): NodeValue
         v: cache.v,
         e: true,
       };
-    } else {
-      return cache;
     }
   }
 
@@ -199,7 +197,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
         e: expandable,
       };
     }
-    if (typeof value === 'object') {
+    if (typeof value === 'object' && value !== null) {
       return {
         t: type,
         v: Object.prototype.toString.call(value),
@@ -208,7 +206,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
     } else {
       return {
         t: type,
-        v: value.toString(),
+        v: String(value),
         e: expandable,
       };
     }

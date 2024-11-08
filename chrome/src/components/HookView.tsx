@@ -94,46 +94,7 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
   const StateIcon = expand ? <TriangleDownIcon width="16" height="16" /> : <TriangleRightIcon width="16" height="16" />;
 
   if (!currentIsExpand) {
-    let element = null;
-    if (item.t === "Element") {
-      element = <span className="node-element">{item.v as string}</span>;
-    }
-    if (item.t === "String") {
-      element = <span className="node-string">{`"${item.v as string}"`}</span>;
-    }
-    if (item.t === "Boolean") {
-      element = <span className="node-boolean">{item.v as string}</span>;
-    }
-    if (item.t === "Date") {
-      element = <span className="node-date">{item.v as string}</span>;
-    }
-    if (item.t === "Error") {
-      element = <span className="node-error">{item.v as string}</span>;
-    }
-    if (item.t === "Function") {
-      element = <span className="node-function">{item.v as string}</span>;
-    }
-    if (item.t === "Undefined") {
-      element = <span className="node-undefined">{item.v as string}</span>;
-    }
-    if (item.t === "Null") {
-      element = <span className="node-null">{item.v as string}</span>;
-    }
-    if (item.t === "Number") {
-      element = <span className="node-number">{item.v as string}</span>;
-    }
-    if (item.t === "Promise") {
-      element = <span className="node-promise">{item.v as string}</span>;
-    }
-    if (item.t === "WeakMap" || item.t === "WeakSet") {
-      element = <span className="node-weak">{item.v as string}</span>;
-    }
-    if (item.t === "RegExp") {
-      element = <span className="node-regexp">{item.v as string}</span>;
-    }
-    if (item.t === "Symbol") {
-      element = <span className="node-symbol">{item.v as string}</span>;
-    }
+    const element = <span className={`hook-${item.t}`}>{String(item.v)}</span>;
     return (
       <div className="hook-value-view">
         <div className="flex w-full my-0.5 items-center">
