@@ -31,7 +31,7 @@ export type NodeValue = {
   e: boolean;
   // loaded
   l?: boolean;
-  // circular
+  // cache
   c?: boolean;
   // name
   n?: string;
@@ -46,6 +46,8 @@ let id = 1;
 let loadById = false;
 
 const valueMap = new Map<number, any>();
+
+const idMap = new Map<any, number>();
 
 let cacheMap = new WeakMap<any, NodeValue>();
 
@@ -85,8 +87,14 @@ const isObject = (value: NodeValue["t"]) => {
 const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue => {
   // full deep to load
   if (deep === 0) {
-    const currentId = id++;
+    const existId = idMap.get(value);
+
+    const currentId = existId || id++;
+
     valueMap.set(currentId, value);
+
+    idMap.set(value, currentId);
+
     return {
       i: currentId,
       t: type,
@@ -148,18 +156,13 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
 };
 
 const getNodeWithCache = (value: any, type: NodeValue["t"], deep = 3): NodeValue => {
-  const cache = cacheMap.get(value);
-
-  if (cache) {
-    // check circular reference
-    if (loadById) {
+  if (loadById) {
+    const cache = cacheMap.get(value);
+    if (cache) {
       return {
-        t: type,
-        n: `${cache.n || cache.t} (Circular Reference)`,
+        ...cache,
         c: true,
-        v: cache.v,
-        e: true,
-      };
+      }
     }
   }
 

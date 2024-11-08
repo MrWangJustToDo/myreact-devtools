@@ -5,6 +5,12 @@ import { isServer } from "@/utils/isServer";
 import { flattenNode } from "@/utils/node";
 
 import { useAppTree } from "./useAppTree";
+import { useChunk } from "./useChunk";
+import { useDetailNode } from "./useDetailNode";
+
+const clearChunk = useChunk.getActions().clear;
+
+const delNode = useDetailNode.getActions().delNode;
 
 export const useTreeNode = createState(
   () =>
@@ -40,7 +46,13 @@ export const useTreeNode = createState(
           }
         },
         forceReload: () => {
-          if (s.select) s.force++;
+          if (s.select) {
+            s.force++;
+
+            delNode(s.select);
+          }
+
+          clearChunk();
         },
         updateSelectList,
         setHover: (node: string | null) => {

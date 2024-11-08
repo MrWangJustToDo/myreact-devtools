@@ -14,6 +14,10 @@ export const useDetailNode = createState(() => ({ nodes: [], loading: false, err
       s.nodes = list;
     },
 
+    delNode: (id: string) => {
+      s.nodes = s.nodes.filter((i) => i.i !== id);
+    },
+
     setLoading: (loading: boolean) => {
       s.loading = loading;
     },

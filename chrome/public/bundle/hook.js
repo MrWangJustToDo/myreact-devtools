@@ -792,6 +792,7 @@
     		var id$1 = 1;
     		var loadById = false;
     		var valueMap = new Map();
+    		var idMap = new Map();
     		var cacheMap = new WeakMap();
     		var getType = function (value) {
     		    if (isInBrowser && value && value instanceof Element) {
@@ -822,8 +823,10 @@
     		    if (deep === void 0) { deep = 3; }
     		    // full deep to load
     		    if (deep === 0) {
-    		        var currentId = id$1++;
+    		        var existId = idMap.get(value);
+    		        var currentId = existId || id$1++;
     		        valueMap.set(currentId, value);
+    		        idMap.set(value, currentId);
     		        return {
     		            i: currentId,
     		            t: type,
@@ -893,17 +896,10 @@
     		};
     		var getNodeWithCache = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }
-    		    var cache = cacheMap.get(value);
-    		    if (cache) {
-    		        // check circular reference
-    		        if (loadById) {
-    		            return {
-    		                t: type,
-    		                n: "".concat(cache.n || cache.t, " (Circular Reference)"),
-    		                c: true,
-    		                v: cache.v,
-    		                e: true,
-    		            };
+    		    if (loadById) {
+    		        var cache = cacheMap.get(value);
+    		        if (cache) {
+    		            return __assign(__assign({}, cache), { c: true });
     		        }
     		    }
     		    var v = getTargetNode(value, type, deep);

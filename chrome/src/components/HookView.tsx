@@ -62,7 +62,7 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
 
   const t = chunkData?.t ?? item?.t;
 
-  const isCircular = chunkData?.c ?? item?.c;
+  const isCache = chunkData?.c ?? item?.c;
 
   const text = useMemo(() => {
     if (n) {
@@ -119,7 +119,7 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
               {name}: <span className="hook-value-placeholder">{data ? text : <DotsHorizontalIcon className="inline-block" />}</span>
             </div>
           </div>
-          {(isCircular ? expand : true) && (
+          {(isCache ? expand : true) && (
             <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
               {data ? (
                 Array.isArray(data) ? (
