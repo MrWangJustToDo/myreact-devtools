@@ -949,7 +949,7 @@
     		        else {
     		            return {
     		                t: type,
-    		                v: value,
+    		                v: value.toString(),
     		                e: expandable,
     		            };
     		        }
