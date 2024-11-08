@@ -199,18 +199,19 @@ export const getNode = (value: any, deep = 3): NodeValue => {
         e: expandable,
       };
     }
-    if (type === "WeakMap" || type === "WeakSet") {
+    if (typeof value === 'object') {
       return {
         t: type,
-        v: "WeakObject",
+        v: Object.prototype.toString.call(value),
+        e: expandable,
+      };
+    } else {
+      return {
+        t: type,
+        v: value,
         e: expandable,
       };
     }
-    return {
-      t: type,
-      v: String(value),
-      e: expandable,
-    };
   }
 };
 

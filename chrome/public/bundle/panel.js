@@ -937,18 +937,20 @@
     		                e: expandable,
     		            };
     		        }
-    		        if (type === "WeakMap" || type === "WeakSet") {
+    		        if (typeof value === 'object') {
     		            return {
     		                t: type,
-    		                v: "WeakObject",
+    		                v: Object.prototype.toString.call(value),
     		                e: expandable,
     		            };
     		        }
-    		        return {
-    		            t: type,
-    		            v: String(value),
-    		            e: expandable,
-    		        };
+    		        else {
+    		            return {
+    		                t: type,
+    		                v: value,
+    		                e: expandable,
+    		            };
+    		        }
     		    }
     		};
     		var getNodeForce = function (value, deep) {

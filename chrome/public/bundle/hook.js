@@ -939,18 +939,20 @@
     		                e: expandable,
     		            };
     		        }
-    		        if (type === "WeakMap" || type === "WeakSet") {
+    		        if (typeof value === 'object') {
     		            return {
     		                t: type,
-    		                v: "WeakObject",
+    		                v: Object.prototype.toString.call(value),
     		                e: expandable,
     		            };
     		        }
-    		        return {
-    		            t: type,
-    		            v: String(value),
-    		            e: expandable,
-    		        };
+    		        else {
+    		            return {
+    		                t: type,
+    		                v: value,
+    		                e: expandable,
+    		            };
+    		        }
     		    }
     		};
     		var getNodeForce = function (value, deep) {
@@ -2485,6 +2487,7 @@
         }
         if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessageWorkerType.init) {
             core.connect();
+            core.notifyAll();
         }
         if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === coreExports.MessagePanelType.show) {
             core.connect();

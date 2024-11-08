@@ -64,6 +64,8 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
 
   if (message.data?.type === MessageWorkerType.init) {
     core.connect();
+
+    core.notifyAll();
   }
 
   if (message.data?.type === MessagePanelType.show) {
