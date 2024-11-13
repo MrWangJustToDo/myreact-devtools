@@ -94,7 +94,10 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
   const StateIcon = expand ? <TriangleDownIcon width="16" height="16" /> : <TriangleRightIcon width="16" height="16" />;
 
   if (!currentIsExpand) {
-    const element = <span className={`hook-${item.t}`}>{String(item.v)}</span>;
+    const textContent = item.t === "String" ? `"${String(item.v)}"` : String(item.v);
+
+    const element = <span className={`hook-${item.t}`}>{textContent}</span>;
+    
     return (
       <div className="hook-value-view">
         <div className="flex w-full my-0.5 items-center">
