@@ -1,4 +1,4 @@
-import { HOOK_TYPE } from "@my-react/react-shared";
+import { HOOK_TYPE, merge } from "@my-react/react-shared";
 
 import { getNode, getNodeForce } from "./data";
 import { getPlainNodeByFiber } from "./tree";
@@ -14,9 +14,12 @@ import type {
   createContext,
   lazy,
 } from "@my-react/react";
-import type { MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNodeDev } from "@my-react/react-reconciler";
+import type { MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode, MyReactHookNodeDev } from "@my-react/react-reconciler";
 
 export const typeKeys: number[] = [];
+
+// SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
+const reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
 
 Object.keys(NODE_TYPE).forEach((key) => {
   if (!key.startsWith("__")) {
@@ -71,19 +74,6 @@ export const getTypeName = (type: number) => {
   }
 };
 
-export const getFiberType = (t: number) => {
-  const type: string[] = [];
-
-  typeKeys.forEach((key) => {
-    if (t & key) {
-      const name = getTypeName(key);
-      name && type.push(name);
-    }
-  });
-
-  return type;
-};
-
 export const getFiberTag = (t: number) => {
   const tag: string[] = [];
   if (t & NODE_TYPE.__memo__) {
@@ -95,7 +85,26 @@ export const getFiberTag = (t: number) => {
   if (t & NODE_TYPE.__lazy__) {
     tag.push("lazy");
   }
+  if (t & NODE_TYPE.__compiler__) {
+    tag.push("compiler ✨");
+  }
   return tag;
+};
+
+export const getFiberType = (fiber: MyReactFiberNode) => {
+  const t = fiber.type;
+
+  let hasCompiler = false;
+
+  // check react compiler
+  fiber.hookList?.listToFoot((l: MyReactHookNode) => {
+    if (hasCompiler) return;
+    if (l.type === HOOK_TYPE.useMemo && l.result?.[reactCompilerSymbol]) {
+      hasCompiler = true;
+    }
+  });
+
+  return hasCompiler ? merge(t, NODE_TYPE.__compiler__) : t;
 };
 
 export const getFiberName = (fiber: MyReactFiberNodeDev) => {

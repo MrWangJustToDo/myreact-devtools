@@ -1,6 +1,6 @@
 import { PlainNode } from "./plain";
 import { NODE_TYPE } from "./type";
-import { getFiberName, getHook, getProps, getSource, getState, getTree } from "./utils";
+import { getFiberName, getFiberType, getHook, getProps, getSource, getState, getTree } from "./utils";
 
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
@@ -32,7 +32,7 @@ export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) =>
 
   plain.k = hasKey ? directory[fiber.key] : undefined;
 
-  plain.t = fiber.type;
+  plain.t = getFiberType(fiber);
 
   plain.n = directory[name];
 };

@@ -1002,6 +1002,8 @@
     		    NODE_TYPE[NODE_TYPE["__scope__"] = 65536] = "__scope__";
     		    NODE_TYPE[NODE_TYPE["__comment__"] = 131072] = "__comment__";
     		    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
+    		    // react compiler memo
+    		    NODE_TYPE[NODE_TYPE["__compiler__"] = 524288] = "__compiler__";
     		})(NODE_TYPE || (NODE_TYPE = {}));
 
     		var treeMap = new Map();
@@ -1020,7 +1022,7 @@
     		        directory[name] = ++count + "";
     		    }
     		    plain.k = hasKey ? directory[fiber.key] : undefined;
-    		    plain.t = fiber.type;
+    		    plain.t = getFiberType(fiber);
     		    plain.n = directory[name];
     		};
     		var assignFiber = function (plain, fiber, force) {
@@ -1158,6 +1160,8 @@
     		};
 
     		var typeKeys = [];
+    		// SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
+    		var reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
     		Object.keys(NODE_TYPE).forEach(function (key) {
     		    if (!key.startsWith("__")) {
     		        typeKeys.push(+key);
@@ -1209,16 +1213,6 @@
     		            return "";
     		    }
     		};
-    		var getFiberType = function (t) {
-    		    var type = [];
-    		    typeKeys.forEach(function (key) {
-    		        if (t & key) {
-    		            var name_1 = getTypeName(key);
-    		            name_1 && type.push(name_1);
-    		        }
-    		    });
-    		    return type;
-    		};
     		var getFiberTag = function (t) {
     		    var tag = [];
     		    if (t & NODE_TYPE.__memo__) {
@@ -1230,30 +1224,48 @@
     		    if (t & NODE_TYPE.__lazy__) {
     		        tag.push("lazy");
     		    }
+    		    if (t & NODE_TYPE.__compiler__) {
+    		        tag.push("compiler ✨");
+    		    }
     		    return tag;
+    		};
+    		var getFiberType = function (fiber) {
+    		    var _a;
+    		    var t = fiber.type;
+    		    var hasCompiler = false;
+    		    // check react compiler
+    		    (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.listToFoot(function (l) {
+    		        var _a;
+    		        if (hasCompiler)
+    		            return;
+    		        if (l.type === reactShared.HOOK_TYPE.useMemo && ((_a = l.result) === null || _a === void 0 ? void 0 : _a[reactCompilerSymbol])) {
+    		            hasCompiler = true;
+    		        }
+    		    });
+    		    return hasCompiler ? reactShared.merge(t, NODE_TYPE.__compiler__) : t;
     		};
     		var getFiberName = function (fiber) {
     		    var typedFiber = fiber;
     		    if (fiber.type & NODE_TYPE.__provider__) {
     		        var typedElementType = fiber.elementType;
-    		        var name_2 = typedElementType.Context.displayName;
-    		        return "".concat(name_2 || "Context", ".Provider");
+    		        var name_1 = typedElementType.Context.displayName;
+    		        return "".concat(name_1 || "Context", ".Provider");
     		    }
     		    if (fiber.type & NODE_TYPE.__consumer__) {
     		        var typedElementType = fiber.elementType;
-    		        var name_3 = typedElementType.Context.displayName;
-    		        return "".concat(name_3 || "Context", ".Consumer");
+    		        var name_2 = typedElementType.Context.displayName;
+    		        return "".concat(name_2 || "Context", ".Consumer");
     		    }
     		    if (fiber.type & NODE_TYPE.__lazy__) {
     		        var typedElementType = fiber.elementType;
     		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
-    		        var name_4 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
+    		        var name_3 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
     		        {
     		            var element = typedFiber._debugElement;
     		            var type = element === null || element === void 0 ? void 0 : element.type;
-    		            name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
+    		            name_3 = (type === null || type === void 0 ? void 0 : type.displayName) || name_3;
     		        }
-    		        return "".concat(name_4 || "anonymous");
+    		        return "".concat(name_3 || "anonymous");
     		    }
     		    if (fiber.type & NODE_TYPE.__portal__)
     		        return "Portal";
@@ -1281,14 +1293,14 @@
     		        return "".concat(fiber.elementType);
     		    if (typeof fiber.elementType === "function") {
     		        var typedElementType = fiber.elementType;
-    		        var name_5 = typedElementType.displayName || typedElementType.name || "anonymous";
+    		        var name_4 = typedElementType.displayName || typedElementType.name || "anonymous";
     		        {
     		            var element = typedFiber._debugElement;
     		            // may be a Suspense element
     		            var type = element === null || element === void 0 ? void 0 : element.type;
-    		            name_5 = (type === null || type === void 0 ? void 0 : type.displayName) || name_5;
+    		            name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
     		        }
-    		        return "".concat(name_5);
+    		        return "".concat(name_4);
     		    }
     		    return "unknown";
     		};
@@ -1387,14 +1399,14 @@
     		            for (var i = 0; i < stack.length; i++) {
     		                var isHook = i === stack.length - 1;
     		                var key = prevKey + stack[i].id + stack[i].name + (isHook ? "-".concat(index) : "");
-    		                var name_6 = stack[i].name;
+    		                var name_5 = stack[i].name;
     		                var hasInclude = true;
     		                if (!obj[key]) {
     		                    if (isHook) {
-    		                        obj[key] = { n: name_6, i: index, h: true, d: 0 };
+    		                        obj[key] = { n: name_5, i: index, h: true, d: 0 };
     		                    }
     		                    else {
-    		                        obj[key] = { n: name_6, d: 0 };
+    		                        obj[key] = { n: name_5, d: 0 };
     		                    }
     		                    hasInclude = false;
     		                }

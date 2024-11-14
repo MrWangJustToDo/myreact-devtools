@@ -26,7 +26,13 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
     return (
       <div className=" gap-x-[2px] flex items-center">
         {tag.map((tag) => (
-          <Chip key={tag} size="sm" radius="none" className="rounded-md capitalize text-[8px] h-[14px]">
+          <Chip
+            key={tag}
+            size="sm"
+            color={tag.includes("compiler") ? "primary" : undefined}
+            radius="none"
+            className="rounded-md capitalize text-[8px] h-[14px]"
+          >
             {tag}
           </Chip>
         ))}
@@ -122,10 +128,7 @@ export const RenderItem = ({
 
   const currentIsClose = withCollapse && closeList?.[node.i];
 
-  const hasSelect = useMemo(
-    () => withSelect && select && !currentIsSelect && selectList?.[node.i],
-    [withSelect, select, currentIsSelect, selectList, node.i]
-  );
+  const hasSelect = useMemo(() => withSelect && select && !currentIsSelect && selectList?.[node.i], [withSelect, select, currentIsSelect, selectList, node.i]);
 
   const hasChild = Array.isArray(current?.c);
 
