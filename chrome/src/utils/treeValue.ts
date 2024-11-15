@@ -33,7 +33,11 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   } else if (type === "Function") {
     return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
   } else if (typeof val === "string") {
-    return `"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`;
+    if (type === 'String') {
+      return `"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`;
+    } else {
+      return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
+    }
   } else {
     return val;
   }

@@ -97,7 +97,7 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
     const textContent = item.t === "String" ? `"${String(item.v)}"` : String(item.v);
 
     const element = <span className={`hook-${item.t}`}>{textContent}</span>;
-    
+
     return (
       <div className="hook-value-view">
         <div className="flex w-full my-0.5 items-center">
@@ -133,9 +133,12 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
                   </>
                 ) : (
                   <>
-                    {Object.keys(data).map((key) => (
-                      <ValueViewTree key={key} name={key} item={data[key]} />
-                    ))}
+                    {Object.keys(data)
+                      .sort()
+                      .reverse()
+                      .map((key) => (
+                        <ValueViewTree key={key} name={key} item={data[key]} />
+                      ))}
                   </>
                 )
               ) : (
