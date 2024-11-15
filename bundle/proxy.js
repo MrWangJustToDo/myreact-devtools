@@ -1954,9 +1954,12 @@
     		        }, 100);
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
-    		            _this._dispatch.forEach(function (dispatch) {
-    		                _this.notifyDispatch(dispatch);
-    		            });
+    		            _this._notify({ type: exports.DevToolMessageEnum.unmount, data: null });
+    		            if (_this._dispatch.size) {
+    		                _this._dispatch.forEach(function (dispatch) {
+    		                    _this.notifyDispatch(dispatch);
+    		                });
+    		            }
     		            _this.notifyConfig();
     		            _this.notifyDir();
     		            _this.notifyTrigger();
@@ -2017,8 +2020,7 @@
     		            _this.notifyChanged(list);
     		        };
     		        var onUnmount = function () {
-    		            if (!_this.hasEnable)
-    		                return;
+    		            // if (!this.hasEnable) return;
     		            _this.delDispatch(dispatch);
     		        };
     		        var onFiberTrigger = function (fiber) {
