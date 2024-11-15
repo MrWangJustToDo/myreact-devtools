@@ -2025,9 +2025,12 @@
     		        }, 100);
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
-    		            _this._dispatch.forEach(function (dispatch) {
-    		                _this.notifyDispatch(dispatch);
-    		            });
+    		            _this._notify({ type: exports.DevToolMessageEnum.unmount, data: null });
+    		            if (_this._dispatch.size) {
+    		                _this._dispatch.forEach(function (dispatch) {
+    		                    _this.notifyDispatch(dispatch);
+    		                });
+    		            }
     		            _this.notifyConfig();
     		            _this.notifyDir();
     		            _this.notifyTrigger();
@@ -2088,8 +2091,7 @@
     		            _this.notifyChanged(list);
     		        };
     		        var onUnmount = function () {
-    		            if (!_this.hasEnable)
-    		                return;
+    		            // if (!this.hasEnable) return;
     		            _this.delDispatch(dispatch);
     		        };
     		        var onFiberTrigger = function (fiber) {
@@ -2528,6 +2530,23 @@
                 if (node) {
                     addNode(node);
                 }
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
+        if (data.type === coreExports.DevToolMessageEnum.unmount) {
+            {
+                console.log("[@my-react-devtool/panel] unmount");
+            }
+            try {
+                _window.useChunk.getActions().clear();
+                _window.useAppTree.getActions().clear();
+                _window.useNodeName.getActions().clear();
+                _window.useTreeNode.getActions().clear();
+                _window.useDetailNode.getActions().clear();
+                _window.useActiveNode.getActions().clear();
             }
             catch (e) {
                 var typedE = e;

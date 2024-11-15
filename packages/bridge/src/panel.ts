@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { debounce, DevToolMessageEnum, type DevToolMessageType, type PlainNode, type Tree } from "@my-react-devtool/core";
 
 import { MessageHookType, MessagePanelType, MessageWorkerType, sourceFrom } from "./type";
@@ -122,6 +123,25 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       if (node) {
         addNode(node);
       }
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
+
+  if (data.type === DevToolMessageEnum.unmount) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] unmount");
+    }
+
+    try {
+      _window.useChunk.getActions().clear();
+      _window.useAppTree.getActions().clear();
+      _window.useNodeName.getActions().clear();
+      _window.useTreeNode.getActions().clear();
+      _window.useDetailNode.getActions().clear();
+      _window.useActiveNode.getActions().clear();
     } catch (e) {
       const typedE = e as Error;
 

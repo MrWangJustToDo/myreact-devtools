@@ -165,7 +165,7 @@ export class DevToolCore {
     };
 
     const onUnmount = () => {
-      if (!this.hasEnable) return;
+      // if (!this.hasEnable) return;
 
       this.delDispatch(dispatch);
     };
@@ -400,7 +400,7 @@ export class DevToolCore {
     if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
-  }, 100)
+  }, 100);
 
   notifyRun = debounce(() => {
     if (!this.hasEnable) return;
@@ -485,9 +485,13 @@ export class DevToolCore {
   notifyAll = debounce(() => {
     this.notifyDetector();
 
-    this._dispatch.forEach((dispatch) => {
-      this.notifyDispatch(dispatch);
-    });
+    this._notify({ type: DevToolMessageEnum.unmount, data: null });
+
+    if (this._dispatch.size) {
+      this._dispatch.forEach((dispatch) => {
+        this.notifyDispatch(dispatch);
+      });
+    }
 
     this.notifyConfig();
 

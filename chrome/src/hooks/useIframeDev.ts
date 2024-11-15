@@ -172,6 +172,17 @@ export const useIframeDev = () => {
           });
         }
 
+        if (data.type === DevToolMessageEnum.unmount) {
+          safeAction(() => {
+            useChunk?.getActions?.()?.clear?.();
+            useAppTree?.getActions?.()?.clear?.();
+            useNodeName?.getActions?.()?.clear?.();
+            useTreeNode?.getActions?.()?.clear?.();
+            useDetailNode?.getActions?.()?.clear?.();
+            useActiveNode?.getActions()?.clear?.();
+          });
+        }
+
         if (data.type === DevToolMessageEnum.hmr) {
           safeAction(() => {
             useHMRNode.getActions().update(data.data);
