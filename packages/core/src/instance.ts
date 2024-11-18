@@ -81,6 +81,8 @@ export class DevToolCore {
 
   _state = {};
 
+  _needUnmount = false;
+
   _enabled = false;
 
   _enableHover = false;
@@ -166,6 +168,8 @@ export class DevToolCore {
 
     const onUnmount = () => {
       // if (!this.hasEnable) return;
+
+      this._needUnmount = true;
 
       this.delDispatch(dispatch);
     };
@@ -485,7 +489,10 @@ export class DevToolCore {
   notifyAll = debounce(() => {
     this.notifyDetector();
 
-    this._notify({ type: DevToolMessageEnum.unmount, data: null });
+    if (this._needUnmount) {
+      this._notify({ type: DevToolMessageEnum.unmount, data: null });
+      this._needUnmount = false;
+    }
 
     if (this._dispatch.size) {
       this._dispatch.forEach((dispatch) => {

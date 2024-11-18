@@ -1929,6 +1929,7 @@
     		        this._selectId = "";
     		        this._trigger = {};
     		        this._state = {};
+    		        this._needUnmount = false;
     		        this._enabled = false;
     		        this._enableHover = false;
     		        this._enableUpdate = false;
@@ -1954,7 +1955,10 @@
     		        }, 100);
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
-    		            _this._notify({ type: exports.DevToolMessageEnum.unmount, data: null });
+    		            if (_this._needUnmount) {
+    		                _this._notify({ type: exports.DevToolMessageEnum.unmount, data: null });
+    		                _this._needUnmount = false;
+    		            }
     		            if (_this._dispatch.size) {
     		                _this._dispatch.forEach(function (dispatch) {
     		                    _this.notifyDispatch(dispatch);
@@ -2021,6 +2025,7 @@
     		        };
     		        var onUnmount = function () {
     		            // if (!this.hasEnable) return;
+    		            _this._needUnmount = true;
     		            _this.delDispatch(dispatch);
     		        };
     		        var onFiberTrigger = function (fiber) {
