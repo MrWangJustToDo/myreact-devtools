@@ -1,6 +1,6 @@
 import { Chip, Divider, Spacer, Spinner } from "@nextui-org/react";
 import { DotsHorizontalIcon, TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useDetailNode } from "@/hooks/useDetailNode";
@@ -54,6 +54,8 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
 export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOKTree["v"]; prefix?: ReactNode }) => {
   const [expand, setExpand] = useState(false);
 
+  const hasOpenRef = useRef(false);
+
   const chunkData = useChunk.useShallowStableSelector((s) => s.data?.[item?.i || ""]?.loaded);
 
   const data = chunkData?.v ?? item?.v;
@@ -84,6 +86,9 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
   useEffect(() => {
     if (expand && item?.l === false && item.i && !chunkData) {
       useChunk.getActions().setLoading(item.i);
+    }
+    if (expand) {
+      hasOpenRef.current = true;
     }
   }, [chunkData, expand, item?.i, item?.l]);
 
@@ -122,7 +127,7 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
               {name}: <span className="hook-value-placeholder">{data ? text : <DotsHorizontalIcon className="inline-block" />}</span>
             </div>
           </div>
-          {(isCache ? expand : true) && (
+          {(isCache ? expand : hasOpenRef.current || expand) && (
             <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
               {data ? (
                 Array.isArray(data) ? (
