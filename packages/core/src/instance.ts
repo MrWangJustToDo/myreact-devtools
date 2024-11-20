@@ -58,6 +58,8 @@ export const throttle = <T extends Function>(callback: T, time?: number): T => {
   }) as unknown as T;
 };
 
+const map = new Map();
+
 export class DevToolCore {
   _dispatch: Set<DevToolRenderDispatch> = new Set();
 
@@ -404,7 +406,7 @@ export class DevToolCore {
     if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
-  }, 100);
+  }, 16);
 
   notifyRun = debounce(() => {
     if (!this.hasEnable) return;
@@ -480,6 +482,14 @@ export class DevToolCore {
     if (!this.hasEnable) return;
 
     if (this._dispatch.has(dispatch)) {
+      const now = Date.now();
+
+      const last = map.get(dispatch);
+
+      if (last && now - last < 200) return;
+
+      map.set(dispatch, now);
+
       const tree = this.getTree(dispatch);
 
       this._notify({ type: DevToolMessageEnum.ready, data: tree });
