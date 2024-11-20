@@ -1914,6 +1914,7 @@
     		        }, time || 40);
     		    });
     		};
+    		var map = new Map();
     		var DevToolCore = /** @class */ (function () {
     		    function DevToolCore() {
     		        var _this = this;
@@ -1941,7 +1942,7 @@
     		            if (!_this.hasEnable)
     		                return;
     		            _this._notify({ type: exports.DevToolMessageEnum.trigger, data: _this._trigger });
-    		        }, 100);
+    		        }, 16);
     		        this.notifyRun = debounce(function () {
     		            if (!_this.hasEnable)
     		                return;
@@ -2252,6 +2253,11 @@
     		        if (!this.hasEnable)
     		            return;
     		        if (this._dispatch.has(dispatch)) {
+    		            var now = Date.now();
+    		            var last = map.get(dispatch);
+    		            if (last && now - last < 200)
+    		                return;
+    		            map.set(dispatch, now);
     		            var tree = this.getTree(dispatch);
     		            this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
     		        }
