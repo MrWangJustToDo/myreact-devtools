@@ -1930,11 +1930,12 @@
     		        };
     		    }
     		}
-    		var setupDispatch = function (dispatch) {
+    		var setupDispatch = function (dispatch, runtime) {
     		    if (dispatch["$$hasDevToolInject"])
     		        return;
     		    dispatch["$$hasDevToolInject"] = true;
     		    overridePatchToFiberUnmount(dispatch);
+    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: runtime });
     		};
 
     		// 事件类型
@@ -2071,7 +2072,7 @@
     		            this._detector = true;
     		        if (this.hasDispatch(dispatch))
     		            return;
-    		        setupDispatch(dispatch);
+    		        setupDispatch(dispatch, this);
     		        this._dispatch.add(dispatch);
     		        this.patchDispatch(dispatch);
     		    };

@@ -136,7 +136,7 @@ export class DevToolCore {
 
     if (this.hasDispatch(dispatch)) return;
 
-    setupDispatch(dispatch);
+    setupDispatch(dispatch, this);
 
     this._dispatch.add(dispatch);
 
