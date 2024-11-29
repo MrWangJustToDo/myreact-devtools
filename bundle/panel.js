@@ -1930,11 +1930,12 @@
     		        };
     		    }
     		}
-    		var setupDispatch = function (dispatch) {
-    		    if (dispatch.hasDevToolInject)
+    		var setupDispatch = function (dispatch, runtime) {
+    		    if (dispatch["$$hasDevToolInject"])
     		        return;
-    		    dispatch.hasDevToolInject = true;
+    		    dispatch["$$hasDevToolInject"] = true;
     		    overridePatchToFiberUnmount(dispatch);
+    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: runtime });
     		};
 
     		// 事件类型
@@ -2071,16 +2072,16 @@
     		            this._detector = true;
     		        if (this.hasDispatch(dispatch))
     		            return;
-    		        setupDispatch(dispatch);
+    		        setupDispatch(dispatch, this);
     		        this._dispatch.add(dispatch);
     		        this.patchDispatch(dispatch);
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
     		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-    		        if (dispatch.hasDevToolPatch)
+    		        if (dispatch['$$hasDevToolPatch'])
     		            return;
-    		        dispatch.hasDevToolPatch = true;
+    		        dispatch['$$hasDevToolPatch'] = true;
     		        var onLoad = throttle(function () {
     		            if (!_this.hasEnable)
     		                return;
