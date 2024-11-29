@@ -1860,9 +1860,9 @@
     		    }
     		}
     		var setupDispatch = function (dispatch) {
-    		    if (dispatch.hasDevToolInject)
+    		    if (dispatch["$$hasDevToolInject"])
     		        return;
-    		    dispatch.hasDevToolInject = true;
+    		    dispatch["$$hasDevToolInject"] = true;
     		    overridePatchToFiberUnmount(dispatch);
     		};
 
@@ -2007,9 +2007,9 @@
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
     		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-    		        if (dispatch.hasDevToolPatch)
+    		        if (dispatch['$$hasDevToolPatch'])
     		            return;
-    		        dispatch.hasDevToolPatch = true;
+    		        dispatch['$$hasDevToolPatch'] = true;
     		        var onLoad = throttle(function () {
     		            if (!_this.hasEnable)
     		                return;

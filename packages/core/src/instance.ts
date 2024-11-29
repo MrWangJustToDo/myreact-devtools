@@ -144,9 +144,9 @@ export class DevToolCore {
   }
 
   patchDispatch(dispatch: DevToolRenderDispatch) {
-    if (dispatch.hasDevToolPatch) return;
+    if (dispatch['$$hasDevToolPatch']) return;
 
-    dispatch.hasDevToolPatch = true;
+    dispatch['$$hasDevToolPatch'] = true;
 
     const onLoad = throttle(() => {
       if (!this.hasEnable) return;
