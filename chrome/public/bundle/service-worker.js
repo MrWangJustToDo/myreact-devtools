@@ -2062,7 +2062,7 @@
     		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyHMR();
-    		            _this.notifyDispatch(dispatch);
+    		            _this.notifyDispatch(dispatch, true);
     		        };
     		        var onFiberRun = function (fiber) {
     		            var _a, _b;
@@ -2250,17 +2250,24 @@
     		        var data = getNodeFromId(Number(id));
     		        this._notify({ type: exports.DevToolMessageEnum.chunk, data: (_a = {}, _a[id] = { loaded: data }, _a) });
     		    };
-    		    DevToolCore.prototype.notifyDispatch = function (dispatch) {
+    		    DevToolCore.prototype.notifyDispatch = function (dispatch, force) {
     		        if (!this.hasEnable)
     		            return;
     		        if (this._dispatch.has(dispatch)) {
     		            var now = Date.now();
-    		            var last = map.get(dispatch);
-    		            if (last && now - last < 200)
-    		                return;
-    		            map.set(dispatch, now);
-    		            var tree = this.getTree(dispatch);
-    		            this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
+    		            if (force) {
+    		                map.set(dispatch, now);
+    		                var tree = this.getTree(dispatch);
+    		                this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
+    		            }
+    		            else {
+    		                var last = map.get(dispatch);
+    		                if (last && now - last < 200)
+    		                    return;
+    		                map.set(dispatch, now);
+    		                var tree = this.getTree(dispatch);
+    		                this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
+    		            }
     		        }
     		    };
     		    DevToolCore.prototype.connect = function () {

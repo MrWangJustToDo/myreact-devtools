@@ -217,7 +217,7 @@ export class DevToolCore {
 
       this.notifyHMR();
 
-      this.notifyDispatch(dispatch);
+      this.notifyDispatch(dispatch, true);
     };
 
     const onFiberRun = (fiber: MyReactFiberNodeDev) => {
@@ -478,21 +478,29 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.chunk, data: { [id]: { loaded: data } } });
   }
 
-  notifyDispatch(dispatch: DevToolRenderDispatch) {
+  notifyDispatch(dispatch: DevToolRenderDispatch, force?: boolean) {
     if (!this.hasEnable) return;
 
     if (this._dispatch.has(dispatch)) {
       const now = Date.now();
 
-      const last = map.get(dispatch);
+      if (force) {
+        map.set(dispatch, now);
 
-      if (last && now - last < 200) return;
+        const tree = this.getTree(dispatch);
+  
+        this._notify({ type: DevToolMessageEnum.ready, data: tree });
+      } else {
+        const last = map.get(dispatch);
 
-      map.set(dispatch, now);
-
-      const tree = this.getTree(dispatch);
-
-      this._notify({ type: DevToolMessageEnum.ready, data: tree });
+        if (last && now - last < 200) return;
+  
+        map.set(dispatch, now);
+  
+        const tree = this.getTree(dispatch);
+  
+        this._notify({ type: DevToolMessageEnum.ready, data: tree });
+      }
     }
   }
 
