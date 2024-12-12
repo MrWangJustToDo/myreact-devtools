@@ -6,11 +6,10 @@ export const useNodeName = createState(() => ({ map: {}, state: {} }) as { map: 
   withDeepSelector: false,
   withActions: (state) => ({
     set: (s: Record<string, string>) => {
-      state.state = s;
-      state.map = Object.keys(s).reduce<Record<string, string>>((p, c) => {
-        p[s[c]] = c;
-        return p;
-      }, {});
+      Object.keys(s).forEach(key => {
+        state.state[key] = s[key];
+        state.map[s[key]] = key;
+      })
     },
     clear: () => {
       state.state = {};

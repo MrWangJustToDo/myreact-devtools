@@ -7,7 +7,9 @@ export const useTriggerNode = createState(() => ({ state: {} }) as { state: Reco
   withActions: (s) => {
     return {
       update: (state: Record<string, number>) => {
-        s.state = state;
+        Object.keys(state).forEach(key => {
+          s.state[key] = state[key];
+        });
       },
       reset: () => {
         s.state = {};

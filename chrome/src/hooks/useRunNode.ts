@@ -7,7 +7,9 @@ export const useRunNode = createState(() => ({ state: {} }) as { state: Record<s
   withActions: (s) => {
     return {
       update: (state: Record<string, { c: number; t?: number }>) => {
-        s.state = { ...s.state, ...state };
+        Object.keys(state).forEach((id) => {
+          s.state[id] = { ...s.state[id], ...state[id] };
+        });
       },
       reset: () => {
         s.state = {};
