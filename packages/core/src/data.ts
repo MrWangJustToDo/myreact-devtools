@@ -18,6 +18,7 @@ const KnownType = {
   Promise: true,
   RegExp: true,
   Element: true,
+  ReadError: true,
 };
 
 export type NodeValue = {
@@ -162,7 +163,7 @@ const getNodeWithCache = (value: any, type: NodeValue["t"], deep = 3): NodeValue
       return {
         ...cache,
         c: true,
-      }
+      };
     }
   }
 
@@ -178,47 +179,55 @@ const getNodeWithCache = (value: any, type: NodeValue["t"], deep = 3): NodeValue
 };
 
 export const getNode = (value: any, deep = 3): NodeValue => {
-  const type = getType(value);
+  try {
+    const type = getType(value);
 
-  const expandable = isObject(type);
+    const expandable = isObject(type);
 
-  if (expandable) {
-    // full deep to load
-    return getNodeWithCache(value, type, deep);
-  } else {
-    if (type === "Element") {
-      return {
-        t: type,
-        v: `<${value.tagName.toLowerCase()} />`,
-        e: expandable,
-      };
-    }
-    if (type === "Error") {
-      return {
-        t: type,
-        v: value.message,
-        e: expandable,
-      };
-    }
-    if (typeof value === 'object' && value !== null) {
-      return {
-        t: type,
-        v: Object.prototype.toString.call(value),
-        e: expandable,
-      };
+    if (expandable) {
+      // full deep to load
+      return getNodeWithCache(value, type, deep);
     } else {
-      return {
-        t: type,
-        v: String(value),
-        e: expandable,
-      };
+      if (type === "Element") {
+        return {
+          t: type,
+          v: `<${value.tagName.toLowerCase()} />`,
+          e: expandable,
+        };
+      }
+      if (type === "Error") {
+        return {
+          t: type,
+          v: value.message,
+          e: expandable,
+        };
+      }
+      if (typeof value === "object" && value !== null) {
+        return {
+          t: type,
+          v: Object.prototype.toString.call(value),
+          e: expandable,
+        };
+      } else {
+        return {
+          t: type,
+          v: String(value),
+          e: expandable,
+        };
+      }
     }
+  } catch (e) {
+    return {
+      t: "ReadError",
+      v: "Read data error: " + e.message,
+      e: false,
+    };
   }
 };
 
 export const getNodeForce = (value: any, deep = 3): NodeValue => {
   cacheMap = new WeakMap();
-  
+
   return getNode(value, deep);
 };
 

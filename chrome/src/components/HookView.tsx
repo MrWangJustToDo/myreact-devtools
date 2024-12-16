@@ -101,7 +101,9 @@ export const ValueViewTree = ({ name, item, prefix }: { name: string; item: HOOK
   if (!currentIsExpand) {
     const textContent = item.t === "String" ? `"${String(item.v)}"` : String(item.v);
 
-    const element = <span className={`hook-${item.t}`}>{textContent}</span>;
+    const isReadError = item.t === "ReadError";
+
+    const element = <span className={`hook-${item.t} ${isReadError ? 'text-red-300' : ''}`}>{textContent}</span>;
 
     return (
       <div className="hook-value-view">
