@@ -838,41 +838,50 @@
     		};
     		var getNode = function (value, deep) {
     		    if (deep === void 0) { deep = 3; }
-    		    var type = getType(value);
-    		    var expandable = isObject(type);
-    		    if (expandable) {
-    		        // full deep to load
-    		        return getNodeWithCache(value, type, deep);
-    		    }
-    		    else {
-    		        if (type === "Element") {
-    		            return {
-    		                t: type,
-    		                v: "<".concat(value.tagName.toLowerCase(), " />"),
-    		                e: expandable,
-    		            };
-    		        }
-    		        if (type === "Error") {
-    		            return {
-    		                t: type,
-    		                v: value.message,
-    		                e: expandable,
-    		            };
-    		        }
-    		        if (typeof value === 'object' && value !== null) {
-    		            return {
-    		                t: type,
-    		                v: Object.prototype.toString.call(value),
-    		                e: expandable,
-    		            };
+    		    try {
+    		        var type = getType(value);
+    		        var expandable = isObject(type);
+    		        if (expandable) {
+    		            // full deep to load
+    		            return getNodeWithCache(value, type, deep);
     		        }
     		        else {
-    		            return {
-    		                t: type,
-    		                v: String(value),
-    		                e: expandable,
-    		            };
+    		            if (type === "Element") {
+    		                return {
+    		                    t: type,
+    		                    v: "<".concat(value.tagName.toLowerCase(), " />"),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            if (type === "Error") {
+    		                return {
+    		                    t: type,
+    		                    v: value.message,
+    		                    e: expandable,
+    		                };
+    		            }
+    		            if (typeof value === "object" && value !== null) {
+    		                return {
+    		                    t: type,
+    		                    v: Object.prototype.toString.call(value),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            else {
+    		                return {
+    		                    t: type,
+    		                    v: String(value),
+    		                    e: expandable,
+    		                };
+    		            }
     		        }
+    		    }
+    		    catch (e) {
+    		        return {
+    		            t: "ReadError",
+    		            v: "Read data error: " + e.message,
+    		            e: false,
+    		        };
     		    }
     		};
     		var getNodeForce = function (value, deep) {
