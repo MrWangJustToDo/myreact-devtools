@@ -120,6 +120,11 @@ export const RenderItem = ({
 
   const highlightType = useHighlightNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
+  const { error, warn } = useHighlightNode.useShallowSelector(
+    (s) => ({ error: s.error?.[node.i]?.length, warn: s.warn?.[node.i]?.length }),
+    (p, c) => p.error === c.error && p.warn === c.warn
+  );
+
   const finalName = useNodeName(useCallback((s) => s.map[current.n], [current.n]));
 
   const { select, closeList, selectList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []));
@@ -229,6 +234,22 @@ export const RenderItem = ({
                 <Spacer x={1} />
                 <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
                   {highlightType}
+                </Chip>
+              </>
+            )}
+            {warn && (
+              <>
+                <Spacer x={1} />
+                <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
+                  {warn}
+                </Chip>
+              </>
+            )}
+            {error && (
+              <>
+                <Spacer x={1} />
+                <Chip size="sm" radius="none" color="danger" className="rounded-md capitalize text-[8px] h-[14px]">
+                  {error}
                 </Chip>
               </>
             )}

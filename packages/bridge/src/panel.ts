@@ -280,6 +280,42 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       _window.useConnect.getActions().setError(typedE.message);
     }
   }
+
+  if (data.type === DevToolMessageEnum.warn) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] warn", data.data);
+    }
+
+    const warn = data.data as Record<string, Array<any[]>>;
+
+    try {
+      const { setWarn } = _window.useHighlightNode.getActions();
+
+      setWarn(warn);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
+
+  if (data.type === DevToolMessageEnum.error) {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] error", data.data);
+    }
+
+    const error = data.data as Record<string, Array<any[]>>;
+
+    try {
+      const { setError } = _window.useHighlightNode.getActions();
+
+      setError(error);
+    } catch (e) {
+      const typedE = e as Error;
+
+      _window.useConnect.getActions().setError(typedE.message);
+    }
+  }
 };
 
 const initSelectListen = (_window: Window) => {

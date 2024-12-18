@@ -1965,6 +1965,8 @@
     		    DevToolMessageEnum["run"] = "run";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["warn"] = "warn";
+    		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["chunk"] = "chunk";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
     		var debounce = function (callback, time) {
@@ -2007,6 +2009,10 @@
     		        this._dir = {};
     		        this._run = {};
     		        this._hmr = {};
+    		        this._error = {};
+    		        this._tempError = {};
+    		        this._warn = {};
+    		        this._tempWarn = {};
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._trigger = {};
@@ -2051,6 +2057,8 @@
     		            _this.notifyTrigger();
     		            _this.notifyHMR();
     		            _this.notifySelect();
+    		            _this.notifyWarn();
+    		            _this.notifyError();
     		        }, 200);
     		        this.update = new HighLight(this);
     		    }
@@ -2087,10 +2095,10 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-    		        if (dispatch['$$hasDevToolPatch'])
+    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+    		        if (dispatch["$$hasDevToolPatch"])
     		            return;
-    		        dispatch['$$hasDevToolPatch'] = true;
+    		        dispatch["$$hasDevToolPatch"] = true;
     		        var onLoad = throttle(function () {
     		            if (!_this.hasEnable)
     		                return;
@@ -2157,6 +2165,34 @@
     		            }
     		            _this.notifyRun();
     		        };
+    		        var onFiberWarn = function (fiber) {
+    		            var args = [];
+    		            for (var _i = 1; _i < arguments.length; _i++) {
+    		                args[_i - 1] = arguments[_i];
+    		            }
+    		            var id = getPlainNodeIdByFiber(fiber);
+    		            if (!id)
+    		                return;
+    		            _this._tempWarn[id] = _this._tempWarn[id] || [];
+    		            _this._tempWarn[id].push(args);
+    		            _this._warn[id] = _this._warn[id] || [];
+    		            _this._warn[id].push(args);
+    		            _this.notifyWarn();
+    		        };
+    		        var onFiberError = function (fiber) {
+    		            var args = [];
+    		            for (var _i = 1; _i < arguments.length; _i++) {
+    		                args[_i - 1] = arguments[_i];
+    		            }
+    		            var id = getPlainNodeIdByFiber(fiber);
+    		            if (!id)
+    		                return;
+    		            _this._tempError[id] = _this._tempError[id] || [];
+    		            _this._tempError[id].push(args);
+    		            _this._error[id] = _this._error[id] || [];
+    		            _this._error[id].push(args);
+    		            _this.notifyError();
+    		        };
     		        var onPerformanceWarn = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
@@ -2195,6 +2231,8 @@
     		            (_j = dispatch.onDOMUpdate) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMUpdate);
     		            (_k = dispatch.onDOMAppend) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMAppend);
     		            (_l = dispatch.onDOMSetRef) === null || _l === void 0 ? void 0 : _l.call(dispatch, onDOMSetRef);
+    		            (_m = dispatch.onFiberError) === null || _m === void 0 ? void 0 : _m.call(dispatch, onFiberError);
+    		            (_o = dispatch.onFiberWarn) === null || _o === void 0 ? void 0 : _o.call(dispatch, onFiberWarn);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
@@ -2286,6 +2324,32 @@
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.highlight, data: { id: id, type: type } });
+    		    };
+    		    DevToolCore.prototype.notifyWarn = function () {
+    		        var _this = this;
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({
+    		            type: exports.DevToolMessageEnum.warn,
+    		            data: Object.keys(this._tempWarn).reduce(function (p, c) {
+    		                p[c] = _this._tempWarn[c].map(function (i) { return getNodeForce(i); });
+    		                return p;
+    		            }, {}),
+    		        });
+    		        this._tempWarn = {};
+    		    };
+    		    DevToolCore.prototype.notifyError = function () {
+    		        var _this = this;
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({
+    		            type: exports.DevToolMessageEnum.error,
+    		            data: Object.keys(this._tempError).reduce(function (p, c) {
+    		                p[c] = _this._tempError[c].map(function (i) { return getNodeForce(i); });
+    		                return p;
+    		            }, {}),
+    		        });
+    		        this._tempError = {};
     		    };
     		    // TODO
     		    DevToolCore.prototype.notifyChanged = function (list) {
@@ -2677,6 +2741,34 @@
             try {
                 var setChunk = _window.useChunk.getActions().setChunk;
                 setChunk(chunk);
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
+        if (data.type === coreExports.DevToolMessageEnum.warn) {
+            {
+                console.log("[@my-react-devtool/panel] warn", data.data);
+            }
+            var warn = data.data;
+            try {
+                var setWarn = _window.useHighlightNode.getActions().setWarn;
+                setWarn(warn);
+            }
+            catch (e) {
+                var typedE = e;
+                _window.useConnect.getActions().setError(typedE.message);
+            }
+        }
+        if (data.type === coreExports.DevToolMessageEnum.error) {
+            {
+                console.log("[@my-react-devtool/panel] error", data.data);
+            }
+            var error = data.data;
+            try {
+                var setError = _window.useHighlightNode.getActions().setError;
+                setError(error);
             }
             catch (e) {
                 var typedE = e;

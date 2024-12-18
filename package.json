@@ -28,5 +28,10 @@
     "ts-node": "^10.9.2",
     "tslib": "^2.8.0",
     "typescript": "^5.3.3"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "reactivity-store@0.3.8": "patches/reactivity-store@0.3.8.patch"
+    }
   }
 }

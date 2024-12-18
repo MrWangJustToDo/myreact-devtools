@@ -16,7 +16,7 @@ declare global {
     useAppTree: UseSelectorWithState<{ nodes: Tree[] }, { addNode: (node: Tree) => void; clear: () => void }>;
 
     useTreeNode: UseSelectorWithState<
-      { select: string | null; hover: string | null, force: number },
+      { select: string | null; hover: string | null; force: number },
       {
         clear: () => void;
       }
@@ -51,7 +51,10 @@ declare global {
 
     useNodeName: UseSelectorWithState<{ state: Record<string, string> }, { set: (s: Record<string, string>) => void; clear: () => void }>;
 
-    useHighlightNode: UseSelectorWithState<{}, { highlightNode: (id: string, type: string) => void }>;
+    useHighlightNode: UseSelectorWithState<
+      {},
+      { highlightNode: (id: string, type: string) => void; setError: (state: any) => void; setWarn: (state: any) => void }
+    >;
 
     useConfig: UseSelectorWithState<
       { state: { enableHover: boolean; enableUpdate: boolean } },

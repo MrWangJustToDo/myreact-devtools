@@ -29,7 +29,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-virtuoso": "^4.12.0",
-    "reactivity-store": "^0.3.6",
+    "reactivity-store": "^0.3.8",
     "sonner": "^1.5.0"
   },
   "devDependencies": {

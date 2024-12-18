@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  reactivity-store@0.3.8:
+    hash: 57eiac4wkhpyyh2pgvgdm4nzre
+    path: patches/reactivity-store@0.3.8.patch
+
 importers:
 
   .:
@@ -81,8 +86,8 @@ importers:
         specifier: ^4.12.0
         version: 4.12.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       reactivity-store:
-        specifier: ^0.3.6
-        version: 0.3.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^0.3.8
+        version: 0.3.8(patch_hash=57eiac4wkhpyyh2pgvgdm4nzre)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1672,8 +1677,14 @@ packages:
   '@vue/reactivity@3.4.38':
     resolution: {integrity: sha512-4vl4wMMVniLsSYYeldAKzbk72+D3hUnkw9z8lDeJacTxAkXeDAP1uE9xr2+aKIN0ipOL8EG2GPouVTH6yF7Gnw==}
 
+  '@vue/reactivity@3.5.13':
+    resolution: {integrity: sha512-NaCwtw8o48B9I6L1zl2p41OHo/2Z4wqYGGIK1Khu5T7yxrn+ATOixn/Udn2m+6kZKB/J7cuT9DbWWhRxqixACg==}
+
   '@vue/shared@3.4.38':
     resolution: {integrity: sha512-q0xCiLkuWWQLzVrecPb0RMsNWyxICOjPrcrwxTUEHb1fsnvni4dcuyG7RT/Ie7VPTvnjzIaWzRMUBsrqNj/hhw==}
+
+  '@vue/shared@3.5.13':
+    resolution: {integrity: sha512-/hnE/qP5ZoGpol0a5mDi45bOd7t3tjYJBjsgCsivow7D48cJeV5l05RD82lPqi7gRiphZM37rnhW1l6ZoCNNnQ==}
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -3430,6 +3441,12 @@ packages:
 
   reactivity-store@0.3.6:
     resolution: {integrity: sha512-tZGkyrDZxzuOqSLIuHuOq10U7hV7BAEy5J5bJi6y+d/qMMf+FxTm/E6092i8DylxXtmy7wxSUo6ksWxB7Hg/jw==}
+    peerDependencies:
+      react: ^17.0.2 || ^18.2.0
+      react-dom: ^17.0.2 || ^18.2.0
+
+  reactivity-store@0.3.8:
+    resolution: {integrity: sha512-UBEP+EYndc4uWIUSHAOa+PQyNTaPebGmG5sU68XnUupcDWazjbx7s3j8DK1I+iS2hOqhLTR3AJbQITBGPqbAJA==}
     peerDependencies:
       react: ^17.0.2 || ^18.2.0
       react-dom: ^17.0.2 || ^18.2.0
@@ -6304,7 +6321,13 @@ snapshots:
     dependencies:
       '@vue/shared': 3.4.38
 
+  '@vue/reactivity@3.5.13':
+    dependencies:
+      '@vue/shared': 3.5.13
+
   '@vue/shared@3.4.38': {}
+
+  '@vue/shared@3.5.13': {}
 
   abort-controller@3.0.0:
     dependencies:
@@ -8248,6 +8271,15 @@ snapshots:
     dependencies:
       '@vue/reactivity': 3.4.38
       '@vue/shared': 3.4.38
+      jsan: 3.1.14
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      use-sync-external-store: 1.2.2(react@18.3.1)
+
+  reactivity-store@0.3.8(patch_hash=57eiac4wkhpyyh2pgvgdm4nzre)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      '@vue/reactivity': 3.5.13
+      '@vue/shared': 3.5.13
       jsan: 3.1.14
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)

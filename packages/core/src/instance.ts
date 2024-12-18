@@ -1,7 +1,8 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/ban-types */
 import { isNormalEquals } from "@my-react/react-shared";
 
-import { getNodeFromId } from "./data";
+import { getNodeForce, getNodeFromId } from "./data";
 import { HighLight, Overlay, color as _color } from "./highlight";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import { generateTreeMap, getDetailNodeByFiber, getFiberNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
@@ -28,6 +29,9 @@ export enum DevToolMessageEnum {
   run = "run",
   detail = "detail",
   unmount = "unmount",
+
+  warn = "warn",
+  error = "error",
 
   chunk = "chunk",
 }
@@ -74,6 +78,14 @@ export class DevToolCore {
   _run = {};
 
   _hmr = {};
+
+  _error = {};
+
+  _tempError = {};
+
+  _warn = {};
+
+  _tempWarn = {};
 
   _hoverId = "";
 
@@ -144,9 +156,9 @@ export class DevToolCore {
   }
 
   patchDispatch(dispatch: DevToolRenderDispatch) {
-    if (dispatch['$$hasDevToolPatch']) return;
+    if (dispatch["$$hasDevToolPatch"]) return;
 
-    dispatch['$$hasDevToolPatch'] = true;
+    dispatch["$$hasDevToolPatch"] = true;
 
     const onLoad = throttle(() => {
       if (!this.hasEnable) return;
@@ -234,6 +246,38 @@ export class DevToolCore {
       this.notifyRun();
     };
 
+    const onFiberWarn = (fiber: MyReactFiberNode, ...args: any[]) => {
+      const id = getPlainNodeIdByFiber(fiber);
+
+      if (!id) return;
+
+      this._tempWarn[id] = this._tempWarn[id] || [];
+
+      this._tempWarn[id].push(args);
+
+      this._warn[id] = this._warn[id] || [];
+
+      this._warn[id].push(args);
+
+      this.notifyWarn();
+    };
+
+    const onFiberError = (fiber: MyReactFiberNode, ...args: any[]) => {
+      const id = getPlainNodeIdByFiber(fiber);
+
+      if (!id) return;
+
+      this._tempError[id] = this._tempError[id] || [];
+
+      this._tempError[id].push(args);
+
+      this._error[id] = this._error[id] || [];
+
+      this._error[id].push(args);
+
+      this.notifyError();
+    };
+
     const onPerformanceWarn = (fiber: MyReactFiberNode) => {
       const id = getPlainNodeIdByFiber(fiber);
 
@@ -290,6 +334,10 @@ export class DevToolCore {
       dispatch.onDOMAppend?.(onDOMAppend);
 
       dispatch.onDOMSetRef?.(onDOMSetRef);
+
+      dispatch.onFiberError?.(onFiberError);
+
+      dispatch.onFiberWarn?.(onFiberWarn);
     } else {
       const originalAfterCommit = dispatch.afterCommit;
 
@@ -428,6 +476,34 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.highlight, data: { id, type } });
   }
 
+  notifyWarn() {
+    if (!this.hasEnable) return;
+
+    this._notify({
+      type: DevToolMessageEnum.warn,
+      data: Object.keys(this._tempWarn).reduce((p, c) => {
+        p[c] = this._tempWarn[c].map((i) => getNodeForce(i));
+        return p;
+      }, {}),
+    });
+
+    this._tempWarn = {};
+  }
+
+  notifyError() {
+    if (!this.hasEnable) return;
+
+    this._notify({
+      type: DevToolMessageEnum.error,
+      data: Object.keys(this._tempError).reduce((p, c) => {
+        p[c] = this._tempError[c].map((i) => getNodeForce(i));
+        return p;
+      }, {}),
+    });
+
+    this._tempError = {};
+  }
+
   // TODO
   notifyChanged(list: ListTree<MyReactFiberNode>) {
     if (!this.hasEnable) return;
@@ -488,17 +564,17 @@ export class DevToolCore {
         map.set(dispatch, now);
 
         const tree = this.getTree(dispatch);
-  
+
         this._notify({ type: DevToolMessageEnum.ready, data: tree });
       } else {
         const last = map.get(dispatch);
 
         if (last && now - last < 200) return;
-  
+
         map.set(dispatch, now);
-  
+
         const tree = this.getTree(dispatch);
-  
+
         this._notify({ type: DevToolMessageEnum.ready, data: tree });
       }
     }
@@ -527,6 +603,10 @@ export class DevToolCore {
     this.notifyHMR();
 
     this.notifySelect();
+
+    this.notifyWarn();
+
+    this.notifyError();
   }, 200);
 
   connect() {
