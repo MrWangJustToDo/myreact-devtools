@@ -2254,26 +2254,26 @@
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.highlight, data: { id: id, type: type } });
     		    };
-    		    DevToolCore.prototype.notifyWarn = function () {
+    		    DevToolCore.prototype.notifyWarn = function (full) {
     		        var _this = this;
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({
     		            type: exports.DevToolMessageEnum.warn,
-    		            data: Object.keys(this._tempWarn).reduce(function (p, c) {
+    		            data: Object.keys(full ? this._warn : this._tempWarn).reduce(function (p, c) {
     		                p[c] = _this._tempWarn[c].map(function (i) { return getNodeForce(i); });
     		                return p;
     		            }, {}),
     		        });
     		        this._tempWarn = {};
     		    };
-    		    DevToolCore.prototype.notifyError = function () {
+    		    DevToolCore.prototype.notifyError = function (full) {
     		        var _this = this;
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({
     		            type: exports.DevToolMessageEnum.error,
-    		            data: Object.keys(this._tempError).reduce(function (p, c) {
+    		            data: Object.keys(full ? this._error : this._tempError).reduce(function (p, c) {
     		                p[c] = _this._tempError[c].map(function (i) { return getNodeForce(i); });
     		                return p;
     		            }, {}),
@@ -2362,6 +2362,19 @@
     		        }
     		        this._enabled = false;
     		    };
+    		    DevToolCore.prototype.clear = function () {
+    		        this._activeIds = {};
+    		        this._error = {};
+    		        this._hmr = {};
+    		        this._hoverId = '';
+    		        this._run = {};
+    		        this._selectId = '';
+    		        this._state = {};
+    		        this._tempError = {};
+    		        this._tempWarn = {};
+    		        this._trigger = {};
+    		        this._warn = {};
+    		    };
     		    return DevToolCore;
     		}());
     		var color = color$1;
@@ -2387,6 +2400,7 @@
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		    MessagePanelType["chunk"] = "panel-chunk";
+    		    MessagePanelType["clear"] = "panel-clear";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
     		exports.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -2409,6 +2423,9 @@
     		exports.getFiberType = getFiberType;
     		exports.getHook = getHook;
     		exports.getHookName = getHookName;
+    		exports.getNode = getNode;
+    		exports.getNodeForce = getNodeForce;
+    		exports.getNodeFromId = getNodeFromId;
     		exports.getPlainNodeArrayByList = getPlainNodeArrayByList;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
