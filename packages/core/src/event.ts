@@ -18,6 +18,7 @@ export enum MessagePanelType {
   nodeSelectForce = "panel-select-force",
   nodeSubscriber = "panel-subscriber",
   chunk = "panel-chunk",
+  clear = "panel-clear",
 }
 
 export enum MessageWorkerType {

@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { debounce, DevToolMessageEnum, type DevToolMessageType, type PlainNode, type Tree } from "@my-react-devtool/core";
+import { debounce, DevToolMessageEnum, type DevToolMessageType, type PlainNode, type Tree, type NodeValue } from "@my-react-devtool/core";
 
 import { MessageHookType, MessagePanelType, MessageWorkerType, sourceFrom } from "./type";
 
@@ -286,7 +286,7 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       console.log("[@my-react-devtool/panel] warn", data.data);
     }
 
-    const warn = data.data as Record<string, Array<any[]>>;
+    const warn = data.data as Record<string, Array<NodeValue>>;
 
     try {
       const { setWarn } = _window.useHighlightNode.getActions();
@@ -304,7 +304,7 @@ const onRender = (data: DevToolMessageType, _window: Window) => {
       console.log("[@my-react-devtool/panel] error", data.data);
     }
 
-    const error = data.data as Record<string, Array<any[]>>;
+    const error = data.data as Record<string, Array<NodeValue>>;
 
     try {
       const { setError } = _window.useHighlightNode.getActions();
@@ -554,6 +554,10 @@ const clear = () => {
     panelWindow.useTreeNode?.getActions?.()?.clear?.();
     panelWindow.useDetailNode?.getActions?.()?.clear?.();
     panelWindow.useActiveNode?.getActions()?.clear?.();
+    panelWindow.useRunNode?.getActions?.()?.clear?.();
+    panelWindow.useHMRNode?.getActions?.()?.clear?.();
+    panelWindow.useTriggerNode?.getActions?.()?.clear?.();
+    panelWindow.useHighlightNode?.getActions?.()?.clear?.();
   }
 };
 
@@ -571,8 +575,8 @@ chrome.devtools.network.onNavigated.addListener(() => {
 
   // TODO! fix this
   setTimeout(() => {
-    if (hasShow) {
-      sendMessage({ type: MessagePanelType.show });
-    }
+    sendMessage({ type: MessagePanelType.clear });
+
+    if (hasShow) sendMessage({ type: MessagePanelType.show });
   }, 60);
 });

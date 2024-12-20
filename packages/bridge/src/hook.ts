@@ -112,6 +112,10 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
   if (message.data.type === MessagePanelType.chunk) {
     core.notifyChunk(message.data.data);
   }
+
+  if (message.data.type === MessagePanelType.clear) {
+    core.clear();
+  }
 };
 
 window.addEventListener("message", onMessage);
@@ -205,6 +209,10 @@ const initWEB_UI = async (url: string) => {
 
       if (data?.type === MessagePanelType.chunk) {
         core.notifyChunk(data.data);
+      }
+
+      if (data?.type === MessagePanelType.clear) {
+        core.clear();
       }
     });
 

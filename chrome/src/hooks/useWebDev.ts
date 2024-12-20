@@ -7,6 +7,7 @@ import { useChunk } from "./useChunk";
 import { useConfig } from "./useConfig";
 import { useConnect } from "./useConnect";
 import { useDetailNode } from "./useDetailNode";
+import { useHighlightNode } from "./useHighlightNode";
 import { useHMRNode } from "./useHMRNode";
 import { useNodeName } from "./useNodeName";
 import { useRunNode } from "./useRunNode";
@@ -215,6 +216,18 @@ export const useWebDev = () => {
         if (data.type === DevToolMessageEnum.chunk) {
           safeAction(() => {
             useChunk.getActions().setChunk(data.data);
+          });
+        }
+
+        if (data.type === DevToolMessageEnum.warn) {
+          safeAction(() => {
+            useHighlightNode.getActions().setWarn(data.data);
+          });
+        }
+
+        if (data.type === DevToolMessageEnum.error) {
+          safeAction(() => {
+            useHighlightNode.getActions().setError(data.data);
           });
         }
       });

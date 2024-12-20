@@ -11,7 +11,7 @@ export const useTriggerNode = createState(() => ({ state: {} }) as { state: Reco
           s.state[key] = state[key];
         });
       },
-      reset: () => {
+      clear: () => {
         s.state = {};
       },
     };

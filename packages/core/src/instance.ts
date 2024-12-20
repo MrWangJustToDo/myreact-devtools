@@ -476,12 +476,12 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.highlight, data: { id, type } });
   }
 
-  notifyWarn() {
+  notifyWarn(full?: boolean) {
     if (!this.hasEnable) return;
 
     this._notify({
       type: DevToolMessageEnum.warn,
-      data: Object.keys(this._tempWarn).reduce((p, c) => {
+      data: Object.keys(full ? this._warn : this._tempWarn).reduce((p, c) => {
         p[c] = this._tempWarn[c].map((i) => getNodeForce(i));
         return p;
       }, {}),
@@ -490,12 +490,12 @@ export class DevToolCore {
     this._tempWarn = {};
   }
 
-  notifyError() {
+  notifyError(full?: boolean) {
     if (!this.hasEnable) return;
 
     this._notify({
       type: DevToolMessageEnum.error,
-      data: Object.keys(this._tempError).reduce((p, c) => {
+      data: Object.keys(full ? this._error : this._tempError).reduce((p, c) => {
         p[c] = this._tempError[c].map((i) => getNodeForce(i));
         return p;
       }, {}),
@@ -631,6 +631,30 @@ export class DevToolCore {
     }
 
     this._enabled = false;
+  }
+
+  clear() {
+    this._activeIds = {};
+
+    this._error = {};
+
+    this._hmr = {};
+
+    this._hoverId = '';
+
+    this._run = {};
+
+    this._selectId = '';
+
+    this._state = {};
+
+    this._tempError = {};
+
+    this._tempWarn = {};
+
+    this._trigger = {};
+
+    this._warn = {};
   }
 }
 

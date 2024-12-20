@@ -1,4 +1,4 @@
-import { PlainNode, Tree } from "@my-react-devtool/core";
+import { NodeValue, PlainNode, Tree } from "@my-react-devtool/core";
 import { UseSelectorWithState } from "reactivity-store";
 import { io } from "socket.io-client";
 
@@ -42,18 +42,23 @@ declare global {
 
     useRunNode: UseSelectorWithState<
       { state: Record<string, { c: number; t?: number }> },
-      { update: (state: Record<string, { c: number; t?: number }>) => void }
+      { update: (state: Record<string, { c: number; t?: number }>) => void; clear: () => void }
     >;
 
-    useTriggerNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;
+    useTriggerNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void; clear: () => void }>;
 
-    useHMRNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void }>;
+    useHMRNode: UseSelectorWithState<{ state: Record<string, number> }, { update: (state: Record<string, number>) => void; clear: () => void }>;
 
     useNodeName: UseSelectorWithState<{ state: Record<string, string> }, { set: (s: Record<string, string>) => void; clear: () => void }>;
 
     useHighlightNode: UseSelectorWithState<
       {},
-      { highlightNode: (id: string, type: string) => void; setError: (state: any) => void; setWarn: (state: any) => void }
+      {
+        highlightNode: (id: string, type: string) => void;
+        setError: (state: Record<string, Array<NodeValue>>) => void;
+        setWarn: (state: Record<string, Array<NodeValue>>) => void;
+        clear: () => void;
+      }
     >;
 
     useConfig: UseSelectorWithState<

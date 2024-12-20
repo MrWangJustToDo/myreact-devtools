@@ -11,7 +11,7 @@ export const useHMRNode = createState(() => ({ state: {} }) as { state: Record<s
           s.state[key] = state[key];
         })
       },
-      reset: () => {
+      clear: () => {
         s.state = {};
       },
     };

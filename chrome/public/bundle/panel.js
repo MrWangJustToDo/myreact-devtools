@@ -2325,26 +2325,26 @@
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.highlight, data: { id: id, type: type } });
     		    };
-    		    DevToolCore.prototype.notifyWarn = function () {
+    		    DevToolCore.prototype.notifyWarn = function (full) {
     		        var _this = this;
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({
     		            type: exports.DevToolMessageEnum.warn,
-    		            data: Object.keys(this._tempWarn).reduce(function (p, c) {
+    		            data: Object.keys(full ? this._warn : this._tempWarn).reduce(function (p, c) {
     		                p[c] = _this._tempWarn[c].map(function (i) { return getNodeForce(i); });
     		                return p;
     		            }, {}),
     		        });
     		        this._tempWarn = {};
     		    };
-    		    DevToolCore.prototype.notifyError = function () {
+    		    DevToolCore.prototype.notifyError = function (full) {
     		        var _this = this;
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({
     		            type: exports.DevToolMessageEnum.error,
-    		            data: Object.keys(this._tempError).reduce(function (p, c) {
+    		            data: Object.keys(full ? this._error : this._tempError).reduce(function (p, c) {
     		                p[c] = _this._tempError[c].map(function (i) { return getNodeForce(i); });
     		                return p;
     		            }, {}),
@@ -2433,6 +2433,19 @@
     		        }
     		        this._enabled = false;
     		    };
+    		    DevToolCore.prototype.clear = function () {
+    		        this._activeIds = {};
+    		        this._error = {};
+    		        this._hmr = {};
+    		        this._hoverId = '';
+    		        this._run = {};
+    		        this._selectId = '';
+    		        this._state = {};
+    		        this._tempError = {};
+    		        this._tempWarn = {};
+    		        this._trigger = {};
+    		        this._warn = {};
+    		    };
     		    return DevToolCore;
     		}());
     		var color = color$1;
@@ -2458,6 +2471,7 @@
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		    MessagePanelType["chunk"] = "panel-chunk";
+    		    MessagePanelType["clear"] = "panel-clear";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
     		exports.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -2480,6 +2494,9 @@
     		exports.getFiberType = getFiberType;
     		exports.getHook = getHook;
     		exports.getHookName = getHookName;
+    		exports.getNode = getNode;
+    		exports.getNodeForce = getNodeForce;
+    		exports.getNodeFromId = getNodeFromId;
     		exports.getPlainNodeArrayByList = getPlainNodeArrayByList;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
@@ -2931,7 +2948,7 @@
         });
     }); };
     var clear = function () {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14;
         if (panelWindow) {
             (_d = (_c = (_b = (_a = panelWindow.useChunk) === null || _a === void 0 ? void 0 : _a.getActions) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c.clear) === null || _d === void 0 ? void 0 : _d.call(_c);
             (_h = (_g = (_f = (_e = panelWindow.useAppTree) === null || _e === void 0 ? void 0 : _e.getActions) === null || _f === void 0 ? void 0 : _f.call(_e)) === null || _g === void 0 ? void 0 : _g.clear) === null || _h === void 0 ? void 0 : _h.call(_g);
@@ -2939,6 +2956,10 @@
             (_r = (_q = (_p = (_o = panelWindow.useTreeNode) === null || _o === void 0 ? void 0 : _o.getActions) === null || _p === void 0 ? void 0 : _p.call(_o)) === null || _q === void 0 ? void 0 : _q.clear) === null || _r === void 0 ? void 0 : _r.call(_q);
             (_v = (_u = (_t = (_s = panelWindow.useDetailNode) === null || _s === void 0 ? void 0 : _s.getActions) === null || _t === void 0 ? void 0 : _t.call(_s)) === null || _u === void 0 ? void 0 : _u.clear) === null || _v === void 0 ? void 0 : _v.call(_u);
             (_y = (_x = (_w = panelWindow.useActiveNode) === null || _w === void 0 ? void 0 : _w.getActions()) === null || _x === void 0 ? void 0 : _x.clear) === null || _y === void 0 ? void 0 : _y.call(_x);
+            (_2 = (_1 = (_0 = (_z = panelWindow.useRunNode) === null || _z === void 0 ? void 0 : _z.getActions) === null || _0 === void 0 ? void 0 : _0.call(_z)) === null || _1 === void 0 ? void 0 : _1.clear) === null || _2 === void 0 ? void 0 : _2.call(_1);
+            (_6 = (_5 = (_4 = (_3 = panelWindow.useHMRNode) === null || _3 === void 0 ? void 0 : _3.getActions) === null || _4 === void 0 ? void 0 : _4.call(_3)) === null || _5 === void 0 ? void 0 : _5.clear) === null || _6 === void 0 ? void 0 : _6.call(_5);
+            (_10 = (_9 = (_8 = (_7 = panelWindow.useTriggerNode) === null || _7 === void 0 ? void 0 : _7.getActions) === null || _8 === void 0 ? void 0 : _8.call(_7)) === null || _9 === void 0 ? void 0 : _9.clear) === null || _10 === void 0 ? void 0 : _10.call(_9);
+            (_14 = (_13 = (_12 = (_11 = panelWindow.useHighlightNode) === null || _11 === void 0 ? void 0 : _11.getActions) === null || _12 === void 0 ? void 0 : _12.call(_11)) === null || _13 === void 0 ? void 0 : _13.clear) === null || _14 === void 0 ? void 0 : _14.call(_13);
         }
     };
     init(getTabId());
@@ -2951,9 +2972,9 @@
         init(getTabId());
         // TODO! fix this
         setTimeout(function () {
-            if (hasShow) {
+            sendMessage({ type: coreExports.MessagePanelType.clear });
+            if (hasShow)
                 sendMessage({ type: coreExports.MessagePanelType.show });
-            }
         }, 60);
     });
 

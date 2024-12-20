@@ -11,7 +11,7 @@ export const useRunNode = createState(() => ({ state: {} }) as { state: Record<s
           s.state[id] = { ...s.state[id], ...state[id] };
         });
       },
-      reset: () => {
+      clear: () => {
         s.state = {};
       },
     };
