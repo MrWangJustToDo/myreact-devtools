@@ -115,7 +115,7 @@
     		OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     		PERFORMANCE OF THIS SOFTWARE.
     		***************************************************************************** */
-    		/* global Reflect, Promise, SuppressedError, Symbol */
+    		/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
 
     		function __spreadArray(to, from, pack) {
@@ -273,12 +273,6 @@
     		    UpdateQueueType[UpdateQueueType["context"] = 4] = "context";
     		})(exports.UpdateQueueType || (exports.UpdateQueueType = {}));
 
-    		exports.MODE_TYPE = void 0;
-    		(function (MODE_TYPE) {
-    		    MODE_TYPE[MODE_TYPE["__initial__"] = 0] = "__initial__";
-    		    MODE_TYPE[MODE_TYPE["__stable__"] = 1] = "__stable__";
-    		})(exports.MODE_TYPE || (exports.MODE_TYPE = {}));
-
     		exports.STATE_TYPE = void 0;
     		(function (STATE_TYPE) {
     		    STATE_TYPE[STATE_TYPE["__initial__"] = 0] = "__initial__";
@@ -293,6 +287,8 @@
     		    STATE_TYPE[STATE_TYPE["__triggerSyncForce__"] = 256] = "__triggerSyncForce__";
     		    STATE_TYPE[STATE_TYPE["__unmount__"] = 512] = "__unmount__";
     		    STATE_TYPE[STATE_TYPE["__hmr__"] = 1024] = "__hmr__";
+    		    STATE_TYPE[STATE_TYPE["__retrigger__"] = 2048] = "__retrigger__";
+    		    STATE_TYPE[STATE_TYPE["__rerun__"] = 4096] = "__rerun__";
     		})(exports.STATE_TYPE || (exports.STATE_TYPE = {}));
 
     		exports.PATCH_TYPE = void 0;

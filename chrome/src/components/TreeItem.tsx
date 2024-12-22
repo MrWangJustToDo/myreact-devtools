@@ -155,7 +155,7 @@ export const RenderItem = ({
         withSelect && setHover("");
       }}
       className={
-        "w-full h-full node-item cursor-pointer rounded-sm select-none " +
+        "w-full h-full node-item cursor-pointer transition-transform-background rounded-sm select-none " +
         (className || "") +
         `${withSelect ? (hasSelect ? " node-item-select-hover" : " node-item-hover") : ""}` +
         `${hasSelect ? " node-item-select" : ""}` +

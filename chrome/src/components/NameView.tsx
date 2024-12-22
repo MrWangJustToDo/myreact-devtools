@@ -24,7 +24,7 @@ export const NameView = () => {
 
   if (currentSelectDetail) {
     return (
-      <div className={`p-2 ${sizeClass} sticky top-0 bg-content1 z-50`}>
+      <div className={`p-2 ${sizeClass} sticky top-0 bg-content1 transition-transform-background z-50`}>
         <RenderItem node={currentSelectDetail} withCollapse={false} withSelect={false} withKey={false} />
         <Tooltip content="force load" showArrow color="foreground" placement="bottom-end">
           <Button isIconOnly size="sm" variant="flat" className="absolute right-4 top-0" onClick={forceReload}>
