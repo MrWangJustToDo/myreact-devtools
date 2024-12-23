@@ -25,6 +25,8 @@ export const RenderView = () => {
 
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
+  const t = currentSelectDetail?.["_t"];
+
   let renderTree = currentSelectDetail?.["_t"];
 
   // const [isScrolling, setIsScrolling] = useState(false);
@@ -59,7 +61,7 @@ export const RenderView = () => {
     );
   });
 
-  if (data?.length) {
+  if (t?.length) {
     return (
       <div className="p-2">
         <div>renders</div>

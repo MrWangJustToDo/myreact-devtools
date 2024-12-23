@@ -14,7 +14,7 @@ import type {
   createContext,
   lazy,
 } from "@my-react/react";
-import type { MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode, MyReactHookNodeDev } from "@my-react/react-reconciler";
+import type { MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode, MyReactHookNodeDev } from "@my-react/react-reconciler";
 
 export const typeKeys: number[] = [];
 
@@ -128,7 +128,7 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
       const type = element?.type as MixinMyReactObjectComponent;
       name = type?.displayName || name;
     }
-    return `${name || "anonymous"}`;
+    return `${name || "Anonymous"}`;
   }
   if (fiber.type & NODE_TYPE.__portal__) return `Portal`;
   if (fiber.type & NODE_TYPE.__null__) return `Null`;
@@ -144,7 +144,7 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   if (typeof fiber.elementType === "string") return `${fiber.elementType}`;
   if (typeof fiber.elementType === "function") {
     const typedElementType = fiber.elementType as MixinMyReactClassComponent | MixinMyReactFunctionComponent;
-    let name = typedElementType.displayName || typedElementType.name || "anonymous";
+    let name = typedElementType.displayName || typedElementType.name || "Anonymous";
     if (__DEV__) {
       const element = typedFiber._debugElement as MyReactElement;
       // may be a Suspense element
@@ -208,7 +208,9 @@ export const getSource = (fiber: MyReactFiberNodeDev) => {
 export const getTree = (fiber: MyReactFiberNodeDev) => {
   const tree: string[] = [];
 
-  let parent = fiber?.parent;
+  let current = fiber;
+
+  let parent = current?.parent;
 
   while (parent) {
     const plain = getPlainNodeByFiber(parent);
@@ -217,21 +219,21 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
 
     tree.push(id);
 
-    if (!parent.parent) {
-      // next version
-      const typedParent = parent as MyReactFiberContainer & { renderDispatch?: DevToolRenderDispatch };
-      if (typedParent.renderDispatch && typedParent.renderDispatch.version) {
-        tree.push(`@my-react ${typedParent.renderDispatch.version}`);
-      } else {
-        const containerNode = typedParent.containerNode;
-        const version = containerNode.__container__?.version;
-        if (version) {
-          tree.push(`@my-react ${version}`);
-        }
-      }
-    }
+    current = parent as MyReactFiberNodeDev;
 
     parent = parent.parent;
+  }
+
+  if (current) {
+    const typedCurrent = current as MyReactFiberNode & { renderDispatch?: DevToolRenderDispatch };
+
+    const dispatch = typedCurrent.renderDispatch;
+
+    if (dispatch && dispatch.version) {
+      tree.push(`@my-react ${dispatch.version}`);
+    } else {
+      tree.push(`@my-react legacy`);
+    }
   }
 
   return tree;

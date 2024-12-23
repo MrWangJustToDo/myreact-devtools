@@ -1268,7 +1268,7 @@
     		            var type = element === null || element === void 0 ? void 0 : element.type;
     		            name_3 = (type === null || type === void 0 ? void 0 : type.displayName) || name_3;
     		        }
-    		        return "".concat(name_3 || "anonymous");
+    		        return "".concat(name_3 || "Anonymous");
     		    }
     		    if (fiber.type & NODE_TYPE.__portal__)
     		        return "Portal";
@@ -1296,7 +1296,7 @@
     		        return "".concat(fiber.elementType);
     		    if (typeof fiber.elementType === "function") {
     		        var typedElementType = fiber.elementType;
-    		        var name_4 = typedElementType.displayName || typedElementType.name || "anonymous";
+    		        var name_4 = typedElementType.displayName || typedElementType.name || "Anonymous";
     		        {
     		            var element = typedFiber._debugElement;
     		            // may be a Suspense element
@@ -1354,28 +1354,25 @@
     		    return null;
     		};
     		var getTree = function (fiber) {
-    		    var _a;
     		    var tree = [];
-    		    var parent = fiber === null || fiber === void 0 ? void 0 : fiber.parent;
+    		    var current = fiber;
+    		    var parent = current === null || current === void 0 ? void 0 : current.parent;
     		    while (parent) {
     		        var plain = getPlainNodeByFiber(parent);
     		        var id = plain.i;
     		        tree.push(id);
-    		        if (!parent.parent) {
-    		            // next version
-    		            var typedParent = parent;
-    		            if (typedParent.renderDispatch && typedParent.renderDispatch.version) {
-    		                tree.push("@my-react ".concat(typedParent.renderDispatch.version));
-    		            }
-    		            else {
-    		                var containerNode = typedParent.containerNode;
-    		                var version = (_a = containerNode.__container__) === null || _a === void 0 ? void 0 : _a.version;
-    		                if (version) {
-    		                    tree.push("@my-react ".concat(version));
-    		                }
-    		            }
-    		        }
+    		        current = parent;
     		        parent = parent.parent;
+    		    }
+    		    if (current) {
+    		        var typedCurrent = current;
+    		        var dispatch = typedCurrent.renderDispatch;
+    		        if (dispatch && dispatch.version) {
+    		            tree.push("@my-react ".concat(dispatch.version));
+    		        }
+    		        else {
+    		            tree.push("@my-react legacy");
+    		        }
     		    }
     		    return tree;
     		};
@@ -2223,7 +2220,7 @@
     		            (_e = dispatch.onFiberChange) === null || _e === void 0 ? void 0 : _e.call(dispatch, onChange);
     		            (_f = dispatch.onFiberUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberUpdate);
     		            (_g = dispatch.onFiberHMR) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberHMR);
-    		            (_h = dispatch.onFiberRun) === null || _h === void 0 ? void 0 : _h.call(dispatch, onFiberRun);
+    		            (_h = dispatch.onAfterFiberRun) === null || _h === void 0 ? void 0 : _h.call(dispatch, onFiberRun);
     		            (_j = dispatch.onDOMUpdate) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMUpdate);
     		            (_k = dispatch.onDOMAppend) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMAppend);
     		            (_l = dispatch.onDOMSetRef) === null || _l === void 0 ? void 0 : _l.call(dispatch, onDOMSetRef);

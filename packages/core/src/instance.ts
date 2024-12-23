@@ -327,7 +327,7 @@ export class DevToolCore {
 
       dispatch.onFiberHMR?.(onFiberHMR);
 
-      dispatch.onFiberRun?.(onFiberRun);
+      dispatch.onAfterFiberRun?.(onFiberRun);
 
       dispatch.onDOMUpdate?.(onDOMUpdate);
 
