@@ -5,7 +5,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 
-import { ValueViewTree } from "./HookView";
+import { TreeValueView } from "./TreeValueView";
 
 export const PropsView = () => {
   const select = useTreeNode((s) => s.select);
@@ -28,7 +28,7 @@ export const PropsView = () => {
     const key = propsKeys[index];
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={id + "-" + index}>
-        <ValueViewTree name={key} item={currentSelectDetail?.p?.v?.[key]} />
+        <TreeValueView name={key} item={currentSelectDetail?.p?.v?.[key]} />
       </div>
     );
   });

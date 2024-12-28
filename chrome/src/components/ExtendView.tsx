@@ -5,7 +5,7 @@ import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 
-import { ValueViewTree } from "./HookView";
+import { TreeValueView } from "./TreeValueView";
 
 import type { NodeValue } from "@my-react-devtool/core";
 
@@ -19,7 +19,7 @@ const Warn = ({ select }: { select: string | null }) => {
   const render = useCallbackRef((index: number, item: NodeValue) => {
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={index}>
-        <ValueViewTree name={index.toString()} item={item} />
+        <TreeValueView name={index.toString()} item={item} />
       </div>
     );
   });
@@ -48,7 +48,7 @@ const Error = ({ select }: { select: string | null }) => {
   const render = useCallbackRef((index: number, item: NodeValue) => {
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={index}>
-        <ValueViewTree name={index.toString()} item={item} />
+        <TreeValueView name={index.toString()} item={item} />
       </div>
     );
   });

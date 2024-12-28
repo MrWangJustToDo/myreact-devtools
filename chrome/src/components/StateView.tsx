@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Divider, Spacer } from "@nextui-org/react";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
@@ -6,7 +5,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 
-import { ValueViewTree } from "./HookView";
+import { TreeValueView } from "./TreeValueView";
 
 export const StateView = () => {
   const select = useTreeNode((s) => s.select);
@@ -31,8 +30,7 @@ export const StateView = () => {
     const key = stateKeys[index];
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={id + "-" + index}>
-        {/* @ts-ignore */}
-        <ValueViewTree name={key} item={currentSelectDetail?.s?.v?.[key]} />
+        <TreeValueView name={key} item={currentSelectDetail?.s?.v?.[key]} />
       </div>
     );
   });
