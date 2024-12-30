@@ -5,9 +5,9 @@ import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 
-import { TreeValueView } from "./TreeValueView";
+import { NodeValue } from "./NodeValue";
 
-import type { NodeValue } from "@my-react-devtool/core";
+import type { NodeValue as NodeValueType } from "@my-react-devtool/core";
 
 const Warn = ({ select }: { select: string | null }) => {
   const warn = useHighlightNode((s) => s.warn?.[select || ""]);
@@ -16,10 +16,10 @@ const Warn = ({ select }: { select: string | null }) => {
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
-  const render = useCallbackRef((index: number, item: NodeValue) => {
+  const render = useCallbackRef((index: number, item: NodeValueType) => {
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={index}>
-        <TreeValueView name={index.toString()} item={item} />
+        <NodeValue name={index.toString()} item={item} />
       </div>
     );
   });
@@ -45,10 +45,10 @@ const Error = ({ select }: { select: string | null }) => {
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
-  const render = useCallbackRef((index: number, item: NodeValue) => {
+  const render = useCallbackRef((index: number, item: NodeValueType) => {
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={index}>
-        <TreeValueView name={index.toString()} item={item} />
+        <NodeValue name={index.toString()} item={item} />
       </div>
     );
   });

@@ -5,7 +5,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 
-import { TreeValueView } from "./TreeValueView";
+import { NodeValue } from "./NodeValue";
 
 export const StateView = () => {
   const select = useTreeNode((s) => s.select);
@@ -30,7 +30,7 @@ export const StateView = () => {
     const key = stateKeys[index];
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={id + "-" + index}>
-        <TreeValueView name={key} item={currentSelectDetail?.s?.v?.[key]} />
+        <NodeValue name={key} item={currentSelectDetail?.s?.v?.[key]} />
       </div>
     );
   });

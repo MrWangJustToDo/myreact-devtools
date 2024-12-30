@@ -3,12 +3,15 @@ import { TriangleDownIcon, TriangleRightIcon, DotsHorizontalIcon } from "@radix-
 import { useState, useRef, useMemo, useEffect } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
+import { useContextMenu } from "@/hooks/useContextMenu";
 import { getText } from "@/utils/treeValue";
 
-import type { HOOKTree, NodeValue } from "@my-react-devtool/core";
-import type { ReactNode} from "react";
+import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
+import type { ReactNode } from "react";
 
-export const TreeValueView = ({ name, item, prefix }: { name: string; item?: NodeValue; prefix?: ReactNode }) => {
+const { open: contextOpen } = useContextMenu.getActions();
+
+export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeValueType; prefix?: ReactNode }) => {
   const [expand, setExpand] = useState(false);
 
   const hasOpenRef = useRef(false);
@@ -49,6 +52,11 @@ export const TreeValueView = ({ name, item, prefix }: { name: string; item?: Nod
     }
   }, [chunkData, expand, item?.i, item?.l]);
 
+  const onContextClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    contextOpen({ x: e.clientX, y: e.clientY });
+  };
+
   if (!item) return null;
 
   const currentIsExpand = item.e;
@@ -68,7 +76,10 @@ export const TreeValueView = ({ name, item, prefix }: { name: string; item?: Nod
           <span className="text-transparent">{StateIcon}</span>
           {prefix}
           <div className="max-w-full line-clamp-1 break-all">
-            <span className="cursor-pointer">{name}</span>: <span className="hook-value-placeholder">{element}</span>
+            <span className="cursor-pointer select-none" onContextMenu={onContextClick}>
+              {name}
+            </span>
+            : <span className="hook-value-placeholder">{element}</span>
           </div>
         </div>
       </div>
@@ -83,7 +94,7 @@ export const TreeValueView = ({ name, item, prefix }: { name: string; item?: Nod
             </span>
             {prefix}
             <div className="max-w-full line-clamp-1 break-all">
-              <span className="cursor-pointer" onClick={() => setExpand(!expand)}>
+              <span className="cursor-pointer select-none" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
                 {name}
               </span>
               : <span className="hook-value-placeholder">{data ? text : <DotsHorizontalIcon className="inline-block" />}</span>
@@ -95,7 +106,7 @@ export const TreeValueView = ({ name, item, prefix }: { name: string; item?: Nod
                 Array.isArray(data) ? (
                   <>
                     {data.map((i: HOOKTree["v"], index: number) => (
-                      <TreeValueView key={index} name={index.toString()} item={i} />
+                      <NodeValue key={index} name={index.toString()} item={i} />
                     ))}
                   </>
                 ) : (
@@ -104,7 +115,7 @@ export const TreeValueView = ({ name, item, prefix }: { name: string; item?: Nod
                       .sort()
                       .reverse()
                       .map((key) => (
-                        <TreeValueView key={key} name={key} item={data[key]} />
+                        <NodeValue key={key} name={key} item={data[key]} />
                       ))}
                   </>
                 )

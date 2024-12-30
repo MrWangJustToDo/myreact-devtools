@@ -7,7 +7,7 @@ import { useDomSize } from "@/hooks/useSize";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { UISize, useUISize } from "@/hooks/useUISize";
 
-import { RenderItem } from "./TreeItem";
+import { TreeItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
 
 import type { PlainNode } from "@my-react-devtool/core";
@@ -62,7 +62,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     if (!node) return null;
 
     return (
-      <RenderItem node={node} isScrolling={isScrolling} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[14px]" : "text-[16px]"} />
+      <TreeItem node={node} isScrolling={isScrolling} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[14px]" : "text-[16px]"} />
     );
   });
 

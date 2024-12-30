@@ -6,7 +6,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 
-import { TreeValueView } from "./TreeValueView";
+import { NodeValue } from "./NodeValue";
 
 import type { HOOKTree } from "@my-react-devtool/core";
 
@@ -19,7 +19,7 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
 
   if (currentIsExpand) {
     return (
-      <TreeValueView
+      <NodeValue
         name={item.n}
         item={item.v}
         prefix={

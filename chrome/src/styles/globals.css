@@ -29,6 +29,10 @@ svg {
   @apply bg-blue-100;
 }
 
+.node-item-hover:active {
+  @apply !bg-blue-200;
+}
+
 .node-item-selected {
   @apply !bg-blue-200;
 }
@@ -43,6 +47,10 @@ svg {
 
 .dark .node-item-select-hover:hover {
   @apply bg-neutral-700;
+}
+
+.dark .node-item-hover:active {
+  @apply !bg-gray-800;
 }
 
 .dark .node-item-selected {

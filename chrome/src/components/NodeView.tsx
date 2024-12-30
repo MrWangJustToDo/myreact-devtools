@@ -2,6 +2,7 @@ import { Spinner } from "@nextui-org/react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 
+import { ContextMenu } from "./ContextMenu";
 import { ExtendView } from "./ExtendView";
 import { HookView } from "./HookView";
 import { NameView } from "./NameView";
@@ -34,6 +35,7 @@ export const NodeView = () => {
         <ExtendView />
         <RenderView />
         <SourceView />
+        <ContextMenu />
       </div>
     </div>
   );

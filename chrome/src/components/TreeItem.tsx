@@ -69,7 +69,7 @@ const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: 
 
 RenderKey.displayName = "RenderKey";
 
-export const RenderItem = ({
+export const TreeItem = ({
   node,
   isScrolling,
   className,
@@ -127,7 +127,13 @@ export const RenderItem = ({
 
   const finalName = useNodeName(useCallback((s) => s.map[current.n], [current.n]));
 
-  const { select, closeList, selectList } = useTreeNode(useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []));
+  const { select, closeList, selectList } = useTreeNode(
+    useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []),
+    (p, c) =>
+      Object.is(p.select !== node.i, c.select !== node.i) &&
+      Object.is(p.closeList?.[node.i], c.closeList?.[node.i]) &&
+      Object.is(p.selectList?.[node.i], c.selectList?.[node.i])
+  );
 
   const currentIsSelect = withSelect && node.i === select;
 
