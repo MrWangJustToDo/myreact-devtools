@@ -8,6 +8,7 @@ import { useConfig } from "@/hooks/useConfig";
 import { useChunk } from "@/hooks/useChunk";
 import { useRunNode } from "@/hooks/useRunNode";
 import { useActiveNode } from "@/hooks/useActiveNode";
+import { useContextMenu } from "@/hooks/useContextMenu";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { io } from "socket.io-client";
@@ -42,6 +43,8 @@ declare global {
     useActiveNode: typeof useActiveNode;
 
     useHighlightNode: typeof useHighlightNode;
+
+    useContextMenu: typeof useContextMenu;
 
     useConfig: typeof useConfig;
 

@@ -10,7 +10,7 @@ import { useTreeNode } from "@/hooks/useTreeNode";
 import { useUISize } from "@/hooks/useUISize";
 import { checkHasInclude } from "@/utils/node";
 
-import { RenderItem } from "./TreeItem";
+import { TreeItem } from "./TreeItem";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
@@ -56,7 +56,7 @@ export const RenderView = () => {
 
     return (
       <div className={`${sizeClass} ml-2 `} key={node.i}>
-        <RenderItem node={node} withCollapse={false} />
+        <TreeItem node={node} withCollapse={false} />
       </div>
     );
   });

@@ -1,11 +1,12 @@
-import { Pencil2Icon } from "@radix-ui/react-icons";
+import { CubeIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { memo } from "react";
+import { toast } from "sonner";
 
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useUISize } from "@/hooks/useUISize";
 
-const contextMenuClose = useContextMenu.getActions().close;
+const { close: contextMenuClose, setStore } = useContextMenu.getActions();
 
 export const ContextMenu = memo(() => {
   const { state, position } = useContextMenu((s) => s);
@@ -30,13 +31,21 @@ export const ContextMenu = memo(() => {
           {state && (
             <motion.div
               key="context-menu"
-              className="context-menu bg-white border border-gray-200 rounded shadow-md py-2"
+              className="context-menu bg-white border border-gray-200 rounded shadow-md py-1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <div className="context-menu-item px-3 py-1 cursor-pointer select-none flex justify-center items-center node-item-hover">
-                <Pencil2Icon className="mr-2" />
+              <div
+                className="context-menu-item px-2 py-1 cursor-pointer select-none flex justify-center items-center node-item-hover"
+                onClick={async () => {
+                  setStore();
+                  await new Promise((r) => setTimeout(r, 100));
+                  contextMenuClose();
+                  toast.success("Stored as global variable success!", { position: "top-right" });
+                }}
+              >
+                <CubeIcon className="mr-2" />
                 <span>Store as global variable</span>
               </div>
             </motion.div>

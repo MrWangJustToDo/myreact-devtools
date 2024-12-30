@@ -23,7 +23,7 @@ const KnownType = {
 
 export type NodeValue = {
   // id
-  i?: number;
+  i: number;
   // type
   t: keyof typeof KnownType;
   // value
@@ -46,9 +46,9 @@ let id = 1;
 
 let loadById = false;
 
-const valueMap = new Map<number, any>();
+const idToValueMap = new Map<number, any>();
 
-const idMap = new Map<any, number>();
+const valueToIdMap = new Map<any, number>();
 
 let cacheMap = new WeakMap<any, NodeValue>();
 
@@ -86,16 +86,15 @@ const isObject = (value: NodeValue["t"]) => {
 };
 
 const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue => {
+  const existId = valueToIdMap.get(value);
+
+  const currentId = existId || id++;
+
+  idToValueMap.set(currentId, value);
+
+  valueToIdMap.set(value, currentId);
   // full deep to load
   if (deep === 0) {
-    const existId = idMap.get(value);
-
-    const currentId = existId || id++;
-
-    valueMap.set(currentId, value);
-
-    idMap.set(value, currentId);
-
     return {
       i: currentId,
       t: type,
@@ -106,18 +105,21 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
   } else {
     if (type === "Array") {
       return {
+        i: currentId,
         t: type,
         v: value.map((val: any) => getNode(val, deep - 1)),
         e: true,
       };
     } else if (type === "Iterable") {
       return {
+        i: currentId,
         t: type,
         v: Array.from(value).map((val: any) => getNode(val, deep - 1)),
         e: true,
       };
     } else if (type === "Map") {
       return {
+        i: currentId,
         t: type,
         v: Array.from((value as Map<any, any>).entries()).map(([key, val]) => ({
           t: "Array",
@@ -128,6 +130,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Set") {
       return {
+        i: currentId,
         t: type,
         v: Array.from(value).map((val: any) => getNode(val, deep - 1)),
         e: true,
@@ -135,6 +138,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
     } else if (type === "Object") {
       if (typeof value?.constructor === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
         return {
+          i: currentId,
           t: type,
           n: value.constructor.name,
           v: Object.keys(value).reduce((acc, key) => {
@@ -145,6 +149,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
         };
       }
       return {
+        i: currentId,
         t: type,
         v: Object.keys(value).reduce((acc, key) => {
           acc[key] = getNode(value[key], deep - 1);
@@ -188,8 +193,17 @@ export const getNode = (value: any, deep = 3): NodeValue => {
       // full deep to load
       return getNodeWithCache(value, type, deep);
     } else {
+      const existId = valueToIdMap.get(value);
+
+      const currentId = existId || id++;
+
+      idToValueMap.set(currentId, value);
+
+      valueToIdMap.set(value, currentId);
+
       if (type === "Element") {
         return {
+          i: currentId,
           t: type,
           v: `<${value.tagName.toLowerCase()} />`,
           e: expandable,
@@ -197,6 +211,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
       }
       if (type === "Error") {
         return {
+          i: currentId,
           t: type,
           v: value.message,
           e: expandable,
@@ -204,12 +219,14 @@ export const getNode = (value: any, deep = 3): NodeValue => {
       }
       if (typeof value === "object" && value !== null) {
         return {
+          i: currentId,
           t: type,
           v: Object.prototype.toString.call(value),
           e: expandable,
         };
       } else {
         return {
+          i: currentId,
           t: type,
           v: String(value),
           e: expandable,
@@ -218,6 +235,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
     }
   } catch (e) {
     return {
+      i: NaN,
       t: "ReadError",
       v: "Read data error: " + e.message,
       e: false,
@@ -232,11 +250,19 @@ export const getNodeForce = (value: any, deep = 3): NodeValue => {
 };
 
 export const getNodeFromId = (id: number) => {
-  const value = valueMap.get(id);
+  const value = idToValueMap.get(id);
   if (value) {
     loadById = true;
     const res = getNode(value);
     loadById = false;
     return res;
+  }
+};
+
+export const getValueById = (id: number) => {
+  if (id && !Number.isNaN(id)) {
+    return { v: idToValueMap.get(id), f: true };
+  } else {
+    return { v: undefined, f: false };
   }
 };

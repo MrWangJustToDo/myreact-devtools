@@ -1,5 +1,5 @@
 import { once } from "@my-react/react-shared";
-import { DevToolCore } from "@my-react-devtool/core";
+import { DevToolCore, getValueById } from "@my-react-devtool/core";
 
 import { MessageHookType, MessageDetectorType, MessagePanelType, DevToolSource, MessageWorkerType, sourceFrom } from "./type";
 import { generatePostMessageWithSource } from "./window";
@@ -24,6 +24,8 @@ const set = new Set<CustomRenderDispatch>();
 let detectorReady = false;
 
 let id = null;
+
+let varId = 0;
 
 const runWhenDetectorReady = (fn: () => void, count?: number) => {
   clearTimeout(id);
@@ -111,6 +113,28 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
 
   if (message.data.type === MessagePanelType.chunk) {
     core.notifyChunk(message.data.data);
+  }
+
+  if (message.data.type === MessagePanelType.varStore) {
+    const id = message.data.data;
+
+    const { f, v: varStore } = getValueById(id);
+
+    if (f) {
+      const varName = `$my-react-var-${varId++}`;
+      globalThis[varName] = varStore;
+      console.log(
+        `[@my-react-devtool/hook] %cStore global variable%c Name: ${varName}`,
+        "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
+        ""
+      );
+      console.log(
+        "[@my-react-devtool/hook] %cStore global variable%c Value: %o",
+        "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
+        "",
+        varStore
+      );
+    }
   }
 
   if (message.data.type === MessagePanelType.clear) {
@@ -209,6 +233,28 @@ const initWEB_UI = async (url: string) => {
 
       if (data?.type === MessagePanelType.chunk) {
         core.notifyChunk(data.data);
+      }
+
+      if (data?.type === MessagePanelType.varStore) {
+        const id = data.data;
+
+        const { f, v: varStore } = getValueById(id);
+
+        if (f) {
+          const varName = `$my-react-var-${varId++}`;
+          globalThis[varName] = varStore;
+          console.log(
+            `[@my-react-devtool/hook] %cStore global variable%c Name: ${varName}`,
+            "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
+            ""
+          );
+          console.log(
+            "[@my-react-devtool/hook] %cStore global variable%c Value: %o",
+            "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
+            "",
+            varStore
+          );
+        }
       }
 
       if (data?.type === MessagePanelType.clear) {

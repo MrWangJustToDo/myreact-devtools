@@ -51,6 +51,8 @@ declare global {
 
     useNodeName: UseSelectorWithState<{ state: Record<string, string> }, { set: (s: Record<string, string>) => void; clear: () => void }>;
 
+    useContextMenu: UseSelectorWithState<{ store?: number }, { clear: () => void }>;
+
     useHighlightNode: UseSelectorWithState<
       {},
       {

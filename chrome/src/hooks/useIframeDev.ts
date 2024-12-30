@@ -6,6 +6,7 @@ import { useAppTree } from "./useAppTree";
 import { useChunk } from "./useChunk";
 import { useConfig } from "./useConfig";
 import { useConnect } from "./useConnect";
+import { useContextMenu } from "./useContextMenu";
 import { useDetailNode } from "./useDetailNode";
 import { useHMRNode } from "./useHMRNode";
 import { useNodeName } from "./useNodeName";
@@ -127,6 +128,19 @@ export const useIframeDev = () => {
             }
           )
         );
+
+        unSubscribeArray.push(
+          useContextMenu.subscribe(
+            (s) => s.store,
+            () => {
+              const id = useContextMenu.getReadonlyState().store;
+
+              if (id) {
+                postMessageFromIframe({ type: MessagePanelType.varStore, data: id });
+              }
+            }
+          )
+        );
       };
 
       const onDisconnect = () => {
@@ -180,6 +194,7 @@ export const useIframeDev = () => {
             useTreeNode?.getActions?.()?.clear?.();
             useDetailNode?.getActions?.()?.clear?.();
             useActiveNode?.getActions()?.clear?.();
+            useContextMenu?.getActions?.()?.clear?.();
           });
         }
 

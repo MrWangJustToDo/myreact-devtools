@@ -785,8 +785,8 @@
     		var emptyConstructor = {}.constructor;
     		var id$1 = 1;
     		var loadById = false;
-    		var valueMap = new Map();
-    		var idMap = new Map();
+    		var idToValueMap = new Map();
+    		var valueToIdMap = new Map();
     		var cacheMap = new WeakMap();
     		var getType = function (value) {
     		    if (isInBrowser && value && value instanceof Element) {
@@ -815,12 +815,12 @@
     		};
     		var getTargetNode = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }
+    		    var existId = valueToIdMap.get(value);
+    		    var currentId = existId || id$1++;
+    		    idToValueMap.set(currentId, value);
+    		    valueToIdMap.set(value, currentId);
     		    // full deep to load
     		    if (deep === 0) {
-    		        var existId = idMap.get(value);
-    		        var currentId = existId || id$1++;
-    		        valueMap.set(currentId, value);
-    		        idMap.set(value, currentId);
     		        return {
     		            i: currentId,
     		            t: type,
@@ -832,6 +832,7 @@
     		    else {
     		        if (type === "Array") {
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: value.map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
@@ -839,6 +840,7 @@
     		        }
     		        else if (type === "Iterable") {
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
@@ -846,6 +848,7 @@
     		        }
     		        else if (type === "Map") {
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: Array.from(value.entries()).map(function (_a) {
     		                    var key = _a[0], val = _a[1];
@@ -860,6 +863,7 @@
     		        }
     		        else if (type === "Set") {
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
@@ -868,6 +872,7 @@
     		        else if (type === "Object") {
     		            if (typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    n: value.constructor.name,
     		                    v: Object.keys(value).reduce(function (acc, key) {
@@ -878,6 +883,7 @@
     		                };
     		            }
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: Object.keys(value).reduce(function (acc, key) {
     		                    acc[key] = getNode(value[key], deep - 1);
@@ -913,8 +919,13 @@
     		            return getNodeWithCache(value, type, deep);
     		        }
     		        else {
+    		            var existId = valueToIdMap.get(value);
+    		            var currentId = existId || id$1++;
+    		            idToValueMap.set(currentId, value);
+    		            valueToIdMap.set(value, currentId);
     		            if (type === "Element") {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    v: "<".concat(value.tagName.toLowerCase(), " />"),
     		                    e: expandable,
@@ -922,6 +933,7 @@
     		            }
     		            if (type === "Error") {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    v: value.message,
     		                    e: expandable,
@@ -929,6 +941,7 @@
     		            }
     		            if (typeof value === "object" && value !== null) {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    v: Object.prototype.toString.call(value),
     		                    e: expandable,
@@ -936,6 +949,7 @@
     		            }
     		            else {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    v: String(value),
     		                    e: expandable,
@@ -945,6 +959,7 @@
     		    }
     		    catch (e) {
     		        return {
+    		            i: NaN,
     		            t: "ReadError",
     		            v: "Read data error: " + e.message,
     		            e: false,
@@ -957,12 +972,20 @@
     		    return getNode(value, deep);
     		};
     		var getNodeFromId = function (id) {
-    		    var value = valueMap.get(id);
+    		    var value = idToValueMap.get(id);
     		    if (value) {
     		        loadById = true;
     		        var res = getNode(value);
     		        loadById = false;
     		        return res;
+    		    }
+    		};
+    		var getValueById = function (id) {
+    		    if (id && !Number.isNaN(id)) {
+    		        return { v: idToValueMap.get(id), f: true };
+    		    }
+    		    else {
+    		        return { v: undefined, f: false };
     		    }
     		};
 
@@ -2457,6 +2480,7 @@
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
     		    MessagePanelType["hide"] = "panel-hide";
+    		    MessagePanelType["varStore"] = "panel-var-store";
     		    MessagePanelType["enableHover"] = "panel-enable-hover";
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["nodeHover"] = "panel-hover";
@@ -2499,6 +2523,7 @@
     		exports.getTree = getTree;
     		exports.getTreeByFiber = getTreeByFiber;
     		exports.getTypeName = getTypeName;
+    		exports.getValueById = getValueById;
     		exports.loopChangedTree = loopChangedTree;
     		exports.loopTree = loopTree;
     		exports.shallowAssignFiber = shallowAssignFiber;
@@ -2861,6 +2886,19 @@
         catch (_a) {
         }
     };
+    var initStoreListen = function (_window) {
+        var useContextMenu = _window.useContextMenu;
+        try {
+            return useContextMenu.subscribe(function (s) { return s.store; }, function () {
+                var store = useContextMenu.getReadonlyState().store;
+                if (store) {
+                    sendMessage({ type: coreExports.MessagePanelType.varStore, data: store });
+                }
+            });
+        }
+        catch (_a) {
+        }
+    };
     var initChunkListen = function (_window) {
         var useChunk = _window.useChunk;
         try {
@@ -2919,7 +2957,7 @@
                             hasShow = true;
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
-                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window), initForceReloadListen(window));
+                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window), initStoreListen(window), initForceReloadListen(window));
                         }, function () {
                             {
                                 console.log("hide panel");
@@ -2941,7 +2979,7 @@
         });
     }); };
     var clear = function () {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18;
         if (panelWindow) {
             (_d = (_c = (_b = (_a = panelWindow.useChunk) === null || _a === void 0 ? void 0 : _a.getActions) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c.clear) === null || _d === void 0 ? void 0 : _d.call(_c);
             (_h = (_g = (_f = (_e = panelWindow.useAppTree) === null || _e === void 0 ? void 0 : _e.getActions) === null || _f === void 0 ? void 0 : _f.call(_e)) === null || _g === void 0 ? void 0 : _g.clear) === null || _h === void 0 ? void 0 : _h.call(_g);
@@ -2951,8 +2989,9 @@
             (_y = (_x = (_w = panelWindow.useActiveNode) === null || _w === void 0 ? void 0 : _w.getActions()) === null || _x === void 0 ? void 0 : _x.clear) === null || _y === void 0 ? void 0 : _y.call(_x);
             (_2 = (_1 = (_0 = (_z = panelWindow.useRunNode) === null || _z === void 0 ? void 0 : _z.getActions) === null || _0 === void 0 ? void 0 : _0.call(_z)) === null || _1 === void 0 ? void 0 : _1.clear) === null || _2 === void 0 ? void 0 : _2.call(_1);
             (_6 = (_5 = (_4 = (_3 = panelWindow.useHMRNode) === null || _3 === void 0 ? void 0 : _3.getActions) === null || _4 === void 0 ? void 0 : _4.call(_3)) === null || _5 === void 0 ? void 0 : _5.clear) === null || _6 === void 0 ? void 0 : _6.call(_5);
-            (_10 = (_9 = (_8 = (_7 = panelWindow.useTriggerNode) === null || _7 === void 0 ? void 0 : _7.getActions) === null || _8 === void 0 ? void 0 : _8.call(_7)) === null || _9 === void 0 ? void 0 : _9.clear) === null || _10 === void 0 ? void 0 : _10.call(_9);
-            (_14 = (_13 = (_12 = (_11 = panelWindow.useHighlightNode) === null || _11 === void 0 ? void 0 : _11.getActions) === null || _12 === void 0 ? void 0 : _12.call(_11)) === null || _13 === void 0 ? void 0 : _13.clear) === null || _14 === void 0 ? void 0 : _14.call(_13);
+            (_10 = (_9 = (_8 = (_7 = panelWindow.useContextMenu) === null || _7 === void 0 ? void 0 : _7.getActions) === null || _8 === void 0 ? void 0 : _8.call(_7)) === null || _9 === void 0 ? void 0 : _9.clear) === null || _10 === void 0 ? void 0 : _10.call(_9);
+            (_14 = (_13 = (_12 = (_11 = panelWindow.useTriggerNode) === null || _11 === void 0 ? void 0 : _11.getActions) === null || _12 === void 0 ? void 0 : _12.call(_11)) === null || _13 === void 0 ? void 0 : _13.clear) === null || _14 === void 0 ? void 0 : _14.call(_13);
+            (_18 = (_17 = (_16 = (_15 = panelWindow.useHighlightNode) === null || _15 === void 0 ? void 0 : _15.getActions) === null || _16 === void 0 ? void 0 : _16.call(_15)) === null || _17 === void 0 ? void 0 : _17.clear) === null || _18 === void 0 ? void 0 : _18.call(_17);
         }
     };
     init(getTabId());

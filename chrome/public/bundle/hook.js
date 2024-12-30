@@ -787,8 +787,8 @@
     		var emptyConstructor = {}.constructor;
     		var id$1 = 1;
     		var loadById = false;
-    		var valueMap = new Map();
-    		var idMap = new Map();
+    		var idToValueMap = new Map();
+    		var valueToIdMap = new Map();
     		var cacheMap = new WeakMap();
     		var getType = function (value) {
     		    if (isInBrowser && value && value instanceof Element) {
@@ -817,12 +817,12 @@
     		};
     		var getTargetNode = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }
+    		    var existId = valueToIdMap.get(value);
+    		    var currentId = existId || id$1++;
+    		    idToValueMap.set(currentId, value);
+    		    valueToIdMap.set(value, currentId);
     		    // full deep to load
     		    if (deep === 0) {
-    		        var existId = idMap.get(value);
-    		        var currentId = existId || id$1++;
-    		        valueMap.set(currentId, value);
-    		        idMap.set(value, currentId);
     		        return {
     		            i: currentId,
     		            t: type,
@@ -834,6 +834,7 @@
     		    else {
     		        if (type === "Array") {
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: value.map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
@@ -841,6 +842,7 @@
     		        }
     		        else if (type === "Iterable") {
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
@@ -848,6 +850,7 @@
     		        }
     		        else if (type === "Map") {
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: Array.from(value.entries()).map(function (_a) {
     		                    var key = _a[0], val = _a[1];
@@ -862,6 +865,7 @@
     		        }
     		        else if (type === "Set") {
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
     		                e: true,
@@ -870,6 +874,7 @@
     		        else if (type === "Object") {
     		            if (typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    n: value.constructor.name,
     		                    v: Object.keys(value).reduce(function (acc, key) {
@@ -880,6 +885,7 @@
     		                };
     		            }
     		            return {
+    		                i: currentId,
     		                t: type,
     		                v: Object.keys(value).reduce(function (acc, key) {
     		                    acc[key] = getNode(value[key], deep - 1);
@@ -915,8 +921,13 @@
     		            return getNodeWithCache(value, type, deep);
     		        }
     		        else {
+    		            var existId = valueToIdMap.get(value);
+    		            var currentId = existId || id$1++;
+    		            idToValueMap.set(currentId, value);
+    		            valueToIdMap.set(value, currentId);
     		            if (type === "Element") {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    v: "<".concat(value.tagName.toLowerCase(), " />"),
     		                    e: expandable,
@@ -924,6 +935,7 @@
     		            }
     		            if (type === "Error") {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    v: value.message,
     		                    e: expandable,
@@ -931,6 +943,7 @@
     		            }
     		            if (typeof value === "object" && value !== null) {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    v: Object.prototype.toString.call(value),
     		                    e: expandable,
@@ -938,6 +951,7 @@
     		            }
     		            else {
     		                return {
+    		                    i: currentId,
     		                    t: type,
     		                    v: String(value),
     		                    e: expandable,
@@ -947,6 +961,7 @@
     		    }
     		    catch (e) {
     		        return {
+    		            i: NaN,
     		            t: "ReadError",
     		            v: "Read data error: " + e.message,
     		            e: false,
@@ -959,12 +974,20 @@
     		    return getNode(value, deep);
     		};
     		var getNodeFromId = function (id) {
-    		    var value = valueMap.get(id);
+    		    var value = idToValueMap.get(id);
     		    if (value) {
     		        loadById = true;
     		        var res = getNode(value);
     		        loadById = false;
     		        return res;
+    		    }
+    		};
+    		var getValueById = function (id) {
+    		    if (id && !Number.isNaN(id)) {
+    		        return { v: idToValueMap.get(id), f: true };
+    		    }
+    		    else {
+    		        return { v: undefined, f: false };
     		    }
     		};
 
@@ -2459,6 +2482,7 @@
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
     		    MessagePanelType["hide"] = "panel-hide";
+    		    MessagePanelType["varStore"] = "panel-var-store";
     		    MessagePanelType["enableHover"] = "panel-enable-hover";
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["nodeHover"] = "panel-hover";
@@ -2501,6 +2525,7 @@
     		exports.getTree = getTree;
     		exports.getTreeByFiber = getTreeByFiber;
     		exports.getTypeName = getTypeName;
+    		exports.getValueById = getValueById;
     		exports.loopChangedTree = loopChangedTree;
     		exports.loopTree = loopTree;
     		exports.shallowAssignFiber = shallowAssignFiber;
@@ -2559,6 +2584,7 @@
     var set = new Set();
     var detectorReady = false;
     var id = null;
+    var varId = 0;
     var runWhenDetectorReady = function (fn, count) {
         clearTimeout(id);
         if (detectorReady) {
@@ -2629,6 +2655,16 @@
         }
         if (message.data.type === coreExports.MessagePanelType.chunk) {
             core.notifyChunk(message.data.data);
+        }
+        if (message.data.type === coreExports.MessagePanelType.varStore) {
+            var id_1 = message.data.data;
+            var _q = coreExports.getValueById(id_1), f = _q.f, varStore = _q.v;
+            if (f) {
+                var varName = "$my-react-var-".concat(varId++);
+                globalThis[varName] = varStore;
+                console.log("[@my-react-devtool/hook] %cStore global variable%c Name: ".concat(varName), "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "");
+                console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
+            }
         }
         if (message.data.type === coreExports.MessagePanelType.clear) {
             core.clear();
@@ -2705,6 +2741,16 @@
                         }
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.chunk) {
                             core.notifyChunk(data.data);
+                        }
+                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varStore) {
+                            var id_2 = data.data;
+                            var _a = coreExports.getValueById(id_2), f = _a.f, varStore = _a.v;
+                            if (f) {
+                                var varName = "$my-react-var-".concat(varId++);
+                                globalThis[varName] = varStore;
+                                console.log("[@my-react-devtool/hook] %cStore global variable%c Name: ".concat(varName), "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "");
+                                console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
+                            }
                         }
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clear) {
                             core.clear();

@@ -435,6 +435,25 @@ const initConfigListen = (_window: Window) => {
   }
 };
 
+const initStoreListen = (_window: Window) => {
+  const useContextMenu = _window.useContextMenu;
+
+  try {
+    return useContextMenu.subscribe(
+      (s) => s.store,
+      () => {
+        const store = useContextMenu.getReadonlyState().store;
+
+        if (store) {
+          sendMessage({ type: MessagePanelType.varStore, data: store });
+        }
+      }
+    );
+  } catch {
+    void 0;
+  }
+}
+
 const initChunkListen = (_window: Window) => {
   const useChunk = _window.useChunk;
 
@@ -524,7 +543,8 @@ const init = async (id: number) => {
           initConfigListen(window),
           initSubscribeListen(window),
           initChunkListen(window),
-          initForceReloadListen(window)
+          initStoreListen(window),
+          initForceReloadListen(window),
         );
       },
       () => {
@@ -556,6 +576,7 @@ const clear = () => {
     panelWindow.useActiveNode?.getActions()?.clear?.();
     panelWindow.useRunNode?.getActions?.()?.clear?.();
     panelWindow.useHMRNode?.getActions?.()?.clear?.();
+    panelWindow.useContextMenu?.getActions?.()?.clear?.();
     panelWindow.useTriggerNode?.getActions?.()?.clear?.();
     panelWindow.useHighlightNode?.getActions?.()?.clear?.();
   }

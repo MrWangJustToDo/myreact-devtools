@@ -9,7 +9,7 @@ import { getText } from "@/utils/treeValue";
 import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
 import type { ReactNode } from "react";
 
-const { open: contextOpen } = useContextMenu.getActions();
+const { open: contextOpen, setId } = useContextMenu.getActions();
 
 export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeValueType; prefix?: ReactNode }) => {
   const [expand, setExpand] = useState(false);
@@ -53,8 +53,13 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
   }, [chunkData, expand, item?.i, item?.l]);
 
   const onContextClick = (e: React.MouseEvent) => {
+    // if the data not loaded, do not show context menu
+    if (!data || !item) return;
     e.preventDefault();
+
     contextOpen({ x: e.clientX, y: e.clientY });
+    
+    setId(item.i);
   };
 
   if (!item) return null;
