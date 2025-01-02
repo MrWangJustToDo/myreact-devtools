@@ -3,15 +3,17 @@
 
     var core = {exports: {}};
 
+    var index_production$1 = {};
+
     var reactShared = {exports: {}};
 
-    var index_development$1 = {};
+    var index_production = {};
 
-    var hasRequiredIndex_development$1;
+    var hasRequiredIndex_production$1;
 
-    function requireIndex_development$1 () {
-    	if (hasRequiredIndex_development$1) return index_development$1;
-    	hasRequiredIndex_development$1 = 1;
+    function requireIndex_production$1 () {
+    	if (hasRequiredIndex_production$1) return index_production;
+    	hasRequiredIndex_production$1 = 1;
     	(function (exports) {
 
     		var merge = function (src, rest) {
@@ -594,13 +596,6 @@
     		    };
     		    return ListTree;
     		}());
-    		{
-    		    Object.defineProperty(ListTree.prototype, "_debugToArray", {
-    		        get: function () {
-    		            return this.toArray();
-    		        },
-    		    });
-    		}
 
     		exports.Comment = Comment;
     		exports.Consumer = Consumer;
@@ -640,8 +635,8 @@
     		exports.once = once;
     		exports.remove = remove;
     		
-    	} (index_development$1));
-    	return index_development$1;
+    	} (index_production));
+    	return index_production;
     }
 
     var hasRequiredReactShared;
@@ -651,18 +646,16 @@
     	hasRequiredReactShared = 1;
 
     	{
-    	  reactShared.exports = requireIndex_development$1();
+    	  reactShared.exports = requireIndex_production$1();
     	}
     	return reactShared.exports;
     }
 
-    var index_development = {};
+    var hasRequiredIndex_production;
 
-    var hasRequiredIndex_development;
-
-    function requireIndex_development () {
-    	if (hasRequiredIndex_development) return index_development;
-    	hasRequiredIndex_development = 1;
+    function requireIndex_production () {
+    	if (hasRequiredIndex_production) return index_production$1;
+    	hasRequiredIndex_production = 1;
     	(function (exports) {
 
     		var reactShared = requireReactShared();
@@ -927,13 +920,6 @@
     		    }
     		    return PlainNode;
     		}());
-    		{
-    		    Object.defineProperty(PlainNode.prototype, "__debugToString", {
-    		        value: function () {
-    		            return JSON.stringify(this);
-    		        },
-    		    });
-    		}
 
     		var NODE_TYPE;
     		(function (NODE_TYPE) {
@@ -1200,7 +1186,6 @@
     		    return hasCompiler ? reactShared.merge(t, NODE_TYPE.__compiler__) : t;
     		};
     		var getFiberName = function (fiber) {
-    		    var typedFiber = fiber;
     		    if (fiber.type & NODE_TYPE.__provider__) {
     		        var typedElementType = fiber.elementType;
     		        var name_1 = typedElementType.Context.displayName;
@@ -1215,11 +1200,6 @@
     		        var typedElementType = fiber.elementType;
     		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
     		        var name_3 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
-    		        {
-    		            var element = typedFiber._debugElement;
-    		            var type = element === null || element === void 0 ? void 0 : element.type;
-    		            name_3 = (type === null || type === void 0 ? void 0 : type.displayName) || name_3;
-    		        }
     		        return "".concat(name_3 || "Anonymous");
     		    }
     		    if (fiber.type & NODE_TYPE.__portal__)
@@ -1249,12 +1229,6 @@
     		    if (typeof fiber.elementType === "function") {
     		        var typedElementType = fiber.elementType;
     		        var name_4 = typedElementType.displayName || typedElementType.name || "Anonymous";
-    		        {
-    		            var element = typedFiber._debugElement;
-    		            // may be a Suspense element
-    		            var type = element === null || element === void 0 ? void 0 : element.type;
-    		            name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
-    		        }
     		        return "".concat(name_4);
     		    }
     		    return "unknown";
@@ -2018,15 +1992,9 @@
     		        configurable: true
     		    });
     		    DevToolCore.prototype.setHoverStatus = function (d) {
-    		        {
-    		            console.log("[@my-react-devtool/core] hoverStatus ".concat(d ? "enable" : "disable"));
-    		        }
     		        this._enableHover = d;
     		    };
     		    DevToolCore.prototype.setUpdateStatus = function (d) {
-    		        {
-    		            console.log("[@my-react-devtool/core] updateStatus ".concat(d ? "enable" : "disable"));
-    		        }
     		        this._enableUpdate = d;
     		    };
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
@@ -2322,9 +2290,6 @@
     		            return;
     		        var fiber = getFiberNodeById(id);
     		        if (fiber) {
-    		            {
-    		                console.log("[@my-react-devtool/core] current select fiber", fiber);
-    		            }
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber, force) });
     		        }
     		        else {
@@ -2362,9 +2327,6 @@
     		    DevToolCore.prototype.connect = function () {
     		        if (this._enabled)
     		            return;
-    		        {
-    		            console.log("[@my-react-devtool/core] connect");
-    		        }
     		        this._enabled = true;
     		    };
     		    DevToolCore.prototype.disconnect = function () {
@@ -2373,9 +2335,6 @@
     		            return;
     		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        this.select = null;
-    		        {
-    		            console.log("[@my-react-devtool/core] disconnect");
-    		        }
     		        this._enabled = false;
     		    };
     		    DevToolCore.prototype.clear = function () {
@@ -2460,8 +2419,8 @@
     		exports.typeKeys = typeKeys;
     		exports.unmountPlainNode = unmountPlainNode;
     		
-    	} (index_development));
-    	return index_development;
+    	} (index_production$1));
+    	return index_production$1;
     }
 
     var hasRequiredCore;
@@ -2471,7 +2430,7 @@
     	hasRequiredCore = 1;
 
     	{
-    	  core.exports = requireIndex_development();
+    	  core.exports = requireIndex_production();
     	}
     	return core.exports;
     }
@@ -2556,4 +2515,4 @@
     window.addEventListener("message", sendMessageToPanel);
 
 })();
-//# sourceMappingURL=proxy.development.js.map
+//# sourceMappingURL=proxy.production.js.map
