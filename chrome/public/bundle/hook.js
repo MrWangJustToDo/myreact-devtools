@@ -74,13 +74,13 @@
 
     var reactShared = {exports: {}};
 
-    var index_development$1 = {};
+    var index_production$1 = {};
 
-    var hasRequiredIndex_development$1;
+    var hasRequiredIndex_production$1;
 
-    function requireIndex_development$1 () {
-    	if (hasRequiredIndex_development$1) return index_development$1;
-    	hasRequiredIndex_development$1 = 1;
+    function requireIndex_production$1 () {
+    	if (hasRequiredIndex_production$1) return index_production$1;
+    	hasRequiredIndex_production$1 = 1;
     	(function (exports) {
 
     		var merge = function (src, rest) {
@@ -663,13 +663,6 @@
     		    };
     		    return ListTree;
     		}());
-    		{
-    		    Object.defineProperty(ListTree.prototype, "_debugToArray", {
-    		        get: function () {
-    		            return this.toArray();
-    		        },
-    		    });
-    		}
 
     		exports.Comment = Comment;
     		exports.Consumer = Consumer;
@@ -709,8 +702,8 @@
     		exports.once = once;
     		exports.remove = remove;
     		
-    	} (index_development$1));
-    	return index_development$1;
+    	} (index_production$1));
+    	return index_production$1;
     }
 
     var hasRequiredReactShared;
@@ -720,7 +713,7 @@
     	hasRequiredReactShared = 1;
 
     	{
-    	  reactShared.exports = requireIndex_development$1();
+    	  reactShared.exports = requireIndex_production$1();
     	}
     	return reactShared.exports;
     }
@@ -729,13 +722,13 @@
 
     var core$1 = {exports: {}};
 
-    var index_development = {};
+    var index_production = {};
 
-    var hasRequiredIndex_development;
+    var hasRequiredIndex_production;
 
-    function requireIndex_development () {
-    	if (hasRequiredIndex_development) return index_development;
-    	hasRequiredIndex_development = 1;
+    function requireIndex_production () {
+    	if (hasRequiredIndex_production) return index_production;
+    	hasRequiredIndex_production = 1;
     	(function (exports) {
 
     		var reactShared = requireReactShared();
@@ -1000,13 +993,6 @@
     		    }
     		    return PlainNode;
     		}());
-    		{
-    		    Object.defineProperty(PlainNode.prototype, "__debugToString", {
-    		        value: function () {
-    		            return JSON.stringify(this);
-    		        },
-    		    });
-    		}
 
     		var NODE_TYPE;
     		(function (NODE_TYPE) {
@@ -1273,7 +1259,6 @@
     		    return hasCompiler ? reactShared.merge(t, NODE_TYPE.__compiler__) : t;
     		};
     		var getFiberName = function (fiber) {
-    		    var typedFiber = fiber;
     		    if (fiber.type & NODE_TYPE.__provider__) {
     		        var typedElementType = fiber.elementType;
     		        var name_1 = typedElementType.Context.displayName;
@@ -1288,11 +1273,6 @@
     		        var typedElementType = fiber.elementType;
     		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
     		        var name_3 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
-    		        {
-    		            var element = typedFiber._debugElement;
-    		            var type = element === null || element === void 0 ? void 0 : element.type;
-    		            name_3 = (type === null || type === void 0 ? void 0 : type.displayName) || name_3;
-    		        }
     		        return "".concat(name_3 || "Anonymous");
     		    }
     		    if (fiber.type & NODE_TYPE.__portal__)
@@ -1322,12 +1302,6 @@
     		    if (typeof fiber.elementType === "function") {
     		        var typedElementType = fiber.elementType;
     		        var name_4 = typedElementType.displayName || typedElementType.name || "Anonymous";
-    		        {
-    		            var element = typedFiber._debugElement;
-    		            // may be a Suspense element
-    		            var type = element === null || element === void 0 ? void 0 : element.type;
-    		            name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
-    		        }
     		        return "".concat(name_4);
     		    }
     		    return "unknown";
@@ -2091,15 +2065,9 @@
     		        configurable: true
     		    });
     		    DevToolCore.prototype.setHoverStatus = function (d) {
-    		        {
-    		            console.log("[@my-react-devtool/core] hoverStatus ".concat(d ? "enable" : "disable"));
-    		        }
     		        this._enableHover = d;
     		    };
     		    DevToolCore.prototype.setUpdateStatus = function (d) {
-    		        {
-    		            console.log("[@my-react-devtool/core] updateStatus ".concat(d ? "enable" : "disable"));
-    		        }
     		        this._enableUpdate = d;
     		    };
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
@@ -2395,9 +2363,6 @@
     		            return;
     		        var fiber = getFiberNodeById(id);
     		        if (fiber) {
-    		            {
-    		                console.log("[@my-react-devtool/core] current select fiber", fiber);
-    		            }
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber, force) });
     		        }
     		        else {
@@ -2435,9 +2400,6 @@
     		    DevToolCore.prototype.connect = function () {
     		        if (this._enabled)
     		            return;
-    		        {
-    		            console.log("[@my-react-devtool/core] connect");
-    		        }
     		        this._enabled = true;
     		    };
     		    DevToolCore.prototype.disconnect = function () {
@@ -2446,9 +2408,6 @@
     		            return;
     		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        this.select = null;
-    		        {
-    		            console.log("[@my-react-devtool/core] disconnect");
-    		        }
     		        this._enabled = false;
     		    };
     		    DevToolCore.prototype.clear = function () {
@@ -2533,8 +2492,8 @@
     		exports.typeKeys = typeKeys;
     		exports.unmountPlainNode = unmountPlainNode;
     		
-    	} (index_development));
-    	return index_development;
+    	} (index_production));
+    	return index_production;
     }
 
     var hasRequiredCore;
@@ -2544,7 +2503,7 @@
     	hasRequiredCore = 1;
 
     	{
-    	  core$1.exports = requireIndex_development();
+    	  core$1.exports = requireIndex_production();
     	}
     	return core$1.exports;
     }
@@ -2576,9 +2535,6 @@
     var core = new coreExports.DevToolCore();
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
     core.subscribe(function (message) {
-        {
-            console.log("[@my-react-devtool/hook] core message", message);
-        }
         hookPostMessageWithSource({ type: coreExports.MessageHookType.render, data: message });
     });
     var set = new Set();
@@ -2591,11 +2547,6 @@
             fn();
         }
         else {
-            if (count && count > 10) {
-                {
-                    console.error("[@my-react-devtool/hook] detector not ready");
-                }
-            }
             if (count && count > 18) {
                 return;
             }
@@ -2603,7 +2554,7 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+        var _a, _b, _c, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
         // allow iframe dev
         if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe)
             return;
@@ -2611,13 +2562,7 @@
             return;
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.from) === sourceFrom.hook)
             return;
-        if (((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) && message.data.type !== coreExports.MessagePanelType.nodeHover) {
-            console.log("[@my-react-devtool/hook] message from proxy", message.data);
-        }
         if (!detectorReady && ((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === coreExports.MessageDetectorType.init) {
-            {
-                console.log("[@my-react-devtool/hook] detector init");
-            }
             detectorReady = true;
         }
         if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessageWorkerType.init) {
@@ -2675,15 +2620,6 @@
         // current site is render by @my-react
         hookPostMessageWithSource({ type: coreExports.MessageHookType.mount });
     });
-    var loadScript = function (url) {
-        return new Promise(function (resolve, reject) {
-            var script = document.createElement("script");
-            script.src = url;
-            script.onload = function () { return resolve(); };
-            script.onerror = reject;
-            document.body.appendChild(script);
-        });
-    };
     var connectSocket = null;
     // TODO! 与 onMessage 保持同步
     var initWEB_UI = function (url) { return __awaiter(void 0, void 0, void 0, function () {
@@ -2691,25 +2627,18 @@
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log("[@my-react-devtool/hook] start a web ui devtool");
-                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
+                    return [3 /*break*/, 2];
                 case 1:
                     _a.sent();
                     socket_1 = window.io(url);
                     connectSocket = socket_1;
                     unSubscribe_1 = function () { };
                     socket_1.on("connect", function () {
-                        {
-                            console.log("[@my-react-devtool/hook] socket connected");
-                        }
                         unSubscribe_1 = core.subscribe(function (message) {
                             socket_1.emit("render", message);
                         });
                     });
                     socket_1.on("disconnect", function () {
-                        {
-                            console.log("[@my-react-devtool/hook] socket disconnected");
-                        }
                         unSubscribe_1();
                     });
                     socket_1.on("action", function (data) {
@@ -2772,11 +2701,7 @@
         core.addDispatch(dispatch);
         runWhenDetectorReady(onceMount);
     };
-    if (window.parent && window.parent !== window) {
-        {
-            console.warn("[@my-react-devtool/hook] currently the @my-react extension does not support iframe.");
-        }
-    }
+    if (window.parent && window.parent !== window) ;
     else {
         window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
         window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
@@ -2787,4 +2712,4 @@
     }
 
 })();
-//# sourceMappingURL=hook.development.js.map
+//# sourceMappingURL=hook.production.js.map

@@ -74,15 +74,17 @@
 
     var core = {exports: {}};
 
+    var index_production$1 = {};
+
     var reactShared = {exports: {}};
 
-    var index_development$1 = {};
+    var index_production = {};
 
-    var hasRequiredIndex_development$1;
+    var hasRequiredIndex_production$1;
 
-    function requireIndex_development$1 () {
-    	if (hasRequiredIndex_development$1) return index_development$1;
-    	hasRequiredIndex_development$1 = 1;
+    function requireIndex_production$1 () {
+    	if (hasRequiredIndex_production$1) return index_production;
+    	hasRequiredIndex_production$1 = 1;
     	(function (exports) {
 
     		var merge = function (src, rest) {
@@ -665,13 +667,6 @@
     		    };
     		    return ListTree;
     		}());
-    		{
-    		    Object.defineProperty(ListTree.prototype, "_debugToArray", {
-    		        get: function () {
-    		            return this.toArray();
-    		        },
-    		    });
-    		}
 
     		exports.Comment = Comment;
     		exports.Consumer = Consumer;
@@ -711,8 +706,8 @@
     		exports.once = once;
     		exports.remove = remove;
     		
-    	} (index_development$1));
-    	return index_development$1;
+    	} (index_production));
+    	return index_production;
     }
 
     var hasRequiredReactShared;
@@ -722,18 +717,16 @@
     	hasRequiredReactShared = 1;
 
     	{
-    	  reactShared.exports = requireIndex_development$1();
+    	  reactShared.exports = requireIndex_production$1();
     	}
     	return reactShared.exports;
     }
 
-    var index_development = {};
+    var hasRequiredIndex_production;
 
-    var hasRequiredIndex_development;
-
-    function requireIndex_development () {
-    	if (hasRequiredIndex_development) return index_development;
-    	hasRequiredIndex_development = 1;
+    function requireIndex_production () {
+    	if (hasRequiredIndex_production) return index_production$1;
+    	hasRequiredIndex_production = 1;
     	(function (exports) {
 
     		var reactShared = requireReactShared();
@@ -998,13 +991,6 @@
     		    }
     		    return PlainNode;
     		}());
-    		{
-    		    Object.defineProperty(PlainNode.prototype, "__debugToString", {
-    		        value: function () {
-    		            return JSON.stringify(this);
-    		        },
-    		    });
-    		}
 
     		var NODE_TYPE;
     		(function (NODE_TYPE) {
@@ -1271,7 +1257,6 @@
     		    return hasCompiler ? reactShared.merge(t, NODE_TYPE.__compiler__) : t;
     		};
     		var getFiberName = function (fiber) {
-    		    var typedFiber = fiber;
     		    if (fiber.type & NODE_TYPE.__provider__) {
     		        var typedElementType = fiber.elementType;
     		        var name_1 = typedElementType.Context.displayName;
@@ -1286,11 +1271,6 @@
     		        var typedElementType = fiber.elementType;
     		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
     		        var name_3 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
-    		        {
-    		            var element = typedFiber._debugElement;
-    		            var type = element === null || element === void 0 ? void 0 : element.type;
-    		            name_3 = (type === null || type === void 0 ? void 0 : type.displayName) || name_3;
-    		        }
     		        return "".concat(name_3 || "Anonymous");
     		    }
     		    if (fiber.type & NODE_TYPE.__portal__)
@@ -1320,12 +1300,6 @@
     		    if (typeof fiber.elementType === "function") {
     		        var typedElementType = fiber.elementType;
     		        var name_4 = typedElementType.displayName || typedElementType.name || "Anonymous";
-    		        {
-    		            var element = typedFiber._debugElement;
-    		            // may be a Suspense element
-    		            var type = element === null || element === void 0 ? void 0 : element.type;
-    		            name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
-    		        }
     		        return "".concat(name_4);
     		    }
     		    return "unknown";
@@ -2089,15 +2063,9 @@
     		        configurable: true
     		    });
     		    DevToolCore.prototype.setHoverStatus = function (d) {
-    		        {
-    		            console.log("[@my-react-devtool/core] hoverStatus ".concat(d ? "enable" : "disable"));
-    		        }
     		        this._enableHover = d;
     		    };
     		    DevToolCore.prototype.setUpdateStatus = function (d) {
-    		        {
-    		            console.log("[@my-react-devtool/core] updateStatus ".concat(d ? "enable" : "disable"));
-    		        }
     		        this._enableUpdate = d;
     		    };
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
@@ -2393,9 +2361,6 @@
     		            return;
     		        var fiber = getFiberNodeById(id);
     		        if (fiber) {
-    		            {
-    		                console.log("[@my-react-devtool/core] current select fiber", fiber);
-    		            }
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber, force) });
     		        }
     		        else {
@@ -2433,9 +2398,6 @@
     		    DevToolCore.prototype.connect = function () {
     		        if (this._enabled)
     		            return;
-    		        {
-    		            console.log("[@my-react-devtool/core] connect");
-    		        }
     		        this._enabled = true;
     		    };
     		    DevToolCore.prototype.disconnect = function () {
@@ -2444,9 +2406,6 @@
     		            return;
     		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        this.select = null;
-    		        {
-    		            console.log("[@my-react-devtool/core] disconnect");
-    		        }
     		        this._enabled = false;
     		    };
     		    DevToolCore.prototype.clear = function () {
@@ -2531,8 +2490,8 @@
     		exports.typeKeys = typeKeys;
     		exports.unmountPlainNode = unmountPlainNode;
     		
-    	} (index_development));
-    	return index_development;
+    	} (index_production$1));
+    	return index_production$1;
     }
 
     var hasRequiredCore;
@@ -2542,7 +2501,7 @@
     	hasRequiredCore = 1;
 
     	{
-    	  core.exports = requireIndex_development();
+    	  core.exports = requireIndex_production();
     	}
     	return core.exports;
     }
@@ -2585,9 +2544,6 @@
                 initPort();
             }
             if (count && count > 10) {
-                {
-                    console.error("[@my-react-devtool/panel] worker not ready");
-                }
                 return;
             }
             id = setTimeout(function () { return runWhenWorkerReady(fn, count ? count + 1 : 1); }, 1000);
@@ -2595,9 +2551,6 @@
     };
     var showPanel = function (onShow, onHide) {
         return new Promise(function (resolve) {
-            {
-                console.log("[@my-react-devtool/panel] create panel", getTabId());
-            }
             chrome.devtools.panels.create("@my-react", "", "devTool.html", function (panel) {
                 var f1 = function (_window) {
                     onShow(_window);
@@ -2620,9 +2573,6 @@
         if (!hasShow)
             return;
         if (data.type === coreExports.DevToolMessageEnum.init) {
-            {
-                console.log("[@my-react-devtool/panel] init", data.data);
-            }
             var detector = data.data;
             try {
                 var setRender = _window.useConnect.getActions().setRender;
@@ -2634,9 +2584,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.dir) {
-            {
-                console.log("[@my-react-devtool/panel] dir", data.data);
-            }
             var node = data.data;
             try {
                 var set = _window.useNodeName.getActions().set;
@@ -2648,9 +2595,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.ready) {
-            {
-                console.log("[@my-react-devtool/panel] init", data.data);
-            }
             var node = data.data;
             try {
                 var addNode = _window.useAppTree.getActions().addNode;
@@ -2664,9 +2608,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.unmount) {
-            {
-                console.log("[@my-react-devtool/panel] unmount");
-            }
             try {
                 _window.useChunk.getActions().clear();
                 _window.useAppTree.getActions().clear();
@@ -2681,9 +2622,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.hmr) {
-            {
-                console.log("[@my-react-devtool/panel] hmr", data.data);
-            }
             var nodes = data.data;
             try {
                 var update = _window.useHMRNode.getActions().update;
@@ -2695,9 +2633,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.trigger) {
-            {
-                console.log("[@my-react-devtool/panel] trigger", data.data);
-            }
             var nodes = data.data;
             try {
                 var update = _window.useTriggerNode.getActions().update;
@@ -2709,9 +2644,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.detail) {
-            {
-                console.log("[@my-react-devtool/panel] detail", data.data);
-            }
             var node = data.data;
             try {
                 var _a = _window.useDetailNode.getActions(), addNode = _a.addNode, setLoading = _a.setLoading;
@@ -2726,9 +2658,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.highlight) {
-            {
-                console.log("[@my-react-devtool/panel] highlight", data.data);
-            }
             var node = data.data;
             try {
                 var highlightNode = _window.useHighlightNode.getActions().highlightNode;
@@ -2740,9 +2669,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.config) {
-            {
-                console.log("[@my-react-devtool/panel] config", data.data);
-            }
             var config = data.data;
             try {
                 var _b = _window.useConfig.getActions(), setEnableHover = _b.setEnableHover, setEnableUpdate = _b.setEnableUpdate;
@@ -2755,9 +2681,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.run) {
-            {
-                console.log("[@my-react-devtool/panel] run", data.data);
-            }
             var nodes = data.data;
             try {
                 var update = _window.useRunNode.getActions().update;
@@ -2769,9 +2692,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.chunk) {
-            {
-                console.log("[@my-react-devtool/panel] chunk", data.data);
-            }
             var chunk = data.data;
             try {
                 var setChunk = _window.useChunk.getActions().setChunk;
@@ -2783,9 +2703,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.warn) {
-            {
-                console.log("[@my-react-devtool/panel] warn", data.data);
-            }
             var warn = data.data;
             try {
                 var setWarn = _window.useHighlightNode.getActions().setWarn;
@@ -2797,9 +2714,6 @@
             }
         }
         if (data.type === coreExports.DevToolMessageEnum.error) {
-            {
-                console.log("[@my-react-devtool/panel] error", data.data);
-            }
             var error = data.data;
             try {
                 var setError = _window.useHighlightNode.getActions().setError;
@@ -2921,9 +2835,6 @@
             if (!hasShow)
                 return;
             workerConnecting = false;
-            {
-                console.log("[@my-react-devtool/panel] message from port", message);
-            }
             if (!workerReady && message.type === coreExports.MessageWorkerType.init) {
                 workerReady = true;
                 panelWindow.useConnect.getActions().connect();
@@ -2933,7 +2844,6 @@
             }
         };
         var onDisconnect = function () {
-            console.log("[@my-react-devtool/panel] disconnect");
             port.onMessage.removeListener(onMessage);
             disconnect();
             port = null;
@@ -2951,17 +2861,11 @@
                     if (!id) return [3 /*break*/, 2];
                     cleanList_1 = [];
                     return [4 /*yield*/, showPanel(function (window) {
-                            {
-                                console.log("show panel");
-                            }
                             hasShow = true;
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
                             cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window), initStoreListen(window), initForceReloadListen(window));
                         }, function () {
-                            {
-                                console.log("hide panel");
-                            }
                             sendMessage({ type: coreExports.MessagePanelType.hide });
                             cleanList_1.forEach(function (f) { return f(); });
                             hasShow = false;
@@ -2970,9 +2874,6 @@
                     _a.sent();
                     return [3 /*break*/, 3];
                 case 2:
-                    {
-                        console.error("[@my-react-devtool/panel] tabId is empty");
-                    }
                     _a.label = 3;
                 case 3: return [2 /*return*/];
             }
@@ -2996,9 +2897,6 @@
     };
     init(getTabId());
     chrome.devtools.network.onNavigated.addListener(function () {
-        {
-            console.log("[@my-react-devtool/panel] onNavigated");
-        }
         clear();
         // 不会触发onShow事件 ？
         init(getTabId());
@@ -3011,4 +2909,4 @@
     });
 
 })();
-//# sourceMappingURL=panel.development.js.map
+//# sourceMappingURL=panel.production.js.map

@@ -503,7 +503,9 @@ const initPort = () => {
   };
 
   const onDisconnect = () => {
-    console.log("[@my-react-devtool/panel] disconnect");
+    if (__DEV__) {
+      console.log("[@my-react-devtool/panel] disconnect");
+    }
 
     port.onMessage.removeListener(onMessage);
 
