@@ -2444,6 +2444,7 @@
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
+    		    MessagePanelType["nodeStore"] = "panel-store";
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		    MessagePanelType["chunk"] = "panel-chunk";
@@ -2759,6 +2760,17 @@
         catch (_a) {
         }
     };
+    var initFiberStoreListen = function (_window) {
+        var useTreeNode = _window.useTreeNode;
+        try {
+            return useTreeNode.subscribe(function (s) { return s.store; }, function () {
+                var currentStore = useTreeNode.getReadonlyState().select;
+                sendMessage({ type: coreExports.MessagePanelType.nodeStore, data: currentStore });
+            });
+        }
+        catch (_a) {
+        }
+    };
     var initHoverListen = function (_window) {
         var useTreeNode = _window.useTreeNode;
         try {
@@ -2864,7 +2876,7 @@
                             hasShow = true;
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
-                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window), initStoreListen(window), initForceReloadListen(window));
+                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window), initStoreListen(window), initFiberStoreListen(window), initForceReloadListen(window));
                         }, function () {
                             sendMessage({ type: coreExports.MessagePanelType.hide });
                             cleanList_1.forEach(function (f) { return f(); });
