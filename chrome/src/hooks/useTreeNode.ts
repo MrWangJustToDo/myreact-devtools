@@ -1,5 +1,6 @@
 import { debounce, type PlainNode } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
+import { toast } from "sonner";
 
 import { isServer } from "@/utils/isServer";
 import { flattenNode } from "@/utils/node";
@@ -14,10 +15,11 @@ const delNode = useDetailNode.getActions().delNode;
 
 export const useTreeNode = createState(
   () =>
-    ({ select: null, hover: null, closeList: {}, selectList: {}, force: 0 }) as {
+    ({ select: null, hover: null, closeList: {}, selectList: {}, force: 0, store: 0 }) as {
       select: string | null;
       hover: string | null;
       force: number;
+      store: number;
       closeList: Record<string, boolean>;
       selectList: Record<string, boolean>;
     },
@@ -35,6 +37,7 @@ export const useTreeNode = createState(
           return p;
         }, {});
       }, 16);
+
       return {
         setSelect: (node: string | null, force?: boolean) => {
           if (node === s.select && !force) {
@@ -53,6 +56,13 @@ export const useTreeNode = createState(
           }
 
           clearChunk();
+        },
+        storeFiber: () => {
+          if (s.select) {
+            s.store++;
+
+            toast.success("store fiber success");
+          }
         },
         updateSelectList,
         setHover: (node: string | null) => {

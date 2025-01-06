@@ -15,6 +15,8 @@ export const ContextMenu = memo(() => {
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
+  const sizeNum = size === "sm" ? 11 : size === "md" ? 12 : 13;
+
   return (
     <>
       <div
@@ -45,7 +47,7 @@ export const ContextMenu = memo(() => {
                   toast.success("Stored as global variable success!", { position: "top-right" });
                 }}
               >
-                <CubeIcon className="mr-2" />
+                <CubeIcon className="mr-2" width={sizeNum} height={sizeNum} />
                 <span>Store as global variable</span>
               </div>
             </motion.div>

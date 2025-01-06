@@ -91,6 +91,20 @@ export const useIframeDev = () => {
 
         unSubscribeArray.push(
           useTreeNode.subscribe(
+            (s) => s.store,
+            () => {
+              const currentSelect = useTreeNode.getReadonlyState().select;
+
+              if (currentSelect) {
+
+                debouncePostMessageFromIframe({ type: MessagePanelType.nodeStore, data: currentSelect });
+              }
+            }
+          )
+        );
+
+        unSubscribeArray.push(
+          useTreeNode.subscribe(
             (s) => s.hover,
             () => postMessageFromIframe({ type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
           )

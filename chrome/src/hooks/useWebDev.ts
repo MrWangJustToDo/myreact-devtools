@@ -92,6 +92,19 @@ export const useWebDev = () => {
 
         unSubscribeArray.push(
           useTreeNode.subscribe(
+            (s) => s.store,
+            () => {
+              const currentSelect = useTreeNode.getReadonlyState().select;
+
+              if (currentSelect) {
+                io.emit("action", { type: MessagePanelType.nodeStore, data: currentSelect });
+              }
+            }
+          )
+        );
+
+        unSubscribeArray.push(
+          useTreeNode.subscribe(
             (s) => s.hover,
             () => io.emit("action", { type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
           )

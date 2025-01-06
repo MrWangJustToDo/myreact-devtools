@@ -366,6 +366,23 @@ const initForceReloadListen = (_window: Window) => {
   }
 };
 
+const initFiberStoreListen = (_window: Window) => {
+  const useTreeNode = _window.useTreeNode;
+
+  try {
+    return useTreeNode.subscribe(
+      (s) => s.store,
+      () => {
+        const currentStore = useTreeNode.getReadonlyState().select;
+
+        sendMessage({ type: MessagePanelType.nodeStore, data: currentStore });
+      }
+    );
+  } catch {
+    void 0;
+  }
+}
+
 const initHoverListen = (_window: Window) => {
   const useTreeNode = _window.useTreeNode;
 
@@ -546,6 +563,7 @@ const init = async (id: number) => {
           initSubscribeListen(window),
           initChunkListen(window),
           initStoreListen(window),
+          initFiberStoreListen(window),
           initForceReloadListen(window),
         );
       },

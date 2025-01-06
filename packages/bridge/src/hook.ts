@@ -1,5 +1,5 @@
 import { once } from "@my-react/react-shared";
-import { DevToolCore, getValueById } from "@my-react-devtool/core";
+import { DevToolCore, getFiberNodeById, getValueById } from "@my-react-devtool/core";
 
 import { MessageHookType, MessageDetectorType, MessagePanelType, DevToolSource, MessageWorkerType, sourceFrom } from "./type";
 import { generatePostMessageWithSource } from "./window";
@@ -26,6 +26,16 @@ let detectorReady = false;
 let id = null;
 
 let varId = 0;
+
+const getValidGlobalVarName = () => {
+  let varName = `$my-react-var-${varId++}`;
+
+  while (globalThis[varName]) {
+    varName = `$my-react-var-${varId++}`;
+  }
+
+  return varName;
+};
 
 const runWhenDetectorReady = (fn: () => void, count?: number) => {
   clearTimeout(id);
@@ -99,6 +109,23 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
     core.notifySelect(true);
   }
 
+  if (message.data?.type === MessagePanelType.nodeStore) {
+    const id = message.data.data;
+
+    const f = getFiberNodeById(id);
+
+    if (f) {
+      console.log(
+        "[@my-react-devtool/hook] %cStore fiber node%c Value: %o",
+        "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
+        "",
+        f
+      );
+    } else {
+      console.error("[@my-react-devtool/hook] fiber node not found", id);
+    }
+  }
+
   if (message.data?.type === MessagePanelType.nodeHover) {
     core.setHover(message.data.data);
 
@@ -121,8 +148,10 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
     const { f, v: varStore } = getValueById(id);
 
     if (f) {
-      const varName = `$my-react-var-${varId++}`;
+      const varName = getValidGlobalVarName();
+
       globalThis[varName] = varStore;
+
       console.log(
         `[@my-react-devtool/hook] %cStore global variable%c Name: ${varName}`,
         "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
@@ -134,6 +163,8 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
         "",
         varStore
       );
+    } else {
+      console.error("[@my-react-devtool/hook] fiber node not found", id);
     }
   }
 
@@ -163,107 +194,109 @@ let connectSocket: Socket | null = null;
 
 // TODO! 与 onMessage 保持同步
 const initWEB_UI = async (url: string) => {
-  if (__DEV__) {
-    console.log("[@my-react-devtool/hook] start a web ui devtool");
+  console.log("[@my-react-devtool/hook] start a web ui devtool");
 
-    await loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js");
+  await loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js");
 
-    const socket = window.io(url);
+  const socket = window.io(url);
 
-    connectSocket = socket;
+  connectSocket = socket;
 
-    let unSubscribe = () => {};
+  let unSubscribe = () => {};
 
-    socket.on("connect", () => {
-      if (__DEV__) {
-        console.log("[@my-react-devtool/hook] socket connected");
-      }
+  socket.on("connect", () => {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/hook] socket connected");
+    }
 
-      unSubscribe = core.subscribe((message) => {
-        socket.emit("render", message);
-      });
+    unSubscribe = core.subscribe((message) => {
+      socket.emit("render", message);
     });
+  });
 
-    socket.on("disconnect", () => {
-      if (__DEV__) {
-        console.log("[@my-react-devtool/hook] socket disconnected");
+  socket.on("disconnect", () => {
+    if (__DEV__) {
+      console.log("[@my-react-devtool/hook] socket disconnected");
+    }
+
+    unSubscribe();
+  });
+
+  socket.on("action", (data) => {
+    if (data?.type === MessageWorkerType.init || data?.type === MessagePanelType.show) {
+      core._forceEnable = true;
+
+      core.connect();
+
+      core.notifyAll();
+    }
+
+    if (data?.type === MessagePanelType.nodeSelect) {
+      core.setSelect(data.data);
+
+      core.notifySelect();
+    }
+
+    if (data?.type === MessagePanelType.nodeSelectForce) {
+      core.notifySelect(true);
+    }
+
+    if (data?.type === MessagePanelType.nodeHover) {
+      core.setHover(data.data);
+
+      core.showHover();
+    }
+
+    if (data?.type === MessagePanelType.nodeSubscriber) {
+      core.setSubscribe(data.data);
+
+      core.notifyRun();
+    }
+
+    if (data?.type === MessagePanelType.enableHover) {
+      core.setHoverStatus(data.data);
+    }
+
+    if (data?.type === MessagePanelType.enableUpdate) {
+      core.setUpdateStatus(data.data);
+    }
+
+    if (data?.type === MessagePanelType.chunk) {
+      core.notifyChunk(data.data);
+    }
+
+    if (data?.type === MessagePanelType.varStore) {
+      const id = data.data;
+
+      const { f, v: varStore } = getValueById(id);
+
+      if (f) {
+        const varName = getValidGlobalVarName();
+
+        globalThis[varName] = varStore;
+
+        console.log(
+          `[@my-react-devtool/hook] %cStore global variable%c Name: ${varName}`,
+          "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
+          ""
+        );
+        console.log(
+          "[@my-react-devtool/hook] %cStore global variable%c Value: %o",
+          "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
+          "",
+          varStore
+        );
+      } else {
+        console.error("[@my-react-devtool/hook] fiber node not found", id);
       }
+    }
 
-      unSubscribe();
-    });
+    if (data?.type === MessagePanelType.clear) {
+      core.clear();
+    }
+  });
 
-    socket.on("action", (data) => {
-      if (data?.type === MessageWorkerType.init || data?.type === MessagePanelType.show) {
-        core._forceEnable = true;
-
-        core.connect();
-
-        core.notifyAll();
-      }
-
-      if (data?.type === MessagePanelType.nodeSelect) {
-        core.setSelect(data.data);
-
-        core.notifySelect();
-      }
-
-      if (data?.type === MessagePanelType.nodeSelectForce) {
-        core.notifySelect(true);
-      }
-
-      if (data?.type === MessagePanelType.nodeHover) {
-        core.setHover(data.data);
-
-        core.showHover();
-      }
-
-      if (data?.type === MessagePanelType.nodeSubscriber) {
-        core.setSubscribe(data.data);
-
-        core.notifyRun();
-      }
-
-      if (data?.type === MessagePanelType.enableHover) {
-        core.setHoverStatus(data.data);
-      }
-
-      if (data?.type === MessagePanelType.enableUpdate) {
-        core.setUpdateStatus(data.data);
-      }
-
-      if (data?.type === MessagePanelType.chunk) {
-        core.notifyChunk(data.data);
-      }
-
-      if (data?.type === MessagePanelType.varStore) {
-        const id = data.data;
-
-        const { f, v: varStore } = getValueById(id);
-
-        if (f) {
-          const varName = `$my-react-var-${varId++}`;
-          globalThis[varName] = varStore;
-          console.log(
-            `[@my-react-devtool/hook] %cStore global variable%c Name: ${varName}`,
-            "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
-            ""
-          );
-          console.log(
-            "[@my-react-devtool/hook] %cStore global variable%c Value: %o",
-            "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
-            "",
-            varStore
-          );
-        }
-      }
-
-      if (data?.type === MessagePanelType.clear) {
-        core.clear();
-      }
-    });
-
-    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
-  }
+  socket.emit("web-dev", { name: window.document.title, url: window.location.href });
 };
 
 initWEB_UI.close = () => {

@@ -2446,6 +2446,7 @@
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
+    		    MessagePanelType["nodeStore"] = "panel-store";
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		    MessagePanelType["chunk"] = "panel-chunk";
@@ -2541,6 +2542,13 @@
     var detectorReady = false;
     var id = null;
     var varId = 0;
+    var getValidGlobalVarName = function () {
+        var varName = "$my-react-var-".concat(varId++);
+        while (globalThis[varName]) {
+            varName = "$my-react-var-".concat(varId++);
+        }
+        return varName;
+    };
     var runWhenDetectorReady = function (fn, count) {
         clearTimeout(id);
         if (detectorReady) {
@@ -2554,7 +2562,7 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+        var _a, _b, _c, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
         // allow iframe dev
         if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe)
             return;
@@ -2590,7 +2598,17 @@
         if (((_o = message.data) === null || _o === void 0 ? void 0 : _o.type) === coreExports.MessagePanelType.nodeSelectForce) {
             core.notifySelect(true);
         }
-        if (((_p = message.data) === null || _p === void 0 ? void 0 : _p.type) === coreExports.MessagePanelType.nodeHover) {
+        if (((_p = message.data) === null || _p === void 0 ? void 0 : _p.type) === coreExports.MessagePanelType.nodeStore) {
+            var id_1 = message.data.data;
+            var f = coreExports.getFiberNodeById(id_1);
+            if (f) {
+                console.log("[@my-react-devtool/hook] %cStore fiber node%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", f);
+            }
+            else {
+                console.error("[@my-react-devtool/hook] fiber node not found", id_1);
+            }
+        }
+        if (((_q = message.data) === null || _q === void 0 ? void 0 : _q.type) === coreExports.MessagePanelType.nodeHover) {
             core.setHover(message.data.data);
             core.showHover();
         }
@@ -2602,13 +2620,16 @@
             core.notifyChunk(message.data.data);
         }
         if (message.data.type === coreExports.MessagePanelType.varStore) {
-            var id_1 = message.data.data;
-            var _q = coreExports.getValueById(id_1), f = _q.f, varStore = _q.v;
+            var id_2 = message.data.data;
+            var _r = coreExports.getValueById(id_2), f = _r.f, varStore = _r.v;
             if (f) {
-                var varName = "$my-react-var-".concat(varId++);
+                var varName = getValidGlobalVarName();
                 globalThis[varName] = varStore;
                 console.log("[@my-react-devtool/hook] %cStore global variable%c Name: ".concat(varName), "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "");
                 console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
+            }
+            else {
+                console.error("[@my-react-devtool/hook] fiber node not found", id_2);
             }
         }
         if (message.data.type === coreExports.MessagePanelType.clear) {
@@ -2620,28 +2641,38 @@
         // current site is render by @my-react
         hookPostMessageWithSource({ type: coreExports.MessageHookType.mount });
     });
+    var loadScript = function (url) {
+        return new Promise(function (resolve, reject) {
+            var script = document.createElement("script");
+            script.src = url;
+            script.onload = function () { return resolve(); };
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
+    };
     var connectSocket = null;
     // TODO! 与 onMessage 保持同步
     var initWEB_UI = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-        var socket_1, unSubscribe_1;
+        var socket, unSubscribe;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    return [3 /*break*/, 2];
+                    console.log("[@my-react-devtool/hook] start a web ui devtool");
+                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
                 case 1:
                     _a.sent();
-                    socket_1 = window.io(url);
-                    connectSocket = socket_1;
-                    unSubscribe_1 = function () { };
-                    socket_1.on("connect", function () {
-                        unSubscribe_1 = core.subscribe(function (message) {
-                            socket_1.emit("render", message);
+                    socket = window.io(url);
+                    connectSocket = socket;
+                    unSubscribe = function () { };
+                    socket.on("connect", function () {
+                        unSubscribe = core.subscribe(function (message) {
+                            socket.emit("render", message);
                         });
                     });
-                    socket_1.on("disconnect", function () {
-                        unSubscribe_1();
+                    socket.on("disconnect", function () {
+                        unSubscribe();
                     });
-                    socket_1.on("action", function (data) {
+                    socket.on("action", function (data) {
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessageWorkerType.init || (data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.show) {
                             core._forceEnable = true;
                             core.connect();
@@ -2672,22 +2703,24 @@
                             core.notifyChunk(data.data);
                         }
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varStore) {
-                            var id_2 = data.data;
-                            var _a = coreExports.getValueById(id_2), f = _a.f, varStore = _a.v;
+                            var id_3 = data.data;
+                            var _a = coreExports.getValueById(id_3), f = _a.f, varStore = _a.v;
                             if (f) {
-                                var varName = "$my-react-var-".concat(varId++);
+                                var varName = getValidGlobalVarName();
                                 globalThis[varName] = varStore;
                                 console.log("[@my-react-devtool/hook] %cStore global variable%c Name: ".concat(varName), "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "");
                                 console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
+                            }
+                            else {
+                                console.error("[@my-react-devtool/hook] fiber node not found", id_3);
                             }
                         }
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clear) {
                             core.clear();
                         }
                     });
-                    socket_1.emit("web-dev", { name: window.document.title, url: window.location.href });
-                    _a.label = 2;
-                case 2: return [2 /*return*/];
+                    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
+                    return [2 /*return*/];
             }
         });
     }); };
