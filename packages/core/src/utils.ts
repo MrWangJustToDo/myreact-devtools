@@ -123,11 +123,9 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
     const typedElementType = fiber.elementType as ReturnType<typeof lazy>;
     const typedRender = typedElementType?.render;
     let name = typedRender?.displayName || typedRender?.name || "";
-    if (__DEV__) {
-      const element = typedFiber._debugElement as MyReactElement;
-      const type = element?.type as MixinMyReactObjectComponent;
-      name = type?.displayName || name;
-    }
+    const element = typedFiber._debugElement as MyReactElement;
+    const type = element?.type as MixinMyReactObjectComponent;
+    name = type?.displayName || name;
     return `${name || "Anonymous"}`;
   }
   if (fiber.type & NODE_TYPE.__portal__) return `Portal`;
@@ -145,12 +143,10 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   if (typeof fiber.elementType === "function") {
     const typedElementType = fiber.elementType as MixinMyReactClassComponent | MixinMyReactFunctionComponent;
     let name = typedElementType.displayName || typedElementType.name || "Anonymous";
-    if (__DEV__) {
-      const element = typedFiber._debugElement as MyReactElement;
-      // may be a Suspense element
-      const type = element?.type as MixinMyReactObjectComponent;
-      name = type?.displayName || name;
-    }
+    const element = typedFiber._debugElement as MyReactElement;
+    // may be a Suspense element
+    const type = element?.type as MixinMyReactObjectComponent;
+    name = type?.displayName || name;
     return `${name}`;
   }
   return `unknown`;

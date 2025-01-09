@@ -1186,6 +1186,7 @@
     		    return hasCompiler ? reactShared.merge(t, NODE_TYPE.__compiler__) : t;
     		};
     		var getFiberName = function (fiber) {
+    		    var typedFiber = fiber;
     		    if (fiber.type & NODE_TYPE.__provider__) {
     		        var typedElementType = fiber.elementType;
     		        var name_1 = typedElementType.Context.displayName;
@@ -1200,6 +1201,9 @@
     		        var typedElementType = fiber.elementType;
     		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
     		        var name_3 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
+    		        var element = typedFiber._debugElement;
+    		        var type = element === null || element === void 0 ? void 0 : element.type;
+    		        name_3 = (type === null || type === void 0 ? void 0 : type.displayName) || name_3;
     		        return "".concat(name_3 || "Anonymous");
     		    }
     		    if (fiber.type & NODE_TYPE.__portal__)
@@ -1229,6 +1233,10 @@
     		    if (typeof fiber.elementType === "function") {
     		        var typedElementType = fiber.elementType;
     		        var name_4 = typedElementType.displayName || typedElementType.name || "Anonymous";
+    		        var element = typedFiber._debugElement;
+    		        // may be a Suspense element
+    		        var type = element === null || element === void 0 ? void 0 : element.type;
+    		        name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
     		        return "".concat(name_4);
     		    }
     		    return "unknown";
