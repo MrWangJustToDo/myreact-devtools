@@ -2453,6 +2453,7 @@
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
     		    MessagePanelType["nodeStore"] = "panel-store";
+    		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		    MessagePanelType["chunk"] = "panel-chunk";
@@ -2757,7 +2758,7 @@
         var useTreeNode = _window.useTreeNode;
         var useDetailNode = _window.useDetailNode;
         try {
-            return useTreeNode.subscribe(function (s) { return s.force; }, function () {
+            return useTreeNode.subscribe(function (s) { return s.reload; }, function () {
                 var currentSelect = useTreeNode.getReadonlyState().select;
                 if (currentSelect) {
                     useDetailNode.getActions().setLoading(true);
@@ -2774,6 +2775,17 @@
             return useTreeNode.subscribe(function (s) { return s.store; }, function () {
                 var currentStore = useTreeNode.getReadonlyState().select;
                 sendMessage({ type: coreExports.MessagePanelType.nodeStore, data: currentStore });
+            });
+        }
+        catch (_a) {
+        }
+    };
+    var initFiberTriggerListen = function (_window) {
+        var useTreeNode = _window.useTreeNode;
+        try {
+            return useTreeNode.subscribe(function (s) { return s.trigger; }, function () {
+                var currentTrigger = useTreeNode.getReadonlyState().trigger;
+                sendMessage({ type: coreExports.MessagePanelType.nodeTrigger, data: currentTrigger });
             });
         }
         catch (_a) {
@@ -2884,7 +2896,7 @@
                             hasShow = true;
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
-                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window), initStoreListen(window), initFiberStoreListen(window), initForceReloadListen(window));
+                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window), initStoreListen(window), initFiberStoreListen(window), initForceReloadListen(window), initFiberTriggerListen(window));
                         }, function () {
                             sendMessage({ type: coreExports.MessagePanelType.hide });
                             cleanList_1.forEach(function (f) { return f(); });

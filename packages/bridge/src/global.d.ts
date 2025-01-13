@@ -16,7 +16,7 @@ declare global {
     useAppTree: UseSelectorWithState<{ nodes: Tree[] }, { addNode: (node: Tree) => void; clear: () => void }>;
 
     useTreeNode: UseSelectorWithState<
-      { select: string | null; hover: string | null; force: number, store: number },
+      { select: string | null; hover: string | null; reload: number, store: number, trigger: number },
       {
         clear: () => void;
       }

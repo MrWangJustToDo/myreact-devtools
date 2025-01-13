@@ -76,7 +76,7 @@ export const useIframeDev = () => {
 
         unSubscribeArray.push(
           useTreeNode.subscribe(
-            (s) => s.force,
+            (s) => s.reload,
             () => {
               const currentSelect = useTreeNode.getReadonlyState().select;
 
@@ -96,8 +96,20 @@ export const useIframeDev = () => {
               const currentSelect = useTreeNode.getReadonlyState().select;
 
               if (currentSelect) {
-
                 debouncePostMessageFromIframe({ type: MessagePanelType.nodeStore, data: currentSelect });
+              }
+            }
+          )
+        );
+
+        unSubscribeArray.push(
+          useTreeNode.subscribe(
+            (s) => s.trigger,
+            () => {
+              const currentSelect = useTreeNode.getReadonlyState().select;
+
+              if (currentSelect) {
+                debouncePostMessageFromIframe({ type: MessagePanelType.nodeTrigger, data: currentSelect });
               }
             }
           )

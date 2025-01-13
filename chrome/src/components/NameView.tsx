@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Divider, Tooltip } from "@nextui-org/react";
-import { CubeIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { CubeIcon, PlayIcon, ReloadIcon } from "@radix-ui/react-icons";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
@@ -9,7 +9,7 @@ import { TreeItem } from "./TreeItem";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
-const { forceReload, storeFiber } = useTreeNode.getActions();
+const { forceReload, storeFiber, triggerFiber } = useTreeNode.getActions();
 
 export const NameView = () => {
   const select = useTreeNode((s) => s.select);
@@ -30,6 +30,11 @@ export const NameView = () => {
           <Tooltip content="store fiber node" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={storeFiber}>
               <CubeIcon width="11" height="11" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="force trigger" showArrow color="foreground" placement="bottom-end">
+            <Button isIconOnly size="sm" variant="flat" onPress={triggerFiber}>
+              <PlayIcon width="11" height="11" />
             </Button>
           </Tooltip>
           <Tooltip content="force load" showArrow color="foreground" placement="bottom-end">

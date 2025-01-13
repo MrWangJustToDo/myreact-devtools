@@ -350,7 +350,7 @@ const initForceReloadListen = (_window: Window) => {
 
   try {
     return useTreeNode.subscribe(
-      (s) => s.force,
+      (s) => s.reload,
       () => {
         const currentSelect = useTreeNode.getReadonlyState().select;
 
@@ -376,6 +376,23 @@ const initFiberStoreListen = (_window: Window) => {
         const currentStore = useTreeNode.getReadonlyState().select;
 
         sendMessage({ type: MessagePanelType.nodeStore, data: currentStore });
+      }
+    );
+  } catch {
+    void 0;
+  }
+}
+
+const initFiberTriggerListen = (_window: Window) => {
+  const useTreeNode = _window.useTreeNode;
+
+  try {
+    return useTreeNode.subscribe(
+      (s) => s.trigger,
+      () => {
+        const currentTrigger = useTreeNode.getReadonlyState().trigger;
+
+        sendMessage({ type: MessagePanelType.nodeTrigger, data: currentTrigger });
       }
     );
   } catch {
@@ -565,6 +582,7 @@ const init = async (id: number) => {
           initStoreListen(window),
           initFiberStoreListen(window),
           initForceReloadListen(window),
+          initFiberTriggerListen(window)
         );
       },
       () => {

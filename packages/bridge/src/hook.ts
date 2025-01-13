@@ -1,4 +1,4 @@
-import { once } from "@my-react/react-shared";
+import { once, STATE_TYPE } from "@my-react/react-shared";
 import { DevToolCore, getFiberNodeById, getValueById } from "@my-react-devtool/core";
 
 import { MessageHookType, MessageDetectorType, MessagePanelType, DevToolSource, MessageWorkerType, sourceFrom } from "./type";
@@ -107,6 +107,18 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
 
   if (message.data?.type === MessagePanelType.nodeSelectForce) {
     core.notifySelect(true);
+  }
+
+  if (message.data?.type === MessagePanelType.nodeTrigger) {
+    const id = message.data.data;
+
+    const f = getFiberNodeById(id);
+
+    if (f) {
+      f._update(STATE_TYPE.__triggerConcurrentForce__);
+    } else {
+      console.error("[@my-react-devtool/hook] fiber node not found", id);
+    }
   }
 
   if (message.data?.type === MessagePanelType.nodeStore) {
@@ -239,6 +251,35 @@ const initWEB_UI = async (url: string) => {
 
     if (data?.type === MessagePanelType.nodeSelectForce) {
       core.notifySelect(true);
+    }
+
+    if (data?.type === MessagePanelType.nodeStore) {
+      const id = data.data;
+
+      const f = getFiberNodeById(id);
+
+      if (f) {
+        console.log(
+          "[@my-react-devtool/hook] %cStore fiber node%c Value: %o",
+          "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
+          "",
+          f
+        );
+      } else {
+        console.error("[@my-react-devtool/hook] fiber node not found", id);
+      }
+    }
+
+    if (data?.type === MessagePanelType.nodeTrigger) {
+      const id = data.data;
+
+      const f = getFiberNodeById(id);
+
+      if (f) {
+        f._update(STATE_TYPE.__triggerConcurrentForce__);
+      } else {
+        console.error("[@my-react-devtool/hook] fiber node not found", id);
+      }
     }
 
     if (data?.type === MessagePanelType.nodeHover) {

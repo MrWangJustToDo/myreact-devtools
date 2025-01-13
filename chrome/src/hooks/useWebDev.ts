@@ -77,7 +77,7 @@ export const useWebDev = () => {
 
         unSubscribeArray.push(
           useTreeNode.subscribe(
-            (s) => s.force,
+            (s) => s.reload,
             () => {
               const currentSelect = useTreeNode.getReadonlyState().select;
 
@@ -85,6 +85,21 @@ export const useWebDev = () => {
                 useDetailNode.getActions().setLoading(true);
 
                 io.emit("action", { type: MessagePanelType.nodeSelectForce, data: currentSelect });
+              }
+            }
+          )
+        );
+
+        unSubscribeArray.push(
+          useTreeNode.subscribe(
+            (s) => s.trigger,
+            () => {
+              const currentSelect = useTreeNode.getReadonlyState().select;
+
+              if (currentSelect) {
+                useDetailNode.getActions().setLoading(true);
+
+                io.emit("action", { type: MessagePanelType.nodeTrigger, data: currentSelect });
               }
             }
           )

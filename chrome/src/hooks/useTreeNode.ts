@@ -15,10 +15,11 @@ const delNode = useDetailNode.getActions().delNode;
 
 export const useTreeNode = createState(
   () =>
-    ({ select: null, hover: null, closeList: {}, selectList: {}, force: 0, store: 0 }) as {
+    ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0 }) as {
       select: string | null;
       hover: string | null;
-      force: number;
+      reload: number;
+      trigger: number;
       store: number;
       closeList: Record<string, boolean>;
       selectList: Record<string, boolean>;
@@ -50,7 +51,7 @@ export const useTreeNode = createState(
         },
         forceReload: () => {
           if (s.select) {
-            s.force++;
+            s.reload++;
 
             delNode(s.select);
           }
@@ -62,6 +63,13 @@ export const useTreeNode = createState(
             s.store++;
 
             toast.success("store fiber success");
+          }
+        },
+        triggerFiber: () => {
+          if (s.select) {
+            s.trigger++;
+
+            toast.success("trigger fiber success");
           }
         },
         updateSelectList,

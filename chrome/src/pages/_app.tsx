@@ -1,4 +1,3 @@
-import { __my_react_shared__ } from "@my-react/react";
 import { Code, NextUIProvider, Snippet, Spacer, Spinner, Tooltip, Button } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { Fira_Code } from "next/font/google";
@@ -37,7 +36,28 @@ const getWebTitle = (name?: string, url?: string) => {
   return "unknown";
 };
 
-__my_react_shared__.enableLoopFromRoot.current = true;
+const source = (str: string) => `function loadScript(url) {
+  const script = document.createElement("script");
+  return new Promise((resolve, reject) => {
+    script.src = url;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  }).finally(() => script.remove());
+}
+
+function init() {
+  if (typeof __MY_REACT_DEVTOOL_WEB__ === 'function') {
+    const allDispatch = window["__@my-react/dispatch__"];
+    allDispatch.forEach((d) => __MY_REACT_DEVTOOL_RUNTIME__?.(d));
+    __MY_REACT_DEVTOOL_WEB__("${str}");
+  } else {
+    loadScript("${str}/bundle/hook.js").then(init);
+  }
+}
+
+init();
+`
 
 export default function App({ Component, pageProps, router }: AppProps) {
   const { render, state, name, url, reconnect } = useConnect((s) => ({ render: s.render, state: s.state, name: s.name, url: s.url, reconnect: s.cb }));
@@ -58,8 +78,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
           <Spinner color="primary" size="lg" />
           {isWebDev && <div className="text-center text-[18px] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
           {isWebDev && (
-            <Snippet symbol="" color="success" variant="solid" size="sm" className="mt-1">
-              {`__MY_REACT_DEVTOOL_WEB__("${str}")`}
+            <Snippet symbol="" color="success" variant="solid" size="sm" className="mt-1 max-w-[80vw] overflow-auto">
+              {source(str)}
             </Snippet>
           )}
         </div>

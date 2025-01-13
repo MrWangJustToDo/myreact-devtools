@@ -17,6 +17,7 @@ export enum MessagePanelType {
   nodeHover = "panel-hover",
   nodeSelect = "panel-select",
   nodeStore = "panel-store",
+  nodeTrigger = "panel-trigger",
   nodeSelectForce = "panel-select-force",
   nodeSubscriber = "panel-subscriber",
   chunk = "panel-chunk",
