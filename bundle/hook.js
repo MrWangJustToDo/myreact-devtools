@@ -2455,6 +2455,7 @@
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
     		    MessagePanelType["nodeStore"] = "panel-store";
+    		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		    MessagePanelType["chunk"] = "panel-chunk";
@@ -2570,7 +2571,7 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+        var _a, _b, _c, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
         // allow iframe dev
         if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe)
             return;
@@ -2606,17 +2607,27 @@
         if (((_o = message.data) === null || _o === void 0 ? void 0 : _o.type) === coreExports.MessagePanelType.nodeSelectForce) {
             core.notifySelect(true);
         }
-        if (((_p = message.data) === null || _p === void 0 ? void 0 : _p.type) === coreExports.MessagePanelType.nodeStore) {
+        if (((_p = message.data) === null || _p === void 0 ? void 0 : _p.type) === coreExports.MessagePanelType.nodeTrigger) {
             var id_1 = message.data.data;
             var f = coreExports.getFiberNodeById(id_1);
             if (f) {
-                console.log("[@my-react-devtool/hook] %cStore fiber node%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", f);
+                f._update(reactSharedExports.STATE_TYPE.__triggerConcurrentForce__);
             }
             else {
                 console.error("[@my-react-devtool/hook] fiber node not found", id_1);
             }
         }
-        if (((_q = message.data) === null || _q === void 0 ? void 0 : _q.type) === coreExports.MessagePanelType.nodeHover) {
+        if (((_q = message.data) === null || _q === void 0 ? void 0 : _q.type) === coreExports.MessagePanelType.nodeStore) {
+            var id_2 = message.data.data;
+            var f = coreExports.getFiberNodeById(id_2);
+            if (f) {
+                console.log("[@my-react-devtool/hook] %cStore fiber node%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", f);
+            }
+            else {
+                console.error("[@my-react-devtool/hook] fiber node not found", id_2);
+            }
+        }
+        if (((_r = message.data) === null || _r === void 0 ? void 0 : _r.type) === coreExports.MessagePanelType.nodeHover) {
             core.setHover(message.data.data);
             core.showHover();
         }
@@ -2628,8 +2639,8 @@
             core.notifyChunk(message.data.data);
         }
         if (message.data.type === coreExports.MessagePanelType.varStore) {
-            var id_2 = message.data.data;
-            var _r = coreExports.getValueById(id_2), f = _r.f, varStore = _r.v;
+            var id_3 = message.data.data;
+            var _s = coreExports.getValueById(id_3), f = _s.f, varStore = _s.v;
             if (f) {
                 var varName = getValidGlobalVarName();
                 globalThis[varName] = varStore;
@@ -2637,7 +2648,7 @@
                 console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
             }
             else {
-                console.error("[@my-react-devtool/hook] fiber node not found", id_2);
+                console.error("[@my-react-devtool/hook] fiber node not found", id_3);
             }
         }
         if (message.data.type === coreExports.MessagePanelType.clear) {
@@ -2693,6 +2704,26 @@
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeSelectForce) {
                             core.notifySelect(true);
                         }
+                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeStore) {
+                            var id_4 = data.data;
+                            var f = coreExports.getFiberNodeById(id_4);
+                            if (f) {
+                                console.log("[@my-react-devtool/hook] %cStore fiber node%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", f);
+                            }
+                            else {
+                                console.error("[@my-react-devtool/hook] fiber node not found", id_4);
+                            }
+                        }
+                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeTrigger) {
+                            var id_5 = data.data;
+                            var f = coreExports.getFiberNodeById(id_5);
+                            if (f) {
+                                f._update(reactSharedExports.STATE_TYPE.__triggerConcurrentForce__);
+                            }
+                            else {
+                                console.error("[@my-react-devtool/hook] fiber node not found", id_5);
+                            }
+                        }
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeHover) {
                             core.setHover(data.data);
                             core.showHover();
@@ -2711,8 +2742,8 @@
                             core.notifyChunk(data.data);
                         }
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varStore) {
-                            var id_3 = data.data;
-                            var _a = coreExports.getValueById(id_3), f = _a.f, varStore = _a.v;
+                            var id_6 = data.data;
+                            var _a = coreExports.getValueById(id_6), f = _a.f, varStore = _a.v;
                             if (f) {
                                 var varName = getValidGlobalVarName();
                                 globalThis[varName] = varStore;
@@ -2720,7 +2751,7 @@
                                 console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
                             }
                             else {
-                                console.error("[@my-react-devtool/hook] fiber node not found", id_3);
+                                console.error("[@my-react-devtool/hook] fiber node not found", id_6);
                             }
                         }
                         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clear) {
