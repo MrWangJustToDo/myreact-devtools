@@ -390,7 +390,7 @@ const initFiberTriggerListen = (_window: Window) => {
     return useTreeNode.subscribe(
       (s) => s.trigger,
       () => {
-        const currentTrigger = useTreeNode.getReadonlyState().trigger;
+        const currentTrigger = useTreeNode.getReadonlyState().select;
 
         sendMessage({ type: MessagePanelType.nodeTrigger, data: currentTrigger });
       }

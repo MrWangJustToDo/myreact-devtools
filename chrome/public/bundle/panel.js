@@ -2784,7 +2784,7 @@
         var useTreeNode = _window.useTreeNode;
         try {
             return useTreeNode.subscribe(function (s) { return s.trigger; }, function () {
-                var currentTrigger = useTreeNode.getReadonlyState().trigger;
+                var currentTrigger = useTreeNode.getReadonlyState().select;
                 sendMessage({ type: coreExports.MessagePanelType.nodeTrigger, data: currentTrigger });
             });
         }
