@@ -1,4 +1,5 @@
 import { MessageWorkerType, MessagePanelType, debounce, DevToolMessageEnum } from "@my-react-devtool/core";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { useActiveNode } from "./useActiveNode";
@@ -26,10 +27,12 @@ const postMessageFromIframe = (data: any) => {
 const debouncePostMessageFromIframe = debounce(postMessageFromIframe, 100);
 
 export const useIframeDev = () => {
+  const { pathname } = useRouter();
+
   useEffect(() => {
     const currentIsIframe = window !== window.top;
 
-    const isBridgePage = window.location.pathname === "/bridge";
+    const isBridgePage = pathname.endsWith("bridge");
 
     if (process.env.NEXT_PUBLIC_MODE === "local" && !isBridgePage && currentIsIframe && window.top) {
       console.log("[Dev mode] iframe start");
@@ -181,9 +184,11 @@ export const useIframeDev = () => {
         unSubscribeArray.forEach((fn) => fn());
 
         useConnect.getActions().disconnect();
+
+        window.removeEventListener("message", onMessage);
       };
 
-      window.addEventListener("message", (e) => {
+      const onMessage = (e: MessageEvent) => {
         if (e.source !== window.top) return;
 
         if (e.data?.source !== DevToolSource) return;
@@ -267,7 +272,9 @@ export const useIframeDev = () => {
             useChunk.getActions().setChunk(data.data);
           });
         }
-      });
+      };
+
+      window.addEventListener("message", onMessage);
 
       onConnect();
 
@@ -275,5 +282,5 @@ export const useIframeDev = () => {
         onDisconnect();
       };
     }
-  }, []);
+  }, [pathname]);
 };

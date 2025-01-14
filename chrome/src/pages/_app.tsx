@@ -128,7 +128,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
 
   const isMounted = useIsMounted();
 
-  const { query } = useRouter();
+  const { query, basePath } = useRouter();
 
   const isPanelPage = router.pathname === "/devTool";
 
@@ -139,7 +139,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
   let children = <Component {...pageProps} />;
 
   if (isPanelPage && typeof render !== "boolean") {
-    const str = isMounted ? window.location.origin : "";
+    const str = isMounted ? window.location.origin + basePath : "";
     children = (
       <div className="flex items-center justify-center w-screen h-screen">
         <div className="flex flex-col items-center">
