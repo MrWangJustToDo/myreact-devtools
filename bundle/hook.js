@@ -2533,6 +2533,7 @@
         sourceFrom["panel"] = "panel";
         sourceFrom["worker"] = "worker";
         sourceFrom["iframe"] = "iframe";
+        sourceFrom["bridge"] = "bridge";
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
 
@@ -2571,43 +2572,44 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+        var _a, _b, _c, _d, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
         // allow iframe dev
-        if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe)
+        // allow bridge dev
+        if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.from) !== sourceFrom.bridge)
             return;
-        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.source) !== DevToolSource)
+        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.source) !== DevToolSource)
             return;
-        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.from) === sourceFrom.hook)
+        if (((_d = message.data) === null || _d === void 0 ? void 0 : _d.from) === sourceFrom.hook)
             return;
-        if (!detectorReady && ((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === coreExports.MessageDetectorType.init) {
+        if (!detectorReady && ((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessageDetectorType.init) {
             detectorReady = true;
         }
-        if (((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessageWorkerType.init) {
+        if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === coreExports.MessageWorkerType.init) {
             core.connect();
             core.notifyAll();
         }
-        if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === coreExports.MessagePanelType.show) {
+        if (((_h = message.data) === null || _h === void 0 ? void 0 : _h.type) === coreExports.MessagePanelType.show) {
             core.connect();
             core.notifyAll();
         }
         // 主动关闭panel / 或者worker失活
-        if (((_h = message.data) === null || _h === void 0 ? void 0 : _h.type) === coreExports.MessagePanelType.hide || ((_j = message.data) === null || _j === void 0 ? void 0 : _j.type) === coreExports.MessageWorkerType.close) {
+        if (((_j = message.data) === null || _j === void 0 ? void 0 : _j.type) === coreExports.MessagePanelType.hide || ((_k = message.data) === null || _k === void 0 ? void 0 : _k.type) === coreExports.MessageWorkerType.close) {
             core.disconnect();
         }
-        if (((_k = message.data) === null || _k === void 0 ? void 0 : _k.type) === coreExports.MessagePanelType.enableHover) {
+        if (((_l = message.data) === null || _l === void 0 ? void 0 : _l.type) === coreExports.MessagePanelType.enableHover) {
             core.setHoverStatus(message.data.data);
         }
-        if (((_l = message.data) === null || _l === void 0 ? void 0 : _l.type) === coreExports.MessagePanelType.enableUpdate) {
+        if (((_m = message.data) === null || _m === void 0 ? void 0 : _m.type) === coreExports.MessagePanelType.enableUpdate) {
             core.setUpdateStatus(message.data.data);
         }
-        if (((_m = message.data) === null || _m === void 0 ? void 0 : _m.type) === coreExports.MessagePanelType.nodeSelect) {
+        if (((_o = message.data) === null || _o === void 0 ? void 0 : _o.type) === coreExports.MessagePanelType.nodeSelect) {
             core.setSelect(message.data.data);
             core.notifySelect();
         }
-        if (((_o = message.data) === null || _o === void 0 ? void 0 : _o.type) === coreExports.MessagePanelType.nodeSelectForce) {
+        if (((_p = message.data) === null || _p === void 0 ? void 0 : _p.type) === coreExports.MessagePanelType.nodeSelectForce) {
             core.notifySelect(true);
         }
-        if (((_p = message.data) === null || _p === void 0 ? void 0 : _p.type) === coreExports.MessagePanelType.nodeTrigger) {
+        if (((_q = message.data) === null || _q === void 0 ? void 0 : _q.type) === coreExports.MessagePanelType.nodeTrigger) {
             var id_1 = message.data.data;
             var f = coreExports.getFiberNodeById(id_1);
             if (f) {
@@ -2617,7 +2619,7 @@
                 console.error("[@my-react-devtool/hook] fiber node not found", id_1);
             }
         }
-        if (((_q = message.data) === null || _q === void 0 ? void 0 : _q.type) === coreExports.MessagePanelType.nodeStore) {
+        if (((_r = message.data) === null || _r === void 0 ? void 0 : _r.type) === coreExports.MessagePanelType.nodeStore) {
             var id_2 = message.data.data;
             var f = coreExports.getFiberNodeById(id_2);
             if (f) {
@@ -2627,7 +2629,7 @@
                 console.error("[@my-react-devtool/hook] fiber node not found", id_2);
             }
         }
-        if (((_r = message.data) === null || _r === void 0 ? void 0 : _r.type) === coreExports.MessagePanelType.nodeHover) {
+        if (((_s = message.data) === null || _s === void 0 ? void 0 : _s.type) === coreExports.MessagePanelType.nodeHover) {
             core.setHover(message.data.data);
             core.showHover();
         }
@@ -2640,7 +2642,7 @@
         }
         if (message.data.type === coreExports.MessagePanelType.varStore) {
             var id_3 = message.data.data;
-            var _s = coreExports.getValueById(id_3), f = _s.f, varStore = _s.v;
+            var _t = coreExports.getValueById(id_3), f = _t.f, varStore = _t.v;
             if (f) {
                 var varName = getValidGlobalVarName();
                 globalThis[varName] = varStore;

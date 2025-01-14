@@ -2459,6 +2459,7 @@
         sourceFrom["panel"] = "panel";
         sourceFrom["worker"] = "worker";
         sourceFrom["iframe"] = "iframe";
+        sourceFrom["bridge"] = "bridge";
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
 
