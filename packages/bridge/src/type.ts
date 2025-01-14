@@ -42,5 +42,6 @@ export enum sourceFrom {
   panel = "panel",
   worker = "worker",
   iframe = "iframe",
+  bridge = "bridge",
   detector = "detector",
 }

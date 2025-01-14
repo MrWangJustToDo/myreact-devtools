@@ -1,4 +1,5 @@
 import { MessageWorkerType, MessagePanelType, debounce, DevToolMessageEnum } from "@my-react-devtool/core";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { useActiveNode } from "./useActiveNode";
@@ -15,24 +16,40 @@ import { useTreeNode } from "./useTreeNode";
 import { useTriggerNode } from "./useTriggerNode";
 import { DevToolSource, safeAction } from "./useWebDev";
 
-const from = "iframe";
+export const from = "iframe";
 
 const render = "hook-render";
 
-const postMessageFromIframe = (data: any) => {
-  window.top?.postMessage({ from, ...data, source: DevToolSource }, "*");
+let bridge: null | BroadcastChannel = null;
+
+export const DevBridgeSource = "@my-react/devtool/bridge";
+
+const postMessageToBridge = (data: any) => {
+  bridge?.postMessage({ from, ...data, source: DevBridgeSource });
 };
 
-const debouncePostMessageFromIframe = debounce(postMessageFromIframe, 100);
+const debouncePostMessageFromIframe = debounce(postMessageToBridge, 100);
 
-export const useIframeDev = () => {
+export const useBridgeTarget = () => {
+  const { query, push } = useRouter();
+
   useEffect(() => {
     const currentIsIframe = window !== window.top;
 
-    const isBridgePage = window.location.pathname === "/bridge";
+    if (process.env.NEXT_PUBLIC_MODE === "local" && !currentIsIframe && !query?.token) {
+      push({ query: { token: Date.now() } });
+    }
+  }, [query?.token, push]);
 
-    if (process.env.NEXT_PUBLIC_MODE === "local" && !isBridgePage && currentIsIframe && window.top) {
-      console.log("[Dev mode] iframe start");
+  useEffect(() => {
+    const currentIsIframe = window !== window.top;
+
+    if (typeof BroadcastChannel === "undefined") return;
+
+    if (process.env.NEXT_PUBLIC_MODE === "local" && !currentIsIframe && query?.token) {
+      bridge = new BroadcastChannel(("@my-react-" + query.token) as string);
+
+      console.log("[Dev mode] bridge start");
 
       let connect = false;
 
@@ -44,16 +61,16 @@ export const useIframeDev = () => {
         if (connect) {
           return;
         } else {
-          postMessageFromIframe({ type: MessageWorkerType.init });
+          postMessageToBridge({ type: MessageWorkerType.init });
 
-          postMessageFromIframe({ type: MessagePanelType.show });
+          postMessageToBridge({ type: MessagePanelType.show });
 
           id = setTimeout(listenBackEndReady, 1000);
         }
       };
 
       const onConnect = () => {
-        console.log("[Dev mode] iframe connect");
+        console.log("[Dev mode] bridge connect");
 
         useConnect.getActions().connect();
 
@@ -68,9 +85,9 @@ export const useIframeDev = () => {
               if (currentSelect) {
                 useDetailNode.getActions().setLoading(true);
 
-                postMessageFromIframe({ type: MessagePanelType.nodeSelect, data: currentSelect });
+                postMessageToBridge({ type: MessagePanelType.nodeSelect, data: currentSelect });
               } else {
-                postMessageFromIframe({ type: MessagePanelType.nodeSelect, data: null });
+                postMessageToBridge({ type: MessagePanelType.nodeSelect, data: null });
               }
             }
           )
@@ -120,28 +137,28 @@ export const useIframeDev = () => {
         unSubscribeArray.push(
           useTreeNode.subscribe(
             (s) => s.hover,
-            () => postMessageFromIframe({ type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
+            () => postMessageToBridge({ type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
           )
         );
 
         unSubscribeArray.push(
           useActiveNode.subscribe(
             (s) => s.state,
-            debounce(() => postMessageFromIframe({ type: MessagePanelType.nodeSubscriber, data: useActiveNode.getReadonlyState().state }), 100)
+            debounce(() => postMessageToBridge({ type: MessagePanelType.nodeSubscriber, data: useActiveNode.getReadonlyState().state }), 100)
           )
         );
 
         unSubscribeArray.push(
           useConfig.subscribe(
             (s) => s.state.enableHover,
-            () => postMessageFromIframe({ type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
+            () => postMessageToBridge({ type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
           )
         );
 
         unSubscribeArray.push(
           useConfig.subscribe(
             (s) => s.state.enableUpdate,
-            () => postMessageFromIframe({ type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
+            () => postMessageToBridge({ type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
           )
         );
 
@@ -151,7 +168,7 @@ export const useIframeDev = () => {
             () => {
               const id = useChunk.getReadonlyState().id;
               if (id) {
-                postMessageFromIframe({ type: MessagePanelType.chunk, data: id });
+                postMessageToBridge({ type: MessagePanelType.chunk, data: id });
               }
             }
           )
@@ -164,7 +181,7 @@ export const useIframeDev = () => {
               const id = useContextMenu.getReadonlyState().store;
 
               if (id) {
-                postMessageFromIframe({ type: MessagePanelType.varStore, data: id });
+                postMessageToBridge({ type: MessagePanelType.varStore, data: id });
               }
             }
           )
@@ -172,7 +189,7 @@ export const useIframeDev = () => {
       };
 
       const onDisconnect = () => {
-        console.log("[Dev mode] iframe disconnect");
+        console.log("[Dev mode] bridge disconnect");
 
         connect = false;
 
@@ -181,11 +198,13 @@ export const useIframeDev = () => {
         unSubscribeArray.forEach((fn) => fn());
 
         useConnect.getActions().disconnect();
+
+        bridge?.removeEventListener("message", onMessage);
+
+        bridge?.close();
       };
 
-      window.addEventListener("message", (e) => {
-        if (e.source !== window.top) return;
-
+      const onMessage = (e: MessageEvent) => {
         if (e.data?.source !== DevToolSource) return;
 
         if (e.data?.from === from) return;
@@ -267,7 +286,9 @@ export const useIframeDev = () => {
             useChunk.getActions().setChunk(data.data);
           });
         }
-      });
+      };
+
+      bridge.addEventListener("message", onMessage);
 
       onConnect();
 
@@ -275,5 +296,5 @@ export const useIframeDev = () => {
         onDisconnect();
       };
     }
-  }, []);
+  }, [query?.token]);
 };

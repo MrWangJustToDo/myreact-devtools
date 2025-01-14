@@ -56,7 +56,8 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
 
 const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorDataType | MessageWorkerDataType>) => {
   // allow iframe dev
-  if (message.source !== window && message.data?.from !== sourceFrom.iframe) return;
+  // allow bridge dev
+  if (message.source !== window && message.data?.from !== sourceFrom.iframe && message.data?.from !== sourceFrom.bridge) return;
 
   if (message.data?.source !== DevToolSource) return;
 
