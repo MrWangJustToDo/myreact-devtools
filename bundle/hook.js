@@ -2775,15 +2775,12 @@
         core.addDispatch(dispatch);
         runWhenDetectorReady(onceMount);
     };
-    if (window.parent && window.parent !== window) ;
-    else {
-        window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
-        window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-        // support local dev
-        window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
-        hookPostMessageWithSource({ type: coreExports.MessageHookType.init });
-        globalHook.init = function () { return hookPostMessageWithSource({ type: coreExports.MessageHookType.init }); };
-    }
+    window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
+    window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+    // support local dev
+    window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
+    hookPostMessageWithSource({ type: coreExports.MessageHookType.init });
+    globalHook.init = function () { return hookPostMessageWithSource({ type: coreExports.MessageHookType.init }); };
 
 })();
 //# sourceMappingURL=hook.production.js.map
