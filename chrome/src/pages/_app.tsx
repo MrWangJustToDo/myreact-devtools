@@ -4,6 +4,7 @@ import { Fira_Code } from "next/font/google";
 import { useRouter } from "next/router";
 import { ThemeProvider } from "next-themes";
 
+import { CodePreview } from "@/components/CodePreview";
 import { useBridgeTarget } from "@/hooks/useBridgeTarget";
 import { useConnect } from "@/hooks/useConnect";
 import { useIframeDev } from "@/hooks/useIframeDev";
@@ -145,15 +146,10 @@ export default function App({ Component, pageProps, router }: AppProps) {
         <div className="flex flex-col items-center">
           <Spinner color="primary" size="lg" />
           {(isWebDev || isLocalDev) && <div className="text-center text-[18px] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
-          {isWebDev && (
-            <Snippet symbol="" color="success" tooltipProps={{ content: "copy to console to run" }} size="sm" className="mt-1 max-w-[80vw] overflow-auto">
-              {source(str)}
-            </Snippet>
-          )}
+          {isWebDev || isLocalDev ? <Spacer className="my-2" /> : null}
+          {isWebDev && <CodePreview code={source(str)} title="Please run this code in the console of the page you want to debug" />}
           {isLocalDev && (
-            <Snippet symbol="" color="success" tooltipProps={{ content: "copy to console to run" }} size="sm" className="mt-1 max-w-[80vw] overflow-auto">
-              {bridgeSource(str, query?.token as string)}
-            </Snippet>
+            <CodePreview code={bridgeSource(str, query?.token as string)} title="Please run this code in the console of the page you want to debug" />
           )}
         </div>
       </div>

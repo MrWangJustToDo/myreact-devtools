@@ -75,7 +75,9 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
           variant="flat"
           onChange={(e) => setV(e.target.value)}
           endContent={
-            <Button isIconOnly variant="light" onClick={onSearch}>
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            <Button isIconOnly variant="light" onPress={onSearch}>
               <MagnifyingGlassIcon className="text-black/50 dark:text-white/90 text-slate-400 flex-shrink-0" />
             </Button>
           }
@@ -87,12 +89,12 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
           <Spacer x={2} />
           <ButtonGroup variant="flat">
             <Tooltip content={`Total ${indexArray.length}, current ${index + 1}`} showArrow color="foreground">
-              <Button isIconOnly onClick={() => setIndex((i) => (i - 1 + indexArray.length) % indexArray.length)} isDisabled={index === 0}>
+              <Button isIconOnly onPress={() => setIndex((i) => (i - 1 + indexArray.length) % indexArray.length)} isDisabled={index === 0}>
                 <ArrowUpIcon />
               </Button>
             </Tooltip>
             <Tooltip content={`Total ${indexArray.length}, current ${index + 1}`} showArrow color="foreground">
-              <Button isIconOnly onClick={() => setIndex((i) => (i + 1) % indexArray.length)} isDisabled={index === indexArray.length - 1}>
+              <Button isIconOnly onPress={() => setIndex((i) => (i + 1) % indexArray.length)} isDisabled={index === indexArray.length - 1}>
                 <ArrowDownIcon />
               </Button>
             </Tooltip>

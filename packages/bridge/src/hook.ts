@@ -355,18 +355,12 @@ const globalHook = (dispatch: CustomRenderDispatch) => {
   runWhenDetectorReady(onceMount);
 };
 
-if (window.parent && window.parent !== window) {
-  if (__DEV__) {
-    console.warn("[@my-react-devtool/hook] currently the @my-react extension does not support iframe.");
-  }
-} else {
-  window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
+window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
 
-  window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-  // support local dev
-  window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
+window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+// support local dev
+window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
 
-  hookPostMessageWithSource({ type: MessageHookType.init });
+hookPostMessageWithSource({ type: MessageHookType.init });
 
-  globalHook.init = () => hookPostMessageWithSource({ type: MessageHookType.init });
-}
+globalHook.init = () => hookPostMessageWithSource({ type: MessageHookType.init });

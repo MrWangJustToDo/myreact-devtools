@@ -2860,6 +2860,9 @@
         }
     };
     var initPort = function () {
+        if (!panelWindow) {
+            return;
+        }
         workerConnecting = true;
         var _a = panelWindow.useConnect.getActions(), disconnect = _a.disconnect, setConnectHandler = _a.setConnectHandler;
         setConnectHandler(function () { return initPort(); });
@@ -2877,7 +2880,8 @@
             }
         };
         var onDisconnect = function () {
-            port.onMessage.removeListener(onMessage);
+            var _a, _b;
+            (_b = (_a = port === null || port === void 0 ? void 0 : port.onMessage) === null || _a === void 0 ? void 0 : _a.removeListener) === null || _b === void 0 ? void 0 : _b.call(_a, onMessage);
             disconnect();
             port = null;
             workerReady = false;

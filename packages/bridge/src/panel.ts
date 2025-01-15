@@ -508,6 +508,13 @@ const initChunkListen = (_window: Window) => {
 };
 
 const initPort = () => {
+  if (!panelWindow) {
+    if (__DEV__) {
+      console.error("[@my-react-devtool/panel] panelWindow is empty");
+    }
+    
+    return;
+  }
   workerConnecting = true;
 
   const { disconnect, setConnectHandler } = panelWindow.useConnect.getActions();
@@ -541,7 +548,7 @@ const initPort = () => {
       console.log("[@my-react-devtool/panel] disconnect");
     }
 
-    port.onMessage.removeListener(onMessage);
+    port?.onMessage?.removeListener?.(onMessage);
 
     disconnect();
 

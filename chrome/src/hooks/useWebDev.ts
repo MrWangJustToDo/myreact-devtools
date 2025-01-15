@@ -30,7 +30,7 @@ export const safeAction = (cb: () => void) => {
 
 export const useWebDev = () => {
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_MODE === "web") {
+    if (process.env.NEXT_PUBLIC_MODE === "web" && window.io && typeof window.io === "function") {
       const io = window.io();
 
       let connect = false;

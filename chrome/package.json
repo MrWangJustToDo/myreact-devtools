@@ -20,7 +20,7 @@
     "@my-react/react": "^0.3.4",
     "@my-react/react-dom": "^0.3.4",
     "@my-react/react-reconciler": "^0.3.4",
-    "@nextui-org/react": "^2.6.8",
+    "@nextui-org/react": "^2.6.11",
     "@radix-ui/react-icons": "^1.3.2",
     "allotment": "^1.20.2",
     "framer-motion": "11.15.0",
@@ -30,6 +30,7 @@
     "react-dom": "^18",
     "react-virtuoso": "^4.12.3",
     "reactivity-store": "^0.3.9",
+    "shiki": "^1.27.2",
     "sonner": "^1.5.0"
   },
   "devDependencies": {

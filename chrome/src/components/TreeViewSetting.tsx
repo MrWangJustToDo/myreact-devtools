@@ -17,6 +17,7 @@ import {
   Radio,
   Divider,
   Chip,
+  Code,
 } from "@nextui-org/react";
 import { CheckCircledIcon, CrossCircledIcon, GearIcon, MoonIcon, SunIcon } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
@@ -58,26 +59,26 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
         <Spacer x={2} />
         <ButtonGroup variant="flat">
           <Tooltip content={<p className={state ? "text-green-400" : "text-red-400"}>{state ? "DevTool Connect" : "DevTool DisConnect"}</p>} showArrow>
-            <Button isIconOnly onClick={() => cb?.()} disabled={state}>
+            <Button isIconOnly onPress={() => cb?.()} disabled={state}>
               {state ? <CheckCircledIcon className="text-green-500" /> : <CrossCircledIcon className=" text-red-500" />}
             </Button>
           </Tooltip>
-          <Button isIconOnly onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+          <Button isIconOnly onPress={() => setTheme(theme === "dark" ? "light" : "dark")}>
             {theme === "dark" ? <MoonIcon className="text-gray-500" /> : <SunIcon className="text-yellow-500" />}
           </Button>
           <Tooltip content="Setting" showArrow color="foreground">
-            <Button isIconOnly onClick={onOpen}>
+            <Button isIconOnly onPress={onOpen}>
               <GearIcon className=" text-gray-500" />
             </Button>
           </Tooltip>
         </ButtonGroup>
       </div>
 
-      <Modal isOpen={isOpen} size="xl" onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">
+      <Modal isOpen={isOpen} size="2xl" onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">
         <ModalContent>
           <ModalHeader>
             <h3 className="text-[1em]">
-              Setting <small>@my-react</small>
+              Setting - <Code>@my-react/devtool</Code>
             </h3>
           </ModalHeader>
           <ModalBody className="text-[14px]">
@@ -115,6 +116,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               </div>
               <Divider />
               <div className="flex flex-col gap-y-2">
+                <p className="whitespace-nowrap text-[14px] text-foreground-500">Config: </p>
                 <Checkbox isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} color="primary">
                   <div className="flex">
                     Highlight Update
@@ -142,11 +144,10 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                 </Checkbox>
               </div>
             </div>
+            <Spacer y={4} />
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose} variant="bordered">
-              Close
-            </Button>
+            <Button onPress={onClose}>Close</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
