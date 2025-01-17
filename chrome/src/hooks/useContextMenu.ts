@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 export const useContextMenu = createState(() => ({ state: false, id: 0, store: 0, position: { x: 0, y: 0 } }), {
   withActions: (s) => ({
     open: (position: { x: number; y: number }) => {
@@ -30,7 +28,3 @@ export const useContextMenu = createState(() => ({ state: false, id: 0, store: 0
   withDeepSelector: false,
   withStableSelector: true,
 });
-
-if (!isServer) {
-  window.useContextMenu = useContextMenu;
-}

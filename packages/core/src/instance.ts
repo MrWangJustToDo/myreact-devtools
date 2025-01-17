@@ -70,6 +70,8 @@ export class DevToolCore {
   // 是否存在 @my-react
   _detector = false;
 
+  _origin = "";
+
   _map: Map<DevToolRenderDispatch, Tree> = new Map();
 
   // 字符串字典
@@ -103,8 +105,6 @@ export class DevToolCore {
 
   _enableUpdate = false;
 
-  _forceEnable = false;
-
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
 
   _activeIds = {};
@@ -124,7 +124,7 @@ export class DevToolCore {
   }
 
   get hasEnable() {
-    return this._enabled || this._forceEnable;
+    return this._enabled;
   }
 
   setHoverStatus(d: boolean) {
@@ -609,6 +609,7 @@ export class DevToolCore {
     this.notifyError();
   }, 200);
 
+  // TODO support multiple connect agent
   connect() {
     if (this._enabled) return;
 
@@ -640,11 +641,11 @@ export class DevToolCore {
 
     this._hmr = {};
 
-    this._hoverId = '';
+    this._hoverId = "";
 
     this._run = {};
 
-    this._selectId = '';
+    this._selectId = "";
 
     this._state = {};
 

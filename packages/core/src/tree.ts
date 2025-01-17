@@ -32,7 +32,11 @@ export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) =>
 
   plain.k = hasKey ? directory[fiber.key] : undefined;
 
-  plain.t = getFiberType(fiber);
+  const { t, hasCompiler } = getFiberType(fiber);
+
+  plain.t = t;
+
+  hasCompiler && (plain.m = true);
 
   plain.n = directory[name];
 };
@@ -171,11 +175,13 @@ export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
 
 export const getPlainNodeIdByFiber = (fiber: MyReactFiberNode) => {
   const node = getPlainNodeByFiber(fiber);
+
   return node?.i;
 };
 
 export const getTreeByFiber = (fiber: MyReactFiberNode): null | PlainNode => {
   if (!fiber) return null;
+
   if (fiber.parent) {
     return getTreeByFiber(fiber.parent);
   } else {
@@ -230,4 +236,3 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode, force?: boolean) =
 export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
 };
-

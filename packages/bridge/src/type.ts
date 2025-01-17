@@ -34,8 +34,6 @@ export type MessageDetectorDataType = {
   from?: string;
 };
 
-export const DevToolSource = "@my-react/devtool";
-
 export enum sourceFrom {
   hook = "hook",
   proxy = "proxy",

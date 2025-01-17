@@ -7,7 +7,6 @@ import { ThemeProvider } from "next-themes";
 import { CodePreview } from "@/components/CodePreview";
 import { useBridgeTarget } from "@/hooks/useBridgeTarget";
 import { useConnect } from "@/hooks/useConnect";
-import { useIframeDev } from "@/hooks/useIframeDev";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { useWebDev } from "@/hooks/useWebDev";
 
@@ -39,7 +38,7 @@ const getWebTitle = (name?: string, url?: string) => {
   return "unknown";
 };
 
-const source = (str: string) => `function loadScript(url) {
+const source = (str: string, type: "web" | "local", token?: string) => `function loadScript(url) {
   const script = document.createElement("script");
   return new Promise((resolve, reject) => {
     script.src = url;
@@ -49,76 +48,14 @@ const source = (str: string) => `function loadScript(url) {
   }).finally(() => script.remove());
 }
 
+const getFunc = () => ${type === "web" ? "window.__MY_REACT_DEVTOOL_WEB__" : "window.__MY_REACT_DEVTOOL_IFRAME__"};
+
 function init() {
-  if (typeof __MY_REACT_DEVTOOL_WEB__ === 'function') {
-    const allDispatch = window["__@my-react/dispatch__"];
-    allDispatch.forEach((d) => __MY_REACT_DEVTOOL_RUNTIME__?.(d));
-    __MY_REACT_DEVTOOL_WEB__("${str}");
+  if (typeof getFunc() === 'function') {
+    getFunc()("${str}", "${token}");
   } else {
     loadScript("${str}/bundle/hook.js").then(init);
   }
-}
-
-init();
-`;
-
-const bridgeSource = (str: string, token: string) => `function loadScript(url) {
-  const script = document.createElement("script");
-  return new Promise((resolve, reject) => {
-    script.src = url;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  }).finally(() => script.remove());
-}
-
-function loadIframe(url) {
-  return new Promise((resolve, reject) => {
-    const exist = document.getElementById("my-react-bridge-${token}");
-    if (exist) {
-      resolve(exist);
-      return;
-    }
-    const iframe = document.createElement("iframe");
-    iframe.src = url;
-    iframe.id = "my-react-bridge-${token}";
-    iframe.style = "display: none;";
-    iframe.onload = resolve;
-    iframe.onerror = reject;
-    document.body.appendChild(iframe);
-  }).then(() => document.getElementById("my-react-bridge-${token}"));
-}
-
-async function init () {
-  const from = "hook";
-
-  const source = "@my-react/devtool";
-
-  let iframe = await loadIframe("${str}/bridge?token=${token}");
-
-  if (typeof __MY_REACT_DEVTOOL_RUNTIME__ !== 'function') {
-    await loadScript("${str}/bundle/hook.js");
-  }
-
-  const bridge = iframe.contentWindow;
-
-  window.addEventListener(
-    "message",
-    (e) => {
-      if (e.source === window && e.data && e.data.source === source && e.data.from === from) {
-        bridge?.postMessage?.(e.data, "*");
-      }
-      if (e.source === bridge && e.data && e.data.source === source && e.data.from === 'iframe' && e.data.type === 'bridge-init') {
-        __MY_REACT_DEVTOOL_RUNTIME__?.init?.();
-      }
-    },
-  );
-
-  const allDispatch = window["__@my-react/dispatch__"];
-
-  allDispatch.forEach((d) => __MY_REACT_DEVTOOL_RUNTIME__?.(d));
-
-  __MY_REACT_DEVTOOL_RUNTIME__?.init?.();
 }
 
 init();
@@ -147,10 +84,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
           <Spinner color="primary" size="lg" />
           {(isWebDev || isLocalDev) && <div className="text-center text-[18px] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
           {isWebDev || isLocalDev ? <Spacer className="my-2" /> : null}
-          {isWebDev && <CodePreview code={source(str)} title="Please run this code in the console of the page you want to debug" />}
-          {isLocalDev && (
-            <CodePreview code={bridgeSource(str, query?.token as string)} title="Please run this code in the console of the page you want to debug" />
-          )}
+          {isWebDev && <CodePreview code={source(str, "web", query?.token as string)} title="Please run this code in the console of the page you want to debug" />}
+          {isLocalDev && <CodePreview code={source(str, "local", query?.token as string)} title="Please run this code in the console of the page you want to debug" />}
         </div>
       </div>
     );
@@ -184,8 +119,6 @@ export default function App({ Component, pageProps, router }: AppProps) {
   }
 
   useWebDev();
-
-  useIframeDev();
 
   useBridgeTarget();
 

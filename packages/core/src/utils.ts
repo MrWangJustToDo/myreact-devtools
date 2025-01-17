@@ -1,10 +1,10 @@
-import { HOOK_TYPE, merge } from "@my-react/react-shared";
+import { HOOK_TYPE } from "@my-react/react-shared";
 
 import { getNode, getNodeForce } from "./data";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
-import type { HOOKTree } from "./plain";
+import type { HOOKTree, PlainNode } from "./plain";
 import type { DevToolRenderDispatch } from "./setup";
 import type {
   MixinMyReactClassComponent,
@@ -74,20 +74,27 @@ export const getTypeName = (type: number) => {
   }
 };
 
-export const getFiberTag = (t: number) => {
+export const getFiberTag = (node: PlainNode) => {
+  const t = node.t;
+
   const tag: string[] = [];
+
   if (t & NODE_TYPE.__memo__) {
     tag.push("memo");
   }
+
   if (t & NODE_TYPE.__forwardRef__) {
     tag.push("forwardRef");
   }
+
   if (t & NODE_TYPE.__lazy__) {
     tag.push("lazy");
   }
-  if (t & NODE_TYPE.__compiler__) {
+
+  if (node.m) {
     tag.push("compiler ✨");
   }
+
   return tag;
 };
 
@@ -99,12 +106,13 @@ export const getFiberType = (fiber: MyReactFiberNode) => {
   // check react compiler
   fiber.hookList?.listToFoot((l: MyReactHookNode) => {
     if (hasCompiler) return;
+
     if (l.type === HOOK_TYPE.useMemo && l.result?.[reactCompilerSymbol]) {
       hasCompiler = true;
     }
   });
 
-  return hasCompiler ? merge(t, NODE_TYPE.__compiler__) : t;
+  return { t, hasCompiler };
 };
 
 export const getFiberName = (fiber: MyReactFiberNodeDev) => {

@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 import type { PlainNode } from "@my-react-devtool/core";
 
 export const useDetailNode = createState(() => ({ nodes: [], loading: false, error: null }) as { nodes: PlainNode[]; loading: boolean; error: Error | null }, {
@@ -35,6 +33,3 @@ export const useDetailNode = createState(() => ({ nodes: [], loading: false, err
   withDeepSelector: false,
 });
 
-if (!isServer) {
-  window.useDetailNode = useDetailNode;
-}

@@ -50,6 +50,9 @@ export class PlainNode {
   i: string;
   // id: string;
 
+  m?: boolean;
+  // react compiler
+
   _t: string[];
   // tree: string[];
 

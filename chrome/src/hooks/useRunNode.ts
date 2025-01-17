@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 export const useRunNode = createState(() => ({ state: {} }) as { state: Record<string, { c: number; t?: number }> }, {
   withDeepSelector: false,
   withActions: (s) => {
@@ -18,6 +16,3 @@ export const useRunNode = createState(() => ({ state: {} }) as { state: Record<s
   },
 });
 
-if (!isServer) {
-  window.useRunNode = useRunNode;
-}

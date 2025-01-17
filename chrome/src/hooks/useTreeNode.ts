@@ -2,7 +2,6 @@ import { debounce, type PlainNode } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
 import { toast } from "sonner";
 
-import { isServer } from "@/utils/isServer";
 import { flattenNode } from "@/utils/node";
 
 import { useAppTree } from "./useAppTree";
@@ -102,6 +101,3 @@ export const useTreeNode = createState(
   }
 );
 
-if (!isServer) {
-  window.useTreeNode = useTreeNode;
-}

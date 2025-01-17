@@ -1,4 +1,4 @@
-import { DevToolSource } from "./type";
+import { DevToolSource } from "@my-react-devtool/core";
 
 export const generatePostMessageWithSource =
   (from?: string) =>

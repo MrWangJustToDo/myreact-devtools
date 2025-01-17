@@ -1,4 +1,6 @@
-import { DevToolSource, MessageDetectorType, MessageHookType, sourceFrom } from "./type";
+import { DevToolSource } from "@my-react-devtool/core";
+
+import { MessageDetectorType, MessageHookType, sourceFrom } from "./type";
 import { generatePostMessageWithSource } from "./window";
 
 import type { MessageHookDataType } from "./type";
@@ -18,8 +20,10 @@ const runWhenHookReady = (fn: () => void, count?: number) => {
       if (__DEV__) {
         console.error("[@my-react-devtool/detector] hook not ready");
       }
+
       return;
     }
+
     id = setTimeout(() => runWhenHookReady(fn, count ? count + 1 : 1), 1000);
   }
 };
@@ -44,6 +48,7 @@ const onMessage = (message: MessageEvent<MessageHookDataType>) => {
       if (__DEV__) {
         console.log("[@my-react-devtool/detector] hook mount");
       }
+
       chrome.runtime.sendMessage({ type: MessageHookType.mount, from: sourceFrom.detector });
     });
   }

@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 export const useChunk = createState(() => ({ id: null, data: {} }) as { id: number | string | null; data: Record<number | string, { loaded: any }> }, {
   withActions: (s) => ({
     setLoading: (id: number | string) => {
@@ -24,7 +22,3 @@ export const useChunk = createState(() => ({ id: null, data: {} }) as { id: numb
   withDeepSelector: false,
   withStableSelector: true,
 });
-
-if (!isServer) {
-  window.useChunk = useChunk;
-}

@@ -1,3 +1,5 @@
+// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
+
 export enum NODE_TYPE {
   __initial__ = 0,
   __class__ = 1 << 0,
@@ -19,7 +21,4 @@ export enum NODE_TYPE {
   __scope__ = 1 << 16,
   __comment__ = 1 << 17,
   __profiler__ = 1 << 18,
-
-  // react compiler memo
-  __compiler__ = 1 << 19,
 }

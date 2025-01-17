@@ -20,7 +20,7 @@ const { setSelect, setClose, setHover } = useTreeNode.getActions();
 const { add, remove } = useActiveNode.getActions();
 
 const RenderTag = memo(({ node }: { node: PlainNode }) => {
-  const tag = getFiberTag(node.t);
+  const tag = getFiberTag(node);
 
   if (tag?.length) {
     return (

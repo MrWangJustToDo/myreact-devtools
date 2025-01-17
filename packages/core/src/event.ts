@@ -2,6 +2,7 @@ export enum MessageHookType {
   init = "hook-init",
   mount = "hook-mount",
   render = "hook-render",
+  origin = "hook-origin",
 }
 
 export enum MessageDetectorType {
@@ -28,3 +29,5 @@ export enum MessageWorkerType {
   init = "worker-init",
   close = "worker-close",
 }
+
+export const DevToolSource = "@my-react/devtool";

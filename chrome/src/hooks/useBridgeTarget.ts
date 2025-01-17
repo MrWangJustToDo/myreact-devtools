@@ -1,24 +1,13 @@
-import { MessageWorkerType, MessagePanelType, debounce, DevToolMessageEnum } from "@my-react-devtool/core";
+import { MessageWorkerType, MessagePanelType, DevToolMessageEnum, DevToolSource, MessageHookType } from "@my-react-devtool/core";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import { useActiveNode } from "./useActiveNode";
-import { useAppTree } from "./useAppTree";
-import { useChunk } from "./useChunk";
-import { useConfig } from "./useConfig";
+import { onListener } from "@/utils/listener";
+import { onRender } from "@/utils/render";
+
 import { useConnect } from "./useConnect";
-import { useContextMenu } from "./useContextMenu";
-import { useDetailNode } from "./useDetailNode";
-import { useHMRNode } from "./useHMRNode";
-import { useNodeName } from "./useNodeName";
-import { useRunNode } from "./useRunNode";
-import { useTreeNode } from "./useTreeNode";
-import { useTriggerNode } from "./useTriggerNode";
-import { DevToolSource, safeAction } from "./useWebDev";
 
 export const from = "iframe";
-
-const render = "hook-render";
 
 let bridge: null | BroadcastChannel = null;
 
@@ -28,26 +17,23 @@ const postMessageToBridge = (data: any) => {
   bridge?.postMessage({ from, ...data, source: DevBridgeSource });
 };
 
-const debouncePostMessageFromIframe = debounce(postMessageToBridge, 100);
-
-// TODO! merge with useIframeDev
 export const useBridgeTarget = () => {
-  const { query, push } = useRouter();
+  const { query, push, pathname } = useRouter();
+
+  const isBridgePage = pathname.endsWith("bridge");
 
   useEffect(() => {
-    const currentIsIframe = window !== window.top;
+    const _query = new URLSearchParams(window.location.search);
 
-    if (process.env.NEXT_PUBLIC_MODE === "local" && !currentIsIframe && !query?.token) {
-      push({ query: { token: Date.now() } });
+    if (process.env.NEXT_PUBLIC_MODE === "local" && !_query?.get("token")) {
+      push({ query: { token: Math.random().toString(36).slice(2) } });
     }
   }, [query?.token, push]);
 
   useEffect(() => {
-    const currentIsIframe = window !== window.top;
-
     if (typeof BroadcastChannel === "undefined") return;
 
-    if (process.env.NEXT_PUBLIC_MODE === "local" && !currentIsIframe && query?.token) {
+    if (process.env.NEXT_PUBLIC_MODE === "local" && !isBridgePage && query?.token) {
       bridge = new BroadcastChannel(("@my-react-" + query.token) as string);
 
       console.log("[Dev mode] bridge start");
@@ -56,7 +42,7 @@ export const useBridgeTarget = () => {
 
       let id: NodeJS.Timeout | null = null;
 
-      const unSubscribeArray: Array<() => void> = [];
+      let unsubscribe = () => {};
 
       const listenBackEndReady = () => {
         if (connect) {
@@ -77,116 +63,7 @@ export const useBridgeTarget = () => {
 
         listenBackEndReady();
 
-        unSubscribeArray.push(
-          useTreeNode.subscribe(
-            (s) => s.select,
-            () => {
-              const currentSelect = useTreeNode.getReadonlyState().select;
-
-              if (currentSelect) {
-                useDetailNode.getActions().setLoading(true);
-
-                postMessageToBridge({ type: MessagePanelType.nodeSelect, data: currentSelect });
-              } else {
-                postMessageToBridge({ type: MessagePanelType.nodeSelect, data: null });
-              }
-            }
-          )
-        );
-
-        unSubscribeArray.push(
-          useTreeNode.subscribe(
-            (s) => s.reload,
-            () => {
-              const currentSelect = useTreeNode.getReadonlyState().select;
-
-              if (currentSelect) {
-                useDetailNode.getActions().setLoading(true);
-
-                debouncePostMessageFromIframe({ type: MessagePanelType.nodeSelectForce, data: currentSelect });
-              }
-            }
-          )
-        );
-
-        unSubscribeArray.push(
-          useTreeNode.subscribe(
-            (s) => s.store,
-            () => {
-              const currentSelect = useTreeNode.getReadonlyState().select;
-
-              if (currentSelect) {
-                debouncePostMessageFromIframe({ type: MessagePanelType.nodeStore, data: currentSelect });
-              }
-            }
-          )
-        );
-
-        unSubscribeArray.push(
-          useTreeNode.subscribe(
-            (s) => s.trigger,
-            () => {
-              const currentSelect = useTreeNode.getReadonlyState().select;
-
-              if (currentSelect) {
-                debouncePostMessageFromIframe({ type: MessagePanelType.nodeTrigger, data: currentSelect });
-              }
-            }
-          )
-        );
-
-        unSubscribeArray.push(
-          useTreeNode.subscribe(
-            (s) => s.hover,
-            () => postMessageToBridge({ type: MessagePanelType.nodeHover, data: useTreeNode.getReadonlyState().hover })
-          )
-        );
-
-        unSubscribeArray.push(
-          useActiveNode.subscribe(
-            (s) => s.state,
-            debounce(() => postMessageToBridge({ type: MessagePanelType.nodeSubscriber, data: useActiveNode.getReadonlyState().state }), 100)
-          )
-        );
-
-        unSubscribeArray.push(
-          useConfig.subscribe(
-            (s) => s.state.enableHover,
-            () => postMessageToBridge({ type: MessagePanelType.enableHover, data: useConfig.getReadonlyState().state.enableHover })
-          )
-        );
-
-        unSubscribeArray.push(
-          useConfig.subscribe(
-            (s) => s.state.enableUpdate,
-            () => postMessageToBridge({ type: MessagePanelType.enableUpdate, data: useConfig.getReadonlyState().state.enableUpdate })
-          )
-        );
-
-        unSubscribeArray.push(
-          useChunk.subscribe(
-            (s) => s.id,
-            () => {
-              const id = useChunk.getReadonlyState().id;
-              if (id) {
-                postMessageToBridge({ type: MessagePanelType.chunk, data: id });
-              }
-            }
-          )
-        );
-
-        unSubscribeArray.push(
-          useContextMenu.subscribe(
-            (s) => s.store,
-            () => {
-              const id = useContextMenu.getReadonlyState().store;
-
-              if (id) {
-                postMessageToBridge({ type: MessagePanelType.varStore, data: id });
-              }
-            }
-          )
-        );
+        unsubscribe = onListener(postMessageToBridge);
       };
 
       const onDisconnect = () => {
@@ -196,7 +73,7 @@ export const useBridgeTarget = () => {
 
         id && clearTimeout(id);
 
-        unSubscribeArray.forEach((fn) => fn());
+        unsubscribe();
 
         useConnect.getActions().disconnect();
 
@@ -210,83 +87,13 @@ export const useBridgeTarget = () => {
 
         if (e.data?.from === from) return;
 
-        const data = e.data?.type === render ? e.data.data : e.data;
+        const data = e.data?.type === MessageHookType.render ? e.data.data : e.data;
 
         if (data.type === DevToolMessageEnum.init) {
-          safeAction(() => {
-            connect = true;
-
-            useConnect.getActions().setRender(data.data);
-          });
+          connect = true;
         }
 
-        if (data.type === DevToolMessageEnum.dir) {
-          safeAction(() => {
-            useNodeName.getActions().set(data.data);
-          });
-        }
-
-        if (data.type === DevToolMessageEnum.ready) {
-          safeAction(() => {
-            if (data.data) {
-              useAppTree.getActions().addNode(data.data);
-            }
-          });
-        }
-
-        if (data.type === DevToolMessageEnum.unmount) {
-          safeAction(() => {
-            useChunk?.getActions?.()?.clear?.();
-            useAppTree?.getActions?.()?.clear?.();
-            useNodeName?.getActions?.()?.clear?.();
-            useTreeNode?.getActions?.()?.clear?.();
-            useDetailNode?.getActions?.()?.clear?.();
-            useActiveNode?.getActions()?.clear?.();
-            useContextMenu?.getActions?.()?.clear?.();
-          });
-        }
-
-        if (data.type === DevToolMessageEnum.hmr) {
-          safeAction(() => {
-            useHMRNode.getActions().update(data.data);
-          });
-        }
-
-        if (data.type === DevToolMessageEnum.trigger) {
-          safeAction(() => {
-            useTriggerNode.getActions().update(data.data);
-          });
-        }
-
-        if (data.type === DevToolMessageEnum.run) {
-          safeAction(() => {
-            useRunNode.getActions().update(data.data);
-          });
-        }
-
-        if (data.type === DevToolMessageEnum.detail) {
-          safeAction(() => {
-            if (data.data) {
-              useDetailNode.getActions().addNode(data.data);
-            }
-
-            useDetailNode.getActions().setLoading(false);
-          });
-        }
-
-        if (data.type === DevToolMessageEnum.config) {
-          safeAction(() => {
-            useConfig.getActions().setEnableHover(data.data?.enableHover);
-
-            useConfig.getActions().setEnableUpdate(data.data?.enableUpdate);
-          });
-        }
-
-        if (data.type === DevToolMessageEnum.chunk) {
-          safeAction(() => {
-            useChunk.getActions().setChunk(data.data);
-          });
-        }
+        onRender(data);
       };
 
       bridge.addEventListener("message", onMessage);
@@ -297,5 +104,5 @@ export const useBridgeTarget = () => {
         onDisconnect();
       };
     }
-  }, [query?.token]);
+  }, [isBridgePage, query.token]);
 };

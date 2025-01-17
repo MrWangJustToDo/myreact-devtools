@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 import type { NodeValue } from "@my-react-devtool/core";
 
 export const useHighlightNode = createState(
@@ -42,6 +40,3 @@ export const useHighlightNode = createState(
   }
 );
 
-if (!isServer) {
-  window.useHighlightNode = useHighlightNode;
-}

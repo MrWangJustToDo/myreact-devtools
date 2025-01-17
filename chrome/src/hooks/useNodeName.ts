@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 export const useNodeName = createState(() => ({ map: {}, state: {} }) as { map: Record<string, string>; state: Record<string, string> }, {
   withDeepSelector: false,
   withActions: (state) => ({
@@ -17,7 +15,3 @@ export const useNodeName = createState(() => ({ map: {}, state: {} }) as { map: 
     }
   }),
 });
-
-if (!isServer) {
-  window.useNodeName = useNodeName;
-}

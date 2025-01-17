@@ -1,8 +1,8 @@
+import { DevToolSource } from "@my-react-devtool/core";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { DevBridgeSource, from } from "./useBridgeTarget";
-import { DevToolSource } from "./useWebDev";
 
 let bridge: null | BroadcastChannel = null;
 

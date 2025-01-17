@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 export const useConfig = createState(() => ({ state: { enableHover: false, enableUpdate: false, enableRuntimeCount: false, enableRuntimeMis: false } }), {
   withActions: (s) => ({
     setEnableHover(enableHover: boolean) {
@@ -20,7 +18,3 @@ export const useConfig = createState(() => ({ state: { enableHover: false, enabl
   withNamespace: "useConfig",
   withDeepSelector: true,
 });
-
-if (!isServer) {
-  window.useConfig = useConfig;
-}

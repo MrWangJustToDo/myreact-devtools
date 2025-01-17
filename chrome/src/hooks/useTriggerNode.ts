@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 export const useTriggerNode = createState(() => ({ state: {} }) as { state: Record<string, number> }, {
   withDeepSelector: false,
   withActions: (s) => {
@@ -18,6 +16,3 @@ export const useTriggerNode = createState(() => ({ state: {} }) as { state: Reco
   },
 });
 
-if (!isServer) {
-  window.useTriggerNode = useTriggerNode;
-}

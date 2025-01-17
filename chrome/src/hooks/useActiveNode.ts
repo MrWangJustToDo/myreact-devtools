@@ -1,7 +1,5 @@
 import { createState } from "reactivity-store";
 
-import { isServer } from "@/utils/isServer";
-
 export const useActiveNode = createState(
   () => ({
     state: {} as Record<string, number>,
@@ -34,7 +32,3 @@ export const useActiveNode = createState(
     }),
   }
 );
-
-if (!isServer) {
-  window.useActiveNode = useActiveNode;
-}
