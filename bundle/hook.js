@@ -1,77 +1,6 @@
 (function () {
     'use strict';
 
-    /******************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
-
-
-    var __assign = function() {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-
-    function __awaiter(thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    }
-
-    function __generator(thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-        function verb(n) { return function (v) { return step([n, v]); }; }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (g && (g = 0, op[0] && (_ = 0)), _) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [op[0] & 2, t.value];
-                switch (op[0]) {
-                    case 0: case 1: t = op; break;
-                    case 4: _.label++; return { value: op[1], done: false };
-                    case 5: _.label++; y = op[1]; op = [0]; continue;
-                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop(); continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    }
-
-    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-    };
-
     var reactShared = {exports: {}};
 
     var index_production$1 = {};
@@ -994,6 +923,7 @@
     		    return PlainNode;
     		}());
 
+    		// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
     		var NODE_TYPE;
     		(function (NODE_TYPE) {
     		    NODE_TYPE[NODE_TYPE["__initial__"] = 0] = "__initial__";
@@ -1016,8 +946,6 @@
     		    NODE_TYPE[NODE_TYPE["__scope__"] = 65536] = "__scope__";
     		    NODE_TYPE[NODE_TYPE["__comment__"] = 131072] = "__comment__";
     		    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
-    		    // react compiler memo
-    		    NODE_TYPE[NODE_TYPE["__compiler__"] = 524288] = "__compiler__";
     		})(NODE_TYPE || (NODE_TYPE = {}));
 
     		var treeMap = new Map();
@@ -1036,7 +964,9 @@
     		        directory[name] = ++count + "";
     		    }
     		    plain.k = hasKey ? directory[fiber.key] : undefined;
-    		    plain.t = getFiberType(fiber);
+    		    var _a = getFiberType(fiber), t = _a.t, hasCompiler = _a.hasCompiler;
+    		    plain.t = t;
+    		    hasCompiler && (plain.m = true);
     		    plain.n = directory[name];
     		};
     		var assignFiber = function (plain, fiber, force) {
@@ -1227,7 +1157,8 @@
     		            return "";
     		    }
     		};
-    		var getFiberTag = function (t) {
+    		var getFiberTag = function (node) {
+    		    var t = node.t;
     		    var tag = [];
     		    if (t & NODE_TYPE.__memo__) {
     		        tag.push("memo");
@@ -1238,7 +1169,7 @@
     		    if (t & NODE_TYPE.__lazy__) {
     		        tag.push("lazy");
     		    }
-    		    if (t & NODE_TYPE.__compiler__) {
+    		    if (node.m) {
     		        tag.push("compiler ✨");
     		    }
     		    return tag;
@@ -1256,7 +1187,7 @@
     		            hasCompiler = true;
     		        }
     		    });
-    		    return hasCompiler ? reactShared.merge(t, NODE_TYPE.__compiler__) : t;
+    		    return { t: t, hasCompiler: hasCompiler };
     		};
     		var getFiberName = function (fiber) {
     		    var typedFiber = fiber;
@@ -1944,7 +1875,7 @@
     		        return;
     		    dispatch["$$hasDevToolInject"] = true;
     		    overridePatchToFiberUnmount(dispatch);
-    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: runtime });
+    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
 
     		// 事件类型
@@ -2004,6 +1935,7 @@
     		        this._dispatch = new Set();
     		        // 是否存在 @my-react
     		        this._detector = false;
+    		        this._origin = "";
     		        this._map = new Map();
     		        // 字符串字典
     		        this._dir = {};
@@ -2021,7 +1953,6 @@
     		        this._enabled = false;
     		        this._enableHover = false;
     		        this._enableUpdate = false;
-    		        this._forceEnable = false;
     		        this._listeners = new Set();
     		        this._activeIds = {};
     		        this.version = "0.0.1";
@@ -2067,7 +1998,7 @@
     		    };
     		    Object.defineProperty(DevToolCore.prototype, "hasEnable", {
     		        get: function () {
-    		            return this._enabled || this._forceEnable;
+    		            return this._enabled;
     		        },
     		        enumerable: false,
     		        configurable: true
@@ -2405,6 +2336,7 @@
     		            }
     		        }
     		    };
+    		    // TODO support multiple connect agent
     		    DevToolCore.prototype.connect = function () {
     		        if (this._enabled)
     		            return;
@@ -2422,9 +2354,9 @@
     		        this._activeIds = {};
     		        this._error = {};
     		        this._hmr = {};
-    		        this._hoverId = '';
+    		        this._hoverId = "";
     		        this._run = {};
-    		        this._selectId = '';
+    		        this._selectId = "";
     		        this._state = {};
     		        this._tempError = {};
     		        this._tempWarn = {};
@@ -2440,6 +2372,7 @@
     		    MessageHookType["init"] = "hook-init";
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
+    		    MessageHookType["origin"] = "hook-origin";
     		})(exports.MessageHookType || (exports.MessageHookType = {}));
     		exports.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
@@ -2466,8 +2399,10 @@
     		    MessageWorkerType["init"] = "worker-init";
     		    MessageWorkerType["close"] = "worker-close";
     		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
+    		var DevToolSource = "@my-react/devtool";
 
     		exports.DevToolCore = DevToolCore;
+    		exports.DevToolSource = DevToolSource;
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
     		exports.color = color;
@@ -2520,12 +2455,127 @@
 
     var coreExports = requireCore();
 
+    var core = new coreExports.DevToolCore();
+
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    function __awaiter(thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    }
+
+    function __generator(thisArg, body) {
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        function verb(n) { return function (v) { return step([n, v]); }; }
+        function step(op) {
+            if (f) throw new TypeError("Generator is already executing.");
+            while (g && (g = 0, op[0] && (_ = 0)), _) try {
+                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+                if (y = 0, t) op = [op[0] & 2, t.value];
+                switch (op[0]) {
+                    case 0: case 1: t = op; break;
+                    case 4: _.label++; return { value: op[1], done: false };
+                    case 5: _.label++; y = op[1]; op = [0]; continue;
+                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                    default:
+                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                        if (t[2]) _.ops.pop();
+                        _.trys.pop(); continue;
+                }
+                op = body.call(thisArg, _);
+            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+        }
+    }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
+    var varId = 0;
+    var getValidGlobalVarName = function () {
+        var varName = "$my-react-var-".concat(varId++);
+        while (globalThis[varName]) {
+            varName = "$my-react-var-".concat(varId++);
+        }
+        return varName;
+    };
+    var loadScript = function (url) {
+        return new Promise(function (resolve, reject) {
+            if (typeof document === "undefined") {
+                reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
+                return;
+            }
+            var script = document.createElement("script");
+            script.src = url;
+            script.onload = function () { return resolve(); };
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
+    };
+    var loadIframe = function (url, token) {
+        return new Promise(function (resolve, reject) {
+            if (typeof document === "undefined") {
+                reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
+                return;
+            }
+            var exist = document.getElementById("my-react-devtool-bridge-".concat(token));
+            if (exist) {
+                resolve(exist);
+                return;
+            }
+            var iframe = document.createElement("iframe");
+            iframe.src = url;
+            iframe.classList.add("my-react-devtool-bridge");
+            iframe.id = "my-react-devtool-bridge-".concat(token);
+            iframe.style.display = "none";
+            iframe.onload = function () { return resolve(iframe); };
+            iframe.onerror = reject;
+            document.body.appendChild(iframe);
+        });
+    };
+
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
         PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
-    var DevToolSource = "@my-react/devtool";
     var sourceFrom;
     (function (sourceFrom) {
         sourceFrom["hook"] = "hook";
@@ -2537,13 +2587,175 @@
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
 
+    var close = function () { };
+    var initIFRAME_DEV = function (origin, token) { return __awaiter(void 0, void 0, void 0, function () {
+        var bridgeUrl, bridgeView, bridgeToken, bridgeIframe, bridgeWindow, viewWindow_1;
+        var _a, _b, _c, _d, _e;
+        return __generator(this, function (_f) {
+            switch (_f.label) {
+                case 0:
+                    if (typeof document === "undefined")
+                        return [2 /*return*/];
+                    if (!(typeof window.__MY_REACT_DEVTOOL_RUNTIME__ !== "function")) return [3 /*break*/, 2];
+                    return [4 /*yield*/, loadScript("".concat(origin, "/bundle/hook.js"))];
+                case 1:
+                    _f.sent();
+                    _f.label = 2;
+                case 2:
+                    bridgeUrl = "".concat(origin, "/bridge");
+                    bridgeView = "".concat(origin, "/devTool");
+                    bridgeToken = token || Math.random().toString(36).slice(2);
+                    (_b = (_a = document.querySelectorAll(".my-react-devtool-bridge")) === null || _a === void 0 ? void 0 : _a.forEach) === null || _b === void 0 ? void 0 : _b.call(_a, function (el) { return el.remove(); });
+                    return [4 /*yield*/, loadIframe("".concat(bridgeUrl, "?token=").concat(bridgeToken), bridgeToken)];
+                case 3:
+                    bridgeIframe = _f.sent();
+                    bridgeWindow = bridgeIframe.contentWindow;
+                    if (!bridgeWindow) {
+                        console.error("[@my-react-devtool/iframe] iframe contentWindow not found");
+                        return [2 /*return*/];
+                    }
+                    if (!token) {
+                        viewWindow_1 = window.open("".concat(bridgeView, "?token=").concat(bridgeToken), "_blank");
+                        close = function () { return viewWindow_1.close(); };
+                    }
+                    window.addEventListener("message", function (e) {
+                        var _a;
+                        if (e.source === window && e.data && e.data.source === coreExports.DevToolSource && e.data.from === sourceFrom.hook) {
+                            (_a = bridgeWindow === null || bridgeWindow === void 0 ? void 0 : bridgeWindow.postMessage) === null || _a === void 0 ? void 0 : _a.call(bridgeWindow, e.data, "*");
+                        }
+                    });
+                    (_c = window["__@my-react/dispatch__"]) === null || _c === void 0 ? void 0 : _c.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
+                    (_e = (_d = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _d === void 0 ? void 0 : _d.init) === null || _e === void 0 ? void 0 : _e.call(_d);
+                    return [2 /*return*/];
+            }
+        });
+    }); };
+    initIFRAME_DEV.close = function () {
+        close();
+        core.disconnect();
+    };
+
+    var onMessageFromPanelOrWorkerOrDetector = function (data) {
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessageWorkerType.init || (data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.show) {
+            core.connect();
+            core.notifyAll();
+        }
+        // 主动关闭panel / 或者worker失活
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.hide || (data === null || data === void 0 ? void 0 : data.type) === coreExports.MessageWorkerType.close) {
+            core.disconnect();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeSelect) {
+            core.setSelect(data.data);
+            core.notifySelect();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeSelectForce) {
+            core.notifySelect(true);
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeStore) {
+            var id = data.data;
+            var f = coreExports.getFiberNodeById(id);
+            if (f) {
+                console.log("[@my-react-devtool/hook] %cStore fiber node%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", f);
+            }
+            else {
+                console.error("[@my-react-devtool/hook] fiber node not found", id);
+            }
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeTrigger) {
+            var id = data.data;
+            var f = coreExports.getFiberNodeById(id);
+            if (f) {
+                f._update(reactSharedExports.STATE_TYPE.__triggerConcurrentForce__);
+            }
+            else {
+                console.error("[@my-react-devtool/hook] fiber node not found", id);
+            }
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeHover) {
+            core.setHover(data.data);
+            core.showHover();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeSubscriber) {
+            core.setSubscribe(data.data);
+            core.notifyRun();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.enableHover) {
+            core.setHoverStatus(data.data);
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.enableUpdate) {
+            core.setUpdateStatus(data.data);
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.chunk) {
+            core.notifyChunk(data.data);
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varStore) {
+            var id = data.data;
+            var _a = coreExports.getValueById(id), f = _a.f, varStore = _a.v;
+            if (f) {
+                var varName = getValidGlobalVarName();
+                globalThis[varName] = varStore;
+                console.log("[@my-react-devtool/hook] %cStore global variable%c Name: ".concat(varName), "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "");
+                console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
+            }
+            else {
+                console.error("[@my-react-devtool/hook] fiber node not found", id);
+            }
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clear) {
+            core.clear();
+        }
+    };
+
+    var connectSocket = null;
+    var initWEB_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
+        var socket, unSubscribe;
+        var _a, _b, _c;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0:
+                    if (typeof window === "undefined")
+                        return [2 /*return*/];
+                    console.log("[@my-react-devtool/hook] start a web ui devtool");
+                    if (!!window.io) return [3 /*break*/, 2];
+                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
+                case 1:
+                    _d.sent();
+                    _d.label = 2;
+                case 2:
+                    (_a = window["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
+                    (_c = (_b = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
+                    socket = window.io(url);
+                    connectSocket = socket;
+                    unSubscribe = function () { };
+                    socket.on("connect", function () {
+                        unSubscribe = core.subscribe(function (message) {
+                            socket.emit("render", message);
+                        });
+                    });
+                    socket.on("disconnect", function () {
+                        unSubscribe();
+                        core.disconnect();
+                    });
+                    socket.on("action", function (data) {
+                        onMessageFromPanelOrWorkerOrDetector(data);
+                    });
+                    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
+                    return [2 /*return*/];
+            }
+        });
+    }); };
+    initWEB_DEV.close = function () {
+        var _a;
+        (_a = connectSocket === null || connectSocket === void 0 ? void 0 : connectSocket.close) === null || _a === void 0 ? void 0 : _a.call(connectSocket);
+        connectSocket = null;
+    };
+
     var generatePostMessageWithSource = function (from) {
         return function (message) {
-            window.postMessage(__assign(__assign({ from: from }, message), { source: DevToolSource }), "*");
+            window.postMessage(__assign(__assign({ from: from }, message), { source: coreExports.DevToolSource }), "*");
         };
     };
 
-    var core = new coreExports.DevToolCore();
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
     core.subscribe(function (message) {
         hookPostMessageWithSource({ type: coreExports.MessageHookType.render, data: message });
@@ -2551,14 +2763,6 @@
     var set = new Set();
     var detectorReady = false;
     var id = null;
-    var varId = 0;
-    var getValidGlobalVarName = function () {
-        var varName = "$my-react-var-".concat(varId++);
-        while (globalThis[varName]) {
-            varName = "$my-react-var-".concat(varId++);
-        }
-        return varName;
-    };
     var runWhenDetectorReady = function (fn, count) {
         clearTimeout(id);
         if (detectorReady) {
@@ -2572,213 +2776,48 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _d, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
+        var _a, _b, _c, _d, _f;
         // allow iframe dev
         // allow bridge dev
         if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.from) !== sourceFrom.bridge)
             return;
-        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.source) !== DevToolSource)
+        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.source) !== coreExports.DevToolSource)
             return;
         if (((_d = message.data) === null || _d === void 0 ? void 0 : _d.from) === sourceFrom.hook)
             return;
         if (!detectorReady && ((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessageDetectorType.init) {
             detectorReady = true;
         }
-        if (((_g = message.data) === null || _g === void 0 ? void 0 : _g.type) === coreExports.MessageWorkerType.init) {
-            core.connect();
-            core.notifyAll();
-        }
-        if (((_h = message.data) === null || _h === void 0 ? void 0 : _h.type) === coreExports.MessagePanelType.show) {
-            core.connect();
-            core.notifyAll();
-        }
-        // 主动关闭panel / 或者worker失活
-        if (((_j = message.data) === null || _j === void 0 ? void 0 : _j.type) === coreExports.MessagePanelType.hide || ((_k = message.data) === null || _k === void 0 ? void 0 : _k.type) === coreExports.MessageWorkerType.close) {
-            core.disconnect();
-        }
-        if (((_l = message.data) === null || _l === void 0 ? void 0 : _l.type) === coreExports.MessagePanelType.enableHover) {
-            core.setHoverStatus(message.data.data);
-        }
-        if (((_m = message.data) === null || _m === void 0 ? void 0 : _m.type) === coreExports.MessagePanelType.enableUpdate) {
-            core.setUpdateStatus(message.data.data);
-        }
-        if (((_o = message.data) === null || _o === void 0 ? void 0 : _o.type) === coreExports.MessagePanelType.nodeSelect) {
-            core.setSelect(message.data.data);
-            core.notifySelect();
-        }
-        if (((_p = message.data) === null || _p === void 0 ? void 0 : _p.type) === coreExports.MessagePanelType.nodeSelectForce) {
-            core.notifySelect(true);
-        }
-        if (((_q = message.data) === null || _q === void 0 ? void 0 : _q.type) === coreExports.MessagePanelType.nodeTrigger) {
-            var id_1 = message.data.data;
-            var f = coreExports.getFiberNodeById(id_1);
-            if (f) {
-                f._update(reactSharedExports.STATE_TYPE.__triggerConcurrentForce__);
-            }
-            else {
-                console.error("[@my-react-devtool/hook] fiber node not found", id_1);
-            }
-        }
-        if (((_r = message.data) === null || _r === void 0 ? void 0 : _r.type) === coreExports.MessagePanelType.nodeStore) {
-            var id_2 = message.data.data;
-            var f = coreExports.getFiberNodeById(id_2);
-            if (f) {
-                console.log("[@my-react-devtool/hook] %cStore fiber node%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", f);
-            }
-            else {
-                console.error("[@my-react-devtool/hook] fiber node not found", id_2);
-            }
-        }
-        if (((_s = message.data) === null || _s === void 0 ? void 0 : _s.type) === coreExports.MessagePanelType.nodeHover) {
-            core.setHover(message.data.data);
-            core.showHover();
-        }
-        if (message.data.type === coreExports.MessagePanelType.nodeSubscriber) {
-            core.setSubscribe(message.data.data);
-            core.notifyRun();
-        }
-        if (message.data.type === coreExports.MessagePanelType.chunk) {
-            core.notifyChunk(message.data.data);
-        }
-        if (message.data.type === coreExports.MessagePanelType.varStore) {
-            var id_3 = message.data.data;
-            var _t = coreExports.getValueById(id_3), f = _t.f, varStore = _t.v;
-            if (f) {
-                var varName = getValidGlobalVarName();
-                globalThis[varName] = varStore;
-                console.log("[@my-react-devtool/hook] %cStore global variable%c Name: ".concat(varName), "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "");
-                console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
-            }
-            else {
-                console.error("[@my-react-devtool/hook] fiber node not found", id_3);
-            }
-        }
-        if (message.data.type === coreExports.MessagePanelType.clear) {
-            core.clear();
-        }
+        onMessageFromPanelOrWorkerOrDetector(message.data);
     };
     window.addEventListener("message", onMessage);
     var onceMount = reactSharedExports.once(function () {
         // current site is render by @my-react
         hookPostMessageWithSource({ type: coreExports.MessageHookType.mount });
     });
-    var loadScript = function (url) {
-        return new Promise(function (resolve, reject) {
-            var script = document.createElement("script");
-            script.src = url;
-            script.onload = function () { return resolve(); };
-            script.onerror = reject;
-            document.body.appendChild(script);
-        });
-    };
-    var connectSocket = null;
-    // TODO! 与 onMessage 保持同步
-    var initWEB_UI = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-        var socket, unSubscribe;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    console.log("[@my-react-devtool/hook] start a web ui devtool");
-                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
-                case 1:
-                    _a.sent();
-                    socket = window.io(url);
-                    connectSocket = socket;
-                    unSubscribe = function () { };
-                    socket.on("connect", function () {
-                        unSubscribe = core.subscribe(function (message) {
-                            socket.emit("render", message);
-                        });
-                    });
-                    socket.on("disconnect", function () {
-                        unSubscribe();
-                    });
-                    socket.on("action", function (data) {
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessageWorkerType.init || (data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.show) {
-                            core._forceEnable = true;
-                            core.connect();
-                            core.notifyAll();
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeSelect) {
-                            core.setSelect(data.data);
-                            core.notifySelect();
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeSelectForce) {
-                            core.notifySelect(true);
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeStore) {
-                            var id_4 = data.data;
-                            var f = coreExports.getFiberNodeById(id_4);
-                            if (f) {
-                                console.log("[@my-react-devtool/hook] %cStore fiber node%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", f);
-                            }
-                            else {
-                                console.error("[@my-react-devtool/hook] fiber node not found", id_4);
-                            }
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeTrigger) {
-                            var id_5 = data.data;
-                            var f = coreExports.getFiberNodeById(id_5);
-                            if (f) {
-                                f._update(reactSharedExports.STATE_TYPE.__triggerConcurrentForce__);
-                            }
-                            else {
-                                console.error("[@my-react-devtool/hook] fiber node not found", id_5);
-                            }
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeHover) {
-                            core.setHover(data.data);
-                            core.showHover();
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeSubscriber) {
-                            core.setSubscribe(data.data);
-                            core.notifyRun();
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.enableHover) {
-                            core.setHoverStatus(data.data);
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.enableUpdate) {
-                            core.setUpdateStatus(data.data);
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.chunk) {
-                            core.notifyChunk(data.data);
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varStore) {
-                            var id_6 = data.data;
-                            var _a = coreExports.getValueById(id_6), f = _a.f, varStore = _a.v;
-                            if (f) {
-                                var varName = getValidGlobalVarName();
-                                globalThis[varName] = varStore;
-                                console.log("[@my-react-devtool/hook] %cStore global variable%c Name: ".concat(varName), "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "");
-                                console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
-                            }
-                            else {
-                                console.error("[@my-react-devtool/hook] fiber node not found", id_6);
-                            }
-                        }
-                        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clear) {
-                            core.clear();
-                        }
-                    });
-                    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
-                    return [2 /*return*/];
+    var onceOrigin = reactSharedExports.once(function () {
+        try {
+            var origin_1 = window.location.origin;
+            core._origin = origin_1;
+            if (origin_1) {
+                hookPostMessageWithSource({ type: coreExports.MessageHookType.origin, data: origin_1 });
             }
-        });
-    }); };
-    initWEB_UI.close = function () {
-        var _a;
-        (_a = connectSocket === null || connectSocket === void 0 ? void 0 : connectSocket.close) === null || _a === void 0 ? void 0 : _a.call(connectSocket);
-        connectSocket = null;
-    };
+        }
+        catch (_a) {
+        }
+    });
     var globalHook = function (dispatch) {
         set.add(dispatch);
         core.addDispatch(dispatch);
         runWhenDetectorReady(onceMount);
+        runWhenDetectorReady(onceOrigin);
     };
     window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
     window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
     // support local dev
-    window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_UI;
+    window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
+    // support iframe dev
+    window["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
     hookPostMessageWithSource({ type: coreExports.MessageHookType.init });
     globalHook.init = function () { return hookPostMessageWithSource({ type: coreExports.MessageHookType.init }); };
 

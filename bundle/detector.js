@@ -921,6 +921,7 @@
     		    return PlainNode;
     		}());
 
+    		// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
     		var NODE_TYPE;
     		(function (NODE_TYPE) {
     		    NODE_TYPE[NODE_TYPE["__initial__"] = 0] = "__initial__";
@@ -943,8 +944,6 @@
     		    NODE_TYPE[NODE_TYPE["__scope__"] = 65536] = "__scope__";
     		    NODE_TYPE[NODE_TYPE["__comment__"] = 131072] = "__comment__";
     		    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
-    		    // react compiler memo
-    		    NODE_TYPE[NODE_TYPE["__compiler__"] = 524288] = "__compiler__";
     		})(NODE_TYPE || (NODE_TYPE = {}));
 
     		var treeMap = new Map();
@@ -963,7 +962,9 @@
     		        directory[name] = ++count + "";
     		    }
     		    plain.k = hasKey ? directory[fiber.key] : undefined;
-    		    plain.t = getFiberType(fiber);
+    		    var _a = getFiberType(fiber), t = _a.t, hasCompiler = _a.hasCompiler;
+    		    plain.t = t;
+    		    hasCompiler && (plain.m = true);
     		    plain.n = directory[name];
     		};
     		var assignFiber = function (plain, fiber, force) {
@@ -1154,7 +1155,8 @@
     		            return "";
     		    }
     		};
-    		var getFiberTag = function (t) {
+    		var getFiberTag = function (node) {
+    		    var t = node.t;
     		    var tag = [];
     		    if (t & NODE_TYPE.__memo__) {
     		        tag.push("memo");
@@ -1165,7 +1167,7 @@
     		    if (t & NODE_TYPE.__lazy__) {
     		        tag.push("lazy");
     		    }
-    		    if (t & NODE_TYPE.__compiler__) {
+    		    if (node.m) {
     		        tag.push("compiler ✨");
     		    }
     		    return tag;
@@ -1183,7 +1185,7 @@
     		            hasCompiler = true;
     		        }
     		    });
-    		    return hasCompiler ? reactShared.merge(t, NODE_TYPE.__compiler__) : t;
+    		    return { t: t, hasCompiler: hasCompiler };
     		};
     		var getFiberName = function (fiber) {
     		    var typedFiber = fiber;
@@ -1871,7 +1873,7 @@
     		        return;
     		    dispatch["$$hasDevToolInject"] = true;
     		    overridePatchToFiberUnmount(dispatch);
-    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: runtime });
+    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
 
     		// 事件类型
@@ -1931,6 +1933,7 @@
     		        this._dispatch = new Set();
     		        // 是否存在 @my-react
     		        this._detector = false;
+    		        this._origin = "";
     		        this._map = new Map();
     		        // 字符串字典
     		        this._dir = {};
@@ -1948,7 +1951,6 @@
     		        this._enabled = false;
     		        this._enableHover = false;
     		        this._enableUpdate = false;
-    		        this._forceEnable = false;
     		        this._listeners = new Set();
     		        this._activeIds = {};
     		        this.version = "0.0.1";
@@ -1994,7 +1996,7 @@
     		    };
     		    Object.defineProperty(DevToolCore.prototype, "hasEnable", {
     		        get: function () {
-    		            return this._enabled || this._forceEnable;
+    		            return this._enabled;
     		        },
     		        enumerable: false,
     		        configurable: true
@@ -2332,6 +2334,7 @@
     		            }
     		        }
     		    };
+    		    // TODO support multiple connect agent
     		    DevToolCore.prototype.connect = function () {
     		        if (this._enabled)
     		            return;
@@ -2349,9 +2352,9 @@
     		        this._activeIds = {};
     		        this._error = {};
     		        this._hmr = {};
-    		        this._hoverId = '';
+    		        this._hoverId = "";
     		        this._run = {};
-    		        this._selectId = '';
+    		        this._selectId = "";
     		        this._state = {};
     		        this._tempError = {};
     		        this._tempWarn = {};
@@ -2367,6 +2370,7 @@
     		    MessageHookType["init"] = "hook-init";
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
+    		    MessageHookType["origin"] = "hook-origin";
     		})(exports.MessageHookType || (exports.MessageHookType = {}));
     		exports.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
@@ -2393,8 +2397,10 @@
     		    MessageWorkerType["init"] = "worker-init";
     		    MessageWorkerType["close"] = "worker-close";
     		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
+    		var DevToolSource = "@my-react/devtool";
 
     		exports.DevToolCore = DevToolCore;
+    		exports.DevToolSource = DevToolSource;
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
     		exports.color = color;
@@ -2452,7 +2458,6 @@
         PortName["proxy"] = "dev-tool/proxy";
         PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
-    var DevToolSource = "@my-react/devtool";
     var sourceFrom;
     (function (sourceFrom) {
         sourceFrom["hook"] = "hook";
@@ -2499,7 +2504,7 @@
 
     var generatePostMessageWithSource = function (from) {
         return function (message) {
-            window.postMessage(__assign(__assign({ from: from }, message), { source: DevToolSource }), "*");
+            window.postMessage(__assign(__assign({ from: from }, message), { source: coreExports.DevToolSource }), "*");
         };
     };
 
@@ -2522,7 +2527,7 @@
         var _a, _b, _c;
         if (message.source !== window)
             return;
-        if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.source) !== DevToolSource)
+        if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.source) !== coreExports.DevToolSource)
             return;
         if (!hookReady && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === coreExports.MessageHookType.init) {
             hookReady = true;

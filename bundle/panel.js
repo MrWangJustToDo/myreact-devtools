@@ -992,6 +992,7 @@
     		    return PlainNode;
     		}());
 
+    		// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
     		var NODE_TYPE;
     		(function (NODE_TYPE) {
     		    NODE_TYPE[NODE_TYPE["__initial__"] = 0] = "__initial__";
@@ -1014,8 +1015,6 @@
     		    NODE_TYPE[NODE_TYPE["__scope__"] = 65536] = "__scope__";
     		    NODE_TYPE[NODE_TYPE["__comment__"] = 131072] = "__comment__";
     		    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
-    		    // react compiler memo
-    		    NODE_TYPE[NODE_TYPE["__compiler__"] = 524288] = "__compiler__";
     		})(NODE_TYPE || (NODE_TYPE = {}));
 
     		var treeMap = new Map();
@@ -1034,7 +1033,9 @@
     		        directory[name] = ++count + "";
     		    }
     		    plain.k = hasKey ? directory[fiber.key] : undefined;
-    		    plain.t = getFiberType(fiber);
+    		    var _a = getFiberType(fiber), t = _a.t, hasCompiler = _a.hasCompiler;
+    		    plain.t = t;
+    		    hasCompiler && (plain.m = true);
     		    plain.n = directory[name];
     		};
     		var assignFiber = function (plain, fiber, force) {
@@ -1225,7 +1226,8 @@
     		            return "";
     		    }
     		};
-    		var getFiberTag = function (t) {
+    		var getFiberTag = function (node) {
+    		    var t = node.t;
     		    var tag = [];
     		    if (t & NODE_TYPE.__memo__) {
     		        tag.push("memo");
@@ -1236,7 +1238,7 @@
     		    if (t & NODE_TYPE.__lazy__) {
     		        tag.push("lazy");
     		    }
-    		    if (t & NODE_TYPE.__compiler__) {
+    		    if (node.m) {
     		        tag.push("compiler ✨");
     		    }
     		    return tag;
@@ -1254,7 +1256,7 @@
     		            hasCompiler = true;
     		        }
     		    });
-    		    return hasCompiler ? reactShared.merge(t, NODE_TYPE.__compiler__) : t;
+    		    return { t: t, hasCompiler: hasCompiler };
     		};
     		var getFiberName = function (fiber) {
     		    var typedFiber = fiber;
@@ -1942,7 +1944,7 @@
     		        return;
     		    dispatch["$$hasDevToolInject"] = true;
     		    overridePatchToFiberUnmount(dispatch);
-    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: runtime });
+    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
 
     		// 事件类型
@@ -2002,6 +2004,7 @@
     		        this._dispatch = new Set();
     		        // 是否存在 @my-react
     		        this._detector = false;
+    		        this._origin = "";
     		        this._map = new Map();
     		        // 字符串字典
     		        this._dir = {};
@@ -2019,7 +2022,6 @@
     		        this._enabled = false;
     		        this._enableHover = false;
     		        this._enableUpdate = false;
-    		        this._forceEnable = false;
     		        this._listeners = new Set();
     		        this._activeIds = {};
     		        this.version = "0.0.1";
@@ -2065,7 +2067,7 @@
     		    };
     		    Object.defineProperty(DevToolCore.prototype, "hasEnable", {
     		        get: function () {
-    		            return this._enabled || this._forceEnable;
+    		            return this._enabled;
     		        },
     		        enumerable: false,
     		        configurable: true
@@ -2403,6 +2405,7 @@
     		            }
     		        }
     		    };
+    		    // TODO support multiple connect agent
     		    DevToolCore.prototype.connect = function () {
     		        if (this._enabled)
     		            return;
@@ -2420,9 +2423,9 @@
     		        this._activeIds = {};
     		        this._error = {};
     		        this._hmr = {};
-    		        this._hoverId = '';
+    		        this._hoverId = "";
     		        this._run = {};
-    		        this._selectId = '';
+    		        this._selectId = "";
     		        this._state = {};
     		        this._tempError = {};
     		        this._tempWarn = {};
@@ -2438,6 +2441,7 @@
     		    MessageHookType["init"] = "hook-init";
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
+    		    MessageHookType["origin"] = "hook-origin";
     		})(exports.MessageHookType || (exports.MessageHookType = {}));
     		exports.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
@@ -2464,8 +2468,10 @@
     		    MessageWorkerType["init"] = "worker-init";
     		    MessageWorkerType["close"] = "worker-close";
     		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
+    		var DevToolSource = "@my-react/devtool";
 
     		exports.DevToolCore = DevToolCore;
+    		exports.DevToolSource = DevToolSource;
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
     		exports.color = color;
@@ -2544,7 +2550,6 @@
     var id = null;
     var hasShow = false;
     var getTabId = function () { return chrome.devtools.inspectedWindow.tabId; };
-    // const tabId = chrome.devtools.inspectedWindow.tabId;
     var runWhenWorkerReady = function (fn, count) {
         clearTimeout(id);
         if (workerReady) {
@@ -2581,286 +2586,13 @@
         });
     };
     var onRender = function (data, _window) {
+        var _a;
         if (!hasShow)
             return;
-        if (data.type === coreExports.DevToolMessageEnum.init) {
-            var detector = data.data;
-            try {
-                var setRender = _window.useConnect.getActions().setRender;
-                setRender(detector);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.dir) {
-            var node = data.data;
-            try {
-                var set = _window.useNodeName.getActions().set;
-                set(node);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.ready) {
-            var node = data.data;
-            try {
-                var addNode = _window.useAppTree.getActions().addNode;
-                if (node) {
-                    addNode(node);
-                }
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.unmount) {
-            try {
-                _window.useChunk.getActions().clear();
-                _window.useAppTree.getActions().clear();
-                _window.useNodeName.getActions().clear();
-                _window.useTreeNode.getActions().clear();
-                _window.useDetailNode.getActions().clear();
-                _window.useActiveNode.getActions().clear();
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.hmr) {
-            var nodes = data.data;
-            try {
-                var update = _window.useHMRNode.getActions().update;
-                update(nodes);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.trigger) {
-            var nodes = data.data;
-            try {
-                var update = _window.useTriggerNode.getActions().update;
-                update(nodes);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.detail) {
-            var node = data.data;
-            try {
-                var _a = _window.useDetailNode.getActions(), addNode = _a.addNode, setLoading = _a.setLoading;
-                if (node) {
-                    addNode(node);
-                    setLoading(false);
-                }
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.highlight) {
-            var node = data.data;
-            try {
-                var highlightNode = _window.useHighlightNode.getActions().highlightNode;
-                highlightNode(node.id, node.type);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.config) {
-            var config = data.data;
-            try {
-                var _b = _window.useConfig.getActions(), setEnableHover = _b.setEnableHover, setEnableUpdate = _b.setEnableUpdate;
-                setEnableHover(config === null || config === void 0 ? void 0 : config.enableHover);
-                setEnableUpdate(config === null || config === void 0 ? void 0 : config.enableUpdate);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.run) {
-            var nodes = data.data;
-            try {
-                var update = _window.useRunNode.getActions().update;
-                update(nodes);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.chunk) {
-            var chunk = data.data;
-            try {
-                var setChunk = _window.useChunk.getActions().setChunk;
-                setChunk(chunk);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.warn) {
-            var warn = data.data;
-            try {
-                var setWarn = _window.useHighlightNode.getActions().setWarn;
-                setWarn(warn);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-        if (data.type === coreExports.DevToolMessageEnum.error) {
-            var error = data.data;
-            try {
-                var setError = _window.useHighlightNode.getActions().setError;
-                setError(error);
-            }
-            catch (e) {
-                var typedE = e;
-                _window.useConnect.getActions().setError(typedE.message);
-            }
-        }
-    };
-    var initSelectListen = function (_window) {
-        var useTreeNode = _window.useTreeNode;
-        var useDetailNode = _window.useDetailNode;
-        try {
-            return useTreeNode.subscribe(function (s) { return s.select; }, function () {
-                var currentSelect = useTreeNode.getReadonlyState().select;
-                if (currentSelect) {
-                    useDetailNode.getActions().setLoading(true);
-                    sendMessage({ type: coreExports.MessagePanelType.nodeSelect, data: currentSelect });
-                }
-                else {
-                    useDetailNode.getActions().setLoading(false);
-                    sendMessage({ type: coreExports.MessagePanelType.nodeSelect, data: currentSelect });
-                }
-            });
-        }
-        catch (_a) {
-        }
-    };
-    var initForceReloadListen = function (_window) {
-        var useTreeNode = _window.useTreeNode;
-        var useDetailNode = _window.useDetailNode;
-        try {
-            return useTreeNode.subscribe(function (s) { return s.reload; }, function () {
-                var currentSelect = useTreeNode.getReadonlyState().select;
-                if (currentSelect) {
-                    useDetailNode.getActions().setLoading(true);
-                    sendMessage({ type: coreExports.MessagePanelType.nodeSelectForce, data: currentSelect });
-                }
-            });
-        }
-        catch (_a) {
-        }
-    };
-    var initFiberStoreListen = function (_window) {
-        var useTreeNode = _window.useTreeNode;
-        try {
-            return useTreeNode.subscribe(function (s) { return s.store; }, function () {
-                var currentStore = useTreeNode.getReadonlyState().select;
-                sendMessage({ type: coreExports.MessagePanelType.nodeStore, data: currentStore });
-            });
-        }
-        catch (_a) {
-        }
-    };
-    var initFiberTriggerListen = function (_window) {
-        var useTreeNode = _window.useTreeNode;
-        try {
-            return useTreeNode.subscribe(function (s) { return s.trigger; }, function () {
-                var currentTrigger = useTreeNode.getReadonlyState().select;
-                sendMessage({ type: coreExports.MessagePanelType.nodeTrigger, data: currentTrigger });
-            });
-        }
-        catch (_a) {
-        }
-    };
-    var initHoverListen = function (_window) {
-        var useTreeNode = _window.useTreeNode;
-        try {
-            return useTreeNode.subscribe(function (s) { return s.hover; }, function () {
-                var currentHover = useTreeNode.getReadonlyState().hover;
-                sendMessage({ type: coreExports.MessagePanelType.nodeHover, data: currentHover });
-            });
-        }
-        catch (_a) {
-        }
-    };
-    var initSubscribeListen = function (_window) {
-        var useActiveNode = _window.useActiveNode;
-        try {
-            return useActiveNode.subscribe(function (s) { return s.state; }, coreExports.debounce(function () {
-                var state = useActiveNode.getReadonlyState().state;
-                sendMessage({ type: coreExports.MessagePanelType.nodeSubscriber, data: state });
-            }, 100), true);
-        }
-        catch (_a) {
-        }
-    };
-    var initConfigListen = function (_window) {
-        var useConfig = _window.useConfig;
-        var cbArray = [];
-        try {
-            cbArray.push(useConfig.subscribe(function (s) { return s.state.enableHover; }, function () {
-                var enableHover = useConfig.getReadonlyState().state.enableHover;
-                sendMessage({ type: coreExports.MessagePanelType.enableHover, data: enableHover });
-            }));
-            cbArray.push(useConfig.subscribe(function (s) { return s.state.enableUpdate; }, function () {
-                var enableUpdate = useConfig.getReadonlyState().state.enableUpdate;
-                sendMessage({ type: coreExports.MessagePanelType.enableUpdate, data: enableUpdate });
-            }));
-            return function () {
-                cbArray.forEach(function (f) { return f(); });
-            };
-        }
-        catch (_a) {
-        }
-    };
-    var initStoreListen = function (_window) {
-        var useContextMenu = _window.useContextMenu;
-        try {
-            return useContextMenu.subscribe(function (s) { return s.store; }, function () {
-                var store = useContextMenu.getReadonlyState().store;
-                if (store) {
-                    sendMessage({ type: coreExports.MessagePanelType.varStore, data: store });
-                }
-            });
-        }
-        catch (_a) {
-        }
-    };
-    var initChunkListen = function (_window) {
-        var useChunk = _window.useChunk;
-        try {
-            return useChunk.subscribe(function (s) { return s.id; }, function () {
-                var id = useChunk.getReadonlyState().id;
-                if (id) {
-                    sendMessage({ type: coreExports.MessagePanelType.chunk, data: id });
-                }
-            });
-        }
-        catch (_a) {
-        }
+        (_a = _window.onRender) === null || _a === void 0 ? void 0 : _a.call(_window, data);
     };
     var initPort = function () {
-        if (!panelWindow) {
+        if (!panelWindow || !panelWindow.useConnect || typeof panelWindow.useConnect.getActions !== "function") {
             return;
         }
         workerConnecting = true;
@@ -2891,20 +2623,20 @@
         port.onDisconnect.addListener(onDisconnect);
     };
     var init = function (id) { return __awaiter(void 0, void 0, void 0, function () {
-        var cleanList_1;
+        var unsubscribe_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     if (!id) return [3 /*break*/, 2];
-                    cleanList_1 = [];
+                    unsubscribe_1 = function () { };
                     return [4 /*yield*/, showPanel(function (window) {
                             hasShow = true;
                             panelWindow = window;
                             sendMessage({ type: coreExports.MessagePanelType.show });
-                            cleanList_1.push(initSelectListen(window), initHoverListen(window), initConfigListen(window), initSubscribeListen(window), initChunkListen(window), initStoreListen(window), initFiberStoreListen(window), initForceReloadListen(window), initFiberTriggerListen(window));
+                            unsubscribe_1 = panelWindow.onListener(sendMessage);
                         }, function () {
                             sendMessage({ type: coreExports.MessagePanelType.hide });
-                            cleanList_1.forEach(function (f) { return f(); });
+                            unsubscribe_1();
                             hasShow = false;
                         })];
                 case 1:
@@ -2917,20 +2649,8 @@
         });
     }); };
     var clear = function () {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18;
-        if (panelWindow) {
-            (_d = (_c = (_b = (_a = panelWindow.useChunk) === null || _a === void 0 ? void 0 : _a.getActions) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c.clear) === null || _d === void 0 ? void 0 : _d.call(_c);
-            (_h = (_g = (_f = (_e = panelWindow.useAppTree) === null || _e === void 0 ? void 0 : _e.getActions) === null || _f === void 0 ? void 0 : _f.call(_e)) === null || _g === void 0 ? void 0 : _g.clear) === null || _h === void 0 ? void 0 : _h.call(_g);
-            (_m = (_l = (_k = (_j = panelWindow.useNodeName) === null || _j === void 0 ? void 0 : _j.getActions) === null || _k === void 0 ? void 0 : _k.call(_j)) === null || _l === void 0 ? void 0 : _l.clear) === null || _m === void 0 ? void 0 : _m.call(_l);
-            (_r = (_q = (_p = (_o = panelWindow.useTreeNode) === null || _o === void 0 ? void 0 : _o.getActions) === null || _p === void 0 ? void 0 : _p.call(_o)) === null || _q === void 0 ? void 0 : _q.clear) === null || _r === void 0 ? void 0 : _r.call(_q);
-            (_v = (_u = (_t = (_s = panelWindow.useDetailNode) === null || _s === void 0 ? void 0 : _s.getActions) === null || _t === void 0 ? void 0 : _t.call(_s)) === null || _u === void 0 ? void 0 : _u.clear) === null || _v === void 0 ? void 0 : _v.call(_u);
-            (_y = (_x = (_w = panelWindow.useActiveNode) === null || _w === void 0 ? void 0 : _w.getActions()) === null || _x === void 0 ? void 0 : _x.clear) === null || _y === void 0 ? void 0 : _y.call(_x);
-            (_2 = (_1 = (_0 = (_z = panelWindow.useRunNode) === null || _z === void 0 ? void 0 : _z.getActions) === null || _0 === void 0 ? void 0 : _0.call(_z)) === null || _1 === void 0 ? void 0 : _1.clear) === null || _2 === void 0 ? void 0 : _2.call(_1);
-            (_6 = (_5 = (_4 = (_3 = panelWindow.useHMRNode) === null || _3 === void 0 ? void 0 : _3.getActions) === null || _4 === void 0 ? void 0 : _4.call(_3)) === null || _5 === void 0 ? void 0 : _5.clear) === null || _6 === void 0 ? void 0 : _6.call(_5);
-            (_10 = (_9 = (_8 = (_7 = panelWindow.useContextMenu) === null || _7 === void 0 ? void 0 : _7.getActions) === null || _8 === void 0 ? void 0 : _8.call(_7)) === null || _9 === void 0 ? void 0 : _9.clear) === null || _10 === void 0 ? void 0 : _10.call(_9);
-            (_14 = (_13 = (_12 = (_11 = panelWindow.useTriggerNode) === null || _11 === void 0 ? void 0 : _11.getActions) === null || _12 === void 0 ? void 0 : _12.call(_11)) === null || _13 === void 0 ? void 0 : _13.clear) === null || _14 === void 0 ? void 0 : _14.call(_13);
-            (_18 = (_17 = (_16 = (_15 = panelWindow.useHighlightNode) === null || _15 === void 0 ? void 0 : _15.getActions) === null || _16 === void 0 ? void 0 : _16.call(_15)) === null || _17 === void 0 ? void 0 : _17.clear) === null || _18 === void 0 ? void 0 : _18.call(_17);
-        }
+        var _a;
+        (_a = panelWindow === null || panelWindow === void 0 ? void 0 : panelWindow.onClear) === null || _a === void 0 ? void 0 : _a.call(panelWindow);
     };
     init(getTabId());
     chrome.devtools.network.onNavigated.addListener(function () {
