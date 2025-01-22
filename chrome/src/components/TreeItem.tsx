@@ -2,22 +2,17 @@
 import { getFiberTag } from "@my-react-devtool/core";
 import { Chip, Spacer, Tooltip } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
-import { memo, useCallback, useLayoutEffect, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 
-import { useActiveNode } from "@/hooks/useActiveNode";
-import { useConfig } from "@/hooks/useConfig";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
-import { useRunNode } from "@/hooks/useRunNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
 const { setSelect, setClose, setHover } = useTreeNode.getActions();
-
-const { add, remove } = useActiveNode.getActions();
 
 const RenderTag = memo(({ node }: { node: PlainNode }) => {
   const tag = getFiberTag(node);
@@ -92,27 +87,6 @@ export const TreeItem = ({
   withKey?: boolean;
 }) => {
   const current = node;
-
-  const { enableCount, enableMis } = useConfig.useShallowStableSelector((s) => ({
-    enableCount: s.state.enableRuntimeCount,
-    enableMis: s.state.enableRuntimeMis,
-  }));
-
-  useLayoutEffect(() => {
-    if (!enableCount) {
-      return () => {
-        remove(current.i);
-      };
-    }
-
-    add(current.i);
-
-    return () => {
-      remove(current.i);
-    };
-  }, [current, enableCount]);
-
-  const { c, t } = useRunNode.useShallowStableSelector((s) => (enableCount ? s.state?.[node.i] || {} : {}) as { c: number; t?: number });
 
   const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
@@ -210,17 +184,6 @@ export const TreeItem = ({
                 <Tooltip content="trigger update" showArrow color="primary">
                   <Chip size="sm" radius="none" color="primary" className="rounded-md capitalize text-[8px] h-[14px]">
                     {triggerCount}
-                  </Chip>
-                </Tooltip>
-              </>
-            )}
-            {enableCount && c && c > 0 && (
-              <>
-                <Spacer x={1} />
-                <Tooltip content="run count" showArrow color="secondary">
-                  <Chip size="sm" radius="none" color="secondary" className="rounded-md capitalize text-[8px] h-[14px]">
-                    {c}
-                    {enableMis && t ? ` (${t}ms)` : ""}
                   </Chip>
                 </Tooltip>
               </>

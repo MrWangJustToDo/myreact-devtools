@@ -77,8 +77,6 @@ export class DevToolCore {
   // 字符串字典
   _dir = {};
 
-  _run = {};
-
   _hmr = {};
 
   _error = {};
@@ -106,8 +104,6 @@ export class DevToolCore {
   _enableUpdate = false;
 
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
-
-  _activeIds = {};
 
   version = __VERSION__;
 
@@ -232,20 +228,6 @@ export class DevToolCore {
       this.notifyDispatch(dispatch, true);
     };
 
-    const onFiberRun = (fiber: MyReactFiberNodeDev) => {
-      const id = getPlainNodeIdByFiber(fiber);
-
-      if (!id) return;
-
-      if (this._run[id]) {
-        this._run[id] = { c: this._run[id].c + 1, t: fiber._debugRenderState?.timeForRender };
-      } else {
-        this._run[id] = { c: 1, t: fiber._debugRenderState?.timeForRender };
-      }
-
-      this.notifyRun();
-    };
-
     const onFiberWarn = (fiber: MyReactFiberNode, ...args: any[]) => {
       const id = getPlainNodeIdByFiber(fiber);
 
@@ -326,8 +308,6 @@ export class DevToolCore {
       dispatch.onFiberUpdate?.(onFiberUpdate);
 
       dispatch.onFiberHMR?.(onFiberHMR);
-
-      dispatch.onAfterFiberRun?.(onFiberRun);
 
       dispatch.onDOMUpdate?.(onDOMUpdate);
 
@@ -414,10 +394,6 @@ export class DevToolCore {
     this._hoverId = id;
   }
 
-  setSubscribe(state: Record<string, number>) {
-    this._activeIds = state;
-  }
-
   showHover() {
     if (!this._enableHover) return;
 
@@ -455,20 +431,6 @@ export class DevToolCore {
 
     this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
   }, 16);
-
-  notifyRun = debounce(() => {
-    if (!this.hasEnable) return;
-
-    const data = {};
-
-    Object.keys(this._activeIds)
-      .filter((id) => Number(this._activeIds[id]) > 0)
-      .forEach((id) => {
-        data[id] = this._run[id];
-      });
-
-    this._notify({ type: DevToolMessageEnum.run, data });
-  }, 100);
 
   notifyHighlight(id: string, type: "performance") {
     if (!this.hasEnable) return;
@@ -635,15 +597,11 @@ export class DevToolCore {
   }
 
   clear() {
-    this._activeIds = {};
-
     this._error = {};
 
     this._hmr = {};
 
     this._hoverId = "";
-
-    this._run = {};
 
     this._selectId = "";
 

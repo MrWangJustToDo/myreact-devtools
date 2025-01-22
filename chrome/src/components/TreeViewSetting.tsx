@@ -40,7 +40,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
 
   const { theme, setTheme } = useTheme();
 
-  const { state: configState, setEnableHover, setEnableUpdate, setEnableRuntimeCount, setEnableRuntimeMis } = useConfig();
+  const { state: configState, setEnableHover, setEnableUpdate } = useConfig();
 
   const { state: size, setUISize } = useUISize();
 
@@ -130,17 +130,6 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                 </Checkbox>
                 <Checkbox isSelected={configState.enableHover} onValueChange={setEnableHover} color="secondary">
                   Hover Overlay
-                </Checkbox>
-                <Checkbox isSelected={configState.enableRuntimeCount} onValueChange={setEnableRuntimeCount} color="success">
-                  RuntimeCount (DevMode only)
-                </Checkbox>
-                <Checkbox
-                  isSelected={configState.enableRuntimeMis}
-                  isDisabled={!configState.enableRuntimeCount}
-                  onValueChange={setEnableRuntimeMis}
-                  color="warning"
-                >
-                  RuntimeMis (DevMode only)
                 </Checkbox>
               </div>
             </div>

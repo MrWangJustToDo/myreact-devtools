@@ -1,6 +1,5 @@
 import { DevToolMessageEnum } from "@my-react-devtool/core";
 
-import { useActiveNode } from "@/hooks/useActiveNode";
 import { useAppTree } from "@/hooks/useAppTree";
 import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
@@ -68,7 +67,6 @@ export const onRender = (data: DevToolMessageType) => {
       useNodeName.getActions().clear();
       useTreeNode.getActions().clear();
       useDetailNode.getActions().clear();
-      useActiveNode.getActions().clear();
       useContextMenu.getActions().clear?.();
     });
   }

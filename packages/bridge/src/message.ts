@@ -63,12 +63,6 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
     core.showHover();
   }
 
-  if (data?.type === MessagePanelType.nodeSubscriber) {
-    core.setSubscribe(data.data);
-
-    core.notifyRun();
-  }
-
   if (data?.type === MessagePanelType.enableHover) {
     core.setHoverStatus(data.data);
   }

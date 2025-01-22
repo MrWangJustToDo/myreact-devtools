@@ -1,4 +1,3 @@
-import { useActiveNode } from "@/hooks/useActiveNode";
 import { useAppTree } from "@/hooks/useAppTree";
 import { useChunk } from "@/hooks/useChunk";
 import { useContextMenu } from "@/hooks/useContextMenu";
@@ -18,7 +17,6 @@ export const onClear = () => {
   useNodeName?.getActions?.()?.clear?.();
   useTreeNode?.getActions?.()?.clear?.();
   useDetailNode?.getActions?.()?.clear?.();
-  useActiveNode?.getActions()?.clear?.();
   useRunNode?.getActions?.()?.clear?.();
   useHMRNode?.getActions?.()?.clear?.();
   useContextMenu?.getActions?.()?.clear?.();

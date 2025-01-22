@@ -1,6 +1,5 @@
-import { debounce, MessagePanelType } from "@my-react-devtool/core";
+import { MessagePanelType } from "@my-react-devtool/core";
 
-import { useActiveNode } from "@/hooks/useActiveNode";
 import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
 import { useContextMenu } from "@/hooks/useContextMenu";
@@ -87,18 +86,6 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
         postMessage({ type: MessagePanelType.nodeHover, data: currentHover });
       }
-    )
-  );
-
-  unSubscribeArray.push(
-    useActiveNode.subscribe(
-      (s) => s.state,
-      debounce(() => {
-        const currentSubscribe = useActiveNode.getReadonlyState().state;
-
-        postMessage({ type: MessagePanelType.nodeSubscriber, data: currentSubscribe });
-      }, 100),
-      true
     )
   );
 

@@ -20,7 +20,6 @@ export enum MessagePanelType {
   nodeStore = "panel-store",
   nodeTrigger = "panel-trigger",
   nodeSelectForce = "panel-select-force",
-  nodeSubscriber = "panel-subscriber",
   chunk = "panel-chunk",
   clear = "panel-clear",
 }
