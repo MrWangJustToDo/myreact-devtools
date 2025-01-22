@@ -1897,6 +1897,7 @@
     		    DevToolMessageEnum["warn"] = "warn";
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["chunk"] = "chunk";
+    		    DevToolMessageEnum["chunks"] = "chunks";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
     		var debounce = function (callback, time) {
     		    var id = null;
@@ -2284,6 +2285,16 @@
     		        var data = getNodeFromId(Number(id));
     		        this._notify({ type: exports.DevToolMessageEnum.chunk, data: (_a = {}, _a[id] = { loaded: data }, _a) });
     		    };
+    		    DevToolCore.prototype.notifyChunks = function (ids) {
+    		        if (!this.hasEnable)
+    		            return;
+    		        var data = ids.reduce(function (p, c) {
+    		            var d = getNodeFromId(Number(c));
+    		            p[c] = { loaded: d };
+    		            return p;
+    		        }, {});
+    		        this._notify({ type: exports.DevToolMessageEnum.chunks, data: data });
+    		    };
     		    DevToolCore.prototype.notifyDispatch = function (dispatch, force) {
     		        if (!this.hasEnable)
     		            return;
@@ -2357,6 +2368,7 @@
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["chunk"] = "panel-chunk";
+    		    MessagePanelType["chunks"] = "panel-chunks";
     		    MessagePanelType["clear"] = "panel-clear";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
     		exports.MessageWorkerType = void 0;

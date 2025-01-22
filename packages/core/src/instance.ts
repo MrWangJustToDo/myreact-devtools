@@ -34,6 +34,7 @@ export enum DevToolMessageEnum {
   error = "error",
 
   chunk = "chunk",
+  chunks = "chunks",
 }
 
 export type DevToolMessageType = {
@@ -514,6 +515,20 @@ export class DevToolCore {
     const data = getNodeFromId(Number(id));
 
     this._notify({ type: DevToolMessageEnum.chunk, data: { [id]: { loaded: data } } });
+  }
+
+  notifyChunks(ids: (number | string)[]) {
+    if (!this.hasEnable) return;
+
+    const data = ids.reduce((p, c) => {
+      const d = getNodeFromId(Number(c));
+
+      p[c] = { loaded: d };
+
+      return p;
+    }, {});
+
+    this._notify({ type: DevToolMessageEnum.chunks, data });
   }
 
   notifyDispatch(dispatch: DevToolRenderDispatch, force?: boolean) {

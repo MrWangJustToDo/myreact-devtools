@@ -78,7 +78,7 @@ export const onRender = (data: DevToolMessageType) => {
       const { update } = useHMRNode.getActions();
 
       update(nodes);
-    })
+    });
   }
 
   if (data.type === DevToolMessageEnum.trigger) {
@@ -88,7 +88,7 @@ export const onRender = (data: DevToolMessageType) => {
       const { update } = useTriggerNode.getActions();
 
       update(nodes);
-    })
+    });
   }
 
   if (data.type === DevToolMessageEnum.detail) {
@@ -102,7 +102,7 @@ export const onRender = (data: DevToolMessageType) => {
 
         setLoading(false);
       }
-    })
+    });
   }
 
   if (data.type === DevToolMessageEnum.highlight) {
@@ -112,7 +112,7 @@ export const onRender = (data: DevToolMessageType) => {
       const { highlightNode } = useHighlightNode.getActions();
 
       highlightNode(node.id, node.type);
-    })
+    });
   }
 
   if (data.type === DevToolMessageEnum.config) {
@@ -124,7 +124,7 @@ export const onRender = (data: DevToolMessageType) => {
       setEnableHover(config?.enableHover);
 
       setEnableUpdate(config?.enableUpdate);
-    })
+    });
   }
 
   if (data.type === DevToolMessageEnum.run) {
@@ -134,17 +134,17 @@ export const onRender = (data: DevToolMessageType) => {
       const { update } = useRunNode.getActions();
 
       update(nodes);
-    })
+    });
   }
 
-  if (data.type === DevToolMessageEnum.chunk) {
+  if (data.type === DevToolMessageEnum.chunk || data.type === DevToolMessageEnum.chunks) {
     const chunk = data.data as Record<number | string, { loaded: any }>;
 
     safeAction(() => {
       const { setChunk } = useChunk.getActions();
 
       setChunk(chunk);
-    })
+    });
   }
 
   if (data.type === DevToolMessageEnum.warn) {
@@ -154,7 +154,7 @@ export const onRender = (data: DevToolMessageType) => {
       const { setWarn } = useHighlightNode.getActions();
 
       setWarn(warn);
-    })
+    });
   }
 
   if (data.type === DevToolMessageEnum.error) {
@@ -164,7 +164,7 @@ export const onRender = (data: DevToolMessageType) => {
       const { setError } = useHighlightNode.getActions();
 
       setError(error);
-    })
+    });
   }
 };
 

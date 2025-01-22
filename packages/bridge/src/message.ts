@@ -75,6 +75,10 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
     core.notifyChunk(data.data);
   }
 
+  if (data?.type === MessagePanelType.chunks) {
+    core.notifyChunks(data.data);
+  }
+
   if (data?.type === MessagePanelType.varStore) {
     const id = data.data;
 

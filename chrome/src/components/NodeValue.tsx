@@ -4,6 +4,7 @@ import { useState, useRef, useMemo, useEffect } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useContextMenu } from "@/hooks/useContextMenu";
+import { usePrevious } from "@/hooks/usePrevious";
 import { getText } from "@/utils/treeValue";
 
 import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
@@ -16,9 +17,13 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
 
   const hasOpenRef = useRef(false);
 
-  const chunkData = useChunk.useShallowStableSelector((s) => s.data?.[item?.i || ""]?.loaded);
+  const chunkData = useChunk.useShallowSelector((s) => s.data?.[item?.i || ""]?.loaded);
 
-  const data = chunkData?.v ?? item?.v;
+  const cData = chunkData?.v ?? item?.v;
+
+  const pData = usePrevious(cData);
+
+  const data = cData ?? pData;
 
   const n = chunkData?.n ?? item?.n;
 
@@ -44,7 +49,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
   }, [t, n, data]);
 
   useEffect(() => {
-    if (expand && item?.l === false && item.i && !chunkData) {
+    if (expand && item?.l === false && item.i && (!chunkData || chunkData.i !== item.i)) {
       useChunk.getActions().setLoading(item.i);
     }
     if (expand) {
@@ -58,7 +63,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
     e.preventDefault();
 
     contextOpen({ x: e.clientX, y: e.clientY });
-    
+
     setId(item.i);
   };
 

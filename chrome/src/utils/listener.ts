@@ -126,12 +126,12 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
   unSubscribeArray.push(
     useChunk.subscribe(
-      (s) => s.id,
+      (s) => s.length,
       () => {
-        const id = useChunk.getReadonlyState().id;
+        const ids = useChunk.getReadonlyState().ids;
 
-        if (id) {
-          postMessage({ type: MessagePanelType.chunk, data: id });
+        if (ids.length) {
+          postMessage({ type: MessagePanelType.chunks, data: ids });
         }
       }
     )
