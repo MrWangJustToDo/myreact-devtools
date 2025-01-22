@@ -2008,7 +2008,6 @@
     		        this._map = new Map();
     		        // 字符串字典
     		        this._dir = {};
-    		        this._run = {};
     		        this._hmr = {};
     		        this._error = {};
     		        this._tempError = {};
@@ -2023,24 +2022,12 @@
     		        this._enableHover = false;
     		        this._enableUpdate = false;
     		        this._listeners = new Set();
-    		        this._activeIds = {};
     		        this.version = "0.0.1";
     		        this.notifyTrigger = debounce(function () {
     		            if (!_this.hasEnable)
     		                return;
     		            _this._notify({ type: exports.DevToolMessageEnum.trigger, data: _this._trigger });
     		        }, 16);
-    		        this.notifyRun = debounce(function () {
-    		            if (!_this.hasEnable)
-    		                return;
-    		            var data = {};
-    		            Object.keys(_this._activeIds)
-    		                .filter(function (id) { return Number(_this._activeIds[id]) > 0; })
-    		                .forEach(function (id) {
-    		                data[id] = _this._run[id];
-    		            });
-    		            _this._notify({ type: exports.DevToolMessageEnum.run, data: data });
-    		        }, 100);
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
     		            if (_this._needUnmount) {
@@ -2089,7 +2076,7 @@
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
     		        var _this = this;
-    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     		        if (dispatch["$$hasDevToolPatch"])
     		            return;
     		        dispatch["$$hasDevToolPatch"] = true;
@@ -2145,19 +2132,6 @@
     		                return;
     		            _this.notifyHMR();
     		            _this.notifyDispatch(dispatch, true);
-    		        };
-    		        var onFiberRun = function (fiber) {
-    		            var _a, _b;
-    		            var id = getPlainNodeIdByFiber(fiber);
-    		            if (!id)
-    		                return;
-    		            if (_this._run[id]) {
-    		                _this._run[id] = { c: _this._run[id].c + 1, t: (_a = fiber._debugRenderState) === null || _a === void 0 ? void 0 : _a.timeForRender };
-    		            }
-    		            else {
-    		                _this._run[id] = { c: 1, t: (_b = fiber._debugRenderState) === null || _b === void 0 ? void 0 : _b.timeForRender };
-    		            }
-    		            _this.notifyRun();
     		        };
     		        var onFiberWarn = function (fiber) {
     		            var args = [];
@@ -2221,12 +2195,11 @@
     		            (_e = dispatch.onFiberChange) === null || _e === void 0 ? void 0 : _e.call(dispatch, onChange);
     		            (_f = dispatch.onFiberUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberUpdate);
     		            (_g = dispatch.onFiberHMR) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberHMR);
-    		            (_h = dispatch.onAfterFiberRun) === null || _h === void 0 ? void 0 : _h.call(dispatch, onFiberRun);
-    		            (_j = dispatch.onDOMUpdate) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMUpdate);
-    		            (_k = dispatch.onDOMAppend) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMAppend);
-    		            (_l = dispatch.onDOMSetRef) === null || _l === void 0 ? void 0 : _l.call(dispatch, onDOMSetRef);
-    		            (_m = dispatch.onFiberError) === null || _m === void 0 ? void 0 : _m.call(dispatch, onFiberError);
-    		            (_o = dispatch.onFiberWarn) === null || _o === void 0 ? void 0 : _o.call(dispatch, onFiberWarn);
+    		            (_h = dispatch.onDOMUpdate) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMUpdate);
+    		            (_j = dispatch.onDOMAppend) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMAppend);
+    		            (_k = dispatch.onDOMSetRef) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMSetRef);
+    		            (_l = dispatch.onFiberError) === null || _l === void 0 ? void 0 : _l.call(dispatch, onFiberError);
+    		            (_m = dispatch.onFiberWarn) === null || _m === void 0 ? void 0 : _m.call(dispatch, onFiberWarn);
     		        }
     		        else {
     		            var originalAfterCommit_1 = dispatch.afterCommit;
@@ -2283,9 +2256,6 @@
     		    };
     		    DevToolCore.prototype.setHover = function (id) {
     		        this._hoverId = id;
-    		    };
-    		    DevToolCore.prototype.setSubscribe = function (state) {
-    		        this._activeIds = state;
     		    };
     		    DevToolCore.prototype.showHover = function () {
     		        var _a, _b, _c, _d;
@@ -2420,11 +2390,9 @@
     		        this._enabled = false;
     		    };
     		    DevToolCore.prototype.clear = function () {
-    		        this._activeIds = {};
     		        this._error = {};
     		        this._hmr = {};
     		        this._hoverId = "";
-    		        this._run = {};
     		        this._selectId = "";
     		        this._state = {};
     		        this._tempError = {};
@@ -2459,7 +2427,6 @@
     		    MessagePanelType["nodeStore"] = "panel-store";
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
-    		    MessagePanelType["nodeSubscriber"] = "panel-subscriber";
     		    MessagePanelType["chunk"] = "panel-chunk";
     		    MessagePanelType["clear"] = "panel-clear";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
