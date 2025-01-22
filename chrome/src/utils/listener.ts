@@ -131,7 +131,7 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
         const ids = useChunk.getReadonlyState().ids;
 
         if (ids.length) {
-          postMessage({ type: MessagePanelType.chunks, data: ids });
+          postMessage({ type: MessagePanelType.chunks, data: Array.from(ids) });
         }
       }
     )
