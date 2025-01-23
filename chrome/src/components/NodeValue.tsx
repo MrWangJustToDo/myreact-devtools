@@ -1,4 +1,4 @@
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 import { TriangleDownIcon, TriangleRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useState, useRef, useMemo, useEffect } from "react";
 

@@ -1,4 +1,3 @@
-import { color, getTypeName, typeKeys } from "@my-react-devtool/core";
 import {
   Button,
   Modal,
@@ -18,7 +17,8 @@ import {
   Divider,
   Chip,
   Code,
-} from "@nextui-org/react";
+} from "@heroui/react";
+import { color, getTypeName, typeKeys } from "@my-react-devtool/core";
 import { CheckCircledIcon, CrossCircledIcon, GearIcon, MoonIcon, SunIcon } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
 import { memo } from "react";
@@ -74,7 +74,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
         </ButtonGroup>
       </div>
 
-      <Modal isOpen={isOpen} size="2xl" onClose={onClose} onOpenChange={onOpenChange} isDismissable={false} placement="top">
+      <Modal isOpen={isOpen} size="2xl" onClose={onClose} onOpenChange={onOpenChange} placement="top">
         <ModalContent>
           <ModalHeader>
             <h3 className="text-[1em]">
@@ -92,9 +92,6 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                     selectedKeys={values}
                     aria-label="Filter Node"
                     className="flex items-center"
-                    radius="sm"
-                    variant="bordered"
-                    size="lg"
                     onChange={handleSelectionChange}
                   >
                     {typeKeys.map((type) => (
@@ -118,7 +115,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               <div className="flex flex-col gap-y-2">
                 <p className="whitespace-nowrap text-[14px] text-foreground-500">Config: </p>
                 <Checkbox isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} color="primary">
-                  <div className="flex">
+                  <div className="flex items-center">
                     Highlight Update
                     <div className="ml-4 gap-x-2 flex">
                       <Chip style={{ backgroundColor: color.update, mixBlendMode: "difference" }}>update</Chip>

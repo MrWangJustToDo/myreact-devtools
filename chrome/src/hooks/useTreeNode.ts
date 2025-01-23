@@ -14,12 +14,13 @@ const delNode = useDetailNode.getActions().delNode;
 
 export const useTreeNode = createState(
   () =>
-    ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0 }) as {
+    ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0, scroll: 0 }) as {
       select: string | null;
       hover: string | null;
       reload: number;
       trigger: number;
       store: number;
+      scroll: number;
       closeList: Record<string, boolean>;
       selectList: Record<string, boolean>;
     },
@@ -69,6 +70,11 @@ export const useTreeNode = createState(
             s.trigger++;
 
             toast.success("trigger fiber success");
+          }
+        },
+        scrollIntoView: () => {
+          if (s.select) {
+            s.scroll++;
           }
         },
         updateSelectList,

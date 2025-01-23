@@ -1,6 +1,6 @@
 // import { NODE_TYPE } from "@my-react/react-reconciler";
+import { Chip, Spacer, Tooltip } from "@heroui/react";
 import { getFiberTag } from "@my-react-devtool/core";
-import { Chip, Spacer, Tooltip } from "@nextui-org/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { memo, useCallback, useMemo } from "react";
 

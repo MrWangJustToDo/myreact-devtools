@@ -1,4 +1,4 @@
-import { Divider, Spacer } from "@nextui-org/react";
+import { Divider, Spacer } from "@heroui/react";
 import { useMemo } from "react";
 // import { Virtuoso } from "react-virtuoso";
 

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
 import { useAppTree } from "@/hooks/useAppTree";
@@ -52,7 +52,9 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
   const ref = useRef<VirtuosoHandle>(null);
 
-  const select = useTreeNode.useShallowStableSelector((s) => s.select);
+  const dataRef = useRef(data);
+
+  dataRef.current = data;
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
@@ -66,13 +68,20 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     );
   });
 
-  const index = useMemo(() => data.findIndex((item) => item.i === select), [data, select]);
-
   useEffect(() => {
-    if (index !== -1) {
-      ref.current?.scrollIntoView({ index });
-    }
-  }, [index]);
+    const cb = useTreeNode.subscribe(
+      (s) => s.scroll,
+      () => {
+        const select = useTreeNode.getReadonlyState().select;
+        const index = dataRef.current?.findIndex((item) => item.i === select);
+        if (index !== -1) {
+          ref.current?.scrollIntoView({ index, align: "center" });
+        }
+      }
+    );
+
+    return cb;
+  }, []);
 
   const hasLength = data.length > 0;
 

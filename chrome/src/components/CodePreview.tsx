@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Code, Divider, Spinner } from "@nextui-org/react";
+import { Card, CardBody, CardHeader, Code, Divider, Spinner } from "@heroui/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { codeToHtml } from "shiki";

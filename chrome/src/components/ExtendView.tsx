@@ -1,4 +1,4 @@
-import { Spacer, Divider } from "@nextui-org/react";
+import { Spacer, Divider } from "@heroui/react";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useHighlightNode } from "@/hooks/useHighlightNode";

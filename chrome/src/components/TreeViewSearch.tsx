@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Input, Spacer, Tooltip } from "@nextui-org/react";
+import { Button, ButtonGroup, Input, Spacer, Tooltip } from "@heroui/react";
 import { ArrowDownIcon, ArrowUpIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { memo, useEffect, useState } from "react";
 import { toast } from "sonner";

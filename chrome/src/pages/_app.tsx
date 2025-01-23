@@ -1,4 +1,4 @@
-import { Code, NextUIProvider, Snippet, Spacer, Spinner, Tooltip, Button } from "@nextui-org/react";
+import { Code, HeroUIProvider, Snippet, Spacer, Spinner, Tooltip, Button } from "@heroui/react";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { Fira_Code } from "next/font/google";
 import { useRouter } from "next/router";
@@ -131,7 +131,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
   );
 
   return (
-    <NextUIProvider>
+    <HeroUIProvider>
       <style jsx global>{`
         html {
           font-family: ${roboto.style.fontFamily} !important;
@@ -144,6 +144,6 @@ export default function App({ Component, pageProps, router }: AppProps) {
       <ThemeProvider attribute="class" defaultTheme="light">
         {rendered}
       </ThemeProvider>
-    </NextUIProvider>
+    </HeroUIProvider>
   );
 }

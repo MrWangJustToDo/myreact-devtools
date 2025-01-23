@@ -1,4 +1,4 @@
-import { Chip, Divider, Spacer } from "@nextui-org/react";
+import { Chip, Divider, Spacer } from "@heroui/react";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
