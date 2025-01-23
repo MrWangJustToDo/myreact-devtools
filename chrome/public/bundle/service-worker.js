@@ -2509,7 +2509,14 @@
     chrome.runtime.onMessage.addListener(function (message, sender) {
         var _a;
         if (((_a = sender.tab) === null || _a === void 0 ? void 0 : _a.id) && message.type === coreExports.MessageHookType.mount) {
-            chrome.action.setPopup({ tabId: sender.tab.id, popup: "enablePopup.html" });
+            chrome.action.setPopup({ tabId: sender.tab.id, popup: chrome.runtime.getURL("enablePopup.html") });
+            chrome.action.setIcon({
+                tabId: sender.tab.id,
+                path: {
+                    48: chrome.runtime.getURL("icons/48-s.png"),
+                    128: chrome.runtime.getURL("icons/128-s.png"),
+                },
+            });
         }
     });
 
