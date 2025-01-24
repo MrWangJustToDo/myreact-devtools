@@ -1,9 +1,10 @@
 import { Button, ButtonGroup, Input, Spacer, Tooltip } from "@heroui/react";
-import { ArrowDownIcon, ArrowUpIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { ArrowDownIcon, ArrowUpIcon, CursorArrowIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { memo, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useAppTree } from "@/hooks/useAppTree";
+import { useConfig } from "@/hooks/useConfig";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useTreeNode } from "@/hooks/useTreeNode";
 
@@ -12,6 +13,8 @@ import type { FormEvent } from "react";
 import type { VirtuosoHandle } from "react-virtuoso";
 
 const { setSelect } = useTreeNode.getActions();
+
+const { toggleHoverOnBrowser } = useConfig.getActions();
 
 export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => {
   const [v, setV] = useState("");
@@ -26,12 +29,14 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
 
   const map = useNodeName((s) => s.map);
 
+  const enableHoverOnBrowser = useConfig.useShallowStableSelector((s) => s.state.enableHoverOnBrowser);
+
   const itemIndex = indexArray[index];
 
   const id = nodeList[itemIndex]?.i;
 
   const onSearch = (e?: FormEvent) => {
-    e?.preventDefault();
+    e?.preventDefault?.();
 
     if (v) {
       setIndex(0);
@@ -67,19 +72,24 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
 
   return (
     <>
+      <Tooltip content="hover on the browser" showArrow color="foreground">
+        <Button isIconOnly variant="flat" onPress={toggleHoverOnBrowser}>
+          <CursorArrowIcon height="14" className={enableHoverOnBrowser ? "text-green-400" : "text-gray-400"} />
+        </Button>
+      </Tooltip>
+      <Spacer x={2} />
       <form onSubmit={onSearch}>
         <Input
           placeholder="Search component"
           className="w-full"
           value={v}
+          autoFocus
           variant="flat"
           onChange={(e) => setV(e.target.value)}
           endContent={
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            <Button isIconOnly variant="light" onPress={onSearch}>
+            <button className="focus:outline-none" type="submit">
               <MagnifyingGlassIcon className="text-black/50 dark:text-white/90 text-slate-400 flex-shrink-0" />
-            </Button>
+            </button>
           }
         />
       </form>

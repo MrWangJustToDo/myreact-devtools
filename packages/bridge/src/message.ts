@@ -71,8 +71,14 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
     core.setUpdateStatus(data.data);
   }
 
-  if (data?.type === MessagePanelType.chunk) {
-    core.notifyChunk(data.data);
+  if (data?.type === MessagePanelType.enableHoverOnBrowser) {
+    const d = data.data;
+
+    if (d) {
+      core.enableBrowserHover();
+    } else {
+      core.disableBrowserHover();
+    }
   }
 
   if (data?.type === MessagePanelType.chunks) {

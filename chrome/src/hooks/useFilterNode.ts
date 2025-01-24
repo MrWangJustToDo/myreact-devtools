@@ -1,4 +1,4 @@
-import { NODE_TYPE } from "@my-react/react-reconciler";
+import { NODE_TYPE } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
 
 import { useAppTree } from "./useAppTree";

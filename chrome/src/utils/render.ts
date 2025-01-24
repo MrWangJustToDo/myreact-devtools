@@ -116,14 +116,16 @@ export const onRender = (data: DevToolMessageType) => {
   }
 
   if (data.type === DevToolMessageEnum.config) {
-    const config = data.data as { enableHover: boolean; enableUpdate: boolean };
+    const config = data.data as { enableHover: boolean; enableUpdate: boolean, enableHoverOnBrowser: boolean };
 
     safeAction(() => {
-      const { setEnableHover, setEnableUpdate } = useConfig.getActions();
+      const { setEnableHover, setEnableUpdate, setEnableHoverOnBrowser } = useConfig.getActions();
 
       setEnableHover(config?.enableHover);
 
       setEnableUpdate(config?.enableUpdate);
+
+      setEnableHoverOnBrowser(config?.enableHoverOnBrowser);
     });
   }
 
@@ -137,13 +139,13 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
-  if (data.type === DevToolMessageEnum.chunk || data.type === DevToolMessageEnum.chunks) {
-    const chunk = data.data as Record<number | string, { loaded: any }>;
+  if (data.type === DevToolMessageEnum.chunks) {
+    const chunks = data.data as Record<number | string, { loaded: any }>;
 
     safeAction(() => {
       const { setChunk } = useChunk.getActions();
 
-      setChunk(chunk);
+      setChunk(chunks);
     });
   }
 
@@ -164,6 +166,16 @@ export const onRender = (data: DevToolMessageType) => {
       const { setError } = useHighlightNode.getActions();
 
       setError(error);
+    });
+  }
+
+  if (data.type === DevToolMessageEnum["dom-hover"]) {
+    const id = data.data as string;
+
+    safeAction(() => {
+      const { setSelect } = useTreeNode.getActions();
+
+      setSelect(id);
     });
   }
 };

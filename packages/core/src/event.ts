@@ -15,12 +15,12 @@ export enum MessagePanelType {
   varStore = "panel-var-store",
   enableHover = "panel-enable-hover",
   enableUpdate = "panel-enable-update",
+  enableHoverOnBrowser = "panel-enable-hover-on-browser",
   nodeHover = "panel-hover",
   nodeSelect = "panel-select",
   nodeStore = "panel-store",
   nodeTrigger = "panel-trigger",
   nodeSelectForce = "panel-select-force",
-  chunk = "panel-chunk",
   chunks = "panel-chunks",
   clear = "panel-clear",
 }

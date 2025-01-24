@@ -64,11 +64,11 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
             </Button>
           </Tooltip>
           <Button isIconOnly onPress={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            {theme === "dark" ? <MoonIcon className="text-gray-500" /> : <SunIcon className="text-yellow-500" />}
+            {theme === "dark" ? <MoonIcon className="text-gray-500" /> : <SunIcon className="text-orange-500" />}
           </Button>
           <Tooltip content="Setting" showArrow color="foreground">
             <Button isIconOnly onPress={onOpen}>
-              <GearIcon className=" text-gray-500" />
+              <GearIcon className={isOpen ? "text-green-500" : "text-gray-500"} />
             </Button>
           </Tooltip>
         </ButtonGroup>

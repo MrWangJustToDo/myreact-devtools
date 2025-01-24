@@ -5,7 +5,15 @@ import { isNormalEquals } from "@my-react/react-shared";
 import { getNodeForce, getNodeFromId } from "./data";
 import { HighLight, Overlay, color as _color } from "./highlight";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import { generateTreeMap, getDetailNodeByFiber, getFiberNodeById, getPlainNodeArrayByList, getPlainNodeIdByFiber, getTreeByFiber } from "./tree";
+import {
+  generateTreeMap,
+  getComponentFiberByDom,
+  getDetailNodeByFiber,
+  getFiberNodeById,
+  getPlainNodeArrayByList,
+  getPlainNodeIdByFiber,
+  getTreeByFiber,
+} from "./tree";
 import { getElementNodesFromFiber } from "./utils";
 
 import type { Tree } from "./tree";
@@ -33,8 +41,9 @@ export enum DevToolMessageEnum {
   warn = "warn",
   error = "error",
 
-  chunk = "chunk",
   chunks = "chunks",
+
+  ["dom-hover"] = "dom-hover",
 }
 
 export type DevToolMessageType = {
@@ -62,6 +71,8 @@ export const throttle = <T extends Function>(callback: T, time?: number): T => {
     }, time || 40);
   }) as unknown as T;
 };
+
+let cb = () => {};
 
 const map = new Map();
 
@@ -92,6 +103,8 @@ export class DevToolCore {
 
   _selectId = "";
 
+  _domHoverId = "";
+
   _trigger = {};
 
   _state = {};
@@ -100,9 +113,13 @@ export class DevToolCore {
 
   _enabled = false;
 
+  // 在开发工具中选中组件定位到浏览器中
   _enableHover = false;
 
   _enableUpdate = false;
+
+  // 在浏览器中选中dom定位到开发工具组件树中
+  _enableHoverOnBrowser = false;
 
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
 
@@ -130,6 +147,69 @@ export class DevToolCore {
     }
 
     this._enableHover = d;
+  }
+
+  setHoverOnBrowserStatus(d: boolean, cb?: (state: boolean) => void) {
+    if (__DEV__) {
+      console.log(`[@my-react-devtool/core] hoverOnBrowserStatus ${d ? "enable" : "disable"}`);
+    }
+
+    this._enableHoverOnBrowser = d;
+
+    cb?.(d);
+  }
+
+  enableBrowserHover() {
+    if (this._enableHoverOnBrowser) return;
+
+    if (typeof document === "undefined") {
+      if (__DEV__) {
+        console.warn("[@my-react-devtool/core] current env not support");
+      }
+      return;
+    }
+
+    this._enableHoverOnBrowser = true;
+
+    const onMouseEnter = debounce((e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      this.select?.remove?.();
+
+      if (target.nodeType === Node.ELEMENT_NODE) {
+        const fiber = getComponentFiberByDom(target);
+
+        if (fiber) {
+          this.select?.remove?.();
+
+          this.select = new Overlay(this);
+
+          this.select.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
+
+          const id = getPlainNodeIdByFiber(fiber);
+
+          this._domHoverId = id;
+
+          this.notifyDomHover();
+        }
+      }
+    }, 100);
+
+    document.addEventListener("mouseenter", onMouseEnter, true);
+
+    cb = () => {
+      this._enableHoverOnBrowser = false;
+
+      this.select?.remove?.();
+
+      document.removeEventListener("mouseenter", onMouseEnter, true);
+    };
+  }
+
+  disableBrowserHover() {
+    if (!this._enableHoverOnBrowser) return;
+
+    cb();
   }
 
   setUpdateStatus(d: boolean) {
@@ -485,7 +565,10 @@ export class DevToolCore {
   notifyConfig() {
     if (!this.hasEnable) return;
 
-    this._notify({ type: DevToolMessageEnum.config, data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate } });
+    this._notify({
+      type: DevToolMessageEnum.config,
+      data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate, enableHoverOnBrowser: this._enableHoverOnBrowser },
+    });
   }
 
   notifySelect(force = false) {
@@ -508,13 +591,10 @@ export class DevToolCore {
     }
   }
 
-  // TODO! cache or not?
-  notifyChunk(id: number | string) {
+  notifyDomHover() {
     if (!this.hasEnable) return;
 
-    const data = getNodeFromId(Number(id));
-
-    this._notify({ type: DevToolMessageEnum.chunk, data: { [id]: { loaded: data } } });
+    this._notify({ type: DevToolMessageEnum["dom-hover"], data: this._domHoverId });
   }
 
   notifyChunks(ids: (number | string)[]) {

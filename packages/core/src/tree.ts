@@ -1,15 +1,18 @@
+import { include, type ListTree } from "@my-react/react-shared";
+
 import { PlainNode } from "./plain";
 import { NODE_TYPE } from "./type";
 import { getFiberName, getFiberType, getHook, getProps, getSource, getState, getTree } from "./utils";
 
-import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
-import type { ListTree } from "@my-react/react-shared";
+import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode, MyReactFiberContainer } from "@my-react/react-reconciler";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
 
 const detailMap = new Map<MyReactFiberNode, PlainNode>();
 
 const fiberStore = new Map<string, MyReactFiberNode>();
+
+const domToFiber = new WeakMap<HTMLElement, MyReactFiberNode>();
 
 const plainStore = new Map<string, PlainNode>();
 
@@ -19,6 +22,16 @@ let count = 0;
 
 export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   const hasKey = fiber.key !== null && fiber.key !== undefined;
+
+  if (fiber.nativeNode) {
+    domToFiber.set(fiber.nativeNode as HTMLElement, fiber);
+  }
+
+  const typedContainerFiber = fiber as MyReactFiberContainer;
+
+  if (typedContainerFiber.containerNode) {
+    domToFiber.set(typedContainerFiber.containerNode as HTMLElement, fiber);
+  }
 
   if (hasKey && !directory[fiber.key]) {
     directory[fiber.key] = ++count + "";
@@ -230,6 +243,22 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode, force?: boolean) =
     detailMap.set(fiber, created);
 
     return created;
+  }
+};
+
+export const getComponentFiberByDom = (dom: HTMLElement) => {
+  const fiber = domToFiber.get(dom);
+
+  if (!fiber) return;
+
+  let r = fiber;
+
+  while (r) {
+    if(include(r.type, NODE_TYPE.__class__) | include(r.type, NODE_TYPE.__function__)) {
+      return r;
+    }
+
+    r = r.parent;
   }
 };
 

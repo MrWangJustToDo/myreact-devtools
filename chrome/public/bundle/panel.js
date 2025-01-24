@@ -993,7 +993,7 @@
     		}());
 
     		// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
-    		var NODE_TYPE;
+    		exports.NODE_TYPE = void 0;
     		(function (NODE_TYPE) {
     		    NODE_TYPE[NODE_TYPE["__initial__"] = 0] = "__initial__";
     		    NODE_TYPE[NODE_TYPE["__class__"] = 1] = "__class__";
@@ -1015,16 +1015,24 @@
     		    NODE_TYPE[NODE_TYPE["__scope__"] = 65536] = "__scope__";
     		    NODE_TYPE[NODE_TYPE["__comment__"] = 131072] = "__comment__";
     		    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
-    		})(NODE_TYPE || (NODE_TYPE = {}));
+    		})(exports.NODE_TYPE || (exports.NODE_TYPE = {}));
 
     		var treeMap = new Map();
     		var detailMap = new Map();
     		var fiberStore = new Map();
+    		var domToFiber = new WeakMap();
     		var plainStore = new Map();
     		var directory = {};
     		var count = 0;
     		var shallowAssignFiber = function (plain, fiber) {
     		    var hasKey = fiber.key !== null && fiber.key !== undefined;
+    		    if (fiber.nativeNode) {
+    		        domToFiber.set(fiber.nativeNode, fiber);
+    		    }
+    		    var typedContainerFiber = fiber;
+    		    if (typedContainerFiber.containerNode) {
+    		        domToFiber.set(typedContainerFiber.containerNode, fiber);
+    		    }
     		    if (hasKey && !directory[fiber.key]) {
     		        directory[fiber.key] = ++count + "";
     		    }
@@ -1044,7 +1052,7 @@
     		    plain._s = getSource(fiber);
     		    plain._t = getTree(fiber);
     		    plain._h = getHook(fiber, force);
-    		    if (fiber.type & NODE_TYPE.__class__) {
+    		    if (fiber.type & exports.NODE_TYPE.__class__) {
     		        plain.s = getState(fiber, force);
     		    }
     		};
@@ -1168,6 +1176,18 @@
     		        return created;
     		    }
     		};
+    		var getComponentFiberByDom = function (dom) {
+    		    var fiber = domToFiber.get(dom);
+    		    if (!fiber)
+    		        return;
+    		    var r = fiber;
+    		    while (r) {
+    		        if (reactShared.include(r.type, exports.NODE_TYPE.__class__) | reactShared.include(r.type, exports.NODE_TYPE.__function__)) {
+    		            return r;
+    		        }
+    		        r = r.parent;
+    		    }
+    		};
     		var getFiberNodeById = function (id) {
     		    return fiberStore.get(id);
     		};
@@ -1175,52 +1195,52 @@
     		var typeKeys = [];
     		// SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
     		var reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
-    		Object.keys(NODE_TYPE).forEach(function (key) {
+    		Object.keys(exports.NODE_TYPE).forEach(function (key) {
     		    if (!key.startsWith("__")) {
     		        typeKeys.push(+key);
     		    }
     		});
     		var getTypeName = function (type) {
     		    switch (type) {
-    		        case NODE_TYPE.__keepLive__:
+    		        case exports.NODE_TYPE.__keepLive__:
     		            return "KeepAlive";
-    		        case NODE_TYPE.__memo__:
+    		        case exports.NODE_TYPE.__memo__:
     		            return "Memo";
-    		        case NODE_TYPE.__forwardRef__:
+    		        case exports.NODE_TYPE.__forwardRef__:
     		            return "ForwardRef";
-    		        case NODE_TYPE.__lazy__:
+    		        case exports.NODE_TYPE.__lazy__:
     		            return "Lazy";
-    		        case NODE_TYPE.__provider__:
+    		        case exports.NODE_TYPE.__provider__:
     		            return "Provider";
-    		        case NODE_TYPE.__consumer__:
+    		        case exports.NODE_TYPE.__consumer__:
     		            return "Consumer";
-    		        case NODE_TYPE.__fragment__:
+    		        case exports.NODE_TYPE.__fragment__:
     		            return "Fragment";
-    		        case NODE_TYPE.__scope__:
+    		        case exports.NODE_TYPE.__scope__:
     		            return "Scope";
-    		        case NODE_TYPE.__strict__:
+    		        case exports.NODE_TYPE.__strict__:
     		            return "Strict";
-    		        case NODE_TYPE.__profiler__:
+    		        case exports.NODE_TYPE.__profiler__:
     		            return "Profiler";
-    		        case NODE_TYPE.__suspense__:
+    		        case exports.NODE_TYPE.__suspense__:
     		            return "Suspense";
-    		        case NODE_TYPE.__portal__:
+    		        case exports.NODE_TYPE.__portal__:
     		            return "Portal";
-    		        case NODE_TYPE.__comment__:
+    		        case exports.NODE_TYPE.__comment__:
     		            return "Comment";
-    		        case NODE_TYPE.__empty__:
+    		        case exports.NODE_TYPE.__empty__:
     		            return "Empty";
-    		        case NODE_TYPE.__null__:
+    		        case exports.NODE_TYPE.__null__:
     		            return "Null";
-    		        case NODE_TYPE.__text__:
+    		        case exports.NODE_TYPE.__text__:
     		            return "Text";
-    		        case NODE_TYPE.__function__:
+    		        case exports.NODE_TYPE.__function__:
     		            return "Function";
-    		        case NODE_TYPE.__class__:
+    		        case exports.NODE_TYPE.__class__:
     		            return "Class";
-    		        case NODE_TYPE.__plain__:
+    		        case exports.NODE_TYPE.__plain__:
     		            return "Plain";
-    		        case NODE_TYPE.__initial__:
+    		        case exports.NODE_TYPE.__initial__:
     		            return "Initial";
     		        default:
     		            return "";
@@ -1229,13 +1249,13 @@
     		var getFiberTag = function (node) {
     		    var t = node.t;
     		    var tag = [];
-    		    if (t & NODE_TYPE.__memo__) {
+    		    if (t & exports.NODE_TYPE.__memo__) {
     		        tag.push("memo");
     		    }
-    		    if (t & NODE_TYPE.__forwardRef__) {
+    		    if (t & exports.NODE_TYPE.__forwardRef__) {
     		        tag.push("forwardRef");
     		    }
-    		    if (t & NODE_TYPE.__lazy__) {
+    		    if (t & exports.NODE_TYPE.__lazy__) {
     		        tag.push("lazy");
     		    }
     		    if (node.m) {
@@ -1260,17 +1280,17 @@
     		};
     		var getFiberName = function (fiber) {
     		    var typedFiber = fiber;
-    		    if (fiber.type & NODE_TYPE.__provider__) {
+    		    if (fiber.type & exports.NODE_TYPE.__provider__) {
     		        var typedElementType = fiber.elementType;
     		        var name_1 = typedElementType.Context.displayName;
     		        return "".concat(name_1 || "Context", ".Provider");
     		    }
-    		    if (fiber.type & NODE_TYPE.__consumer__) {
+    		    if (fiber.type & exports.NODE_TYPE.__consumer__) {
     		        var typedElementType = fiber.elementType;
     		        var name_2 = typedElementType.Context.displayName;
     		        return "".concat(name_2 || "Context", ".Consumer");
     		    }
-    		    if (fiber.type & NODE_TYPE.__lazy__) {
+    		    if (fiber.type & exports.NODE_TYPE.__lazy__) {
     		        var typedElementType = fiber.elementType;
     		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
     		        var name_3 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
@@ -1279,27 +1299,27 @@
     		        name_3 = (type === null || type === void 0 ? void 0 : type.displayName) || name_3;
     		        return "".concat(name_3 || "Anonymous");
     		    }
-    		    if (fiber.type & NODE_TYPE.__portal__)
+    		    if (fiber.type & exports.NODE_TYPE.__portal__)
     		        return "Portal";
-    		    if (fiber.type & NODE_TYPE.__null__)
+    		    if (fiber.type & exports.NODE_TYPE.__null__)
     		        return "Null";
-    		    if (fiber.type & NODE_TYPE.__empty__)
+    		    if (fiber.type & exports.NODE_TYPE.__empty__)
     		        return "Empty";
-    		    if (fiber.type & NODE_TYPE.__scope__)
+    		    if (fiber.type & exports.NODE_TYPE.__scope__)
     		        return "Scope";
-    		    if (fiber.type & NODE_TYPE.__strict__)
+    		    if (fiber.type & exports.NODE_TYPE.__strict__)
     		        return "Strict";
-    		    if (fiber.type & NODE_TYPE.__profiler__)
+    		    if (fiber.type & exports.NODE_TYPE.__profiler__)
     		        return "Profiler";
-    		    if (fiber.type & NODE_TYPE.__suspense__)
+    		    if (fiber.type & exports.NODE_TYPE.__suspense__)
     		        return "Suspense";
-    		    if (fiber.type & NODE_TYPE.__comment__)
+    		    if (fiber.type & exports.NODE_TYPE.__comment__)
     		        return "Comment";
-    		    if (fiber.type & NODE_TYPE.__keepLive__)
+    		    if (fiber.type & exports.NODE_TYPE.__keepLive__)
     		        return "KeepAlive";
-    		    if (fiber.type & NODE_TYPE.__fragment__)
+    		    if (fiber.type & exports.NODE_TYPE.__fragment__)
     		        return "Fragment";
-    		    if (fiber.type & NODE_TYPE.__text__)
+    		    if (fiber.type & exports.NODE_TYPE.__text__)
     		        return "text";
     		    if (typeof fiber.elementType === "string")
     		        return "".concat(fiber.elementType);
@@ -1967,8 +1987,8 @@
     		    DevToolMessageEnum["unmount"] = "unmount";
     		    DevToolMessageEnum["warn"] = "warn";
     		    DevToolMessageEnum["error"] = "error";
-    		    DevToolMessageEnum["chunk"] = "chunk";
     		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["dom-hover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
     		var debounce = function (callback, time) {
     		    var id = null;
@@ -1998,6 +2018,7 @@
     		        }, time || 40);
     		    });
     		};
+    		var cb = function () { };
     		var map = new Map();
     		var DevToolCore = /** @class */ (function () {
     		    function DevToolCore() {
@@ -2016,12 +2037,16 @@
     		        this._tempWarn = {};
     		        this._hoverId = "";
     		        this._selectId = "";
+    		        this._domHoverId = "";
     		        this._trigger = {};
     		        this._state = {};
     		        this._needUnmount = false;
     		        this._enabled = false;
+    		        // 在开发工具中选中组件定位到浏览器中
     		        this._enableHover = false;
     		        this._enableUpdate = false;
+    		        // 在浏览器中选中dom定位到开发工具组件树中
+    		        this._enableHoverOnBrowser = false;
     		        this._listeners = new Set();
     		        this.version = "0.0.1";
     		        this.notifyTrigger = debounce(function () {
@@ -2062,6 +2087,47 @@
     		    });
     		    DevToolCore.prototype.setHoverStatus = function (d) {
     		        this._enableHover = d;
+    		    };
+    		    DevToolCore.prototype.setHoverOnBrowserStatus = function (d, cb) {
+    		        this._enableHoverOnBrowser = d;
+    		        cb === null || cb === void 0 ? void 0 : cb(d);
+    		    };
+    		    DevToolCore.prototype.enableBrowserHover = function () {
+    		        var _this = this;
+    		        if (this._enableHoverOnBrowser)
+    		            return;
+    		        if (typeof document === "undefined") {
+    		            return;
+    		        }
+    		        this._enableHoverOnBrowser = true;
+    		        var onMouseEnter = debounce(function (e) {
+    		            var _a, _b, _c, _d;
+    		            var target = e.target;
+    		            (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		            if (target.nodeType === Node.ELEMENT_NODE) {
+    		                var fiber = getComponentFiberByDom(target);
+    		                if (fiber) {
+    		                    (_d = (_c = _this.select) === null || _c === void 0 ? void 0 : _c.remove) === null || _d === void 0 ? void 0 : _d.call(_c);
+    		                    _this.select = new Overlay(_this);
+    		                    _this.select.inspect(fiber, getElementNodesFromFiber(fiber));
+    		                    var id = getPlainNodeIdByFiber(fiber);
+    		                    _this._domHoverId = id;
+    		                    _this.notifyDomHover();
+    		                }
+    		            }
+    		        }, 100);
+    		        document.addEventListener("mouseenter", onMouseEnter, true);
+    		        cb = function () {
+    		            var _a, _b;
+    		            _this._enableHoverOnBrowser = false;
+    		            (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		            document.removeEventListener("mouseenter", onMouseEnter, true);
+    		        };
+    		    };
+    		    DevToolCore.prototype.disableBrowserHover = function () {
+    		        if (!this._enableHoverOnBrowser)
+    		            return;
+    		        cb();
     		    };
     		    DevToolCore.prototype.setUpdateStatus = function (d) {
     		        this._enableUpdate = d;
@@ -2331,7 +2397,10 @@
     		    DevToolCore.prototype.notifyConfig = function () {
     		        if (!this.hasEnable)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.config, data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate } });
+    		        this._notify({
+    		            type: exports.DevToolMessageEnum.config,
+    		            data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate, enableHoverOnBrowser: this._enableHoverOnBrowser },
+    		        });
     		    };
     		    DevToolCore.prototype.notifySelect = function (force) {
     		        if (force === void 0) { force = false; }
@@ -2348,13 +2417,10 @@
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
     		        }
     		    };
-    		    // TODO! cache or not?
-    		    DevToolCore.prototype.notifyChunk = function (id) {
-    		        var _a;
+    		    DevToolCore.prototype.notifyDomHover = function () {
     		        if (!this.hasEnable)
     		            return;
-    		        var data = getNodeFromId(Number(id));
-    		        this._notify({ type: exports.DevToolMessageEnum.chunk, data: (_a = {}, _a[id] = { loaded: data }, _a) });
+    		        this._notify({ type: exports.DevToolMessageEnum["dom-hover"], data: this._domHoverId });
     		    };
     		    DevToolCore.prototype.notifyChunks = function (ids) {
     		        if (!this.hasEnable)
@@ -2433,12 +2499,12 @@
     		    MessagePanelType["varStore"] = "panel-var-store";
     		    MessagePanelType["enableHover"] = "panel-enable-hover";
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
+    		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
     		    MessagePanelType["nodeStore"] = "panel-store";
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
-    		    MessagePanelType["chunk"] = "panel-chunk";
     		    MessagePanelType["chunks"] = "panel-chunks";
     		    MessagePanelType["clear"] = "panel-clear";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
@@ -2456,6 +2522,7 @@
     		exports.color = color;
     		exports.debounce = debounce;
     		exports.generateTreeMap = generateTreeMap;
+    		exports.getComponentFiberByDom = getComponentFiberByDom;
     		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getElementNodesFromFiber = getElementNodesFromFiber;

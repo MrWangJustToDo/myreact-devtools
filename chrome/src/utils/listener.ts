@@ -112,6 +112,17 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
   );
 
   unSubscribeArray.push(
+    useConfig.subscribe(
+      (s) => s.state.enableHoverOnBrowser,
+      () => {
+        const enableHoverOnBrowser = useConfig.getReadonlyState().state.enableHoverOnBrowser;
+
+        postMessage({ type: MessagePanelType.enableHoverOnBrowser, data: enableHoverOnBrowser });
+      }
+    )
+  );
+
+  unSubscribeArray.push(
     useContextMenu.subscribe(
       (s) => s.store,
       () => {
