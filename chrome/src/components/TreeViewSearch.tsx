@@ -83,7 +83,6 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
           placeholder="Search component"
           className="w-full"
           value={v}
-          autoFocus
           variant="flat"
           onChange={(e) => setV(e.target.value)}
           endContent={

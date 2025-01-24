@@ -116,7 +116,7 @@ export const onRender = (data: DevToolMessageType) => {
   }
 
   if (data.type === DevToolMessageEnum.config) {
-    const config = data.data as { enableHover: boolean; enableUpdate: boolean, enableHoverOnBrowser: boolean };
+    const config = data.data as { enableHover: boolean; enableUpdate: boolean; enableHoverOnBrowser: boolean };
 
     safeAction(() => {
       const { setEnableHover, setEnableUpdate, setEnableHoverOnBrowser } = useConfig.getActions();
@@ -173,9 +173,11 @@ export const onRender = (data: DevToolMessageType) => {
     const id = data.data as string;
 
     safeAction(() => {
-      const { setSelect } = useTreeNode.getActions();
+      const { setSelect, scrollIntoView } = useTreeNode.getActions();
 
       setSelect(id);
+
+      scrollIntoView();
     });
   }
 };
