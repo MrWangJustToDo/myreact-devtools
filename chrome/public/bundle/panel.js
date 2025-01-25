@@ -2049,11 +2049,6 @@
     		        this._enableHoverOnBrowser = false;
     		        this._listeners = new Set();
     		        this.version = "0.0.1";
-    		        this.notifyTrigger = debounce(function () {
-    		            if (!_this.hasEnable)
-    		                return;
-    		            _this._notify({ type: exports.DevToolMessageEnum.trigger, data: _this._trigger });
-    		        }, 16);
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
     		            if (_this._needUnmount) {
@@ -2094,16 +2089,23 @@
     		    };
     		    DevToolCore.prototype.enableBrowserHover = function () {
     		        var _this = this;
+    		        if (!this.hasEnable)
+    		            return;
     		        if (this._enableHoverOnBrowser)
     		            return;
     		        if (typeof document === "undefined") {
     		            return;
     		        }
     		        this._enableHoverOnBrowser = true;
+    		        var debounceNotifyDomHover = debounce(function () {
+    		            _this.notifyDomHover();
+    		        }, 100);
     		        var onMouseEnter = debounce(function (e) {
     		            var _a, _b, _c, _d;
     		            var target = e.target;
     		            (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		            if (!_this.hasEnable)
+    		                return;
     		            if (target.nodeType === Node.ELEMENT_NODE) {
     		                var fiber = getComponentFiberByDom(target);
     		                if (fiber) {
@@ -2112,10 +2114,10 @@
     		                    _this.select.inspect(fiber, getElementNodesFromFiber(fiber));
     		                    var id = getPlainNodeIdByFiber(fiber);
     		                    _this._domHoverId = id;
-    		                    _this.notifyDomHover();
+    		                    debounceNotifyDomHover();
     		                }
     		            }
-    		        }, 100);
+    		        }, 16);
     		        document.addEventListener("mouseenter", onMouseEnter, true);
     		        cb = function () {
     		            var _a, _b;
@@ -2350,6 +2352,11 @@
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
+    		    };
+    		    DevToolCore.prototype.notifyTrigger = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: this._trigger });
     		    };
     		    DevToolCore.prototype.notifyHighlight = function (id, type) {
     		        if (!this.hasEnable)

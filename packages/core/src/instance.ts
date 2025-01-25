@@ -160,6 +160,8 @@ export class DevToolCore {
   }
 
   enableBrowserHover() {
+    if (!this.hasEnable) return;
+
     if (this._enableHoverOnBrowser) return;
 
     if (typeof document === "undefined") {
@@ -171,10 +173,16 @@ export class DevToolCore {
 
     this._enableHoverOnBrowser = true;
 
+    const debounceNotifyDomHover = debounce(() => {
+      this.notifyDomHover();
+    }, 100);
+
     const onMouseEnter = debounce((e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
       this.select?.remove?.();
+
+      if (!this.hasEnable) return;
 
       if (target.nodeType === Node.ELEMENT_NODE) {
         const fiber = getComponentFiberByDom(target);
@@ -190,10 +198,10 @@ export class DevToolCore {
 
           this._domHoverId = id;
 
-          this.notifyDomHover();
+          debounceNotifyDomHover();
         }
       }
-    }, 100);
+    }, 16);
 
     document.addEventListener("mouseenter", onMouseEnter, true);
 
@@ -507,11 +515,11 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.init, data: this._detector });
   }
 
-  notifyTrigger = debounce(() => {
+  notifyTrigger() {
     if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
-  }, 16);
+  }
 
   notifyHighlight(id: string, type: "performance") {
     if (!this.hasEnable) return;
