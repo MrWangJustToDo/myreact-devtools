@@ -2093,6 +2093,7 @@
     		    };
     		    DevToolCore.prototype.enableBrowserHover = function () {
     		        var _this = this;
+    		        var _a, _b;
     		        if (!this.hasEnable)
     		            return;
     		        if (this._enableHoverOnBrowser)
@@ -2101,6 +2102,8 @@
     		            return;
     		        }
     		        this._enableHoverOnBrowser = true;
+    		        this._domHoverLock = false;
+    		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        var debounceNotifyDomHover = debounce(function () {
     		            _this.notifyDomHover();
     		        }, 100);
