@@ -45,6 +45,14 @@ export const RenderView = () => {
     last = undefined;
   }
 
+  let mode = renderTree?.[renderTree?.length - 1];
+
+  if (mode?.startsWith("@my-react")) {
+    renderTree = renderTree?.slice(0, -1);
+  } else {
+    mode = undefined;
+  }
+
   const renderTreeNode = useMemo(() => renderTree?.map((item) => allTreeNode.find((i) => i.i === item)), [allTreeNode, renderTree]) as PlainNode[];
 
   const data = useMemo(() => renderTreeNode?.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, renderTreeNode]);
@@ -68,6 +76,7 @@ export const RenderView = () => {
         <Spacer y={1} />
         <div className="w-full">
           {data.map((_, index) => render(index))}
+          {mode && <div className={`${sizeClass} ml-2  px-[2px]`}>{mode}</div>}
           <div className={`${sizeClass} ml-2  px-[2px]`}>{last || "@my-react"}</div>
           {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
         </div>

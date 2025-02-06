@@ -233,6 +233,10 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
 
     const dispatch = typedCurrent.renderDispatch;
 
+    if (dispatch && dispatch.renderMode) {
+      tree.push(`@my-react ${dispatch.renderMode}`);
+    }
+
     if (dispatch && dispatch.version) {
       tree.push(`@my-react ${dispatch.version}`);
     } else {

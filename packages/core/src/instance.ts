@@ -105,6 +105,8 @@ export class DevToolCore {
 
   _domHoverId = "";
 
+  _domHoverLock = false;
+
   _trigger = {};
 
   _state = {};
@@ -178,6 +180,8 @@ export class DevToolCore {
     }, 100);
 
     const onMouseEnter = debounce((e: MouseEvent) => {
+      if (this._domHoverLock) return;
+      
       const target = e.target as HTMLElement;
 
       this.select?.remove?.();
@@ -203,7 +207,27 @@ export class DevToolCore {
       }
     }, 16);
 
+    const onClick = (e: MouseEvent) => {
+      this._domHoverLock = true;
+
+      e.stopPropagation();
+
+      e.preventDefault();
+    }
+
+    const onBlur = () => {
+      this._domHoverLock = false;
+    }
+
     document.addEventListener("mouseenter", onMouseEnter, true);
+
+    document.addEventListener("click", onClick, true);
+
+    document.addEventListener('mousedown', onClick, true);
+
+    document.addEventListener('pointerdown', onClick, true);
+
+    document.addEventListener('blur', onBlur, true);
 
     cb = () => {
       this._enableHoverOnBrowser = false;
@@ -211,6 +235,14 @@ export class DevToolCore {
       this.select?.remove?.();
 
       document.removeEventListener("mouseenter", onMouseEnter, true);
+
+      document.removeEventListener("click", onClick, true);
+
+      document.removeEventListener('mousedown', onClick, true);
+
+      document.removeEventListener('pointerdown', onClick, true);
+
+      document.removeEventListener('blur', onBlur, true);
     };
   }
 
@@ -486,6 +518,8 @@ export class DevToolCore {
   showHover() {
     if (!this._enableHover) return;
 
+    this._domHoverLock = false;
+
     this.select?.remove?.();
 
     this.select = new Overlay(this);
@@ -580,11 +614,17 @@ export class DevToolCore {
   }
 
   notifySelect(force = false) {
+    this._domHoverLock = false;
+
     if (!this.hasEnable) return;
 
     const id = this._selectId;
 
     if (!id) return;
+
+    if (this._selectId !== this._domHoverId) {
+      this.select?.remove?.();
+    }
 
     const fiber = getFiberNodeById(id);
 

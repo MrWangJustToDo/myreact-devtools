@@ -9,6 +9,7 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
   onDOMUpdate?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMAppend?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMSetRef?: (cb: (f: MyReactFiberNode) => void) => void;
+  renderMode?: string;
   version?: string;
 }
 

@@ -1394,6 +1394,9 @@
     		    if (current) {
     		        var typedCurrent = current;
     		        var dispatch = typedCurrent.renderDispatch;
+    		        if (dispatch && dispatch.renderMode) {
+    		            tree.push("@my-react ".concat(dispatch.renderMode));
+    		        }
     		        if (dispatch && dispatch.version) {
     		            tree.push("@my-react ".concat(dispatch.version));
     		        }
@@ -2038,6 +2041,7 @@
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._domHoverId = "";
+    		        this._domHoverLock = false;
     		        this._trigger = {};
     		        this._state = {};
     		        this._needUnmount = false;
@@ -2102,6 +2106,8 @@
     		        }, 100);
     		        var onMouseEnter = debounce(function (e) {
     		            var _a, _b, _c, _d;
+    		            if (_this._domHoverLock)
+    		                return;
     		            var target = e.target;
     		            (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		            if (!_this.hasEnable)
@@ -2118,12 +2124,28 @@
     		                }
     		            }
     		        }, 16);
+    		        var onClick = function (e) {
+    		            _this._domHoverLock = true;
+    		            e.stopPropagation();
+    		            e.preventDefault();
+    		        };
+    		        var onBlur = function () {
+    		            _this._domHoverLock = false;
+    		        };
     		        document.addEventListener("mouseenter", onMouseEnter, true);
+    		        document.addEventListener("click", onClick, true);
+    		        document.addEventListener('mousedown', onClick, true);
+    		        document.addEventListener('pointerdown', onClick, true);
+    		        document.addEventListener('blur', onBlur, true);
     		        cb = function () {
     		            var _a, _b;
     		            _this._enableHoverOnBrowser = false;
     		            (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		            document.removeEventListener("mouseenter", onMouseEnter, true);
+    		            document.removeEventListener("click", onClick, true);
+    		            document.removeEventListener('mousedown', onClick, true);
+    		            document.removeEventListener('pointerdown', onClick, true);
+    		            document.removeEventListener('blur', onBlur, true);
     		        };
     		    };
     		    DevToolCore.prototype.disableBrowserHover = function () {
@@ -2330,6 +2352,7 @@
     		        var _a, _b, _c, _d;
     		        if (!this._enableHover)
     		            return;
+    		        this._domHoverLock = false;
     		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        this.select = new Overlay(this);
     		        if (this._hoverId) {
@@ -2410,12 +2433,17 @@
     		        });
     		    };
     		    DevToolCore.prototype.notifySelect = function (force) {
+    		        var _a, _b;
     		        if (force === void 0) { force = false; }
+    		        this._domHoverLock = false;
     		        if (!this.hasEnable)
     		            return;
     		        var id = this._selectId;
     		        if (!id)
     		            return;
+    		        if (this._selectId !== this._domHoverId) {
+    		            (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		        }
     		        var fiber = getFiberNodeById(id);
     		        if (fiber) {
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber, force) });
