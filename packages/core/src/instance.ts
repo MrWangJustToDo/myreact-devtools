@@ -175,6 +175,10 @@ export class DevToolCore {
 
     this._enableHoverOnBrowser = true;
 
+    this._domHoverLock = false;
+
+    this.select?.remove?.();
+
     const debounceNotifyDomHover = debounce(() => {
       this.notifyDomHover();
     }, 100);
