@@ -2068,18 +2068,18 @@
     		        };
     		        document.addEventListener("mouseenter", onMouseEnter, true);
     		        document.addEventListener("click", onClick, true);
-    		        document.addEventListener('mousedown', onClick, true);
-    		        document.addEventListener('pointerdown', onClick, true);
-    		        document.addEventListener('blur', onBlur, true);
+    		        document.addEventListener("mousedown", onClick, true);
+    		        document.addEventListener("pointerdown", onClick, true);
+    		        document.addEventListener("blur", onBlur, true);
     		        cb = function () {
     		            var _a, _b;
     		            _this._enableHoverOnBrowser = false;
     		            (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		            document.removeEventListener("mouseenter", onMouseEnter, true);
     		            document.removeEventListener("click", onClick, true);
-    		            document.removeEventListener('mousedown', onClick, true);
-    		            document.removeEventListener('pointerdown', onClick, true);
-    		            document.removeEventListener('blur', onBlur, true);
+    		            document.removeEventListener("mousedown", onClick, true);
+    		            document.removeEventListener("pointerdown", onClick, true);
+    		            document.removeEventListener("blur", onBlur, true);
     		        };
     		    };
     		    DevToolCore.prototype.disableBrowserHover = function () {
@@ -2375,7 +2375,7 @@
     		        var id = this._selectId;
     		        if (!id)
     		            return;
-    		        if (this._selectId !== this._domHoverId) {
+    		        if (this._enableHoverOnBrowser && this._selectId !== this._domHoverId) {
     		            (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        }
     		        var fiber = getFiberNodeById(id);
