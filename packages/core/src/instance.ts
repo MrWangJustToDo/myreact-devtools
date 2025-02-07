@@ -185,7 +185,7 @@ export class DevToolCore {
 
     const onMouseEnter = debounce((e: MouseEvent) => {
       if (this._domHoverLock) return;
-      
+
       const target = e.target as HTMLElement;
 
       this.select?.remove?.();
@@ -217,21 +217,21 @@ export class DevToolCore {
       e.stopPropagation();
 
       e.preventDefault();
-    }
+    };
 
     const onBlur = () => {
       this._domHoverLock = false;
-    }
+    };
 
     document.addEventListener("mouseenter", onMouseEnter, true);
 
     document.addEventListener("click", onClick, true);
 
-    document.addEventListener('mousedown', onClick, true);
+    document.addEventListener("mousedown", onClick, true);
 
-    document.addEventListener('pointerdown', onClick, true);
+    document.addEventListener("pointerdown", onClick, true);
 
-    document.addEventListener('blur', onBlur, true);
+    document.addEventListener("blur", onBlur, true);
 
     cb = () => {
       this._enableHoverOnBrowser = false;
@@ -242,11 +242,11 @@ export class DevToolCore {
 
       document.removeEventListener("click", onClick, true);
 
-      document.removeEventListener('mousedown', onClick, true);
+      document.removeEventListener("mousedown", onClick, true);
 
-      document.removeEventListener('pointerdown', onClick, true);
+      document.removeEventListener("pointerdown", onClick, true);
 
-      document.removeEventListener('blur', onBlur, true);
+      document.removeEventListener("blur", onBlur, true);
     };
   }
 
@@ -626,7 +626,7 @@ export class DevToolCore {
 
     if (!id) return;
 
-    if (this._selectId !== this._domHoverId) {
+    if (this._enableHoverOnBrowser && this._selectId !== this._domHoverId) {
       this.select?.remove?.();
     }
 

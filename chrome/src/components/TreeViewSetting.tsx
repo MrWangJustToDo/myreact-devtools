@@ -114,7 +114,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               <Divider />
               <div className="flex flex-col gap-y-2">
                 <p className="whitespace-nowrap text-[14px] text-foreground-500">Config: </p>
-                <Checkbox isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} color="primary">
+                <Checkbox isSelected={configState.enableUpdate} radius="full" onValueChange={setEnableUpdate} color="primary">
                   <div className="flex items-center">
                     Highlight Update
                     <div className="ml-4 gap-x-2 flex">
@@ -125,7 +125,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                     </div>
                   </div>
                 </Checkbox>
-                <Checkbox isSelected={configState.enableHover} onValueChange={setEnableHover} color="secondary">
+                <Checkbox isSelected={configState.enableHover} radius="full" onValueChange={setEnableHover} color="secondary">
                   Hover Overlay
                 </Checkbox>
               </div>
