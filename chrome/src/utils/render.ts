@@ -71,6 +71,12 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
+  if (data.type === DevToolMessageEnum["select-unmount"]) {
+    safeAction(() => {
+      useTreeNode.getActions().clearSelect?.();
+    });
+  }
+
   if (data.type === DevToolMessageEnum.hmr) {
     const nodes = data.data as Record<string, number>;
 
@@ -173,7 +179,9 @@ export const onRender = (data: DevToolMessageType) => {
     const id = data.data as string;
 
     safeAction(() => {
-      const { setSelect, scrollIntoView } = useTreeNode.getActions();
+      const { setSelect, scrollIntoView, clearSelect } = useTreeNode.getActions();
+
+      clearSelect();
 
       setSelect(id);
 

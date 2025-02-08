@@ -46,8 +46,14 @@ export const useTreeNode = createState(
             s.selectList = {};
           } else {
             s.select = node;
+            s.selectList = {};
             updateSelectList();
           }
+        },
+        clearSelect: () => {
+          s.select = null;
+          s.selectList = {};
+          updateSelectList();
         },
         forceReload: () => {
           if (s.select) {

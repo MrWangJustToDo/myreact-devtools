@@ -14,9 +14,9 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
 }
 
 // TODO use 'eventListener' instead of 'patchFunction'
-function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch) {
+function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch, runtime: DevToolCore) {
   if (typeof dispatch.onFiberUnmount === "function") {
-    dispatch.onFiberUnmount(unmountPlainNode);
+    dispatch.onFiberUnmount((f) => unmountPlainNode(f, runtime));
   } else {
     if (__DEV__) {
       console.warn("[@my-react-devtool/core] current version of @my-react will deprecate in next update, please upgrade to latest version");
@@ -26,7 +26,7 @@ function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch) {
 
     dispatch.patchToFiberUnmount = function (this: CustomRenderDispatch, fiber) {
       originalPatchUnmount.call(this, fiber);
-      unmountPlainNode(fiber);
+      unmountPlainNode(fiber, runtime);
     };
   }
 }
@@ -36,7 +36,7 @@ export const setupDispatch = (dispatch: DevToolRenderDispatch, runtime: DevToolC
 
   dispatch["$$hasDevToolInject"] = true;
 
-  overridePatchToFiberUnmount(dispatch);
+  overridePatchToFiberUnmount(dispatch, runtime);
 
   Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: __VERSION__ } });
 };

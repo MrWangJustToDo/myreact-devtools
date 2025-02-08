@@ -37,6 +37,7 @@ export enum DevToolMessageEnum {
   run = "run",
   detail = "detail",
   unmount = "unmount",
+  ["select-unmount"] = "select-unmount",
 
   warn = "warn",
   error = "error",
@@ -102,6 +103,8 @@ export class DevToolCore {
   _hoverId = "";
 
   _selectId = "";
+
+  _tempDomHoverId = "";
 
   _domHoverId = "";
 
@@ -204,15 +207,19 @@ export class DevToolCore {
 
           const id = getPlainNodeIdByFiber(fiber);
 
-          this._domHoverId = id;
+          this._tempDomHoverId = id;
 
-          debounceNotifyDomHover();
+          // debounceNotifyDomHover();
         }
       }
     }, 16);
 
     const onClick = (e: MouseEvent) => {
       this._domHoverLock = true;
+
+      this._domHoverId = this._tempDomHoverId;
+
+      debounceNotifyDomHover();
 
       e.stopPropagation();
 
@@ -641,6 +648,12 @@ export class DevToolCore {
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
     }
+  }
+
+  notifyUnSelect() {
+    if (!this.hasEnable) return;
+
+    this._notify({ type: DevToolMessageEnum["select-unmount"], data: null });
   }
 
   notifyDomHover() {

@@ -1048,9 +1048,12 @@
     		    var rootNode = loopTree(rootFiber);
     		    return rootNode;
     		};
-    		var unmountPlainNode = function (fiber) {
+    		var unmountPlainNode = function (fiber, runtime) {
     		    var plain = treeMap.get(fiber);
     		    if (plain) {
+    		        if (plain.i === runtime._selectId) {
+    		            runtime.notifyUnSelect();
+    		        }
     		        fiberStore.delete(plain.i);
     		        plainStore.delete(plain.i);
     		    }
@@ -1879,15 +1882,15 @@
     		}());
 
     		// TODO use 'eventListener' instead of 'patchFunction'
-    		function overridePatchToFiberUnmount(dispatch) {
+    		function overridePatchToFiberUnmount(dispatch, runtime) {
     		    if (typeof dispatch.onFiberUnmount === "function") {
-    		        dispatch.onFiberUnmount(unmountPlainNode);
+    		        dispatch.onFiberUnmount(function (f) { return unmountPlainNode(f, runtime); });
     		    }
     		    else {
     		        var originalPatchUnmount_1 = dispatch.patchToFiberUnmount;
     		        dispatch.patchToFiberUnmount = function (fiber) {
     		            originalPatchUnmount_1.call(this, fiber);
-    		            unmountPlainNode(fiber);
+    		            unmountPlainNode(fiber, runtime);
     		        };
     		    }
     		}
@@ -1895,7 +1898,7 @@
     		    if (dispatch["$$hasDevToolInject"])
     		        return;
     		    dispatch["$$hasDevToolInject"] = true;
-    		    overridePatchToFiberUnmount(dispatch);
+    		    overridePatchToFiberUnmount(dispatch, runtime);
     		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
 
@@ -1917,6 +1920,7 @@
     		    DevToolMessageEnum["run"] = "run";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
     		    DevToolMessageEnum["warn"] = "warn";
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["chunks"] = "chunks";
@@ -1969,6 +1973,7 @@
     		        this._tempWarn = {};
     		        this._hoverId = "";
     		        this._selectId = "";
+    		        this._tempDomHoverId = "";
     		        this._domHoverId = "";
     		        this._domHoverLock = false;
     		        this._trigger = {};
@@ -2051,13 +2056,15 @@
     		                    _this.select = new Overlay(_this);
     		                    _this.select.inspect(fiber, getElementNodesFromFiber(fiber));
     		                    var id = getPlainNodeIdByFiber(fiber);
-    		                    _this._domHoverId = id;
-    		                    debounceNotifyDomHover();
+    		                    _this._tempDomHoverId = id;
+    		                    // debounceNotifyDomHover();
     		                }
     		            }
     		        }, 16);
     		        var onClick = function (e) {
     		            _this._domHoverLock = true;
+    		            _this._domHoverId = _this._tempDomHoverId;
+    		            debounceNotifyDomHover();
     		            e.stopPropagation();
     		            e.preventDefault();
     		        };
@@ -2383,6 +2390,11 @@
     		        else {
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
     		        }
+    		    };
+    		    DevToolCore.prototype.notifyUnSelect = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum["select-unmount"], data: null });
     		    };
     		    DevToolCore.prototype.notifyDomHover = function () {
     		        if (!this.hasEnable)

@@ -4,6 +4,7 @@ import { PlainNode } from "./plain";
 import { NODE_TYPE } from "./type";
 import { getFiberName, getFiberType, getHook, getProps, getSource, getState, getTree } from "./utils";
 
+import type { DevToolCore } from "./instance";
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode, MyReactFiberContainer } from "@my-react/react-reconciler";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
@@ -168,10 +169,14 @@ export const generateTreeMap = (dispatch: CustomRenderDispatch) => {
 
 export type Tree = ReturnType<typeof generateTreeMap>["current"];
 
-export const unmountPlainNode = (fiber: MyReactFiberNode) => {
+export const unmountPlainNode = (fiber: MyReactFiberNode, runtime: DevToolCore) => {
   const plain = treeMap.get(fiber);
 
   if (plain) {
+    if (plain.i === runtime._selectId) {
+      runtime.notifyUnSelect();
+    }
+
     fiberStore.delete(plain.i);
 
     plainStore.delete(plain.i);
@@ -254,7 +259,7 @@ export const getComponentFiberByDom = (dom: HTMLElement) => {
   let r = fiber;
 
   while (r) {
-    if(include(r.type, NODE_TYPE.__class__) | include(r.type, NODE_TYPE.__function__)) {
+    if (include(r.type, NODE_TYPE.__class__) | include(r.type, NODE_TYPE.__function__)) {
       return r;
     }
 
