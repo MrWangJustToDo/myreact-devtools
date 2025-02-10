@@ -2571,9 +2571,6 @@
     }
     var installProxy = function (tabId) {
         chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["bundle/proxy.js"] }).then(function (res) {
-            if (res && false) {
-                console.log("[@my-react-devtool/worker] install proxy success for tab: ".concat(tabId));
-            }
         });
     };
     var portPip = function (id, port1, port2) {
