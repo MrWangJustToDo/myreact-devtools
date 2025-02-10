@@ -126,13 +126,19 @@ export const TreeItem = ({
       id={"node-" + current.i.toString()}
       data-depth={deep}
       onClick={() => {
-        withSelect && setSelect(node.i);
+        if (withSelect) {
+          setSelect(node.i);
+        }
       }}
       onMouseEnter={() => {
-        withSelect && setHover(node.i);
+        if (withSelect) {
+          setHover(node.i);
+        }
       }}
       onMouseLeave={() => {
-        withSelect && setHover("");
+        if (withSelect) {
+          setHover("");
+        }
       }}
       className={
         "w-full h-full node-item cursor-pointer transition-transform-background rounded-sm select-none " +

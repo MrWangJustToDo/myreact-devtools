@@ -44,7 +44,9 @@ export const useWebDev = () => {
 
         connect = false;
 
-        id && clearTimeout(id);
+        if (id) {
+          clearTimeout(id);
+        }
 
         unSubscribe();
 

@@ -36,7 +36,9 @@ export function getLastChild(nodes: PlainNode[], node: PlainNode): PlainNode {
       while (index >= 0 && !nodes.some((i) => i.i === item!.c[index]?.i)) {
         index--;
       }
-      index >= 0 && stack.push(item.c[index]);
+      if (index >= 0) {
+        stack.push(item.c[index]);
+      }
     }
   }
 

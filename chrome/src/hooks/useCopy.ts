@@ -21,7 +21,7 @@ export const useCopy = () => {
         } else {
           throw new Error("writeText not supported");
         }
-      } catch (e) {
+      } catch {
         oldSchoolCopy(value);
         setState(value);
       }

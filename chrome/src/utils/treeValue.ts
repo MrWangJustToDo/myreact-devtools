@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { HOOKTree } from "@my-react-devtool/core";
 
 function isIterable(obj: any) {
@@ -28,7 +29,6 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   } else if (type === "Undefined") {
     return "undef";
   } else if (typeof val === "object") {
-    // eslint-disable-next-line @typescript-eslint/ban-types
     return Object.keys(val as {}).length > 0 ? "{…}" : "{}";
   } else if (type === "Function") {
     return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
@@ -45,7 +45,6 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
 
 export function getText(type: string, data: any) {
   if (type === "Object") {
-    // eslint-disable-next-line @typescript-eslint/ban-types
     const keys = Object.keys(data as {});
 
     const str = keys

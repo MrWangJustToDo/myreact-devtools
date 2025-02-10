@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { useCallback, useRef } from "react";
 
 export const useCallbackRef = <T extends Function>(cb?: T): T => {

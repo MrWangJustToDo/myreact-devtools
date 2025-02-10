@@ -92,7 +92,7 @@
     }
   ],
   "dependencies": {
-    "@types/chrome": "^0.0.268"
+    "@types/chrome": "^0.0.304"
   },
   "devDependencies": {
     "@my-react-devtool/core": "workspace:*",

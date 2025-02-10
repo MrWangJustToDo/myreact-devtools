@@ -71,7 +71,9 @@ export const useBridgeTarget = () => {
 
         connect = false;
 
-        id && clearTimeout(id);
+        if (id) {
+          clearTimeout(id);
+        }
 
         unsubscribe();
 
