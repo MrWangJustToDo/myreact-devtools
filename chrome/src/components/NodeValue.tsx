@@ -21,6 +21,10 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
 
   const [code, setCode] = useState("");
 
+  const isWebDev = process.env.NEXT_PUBLIC_MODE === "web";
+
+  const isLocalDev = process.env.NEXT_PUBLIC_MODE === "local";
+
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const chunkData = useChunk.useShallowSelector((s) => s.data?.[item?.i || ""]?.loaded);
@@ -84,7 +88,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
 
     const isReadError = item.t === "ReadError";
 
-    const isFunction = item.t === "Function";
+    const isFunction = item.t === "Function" && (isWebDev || isLocalDev);
 
     const element = <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""}`}>{textContent}</span>;
 
@@ -93,7 +97,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent">{StateIcon}</span>
           {prefix}
-          <div className={`w-full relative line-clamp-1 break-all ${isFunction ? "pr-8" : ""}`}>
+          <div className={`w-full relative line-clamp-1 break-all ${isFunction ? "pr-8" : "pr-2"}`}>
             <span className="cursor-pointer select-none" onContextMenu={onContextClick}>
               {name}
             </span>
