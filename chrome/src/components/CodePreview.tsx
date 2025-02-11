@@ -28,3 +28,17 @@ export const CodePreview = ({ code, title }: { code: string; title: string }) =>
     </Card>
   );
 };
+
+export const CodePreviewPlain = ({ code }: { code: string }) => {
+  const [html, setHTML] = useState<string>();
+
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    codeToHtml(code, { lang: "js", theme: theme === "light" || !theme ? "github-light" : "github-dark" }).then((html) => {
+      setHTML(html);
+    });
+  }, [theme, code]);
+
+  return <>{html ? <div className="max-h-[40vh] overflow-auto" dangerouslySetInnerHTML={{ __html: html }} /> : <Spinner />}</>;
+};
