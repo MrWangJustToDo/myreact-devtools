@@ -974,7 +974,9 @@
     		    plain.k = hasKey ? directory[fiber.key] : undefined;
     		    var _a = getFiberType(fiber), t = _a.t, hasCompiler = _a.hasCompiler;
     		    plain.t = t;
-    		    hasCompiler && (plain.m = true);
+    		    if (hasCompiler) {
+    		        plain.m = true;
+    		    }
     		    plain.n = directory[name];
     		};
     		var assignFiber = function (plain, fiber, force) {
@@ -2064,6 +2066,8 @@
     		            }
     		        }, 16);
     		        var onClick = function (e) {
+    		            if (!_this.hasEnable)
+    		                return;
     		            _this._domHoverLock = true;
     		            _this._domHoverId = _this._tempDomHoverId;
     		            debounceNotifyDomHover();
@@ -2531,8 +2535,7 @@
     		exports.shallowAssignFiber = shallowAssignFiber;
     		exports.throttle = throttle;
     		exports.typeKeys = typeKeys;
-    		exports.unmountPlainNode = unmountPlainNode;
-    		
+    		exports.unmountPlainNode = unmountPlainNode; 
     	} (index_production));
     	return index_production;
     }
@@ -2923,4 +2926,3 @@
     globalHook.init = function () { return hookPostMessageWithSource({ type: coreExports.MessageHookType.init }); };
 
 })();
-//# sourceMappingURL=hook.production.js.map
