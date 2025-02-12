@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/ban-types */
 import { isNormalEquals } from "@my-react/react-shared";
 
 import { getNodeForce, getNodeFromId } from "./data";
@@ -215,6 +215,8 @@ export class DevToolCore {
     }, 16);
 
     const onClick = (e: MouseEvent) => {
+      if (!this.hasEnable) return;
+      
       this._domHoverLock = true;
 
       this._domHoverId = this._tempDomHoverId;

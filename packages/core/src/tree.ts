@@ -50,7 +50,9 @@ export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) =>
 
   plain.t = t;
 
-  hasCompiler && (plain.m = true);
+  if (hasCompiler) {
+    plain.m = true;
+  }
 
   plain.n = directory[name];
 };

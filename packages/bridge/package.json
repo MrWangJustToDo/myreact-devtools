@@ -29,8 +29,7 @@
           "entryFileNames": "iife/hook.js",
           "format": "iife",
           "type": true,
-          "multiple": true,
-          "sourcemap": true
+          "multiple": true
         }
       ]
     },
@@ -43,8 +42,7 @@
           "entryFileNames": "iife/detector.js",
           "format": "iife",
           "type": true,
-          "multiple": true,
-          "sourcemap": true
+          "multiple": true
         }
       ]
     },
@@ -57,8 +55,7 @@
           "entryFileNames": "iife/proxy.js",
           "format": "iife",
           "type": true,
-          "multiple": true,
-          "sourcemap": true
+          "multiple": true
         }
       ]
     },
@@ -71,8 +68,7 @@
           "entryFileNames": "iife/service-worker.js",
           "format": "iife",
           "type": true,
-          "multiple": true,
-          "sourcemap": true
+          "multiple": true
         }
       ]
     },
@@ -85,8 +81,7 @@
           "entryFileNames": "iife/panel.js",
           "format": "iife",
           "type": true,
-          "multiple": true,
-          "sourcemap": true
+          "multiple": true
         }
       ]
     }

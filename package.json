@@ -23,7 +23,7 @@
     "@my-react/react-reconciler": "^0.3.4",
     "@types/node": "^22.8.4",
     "eslint": "^8.57.0",
-    "prettier": "^3.3.3",
+    "prettier": "^3.4.2",
     "project-tool": "https://github.com/MrWangJustToDo/project-tool.git",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.0",
