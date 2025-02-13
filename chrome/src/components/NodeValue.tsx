@@ -67,6 +67,25 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
     }
   }, [chunkData, expand, item?.i, item?.l]);
 
+  // preload expandable data
+  useEffect(() => {
+    if (expand && data) {
+      if (Array.isArray(data)) {
+        data.forEach((i) => {
+          if (i.e && i.i && !i.l && !useChunk.getReadonlyState().data?.[i.i]?.loaded) {
+            useChunk.getActions().setLoading(i.i);
+          }
+        });
+      } else {
+        Object.values(data).forEach((i: any) => {
+          if (i.e && i.i && !i.l && !useChunk.getReadonlyState().data?.[i.i]?.loaded) {
+            useChunk.getActions().setLoading(i.i);
+          }
+        });
+      }
+    }
+  }, [data, expand]);
+
   const onContextClick = (e: React.MouseEvent) => {
     // if the data not loaded, do not show context menu
     if (!data || !item) return;
@@ -79,11 +98,11 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
 
   if (!item) return null;
 
-  const currentIsExpand = item.e;
+  const currentIsExpandable = item.e;
 
   const StateIcon = expand ? <TriangleDownIcon width="16" height="16" /> : <TriangleRightIcon width="16" height="16" />;
 
-  if (!currentIsExpand) {
+  if (!currentIsExpandable) {
     const textContent = item.t === "String" ? `"${String(item.v)}"` : String(item.v);
 
     const isReadError = item.t === "ReadError";

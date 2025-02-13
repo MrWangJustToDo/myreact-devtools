@@ -108,8 +108,6 @@ export class DevToolCore {
 
   _domHoverId = "";
 
-  _domHoverLock = false;
-
   _trigger = {};
 
   _state = {};
@@ -178,8 +176,6 @@ export class DevToolCore {
 
     this._enableHoverOnBrowser = true;
 
-    this._domHoverLock = false;
-
     this.select?.remove?.();
 
     const debounceNotifyDomHover = debounce(() => {
@@ -187,7 +183,6 @@ export class DevToolCore {
     }, 100);
 
     const onMouseEnter = debounce((e: MouseEvent) => {
-      if (this._domHoverLock) return;
 
       const target = e.target as HTMLElement;
 
@@ -217,8 +212,6 @@ export class DevToolCore {
     const onClick = (e: MouseEvent) => {
       if (!this.hasEnable) return;
       
-      this._domHoverLock = true;
-
       this._domHoverId = this._tempDomHoverId;
 
       debounceNotifyDomHover();
@@ -228,10 +221,6 @@ export class DevToolCore {
       e.preventDefault();
     };
 
-    const onBlur = () => {
-      this._domHoverLock = false;
-    };
-
     document.addEventListener("mouseenter", onMouseEnter, true);
 
     document.addEventListener("click", onClick, true);
@@ -239,8 +228,6 @@ export class DevToolCore {
     document.addEventListener("mousedown", onClick, true);
 
     document.addEventListener("pointerdown", onClick, true);
-
-    document.addEventListener("blur", onBlur, true);
 
     cb = () => {
       this._enableHoverOnBrowser = false;
@@ -254,8 +241,6 @@ export class DevToolCore {
       document.removeEventListener("mousedown", onClick, true);
 
       document.removeEventListener("pointerdown", onClick, true);
-
-      document.removeEventListener("blur", onBlur, true);
     };
   }
 
@@ -531,8 +516,6 @@ export class DevToolCore {
   showHover() {
     if (!this._enableHover) return;
 
-    this._domHoverLock = false;
-
     this.select?.remove?.();
 
     this.select = new Overlay(this);
@@ -627,17 +610,11 @@ export class DevToolCore {
   }
 
   notifySelect(force = false) {
-    this._domHoverLock = false;
-
     if (!this.hasEnable) return;
 
     const id = this._selectId;
 
     if (!id) return;
-
-    if (this._enableHoverOnBrowser && this._selectId !== this._domHoverId) {
-      this.select?.remove?.();
-    }
 
     const fiber = getFiberNodeById(id);
 
