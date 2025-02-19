@@ -1416,9 +1416,11 @@
     		    var final = [];
     		    var hookList = fiber.hookList;
     		    var obj = {};
+    		    var prevScope = "";
     		    var processStack = function (hook, index) {
     		        var stack = hook._debugStack;
     		        if (!stack || !Array.isArray(stack) || stack.length === 0) {
+    		            prevScope = "";
     		            var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
     		            var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
     		            final.push({
@@ -1431,6 +1433,11 @@
     		        }
     		        else {
     		            var prevKey = "";
+    		            var scope = stack[0].id + stack[0].name;
+    		            if (prevScope !== scope) {
+    		                obj = {};
+    		                prevScope = scope;
+    		            }
     		            for (var i = 0; i < stack.length; i++) {
     		                var isHook = i === stack.length - 1;
     		                var key = prevKey + stack[i].id + stack[i].name + (isHook ? "-".concat(index) : "");

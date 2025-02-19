@@ -252,12 +252,15 @@ export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
 
   const hookList = fiber.hookList;
 
-  const obj: Record<string, HOOKTree> = {};
+  let obj: Record<string, HOOKTree> = {};
+
+  let prevScope: string = "";
 
   const processStack = (hook: MyReactHookNodeDev, index: number) => {
     const stack = hook._debugStack;
 
     if (!stack || !Array.isArray(stack) || stack.length === 0) {
+      prevScope = "";
       const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
       const isContext = hook.type === HOOK_TYPE.useContext;
       final.push({
@@ -269,6 +272,12 @@ export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
       });
     } else {
       let prevKey: string = "";
+      const scope = stack[0].id + stack[0].name;
+      // current hook in a new function scope, need to reset cache obj
+      if (prevScope !== scope) {
+        obj = {};
+        prevScope = scope;
+      }
       for (let i = 0; i < stack.length; i++) {
         const isHook = i === stack.length - 1;
         const key = prevKey + stack[i].id + stack[i].name + (isHook ? `-${index}` : "");
