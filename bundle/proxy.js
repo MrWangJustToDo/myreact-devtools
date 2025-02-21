@@ -1927,6 +1927,7 @@
     		    DevToolMessageEnum["highlight"] = "highlight";
     		    DevToolMessageEnum["trigger"] = "trigger";
     		    DevToolMessageEnum["hmr"] = "hmr";
+    		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
     		    DevToolMessageEnum["run"] = "run";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
@@ -1936,6 +1937,11 @@
     		    DevToolMessageEnum["chunks"] = "chunks";
     		    DevToolMessageEnum["dom-hover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
+    		exports.HMRStatus = void 0;
+    		(function (HMRStatus) {
+    		    HMRStatus[HMRStatus["refresh"] = 1] = "refresh";
+    		    HMRStatus[HMRStatus["remount"] = 2] = "remount";
+    		})(exports.HMRStatus || (exports.HMRStatus = {}));
     		var debounce = function (callback, time) {
     		    var id = null;
     		    return (function () {
@@ -1977,10 +1983,9 @@
     		        // 字符串字典
     		        this._dir = {};
     		        this._hmr = {};
+    		        this._hmrStatus = {};
     		        this._error = {};
-    		        this._tempError = {};
     		        this._warn = {};
-    		        this._tempWarn = {};
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._tempDomHoverId = "";
@@ -2011,6 +2016,7 @@
     		            _this.notifyDir();
     		            _this.notifyTrigger();
     		            _this.notifyHMR();
+    		            _this.notifyHMRStatus();
     		            _this.notifySelect();
     		            _this.notifyWarn();
     		            _this.notifyError();
@@ -2155,14 +2161,16 @@
     		                return;
     		            _this._state[id] = _this._state[id] ? _this._state[id] + 1 : 1;
     		        };
-    		        var onFiberHMR = function (fiber) {
+    		        var onFiberHMR = function (fiber, forceRefresh) {
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
     		            _this._hmr[id] = _this._hmr[id] ? _this._hmr[id] + 1 : 1;
+    		            _this._hmrStatus[id] = forceRefresh ? exports.HMRStatus.remount : exports.HMRStatus.refresh;
     		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyHMR();
+    		            _this.notifyHMRStatus();
     		            _this.notifyDispatch(dispatch, true);
     		        };
     		        var onFiberWarn = function (fiber) {
@@ -2173,8 +2181,6 @@
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
-    		            _this._tempWarn[id] = _this._tempWarn[id] || [];
-    		            _this._tempWarn[id].push(args);
     		            _this._warn[id] = _this._warn[id] || [];
     		            _this._warn[id].push(args);
     		            _this.notifyWarn();
@@ -2187,8 +2193,6 @@
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
-    		            _this._tempError[id] = _this._tempError[id] || [];
-    		            _this._tempError[id].push(args);
     		            _this._error[id] = _this._error[id] || [];
     		            _this._error[id].push(args);
     		            _this.notifyError();
@@ -2326,31 +2330,29 @@
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.highlight, data: { id: id, type: type } });
     		    };
-    		    DevToolCore.prototype.notifyWarn = function (full) {
+    		    DevToolCore.prototype.notifyWarn = function () {
     		        var _this = this;
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({
     		            type: exports.DevToolMessageEnum.warn,
-    		            data: Object.keys(full ? this._warn : this._tempWarn).reduce(function (p, c) {
-    		                p[c] = _this._tempWarn[c].map(function (i) { return getNodeForce(i); });
+    		            data: Object.keys(this._warn).reduce(function (p, c) {
+    		                p[c] = _this._warn[c].map(function (i) { return getNode(i); });
     		                return p;
     		            }, {}),
     		        });
-    		        this._tempWarn = {};
     		    };
-    		    DevToolCore.prototype.notifyError = function (full) {
+    		    DevToolCore.prototype.notifyError = function () {
     		        var _this = this;
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({
     		            type: exports.DevToolMessageEnum.error,
-    		            data: Object.keys(full ? this._error : this._tempError).reduce(function (p, c) {
-    		                p[c] = _this._tempError[c].map(function (i) { return getNodeForce(i); });
+    		            data: Object.keys(this._error).reduce(function (p, c) {
+    		                p[c] = _this._error[c].map(function (i) { return getNode(i); });
     		                return p;
     		            }, {}),
     		        });
-    		        this._tempError = {};
     		    };
     		    // TODO
     		    DevToolCore.prototype.notifyChanged = function (list) {
@@ -2363,6 +2365,11 @@
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum.hmr, data: this._hmr });
+    		    };
+    		    DevToolCore.prototype.notifyHMRStatus = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.hmrStatus, data: this._hmrStatus });
     		    };
     		    DevToolCore.prototype.notifyConfig = function () {
     		        if (!this.hasEnable)
@@ -2446,11 +2453,14 @@
     		        this._hmr = {};
     		        this._hoverId = "";
     		        this._selectId = "";
+    		        this._hmrStatus = {};
+    		        this._domHoverId = "";
+    		        this._tempDomHoverId = "";
     		        this._state = {};
-    		        this._tempError = {};
-    		        this._tempWarn = {};
     		        this._trigger = {};
     		        this._warn = {};
+    		        this._enableHoverOnBrowser = false;
+    		        this.disableBrowserHover();
     		    };
     		    return DevToolCore;
     		}());
