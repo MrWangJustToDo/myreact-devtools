@@ -2166,11 +2166,15 @@
     		            if (!id)
     		                return;
     		            _this._hmr[id] = _this._hmr[id] ? _this._hmr[id] + 1 : 1;
-    		            _this._hmrStatus[id] = forceRefresh ? exports.HMRStatus.remount : exports.HMRStatus.refresh;
+    		            if (typeof forceRefresh === 'boolean') {
+    		                _this._hmrStatus[id] = forceRefresh ? exports.HMRStatus.remount : exports.HMRStatus.refresh;
+    		            }
     		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyHMR();
-    		            _this.notifyHMRStatus();
+    		            if (typeof forceRefresh === 'boolean') {
+    		                _this.notifyHMRStatus();
+    		            }
     		            _this.notifyDispatch(dispatch, true);
     		        };
     		        var onFiberWarn = function (fiber) {

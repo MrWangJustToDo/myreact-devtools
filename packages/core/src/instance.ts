@@ -344,13 +344,17 @@ export class DevToolCore {
 
       this._hmr[id] = this._hmr[id] ? this._hmr[id] + 1 : 1;
 
-      this._hmrStatus[id] = forceRefresh ? HMRStatus.remount : HMRStatus.refresh;
+      if (typeof forceRefresh === 'boolean') {
+        this._hmrStatus[id] = forceRefresh ? HMRStatus.remount : HMRStatus.refresh;
+      }
 
       if (!this.hasEnable) return;
 
       this.notifyHMR();
 
-      this.notifyHMRStatus();
+      if (typeof forceRefresh === 'boolean') {
+        this.notifyHMRStatus();
+      }
 
       this.notifyDispatch(dispatch, true);
     };
