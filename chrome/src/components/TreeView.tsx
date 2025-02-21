@@ -100,7 +100,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
   return (
     <Virtuoso
       ref={ref}
-      overscan={60}
+      increaseViewportBy={500}
       isScrolling={setIsScrolling}
       context={{ isScrolling }}
       onScroll={onScroll}

@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 import { isNormalEquals } from "@my-react/react-shared";
 
-import { getNodeForce, getNodeFromId } from "./data";
+import { getNode, getNodeFromId } from "./data";
 import { HighLight, Overlay, color as _color } from "./highlight";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
@@ -34,6 +34,7 @@ export enum DevToolMessageEnum {
   highlight = "highlight",
   trigger = "trigger",
   hmr = "hmr",
+  hmrStatus = "hmrStatus",
   run = "run",
   detail = "detail",
   unmount = "unmount",
@@ -45,6 +46,11 @@ export enum DevToolMessageEnum {
   chunks = "chunks",
 
   ["dom-hover"] = "dom-hover",
+}
+
+export enum HMRStatus {
+  refresh = 1,
+  remount = 2,
 }
 
 export type DevToolMessageType = {
@@ -92,13 +98,11 @@ export class DevToolCore {
 
   _hmr = {};
 
+  _hmrStatus = {};
+
   _error = {};
 
-  _tempError = {};
-
   _warn = {};
-
-  _tempWarn = {};
 
   _hoverId = "";
 
@@ -333,16 +337,20 @@ export class DevToolCore {
       this._state[id] = this._state[id] ? this._state[id] + 1 : 1;
     };
 
-    const onFiberHMR = (fiber: MyReactFiberNode) => {
+    const onFiberHMR = (fiber: MyReactFiberNode, forceRefresh?: boolean) => {
       const id = getPlainNodeIdByFiber(fiber);
 
       if (!id) return;
 
       this._hmr[id] = this._hmr[id] ? this._hmr[id] + 1 : 1;
 
+      this._hmrStatus[id] = forceRefresh ? HMRStatus.remount : HMRStatus.refresh;
+
       if (!this.hasEnable) return;
 
       this.notifyHMR();
+
+      this.notifyHMRStatus();
 
       this.notifyDispatch(dispatch, true);
     };
@@ -351,10 +359,6 @@ export class DevToolCore {
       const id = getPlainNodeIdByFiber(fiber);
 
       if (!id) return;
-
-      this._tempWarn[id] = this._tempWarn[id] || [];
-
-      this._tempWarn[id].push(args);
 
       this._warn[id] = this._warn[id] || [];
 
@@ -367,10 +371,6 @@ export class DevToolCore {
       const id = getPlainNodeIdByFiber(fiber);
 
       if (!id) return;
-
-      this._tempError[id] = this._tempError[id] || [];
-
-      this._tempError[id].push(args);
 
       this._error[id] = this._error[id] || [];
 
@@ -557,32 +557,28 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.highlight, data: { id, type } });
   }
 
-  notifyWarn(full?: boolean) {
+  notifyWarn() {
     if (!this.hasEnable) return;
 
     this._notify({
       type: DevToolMessageEnum.warn,
-      data: Object.keys(full ? this._warn : this._tempWarn).reduce((p, c) => {
-        p[c] = this._tempWarn[c].map((i) => getNodeForce(i));
+      data: Object.keys(this._warn).reduce((p, c) => {
+        p[c] = this._warn[c].map((i) => getNode(i));
         return p;
       }, {}),
     });
-
-    this._tempWarn = {};
   }
 
-  notifyError(full?: boolean) {
+  notifyError() {
     if (!this.hasEnable) return;
 
     this._notify({
       type: DevToolMessageEnum.error,
-      data: Object.keys(full ? this._error : this._tempError).reduce((p, c) => {
-        p[c] = this._tempError[c].map((i) => getNodeForce(i));
+      data: Object.keys(this._error).reduce((p, c) => {
+        p[c] = this._error[c].map((i) => getNode(i));
         return p;
       }, {}),
     });
-
-    this._tempError = {};
   }
 
   // TODO
@@ -598,6 +594,12 @@ export class DevToolCore {
     if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum.hmr, data: this._hmr });
+  }
+
+  notifyHMRStatus() {
+    if (!this.hasEnable) return;
+
+    this._notify({ type: DevToolMessageEnum.hmrStatus, data: this._hmrStatus });
   }
 
   notifyConfig() {
@@ -703,6 +705,8 @@ export class DevToolCore {
 
     this.notifyHMR();
 
+    this.notifyHMRStatus();
+
     this.notifySelect();
 
     this.notifyWarn();
@@ -744,15 +748,21 @@ export class DevToolCore {
 
     this._selectId = "";
 
+    this._hmrStatus = {};
+
+    this._domHoverId = "";
+
+    this._tempDomHoverId = "";
+
     this._state = {};
-
-    this._tempError = {};
-
-    this._tempWarn = {};
 
     this._trigger = {};
 
     this._warn = {};
+
+    this._enableHoverOnBrowser = false;
+
+    this.disableBrowserHover();
   }
 }
 

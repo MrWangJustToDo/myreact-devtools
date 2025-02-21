@@ -15,19 +15,11 @@ export const useHighlightNode = createState(
         },
 
         setError: (state: Record<string, Array<NodeValue>>) => {
-          Object.keys(state).forEach((i) => {
-            s.error[i] = s.error[i] || [];
-
-            s.error[i].push(...state[i]);
-          })
+          s.error = state;
         },
 
         setWarn: (state: Record<string, Array<NodeValue>>) => {
-          Object.keys(state).forEach((i) => {
-            s.warn[i] = s.warn[i] || [];
-
-            s.warn[i].push(...state[i]);
-          })
+          s.warn = state;
         },
 
         clear: () => {

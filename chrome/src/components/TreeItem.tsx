@@ -1,6 +1,5 @@
-// import { NODE_TYPE } from "@my-react/react-reconciler";
 import { Chip, Spacer, Tooltip } from "@heroui/react";
-import { getFiberTag } from "@my-react-devtool/core";
+import { getFiberTag, HMRStatus } from "@my-react-devtool/core";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { memo, useCallback, useMemo } from "react";
 
@@ -90,7 +89,7 @@ export const TreeItem = ({
 
   const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
-  const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.i], [node.i]));
+  const { hmrCount, hmrStatus } = useHMRNode(useCallback((s) => ({ hmrCount: s.state?.[node.i], hmrStatus: s.status?.[node.i] }), [node.i]));
 
   const highlightType = useHighlightNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
@@ -101,13 +100,11 @@ export const TreeItem = ({
 
   const finalName = useNodeName(useCallback((s) => s.map[current.n], [current.n]));
 
-  const { select, closeList, selectList } = useTreeNode(
-    useCallback((s) => ({ select: s.select, closeList: s.closeList, selectList: s.selectList }), []),
-    (p, c) =>
-      Object.is(p.select !== node.i, c.select !== node.i) &&
-      Object.is(p.closeList?.[node.i], c.closeList?.[node.i]) &&
-      Object.is(p.selectList?.[node.i], c.selectList?.[node.i])
-  );
+  const { select, closeList, selectList } = useTreeNode.useShallowStableSelector((s) => ({
+    select: s.select,
+    closeList: s.closeList,
+    selectList: s.selectList,
+  }));
 
   const currentIsSelect = withSelect && node.i === select;
 
@@ -197,7 +194,7 @@ export const TreeItem = ({
             {withHMR && hmrCount > 0 && (
               <>
                 <Spacer x={1} />
-                <Tooltip content="hmr update" showArrow color="success">
+                <Tooltip content={hmrStatus ? `hmr update with ~${HMRStatus[hmrStatus]}~` : "hmr update"} showArrow color="success">
                   <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
                     {hmrCount}
                   </Chip>

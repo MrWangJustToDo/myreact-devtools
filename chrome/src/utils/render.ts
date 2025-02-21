@@ -15,7 +15,7 @@ import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import { isServer } from "./isServer";
 
-import type { DevToolMessageType, NodeValue, PlainNode, Tree } from "@my-react-devtool/core";
+import type { DevToolMessageType, HMRStatus, NodeValue, PlainNode, Tree } from "@my-react-devtool/core";
 
 export const safeAction = (cb: () => void) => {
   try {
@@ -84,6 +84,16 @@ export const onRender = (data: DevToolMessageType) => {
       const { update } = useHMRNode.getActions();
 
       update(nodes);
+    });
+  }
+
+  if (data.type === DevToolMessageEnum.hmrStatus) {
+    const nodes = data.data as Record<string, HMRStatus>;
+
+    safeAction(() => {
+      const { updateStatus } = useHMRNode.getActions();
+
+      updateStatus(nodes);
     });
   }
 
