@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 
-export const usePrevious = <T>(value: T): T | undefined => {
-  const ref = useRef<T>();
+export const usePrevious = <T>(value: T, needSet: (v?: T) => boolean): T | undefined => {
+  const ref = useRef<T>(value);
 
   useEffect(() => {
-    ref.current = value;
-  }, [value]);
+    if (needSet(value)) {
+      ref.current = value;
+    }
+  }, [needSet, value]);
 
   return ref.current;
 };

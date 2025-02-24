@@ -29,17 +29,15 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
 
   const chunkData = useChunk.useShallowSelector((s) => s.data?.[item?.i || ""]?.loaded);
 
-  const cData = chunkData?.v ?? item?.v;
+  const cData = item?.v ?? chunkData?.v;
 
-  const pData = usePrevious(cData);
+  const pData = usePrevious(cData, c => !!c);
 
   const data = cData ?? pData;
 
   const n = chunkData?.n ?? item?.n;
 
   const t = chunkData?.t ?? item?.t;
-
-  const isCache = chunkData?.c ?? item?.c;
 
   const text = useMemo(() => {
     if (n) {
@@ -69,22 +67,22 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
 
   // preload expandable data
   useEffect(() => {
-    if (expand && data) {
-      if (Array.isArray(data)) {
-        data.forEach((i) => {
+    if (expand && cData) {
+      if (Array.isArray(cData)) {
+        cData.forEach((i) => {
           if (i.e && i.i && !i.l && !useChunk.getReadonlyState().data?.[i.i]?.loaded) {
             useChunk.getActions().setLoading(i.i);
           }
         });
       } else {
-        Object.values(data).forEach((i: any) => {
+        Object.values(cData).forEach((i: any) => {
           if (i.e && i.i && !i.l && !useChunk.getReadonlyState().data?.[i.i]?.loaded) {
             useChunk.getActions().setLoading(i.i);
           }
         });
       }
     }
-  }, [data, expand]);
+  }, [cData, expand]);
 
   const onContextClick = (e: React.MouseEvent) => {
     // if the data not loaded, do not show context menu
@@ -159,7 +157,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
               : <span className="hook-value-placeholder">{data ? text : <DotsHorizontalIcon className="inline-block" />}</span>
             </div>
           </div>
-          {(isCache ? expand : hasOpenRef.current || expand) && (
+          {(hasOpenRef.current || expand) && (
             <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
               {data ? (
                 Array.isArray(data) ? (
