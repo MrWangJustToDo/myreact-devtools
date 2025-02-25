@@ -1,13 +1,11 @@
-import { Modal, ModalBody, ModalContent, Spinner, useDisclosure } from "@heroui/react";
-import { TriangleDownIcon, TriangleRightIcon, DotsHorizontalIcon, CodeIcon } from "@radix-ui/react-icons";
+import { Spinner } from "@heroui/react";
+import { TriangleDownIcon, TriangleRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useState, useRef, useMemo, useEffect } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { usePrevious } from "@/hooks/usePrevious";
 import { getText } from "@/utils/treeValue";
-
-import { CodePreviewPlain } from "./CodePreview";
 
 import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
 import type { ReactNode } from "react";
@@ -18,14 +16,6 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
   const [expand, setExpand] = useState(false);
 
   const hasOpenRef = useRef(false);
-
-  const [code, setCode] = useState("");
-
-  const isWebDev = process.env.NEXT_PUBLIC_MODE === "web";
-
-  const isLocalDev = process.env.NEXT_PUBLIC_MODE === "local";
-
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const chunkData = useChunk.useShallowSelector((s) => s.data?.[item?.i || ""]?.loaded);
 
@@ -105,7 +95,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
 
     const isReadError = item.t === "ReadError";
 
-    const isFunction = item.t === "Function" && (isWebDev || isLocalDev);
+    // const isFunction = item.t === "Function" && (isWebDev || isLocalDev);
 
     const element = <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""}`}>{textContent}</span>;
 
@@ -114,31 +104,13 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent">{StateIcon}</span>
           {prefix}
-          <div className={`w-full relative line-clamp-1 break-all ${isFunction ? "pr-8" : "pr-2"}`}>
+          <div className={`w-full relative line-clamp-1 break-all pr-2`}>
             <span className="cursor-pointer select-none" onContextMenu={onContextClick}>
               {name}
             </span>
             : <span className="hook-value-placeholder">{element}</span>
-            {isFunction && (
-              <span>
-                <CodeIcon
-                  className="absolute right-2 top-0 cursor-pointer"
-                  onClick={() => {
-                    setCode(item.v);
-                    onOpen();
-                  }}
-                />
-              </span>
-            )}
           </div>
         </div>
-        <Modal isOpen={isOpen} size="2xl" onClose={onClose} onOpenChange={onOpenChange}>
-          <ModalContent>
-            <ModalBody className="p-4">
-              <CodePreviewPlain code={code} />
-            </ModalBody>
-          </ModalContent>
-        </Modal>
       </div>
     );
   } else {
