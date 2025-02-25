@@ -1346,15 +1346,14 @@
     		    var _a;
     		    var final = [];
     		    var hookList = fiber.hookList;
-    		    var obj = {};
-    		    var prevScope = "";
     		    var processStack = function (hook, index) {
+    		        var _a, _b;
     		        var stack = hook._debugStack;
     		        if (!stack || !Array.isArray(stack) || stack.length === 0) {
-    		            prevScope = "";
     		            var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
     		            var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
     		            final.push({
+    		                k: index.toString(),
     		                h: true,
     		                i: index,
     		                n: isContext ? getContextName(hook.value) : getHookName(hook.type),
@@ -1363,48 +1362,43 @@
     		            });
     		        }
     		        else {
-    		            var prevKey = "";
-    		            var scope = stack[0].id + stack[0].name;
-    		            // current hook in a new function scope, need to reset cache obj
-    		            if (prevScope !== scope) {
-    		                obj = {};
-    		                prevScope = scope;
-    		            }
+    		            var prevHookTree = final.at(-1);
+    		            var parentHookChild = final;
     		            for (var i = 0; i < stack.length; i++) {
     		                var isHook = i === stack.length - 1;
-    		                var key = prevKey + stack[i].id + stack[i].name + (isHook ? "-".concat(index) : "");
-    		                var name_5 = stack[i].name;
-    		                var hasInclude = true;
-    		                if (!obj[key]) {
+    		                var _c = stack[i], name_5 = _c.name, id = _c.id;
+    		                if (id === (prevHookTree === null || prevHookTree === void 0 ? void 0 : prevHookTree.k)) {
     		                    if (isHook) {
-    		                        obj[key] = { n: name_5, i: index, h: true, d: 0 };
+    		                        var hookTree = { k: id, i: index, h: isHook, d: i, n: name_5.startsWith("use") ? name_5.substring(3) : name_5 };
+    		                        parentHookChild.push(hookTree);
+    		                        prevHookTree = hookTree;
     		                    }
     		                    else {
-    		                        obj[key] = { n: name_5, d: 0 };
+    		                        prevHookTree.c = prevHookTree.c || [];
+    		                        parentHookChild = prevHookTree.c;
+    		                        prevHookTree = (_a = prevHookTree.c) === null || _a === void 0 ? void 0 : _a.at(-1);
     		                    }
-    		                    hasInclude = false;
     		                }
-    		                var item = obj[key];
-    		                var prevItem = obj[prevKey];
-    		                if (!hasInclude) {
-    		                    if (prevItem) {
-    		                        prevItem.c = prevItem.c || [];
-    		                        prevItem.c.push(item);
-    		                        item.d = prevItem.d + 1;
+    		                else {
+    		                    var hookTree = { k: id, i: isHook ? index : undefined, h: isHook, d: i, n: name_5.startsWith("use") ? name_5.substring(3) : name_5 };
+    		                    if (isHook) {
+    		                        parentHookChild.push(hookTree);
+    		                        prevHookTree = hookTree;
     		                    }
     		                    else {
-    		                        final.push(item);
+    		                        parentHookChild.push(hookTree);
+    		                        hookTree.c = hookTree.c || [];
+    		                        parentHookChild = hookTree.c;
+    		                        prevHookTree = (_b = hookTree.c) === null || _b === void 0 ? void 0 : _b.at(-1);
     		                    }
-    		                    item.n = item.n.startsWith("use") ? item.n.substring(3) : item.n;
     		                }
     		                if (isHook) {
     		                    var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
     		                    var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
     		                    // overwrite name
-    		                    item.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
-    		                    item.v = force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result);
+    		                    prevHookTree.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
+    		                    prevHookTree.v = force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result);
     		                }
-    		                prevKey = key;
     		            }
     		        }
     		    };
