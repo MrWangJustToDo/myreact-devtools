@@ -252,18 +252,14 @@ export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
 
   const hookList = fiber.hookList;
 
-  let obj: Record<string, HOOKTree> = {};
-
-  let prevScope: string = "";
-
   const processStack = (hook: MyReactHookNodeDev, index: number) => {
     const stack = hook._debugStack;
 
     if (!stack || !Array.isArray(stack) || stack.length === 0) {
-      prevScope = "";
       const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
       const isContext = hook.type === HOOK_TYPE.useContext;
       final.push({
+        k: index.toString(),
         h: true,
         i: index,
         n: isContext ? getContextName(hook.value) : getHookName(hook.type),
@@ -271,46 +267,40 @@ export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
         d: 0,
       });
     } else {
-      let prevKey: string = "";
-      const scope = stack[0].id + stack[0].name;
-      // current hook in a new function scope, need to reset cache obj
-      if (prevScope !== scope) {
-        obj = {};
-        prevScope = scope;
-      }
+      let prevHookTree = final.at(-1);
+      let parentHookChild = final;
       for (let i = 0; i < stack.length; i++) {
         const isHook = i === stack.length - 1;
-        const key = prevKey + stack[i].id + stack[i].name + (isHook ? `-${index}` : "");
-        const { name } = stack[i];
-        let hasInclude = true;
-        if (!obj[key]) {
+        const { name, id } = stack[i];
+        if (id === prevHookTree?.k) {
           if (isHook) {
-            obj[key] = { n: name, i: index, h: true, d: 0 };
+            const hookTree: HOOKTree = { k: id, i: index, h: isHook, d: i, n: name.startsWith("use") ? name.substring(3) : name };
+            parentHookChild.push(hookTree);
+            prevHookTree = hookTree
           } else {
-            obj[key] = { n: name, d: 0 };
+            prevHookTree.c = prevHookTree.c || [];
+            parentHookChild = prevHookTree.c;
+            prevHookTree = prevHookTree.c?.at(-1);
           }
-          hasInclude = false;
-        }
-        const item = obj[key];
-        const prevItem = obj[prevKey];
-        if (!hasInclude) {
-          if (prevItem) {
-            prevItem.c = prevItem.c || [];
-            prevItem.c.push(item);
-            item.d = prevItem.d + 1;
+        } else {
+          const hookTree: HOOKTree = { k: id, i: isHook ? index : undefined, h: isHook, d: i, n: name.startsWith("use") ? name.substring(3) : name };
+          if (isHook) {
+            parentHookChild.push(hookTree);
+            prevHookTree = hookTree;
           } else {
-            final.push(item);
+            parentHookChild.push(hookTree);
+            hookTree.c = hookTree.c || [];
+            parentHookChild = hookTree.c;
+            prevHookTree = hookTree.c?.at(-1);
           }
-          item.n = item.n.startsWith("use") ? item.n.substring(3) : item.n;
         }
         if (isHook) {
           const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
           const isContext = hook.type === HOOK_TYPE.useContext;
           // overwrite name
-          item.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
-          item.v = force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result);
+          prevHookTree.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
+          prevHookTree.v = force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result);
         }
-        prevKey = key;
       }
     }
   };

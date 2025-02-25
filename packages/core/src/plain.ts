@@ -11,6 +11,8 @@ export type HOOK = {
 };
 
 export type HOOKTree = {
+  // key
+  k: string;
   // index
   i?: number;
   // isHook
