@@ -75,7 +75,11 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
         if (currentSelect) {
           // postMessage({ type: MessagePanelType.nodeInspect, data: currentSelect });
           if (chrome?.devtools?.inspectedWindow?.eval) {
-            chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.()");
+            chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.()", (_, error) => {
+              if (error.isError || error.isException) {
+                toast.error(error.value);
+              }
+            });
           } else {
             toast.error("inspect not support");
           }
@@ -149,6 +153,19 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
         if (store) {
           postMessage({ type: MessagePanelType.varStore, data: store });
+        }
+      }
+    )
+  );
+
+  unSubscribeArray.push(
+    useContextMenu.subscribe(
+      (s) => s.source,
+      () => {
+        const source = useContextMenu.getReadonlyState().source;
+
+        if (source) {
+          postMessage({ type: MessagePanelType.varSource, data: source });
         }
       }
     )

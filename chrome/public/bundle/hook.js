@@ -1925,6 +1925,7 @@
     		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
     		    DevToolMessageEnum["run"] = "run";
+    		    DevToolMessageEnum["source"] = "source";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
     		    DevToolMessageEnum["select-unmount"] = "select-unmount";
@@ -1988,6 +1989,7 @@
     		        this._domHoverId = "";
     		        this._trigger = {};
     		        this._state = {};
+    		        this._source = function () { };
     		        this._needUnmount = false;
     		        this._enabled = false;
     		        // 在开发工具中选中组件定位到浏览器中
@@ -2293,6 +2295,9 @@
     		    DevToolCore.prototype.setHover = function (id) {
     		        this._hoverId = id;
     		    };
+    		    DevToolCore.prototype.setSource = function (source) {
+    		        this._source = source;
+    		    };
     		    DevToolCore.prototype.showHover = function () {
     		        var _a, _b, _c, _d;
     		        if (!this._enableHover)
@@ -2318,7 +2323,20 @@
     		        var dom = domArray[0];
     		        if (typeof inspect === "function" && dom) {
     		            inspect(dom);
+    		            return;
     		        }
+    		        throw new Error("current fiber not contain dom node");
+    		    };
+    		    DevToolCore.prototype.inspectSource = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        if (typeof this._source === "function") {
+    		            var s = this._source;
+    		            this._source = null;
+    		            inspect(s);
+    		            return;
+    		        }
+    		        throw new Error("can not view source for current item");
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
     		        if (!this.hasEnable)
@@ -2414,6 +2432,12 @@
     		            return;
     		        this._notify({ type: exports.DevToolMessageEnum["dom-hover"], data: this._domHoverId });
     		    };
+    		    DevToolCore.prototype.notifySource = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        // notify devtool to inspect source
+    		        this._notify({ type: exports.DevToolMessageEnum.source, data: true });
+    		    };
     		    DevToolCore.prototype.notifyChunks = function (ids) {
     		        if (!this.hasEnable)
     		            return;
@@ -2492,6 +2516,7 @@
     		    MessagePanelType["show"] = "panel-show";
     		    MessagePanelType["hide"] = "panel-hide";
     		    MessagePanelType["varStore"] = "panel-var-store";
+    		    MessagePanelType["varSource"] = "panel-var-source";
     		    MessagePanelType["enableHover"] = "panel-enable-hover";
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
@@ -2818,6 +2843,12 @@
             else {
                 console.error("[@my-react-devtool/hook] fiber node not found", id);
             }
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varSource) {
+            var id = data.data;
+            var varSource = coreExports.getValueById(id).v;
+            core.setSource(varSource);
+            core.notifySource();
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clear) {
             core.clear();

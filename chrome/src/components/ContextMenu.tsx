@@ -1,4 +1,4 @@
-import { CubeIcon } from "@radix-ui/react-icons";
+import { CubeIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { memo } from "react";
 import { toast } from "sonner";
@@ -6,10 +6,10 @@ import { toast } from "sonner";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useUISize } from "@/hooks/useUISize";
 
-const { close: contextMenuClose, setStore } = useContextMenu.getActions();
+const { close: contextMenuClose, setStore, setSource } = useContextMenu.getActions();
 
 export const ContextMenu = memo(() => {
-  const { state, position } = useContextMenu((s) => s);
+  const { state, position, type } = useContextMenu((s) => s);
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
@@ -33,7 +33,7 @@ export const ContextMenu = memo(() => {
           {state && (
             <motion.div
               key="context-menu"
-              className="context-menu bg-white border border-gray-200 rounded shadow-md py-1"
+              className="context-menu bg-content1 border rounded shadow-md py-1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -48,8 +48,21 @@ export const ContextMenu = memo(() => {
                 }}
               >
                 <CubeIcon className="mr-2" width={sizeNum} height={sizeNum} />
-                <span>Store as global variable</span>
+                <span className="flex-grow">Store as global variable</span>
               </div>
+              {type === "Function" && (
+                <div
+                  className="context-menu-item px-2 py-1 cursor-pointer select-none flex justify-center items-center node-item-hover"
+                  onClick={async () => {
+                    setSource();
+                    await new Promise((r) => setTimeout(r, 100));
+                    contextMenuClose();
+                  }}
+                >
+                  <EyeOpenIcon className="mr-2" width={sizeNum} height={sizeNum} />
+                  <span className="flex-grow">Inspect Function source</span>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

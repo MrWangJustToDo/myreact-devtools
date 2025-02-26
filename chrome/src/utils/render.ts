@@ -1,4 +1,5 @@
 import { DevToolMessageEnum } from "@my-react-devtool/core";
+import { toast } from "sonner";
 
 import { useAppTree } from "@/hooks/useAppTree";
 import { useChunk } from "@/hooks/useChunk";
@@ -119,6 +120,18 @@ export const onRender = (data: DevToolMessageType) => {
         setLoading(false);
       }
     });
+  }
+
+  if (data.type === DevToolMessageEnum.source) {
+    if (chrome?.devtools?.inspectedWindow?.eval) {
+      chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectSource?.()", (_, error) => {
+        if (error.isError || error.isException) {
+          toast.error(error.value);
+        }
+      });
+    } else {
+      toast.error("inspect not support");
+    }
   }
 
   if (data.type === DevToolMessageEnum.highlight) {

@@ -36,6 +36,7 @@ export enum DevToolMessageEnum {
   hmr = "hmr",
   hmrStatus = "hmrStatus",
   run = "run",
+  source = "source",
   detail = "detail",
   unmount = "unmount",
   ["select-unmount"] = "select-unmount",
@@ -115,6 +116,8 @@ export class DevToolCore {
   _trigger = {};
 
   _state = {};
+
+  _source = () => {};
 
   _needUnmount = false;
 
@@ -516,6 +519,10 @@ export class DevToolCore {
     this._hoverId = id;
   }
 
+  setSource(source: any) {
+    this._source = source;
+  }
+
   showHover() {
     if (!this._enableHover) return;
 
@@ -547,7 +554,26 @@ export class DevToolCore {
 
     if (typeof inspect === "function" && dom) {
       inspect(dom);
+      return;
     }
+
+    throw new Error("current fiber not contain dom node");
+  }
+
+  inspectSource() {
+    if (!this.hasEnable) return;
+
+    if (typeof this._source === "function") {
+      const s = this._source;
+
+      this._source = null;
+
+      inspect(s);
+
+      return;
+    }
+
+    throw new Error("can not view source for current item");
   }
 
   notifyDir() {
@@ -658,6 +684,13 @@ export class DevToolCore {
     if (!this.hasEnable) return;
 
     this._notify({ type: DevToolMessageEnum["dom-hover"], data: this._domHoverId });
+  }
+
+  notifySource() {
+    if (!this.hasEnable) return;
+
+    // notify devtool to inspect source
+    this._notify({ type: DevToolMessageEnum.source, data: true });
   }
 
   notifyChunks(ids: (number | string)[]) {

@@ -115,6 +115,16 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
     }
   }
 
+  if (data?.type === MessagePanelType.varSource) {
+    const id = data.data;
+
+    const { v: varSource } = getValueById(id);
+
+    core.setSource(varSource);
+
+    core.notifySource();
+  }
+
   if (data?.type === MessagePanelType.clear) {
     core.clear();
   }

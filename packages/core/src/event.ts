@@ -13,6 +13,7 @@ export enum MessagePanelType {
   show = "panel-show",
   hide = "panel-hide",
   varStore = "panel-var-store",
+  varSource = "panel-var-source",
   enableHover = "panel-enable-hover",
   enableUpdate = "panel-enable-update",
   enableHoverOnBrowser = "panel-enable-hover-on-browser",
