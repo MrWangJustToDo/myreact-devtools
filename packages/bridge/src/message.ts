@@ -57,6 +57,10 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
     }
   }
 
+  // if (data?.type === MessagePanelType.nodeInspect) {
+  //   core.inspectDom();
+  // }
+
   if (data?.type === MessagePanelType.nodeHover) {
     core.setHover(data.data);
 

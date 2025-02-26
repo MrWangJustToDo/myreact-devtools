@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Divider, Tooltip } from "@heroui/react";
-import { Crosshair1Icon, CubeIcon, PlayIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { Crosshair1Icon, CubeIcon, EyeOpenIcon, PlayIcon, ReloadIcon } from "@radix-ui/react-icons";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useTreeNode } from "@/hooks/useTreeNode";
@@ -9,7 +9,7 @@ import { TreeItem } from "./TreeItem";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
-const { forceReload, storeFiber, triggerFiber, scrollIntoView } = useTreeNode.getActions();
+const { forceReload, storeFiber, triggerFiber, scrollIntoView, inspectDom } = useTreeNode.getActions();
 
 export const NameView = () => {
   const select = useTreeNode((s) => s.select);
@@ -27,9 +27,9 @@ export const NameView = () => {
       <div className={`p-2 ${sizeClass} sticky top-0 bg-content1 transition-transform-background z-50`}>
         <TreeItem node={currentSelectDetail} withCollapse={false} withSelect={false} withKey={false} />
         <ButtonGroup className="absolute right-4 top-0">
-          <Tooltip content='force scroll to select' showArrow color='foreground' placement='bottom-end'>
-            <Button isIconOnly size='sm' variant='flat' onPress={scrollIntoView}>
-              <Crosshair1Icon width='11' height='11' />
+          <Tooltip content="force scroll to select" showArrow color="foreground" placement="bottom-end">
+            <Button isIconOnly size="sm" variant="flat" onPress={scrollIntoView}>
+              <Crosshair1Icon width="11" height="11" />
             </Button>
           </Tooltip>
           <Tooltip content="store fiber node" showArrow color="foreground" placement="bottom-end">
@@ -42,7 +42,12 @@ export const NameView = () => {
               <PlayIcon width="11" height="11" />
             </Button>
           </Tooltip>
-          <Tooltip content="force load" showArrow color="foreground" placement="bottom-end">
+          <Tooltip content="inspect dom" showArrow color="foreground" placement="bottom-end">
+            <Button isIconOnly size="sm" variant="flat" onPress={inspectDom}>
+              <EyeOpenIcon width="11" height="11" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="force reload" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={forceReload}>
               <ReloadIcon width="10" height="10" />
             </Button>

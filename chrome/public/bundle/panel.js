@@ -2231,13 +2231,13 @@
     		            if (!id)
     		                return;
     		            _this._hmr[id] = _this._hmr[id] ? _this._hmr[id] + 1 : 1;
-    		            if (typeof forceRefresh === 'boolean') {
+    		            if (typeof forceRefresh === "boolean") {
     		                _this._hmrStatus[id] = forceRefresh ? exports.HMRStatus.remount : exports.HMRStatus.refresh;
     		            }
     		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyHMR();
-    		            if (typeof forceRefresh === 'boolean') {
+    		            if (typeof forceRefresh === "boolean") {
     		                _this.notifyHMRStatus();
     		            }
     		            _this.notifyDispatch(dispatch, true);
@@ -2377,6 +2377,16 @@
     		        else {
     		            (_d = (_c = this.select) === null || _c === void 0 ? void 0 : _c.remove) === null || _d === void 0 ? void 0 : _d.call(_c);
     		            this.select = null;
+    		        }
+    		    };
+    		    DevToolCore.prototype.inspectDom = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        var fiber = getFiberNodeById(this._selectId);
+    		        var domArray = getElementNodesFromFiber(fiber);
+    		        var dom = domArray[0];
+    		        if (typeof inspect === "function" && dom) {
+    		            inspect(dom);
     		        }
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
@@ -2558,6 +2568,7 @@
     		    MessagePanelType["nodeSelect"] = "panel-select";
     		    MessagePanelType["nodeStore"] = "panel-store";
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
+    		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
     		    MessagePanelType["chunks"] = "panel-chunks";
     		    MessagePanelType["clear"] = "panel-clear";

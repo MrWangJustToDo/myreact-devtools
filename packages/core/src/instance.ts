@@ -187,7 +187,6 @@ export class DevToolCore {
     }, 100);
 
     const onMouseEnter = debounce((e: MouseEvent) => {
-
       const target = e.target as HTMLElement;
 
       this.select?.remove?.();
@@ -215,7 +214,7 @@ export class DevToolCore {
 
     const onClick = (e: MouseEvent) => {
       if (!this.hasEnable) return;
-      
+
       this._domHoverId = this._tempDomHoverId;
 
       debounceNotifyDomHover();
@@ -344,7 +343,7 @@ export class DevToolCore {
 
       this._hmr[id] = this._hmr[id] ? this._hmr[id] + 1 : 1;
 
-      if (typeof forceRefresh === 'boolean') {
+      if (typeof forceRefresh === "boolean") {
         this._hmrStatus[id] = forceRefresh ? HMRStatus.remount : HMRStatus.refresh;
       }
 
@@ -352,7 +351,7 @@ export class DevToolCore {
 
       this.notifyHMR();
 
-      if (typeof forceRefresh === 'boolean') {
+      if (typeof forceRefresh === "boolean") {
         this.notifyHMRStatus();
       }
 
@@ -534,6 +533,20 @@ export class DevToolCore {
       this.select?.remove?.();
 
       this.select = null;
+    }
+  }
+
+  inspectDom() {
+    if (!this.hasEnable) return;
+
+    const fiber = getFiberNodeById(this._selectId);
+
+    const domArray = getElementNodesFromFiber(fiber);
+
+    const dom = domArray[0];
+
+    if (typeof inspect === "function" && dom) {
+      inspect(dom);
     }
   }
 

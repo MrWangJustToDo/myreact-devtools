@@ -14,13 +14,14 @@ const delNode = useDetailNode.getActions().delNode;
 
 export const useTreeNode = createState(
   () =>
-    ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0, scroll: 0 }) as {
+    ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0, scroll: 0, inspect: 0 }) as {
       select: string | null;
       hover: string | null;
       reload: number;
       trigger: number;
       store: number;
       scroll: number;
+      inspect: number;
       closeList: Record<string, boolean>;
       selectList: Record<string, boolean>;
     },
@@ -83,6 +84,11 @@ export const useTreeNode = createState(
             s.scroll++;
           }
         },
+        inspectDom: () => {
+          if (s.select) {
+            s.inspect++;
+          }
+        },
         updateSelectList,
         setHover: (node: string | null) => {
           if (node === s.hover) {
@@ -112,4 +118,3 @@ export const useTreeNode = createState(
     // withNamespace: "useTreeNode",
   }
 );
-

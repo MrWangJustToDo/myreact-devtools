@@ -1,4 +1,5 @@
 import { MessagePanelType } from "@my-react-devtool/core";
+import { toast } from "sonner";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
@@ -60,6 +61,24 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
           useDetailNode.getActions().setLoading(true);
 
           postMessage({ type: MessagePanelType.nodeTrigger, data: currentSelect });
+        }
+      }
+    )
+  );
+
+  unSubscribeArray.push(
+    useTreeNode.subscribe(
+      (s) => s.inspect,
+      () => {
+        const currentSelect = useTreeNode.getReadonlyState().select;
+
+        if (currentSelect) {
+          // postMessage({ type: MessagePanelType.nodeInspect, data: currentSelect });
+          if (chrome?.devtools?.inspectedWindow?.eval) {
+            chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.()");
+          } else {
+            toast.error("inspect not support");
+          }
         }
       }
     )
