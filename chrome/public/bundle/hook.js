@@ -913,6 +913,73 @@
     		    }
     		};
 
+    		exports.MessageHookType = void 0;
+    		(function (MessageHookType) {
+    		    MessageHookType["init"] = "hook-init";
+    		    MessageHookType["mount"] = "hook-mount";
+    		    MessageHookType["render"] = "hook-render";
+    		    MessageHookType["origin"] = "hook-origin";
+    		})(exports.MessageHookType || (exports.MessageHookType = {}));
+    		exports.MessageDetectorType = void 0;
+    		(function (MessageDetectorType) {
+    		    MessageDetectorType["init"] = "detector-init";
+    		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessagePanelType = void 0;
+    		(function (MessagePanelType) {
+    		    MessagePanelType["show"] = "panel-show";
+    		    MessagePanelType["hide"] = "panel-hide";
+    		    MessagePanelType["varStore"] = "panel-var-store";
+    		    MessagePanelType["varSource"] = "panel-var-source";
+    		    MessagePanelType["enableHover"] = "panel-enable-hover";
+    		    MessagePanelType["enableUpdate"] = "panel-enable-update";
+    		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
+    		    MessagePanelType["nodeHover"] = "panel-hover";
+    		    MessagePanelType["nodeSelect"] = "panel-select";
+    		    MessagePanelType["nodeStore"] = "panel-store";
+    		    MessagePanelType["nodeTrigger"] = "panel-trigger";
+    		    MessagePanelType["nodeInspect"] = "panel-inspect";
+    		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
+    		    MessagePanelType["chunks"] = "panel-chunks";
+    		    MessagePanelType["clear"] = "panel-clear";
+    		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
+    		exports.MessageWorkerType = void 0;
+    		(function (MessageWorkerType) {
+    		    MessageWorkerType["init"] = "worker-init";
+    		    MessageWorkerType["close"] = "worker-close";
+    		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
+    		exports.DevToolMessageEnum = void 0;
+    		(function (DevToolMessageEnum) {
+    		    // 初始化，判断是否用@my-react进行页面渲染
+    		    DevToolMessageEnum["init"] = "init";
+    		    DevToolMessageEnum["dir"] = "dir";
+    		    DevToolMessageEnum["config"] = "config";
+    		    // tree ready
+    		    DevToolMessageEnum["ready"] = "ready";
+    		    // tree update
+    		    DevToolMessageEnum["update"] = "update";
+    		    DevToolMessageEnum["changed"] = "changed";
+    		    DevToolMessageEnum["highlight"] = "highlight";
+    		    DevToolMessageEnum["trigger"] = "trigger";
+    		    DevToolMessageEnum["hmr"] = "hmr";
+    		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
+    		    DevToolMessageEnum["run"] = "run";
+    		    DevToolMessageEnum["source"] = "source";
+    		    DevToolMessageEnum["detail"] = "detail";
+    		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
+    		    DevToolMessageEnum["message"] = "message";
+    		    DevToolMessageEnum["warn"] = "warn";
+    		    DevToolMessageEnum["error"] = "error";
+    		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["dom-hover"] = "dom-hover";
+    		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
+    		exports.HMRStatus = void 0;
+    		(function (HMRStatus) {
+    		    HMRStatus[HMRStatus["refresh"] = 1] = "refresh";
+    		    HMRStatus[HMRStatus["remount"] = 2] = "remount";
+    		})(exports.HMRStatus || (exports.HMRStatus = {}));
+    		var DevToolSource = "@my-react/devtool";
+
     		var id = 0;
     		// PlainNode is a simplified version of FiberNode just for show the structure
     		var PlainNode = /** @class */ (function () {
@@ -1123,6 +1190,24 @@
     		        }
     		        r = r.parent;
     		    }
+    		};
+    		var getElementNodesFromFiber = function (fiber) {
+    		    var nodes = [];
+    		    var fibers = fiber ? [fiber] : [];
+    		    while (fibers.length) {
+    		        var c = fibers.shift();
+    		        if (c.nativeNode) {
+    		            nodes.push(c.nativeNode);
+    		        }
+    		        else {
+    		            var l = c.child;
+    		            while (l) {
+    		                fibers.push(l);
+    		                l = l.sibling;
+    		            }
+    		        }
+    		    }
+    		    return nodes;
     		};
     		var getFiberNodeById = function (id) {
     		    return fiberStore.get(id);
@@ -1411,23 +1496,33 @@
     		var getState = function (fiber, force) {
     		    return force ? getNodeForce(fiber.pendingState) : getNode(fiber.pendingState);
     		};
-    		var getElementNodesFromFiber = function (fiber) {
-    		    var nodes = [];
-    		    var fibers = fiber ? [fiber] : [];
-    		    while (fibers.length) {
-    		        var c = fibers.shift();
-    		        if (c.nativeNode) {
-    		            nodes.push(c.nativeNode);
+    		var debounce = function (callback, time) {
+    		    var id = null;
+    		    return (function () {
+    		        var args = [];
+    		        for (var _i = 0; _i < arguments.length; _i++) {
+    		            args[_i] = arguments[_i];
     		        }
-    		        else {
-    		            var l = c.child;
-    		            while (l) {
-    		                fibers.push(l);
-    		                l = l.sibling;
-    		            }
+    		        clearTimeout(id);
+    		        id = setTimeout(function () {
+    		            callback.call.apply(callback, __spreadArray([null], args, false));
+    		        }, time || 40);
+    		    });
+    		};
+    		var throttle = function (callback, time) {
+    		    var id = null;
+    		    return (function () {
+    		        var args = [];
+    		        for (var _i = 0; _i < arguments.length; _i++) {
+    		            args[_i] = arguments[_i];
     		        }
-    		    }
-    		    return nodes;
+    		        if (id)
+    		            return;
+    		        id = setTimeout(function () {
+    		            callback.call.apply(callback, __spreadArray([null], args, false));
+    		            id = null;
+    		        }, time || 40);
+    		    });
     		};
 
     		// Get the window object for the document that a node belongs to,
@@ -1908,65 +2003,6 @@
     		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
 
-    		// 事件类型
-    		exports.DevToolMessageEnum = void 0;
-    		(function (DevToolMessageEnum) {
-    		    // 初始化，判断是否用@my-react进行页面渲染
-    		    DevToolMessageEnum["init"] = "init";
-    		    DevToolMessageEnum["dir"] = "dir";
-    		    DevToolMessageEnum["config"] = "config";
-    		    // tree ready
-    		    DevToolMessageEnum["ready"] = "ready";
-    		    // tree update
-    		    DevToolMessageEnum["update"] = "update";
-    		    DevToolMessageEnum["changed"] = "changed";
-    		    DevToolMessageEnum["highlight"] = "highlight";
-    		    DevToolMessageEnum["trigger"] = "trigger";
-    		    DevToolMessageEnum["hmr"] = "hmr";
-    		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
-    		    DevToolMessageEnum["run"] = "run";
-    		    DevToolMessageEnum["source"] = "source";
-    		    DevToolMessageEnum["detail"] = "detail";
-    		    DevToolMessageEnum["unmount"] = "unmount";
-    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
-    		    DevToolMessageEnum["warn"] = "warn";
-    		    DevToolMessageEnum["error"] = "error";
-    		    DevToolMessageEnum["chunks"] = "chunks";
-    		    DevToolMessageEnum["dom-hover"] = "dom-hover";
-    		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
-    		exports.HMRStatus = void 0;
-    		(function (HMRStatus) {
-    		    HMRStatus[HMRStatus["refresh"] = 1] = "refresh";
-    		    HMRStatus[HMRStatus["remount"] = 2] = "remount";
-    		})(exports.HMRStatus || (exports.HMRStatus = {}));
-    		var debounce = function (callback, time) {
-    		    var id = null;
-    		    return (function () {
-    		        var args = [];
-    		        for (var _i = 0; _i < arguments.length; _i++) {
-    		            args[_i] = arguments[_i];
-    		        }
-    		        clearTimeout(id);
-    		        id = setTimeout(function () {
-    		            callback.call.apply(callback, __spreadArray([null], args, false));
-    		        }, time || 40);
-    		    });
-    		};
-    		var throttle = function (callback, time) {
-    		    var id = null;
-    		    return (function () {
-    		        var args = [];
-    		        for (var _i = 0; _i < arguments.length; _i++) {
-    		            args[_i] = arguments[_i];
-    		        }
-    		        if (id)
-    		            return;
-    		        id = setTimeout(function () {
-    		            callback.call.apply(callback, __spreadArray([null], args, false));
-    		            id = null;
-    		        }, time || 40);
-    		    });
-    		};
     		var cb = function () { };
     		var map = new Map();
     		var DevToolCore = /** @class */ (function () {
@@ -1989,7 +2025,7 @@
     		        this._domHoverId = "";
     		        this._trigger = {};
     		        this._state = {};
-    		        this._source = function () { };
+    		        this._source = null;
     		        this._needUnmount = false;
     		        this._enabled = false;
     		        // 在开发工具中选中组件定位到浏览器中
@@ -2325,7 +2361,7 @@
     		            inspect(dom);
     		            return;
     		        }
-    		        throw new Error("current fiber not contain dom node");
+    		        this.notifyMessage("current id: ".concat(this._selectId, " of fiber not contain dom node"), "warning");
     		    };
     		    DevToolCore.prototype.inspectSource = function () {
     		        if (!this.hasEnable)
@@ -2336,7 +2372,7 @@
     		            inspect(s);
     		            return;
     		        }
-    		        throw new Error("can not view source for current item");
+    		        this.notifyMessage("can not view source for current item", "warning");
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
     		        if (!this.hasEnable)
@@ -2448,6 +2484,11 @@
     		        }, {});
     		        this._notify({ type: exports.DevToolMessageEnum.chunks, data: data });
     		    };
+    		    DevToolCore.prototype.notifyMessage = function (message, type) {
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.message, data: { message: message, type: type } });
+    		    };
     		    DevToolCore.prototype.notifyDispatch = function (dispatch, force) {
     		        if (!this.hasEnable)
     		            return;
@@ -2487,6 +2528,7 @@
     		        this._hmr = {};
     		        this._hoverId = "";
     		        this._selectId = "";
+    		        this._source = null;
     		        this._hmrStatus = {};
     		        this._domHoverId = "";
     		        this._tempDomHoverId = "";
@@ -2499,42 +2541,6 @@
     		    return DevToolCore;
     		}());
     		var color = color$1;
-
-    		exports.MessageHookType = void 0;
-    		(function (MessageHookType) {
-    		    MessageHookType["init"] = "hook-init";
-    		    MessageHookType["mount"] = "hook-mount";
-    		    MessageHookType["render"] = "hook-render";
-    		    MessageHookType["origin"] = "hook-origin";
-    		})(exports.MessageHookType || (exports.MessageHookType = {}));
-    		exports.MessageDetectorType = void 0;
-    		(function (MessageDetectorType) {
-    		    MessageDetectorType["init"] = "detector-init";
-    		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
-    		exports.MessagePanelType = void 0;
-    		(function (MessagePanelType) {
-    		    MessagePanelType["show"] = "panel-show";
-    		    MessagePanelType["hide"] = "panel-hide";
-    		    MessagePanelType["varStore"] = "panel-var-store";
-    		    MessagePanelType["varSource"] = "panel-var-source";
-    		    MessagePanelType["enableHover"] = "panel-enable-hover";
-    		    MessagePanelType["enableUpdate"] = "panel-enable-update";
-    		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
-    		    MessagePanelType["nodeHover"] = "panel-hover";
-    		    MessagePanelType["nodeSelect"] = "panel-select";
-    		    MessagePanelType["nodeStore"] = "panel-store";
-    		    MessagePanelType["nodeTrigger"] = "panel-trigger";
-    		    MessagePanelType["nodeInspect"] = "panel-inspect";
-    		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
-    		    MessagePanelType["chunks"] = "panel-chunks";
-    		    MessagePanelType["clear"] = "panel-clear";
-    		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
-    		exports.MessageWorkerType = void 0;
-    		(function (MessageWorkerType) {
-    		    MessageWorkerType["init"] = "worker-init";
-    		    MessageWorkerType["close"] = "worker-close";
-    		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
-    		var DevToolSource = "@my-react/devtool";
 
     		exports.DevToolCore = DevToolCore;
     		exports.DevToolSource = DevToolSource;
@@ -2785,15 +2791,17 @@
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeSelectForce) {
             core.notifySelect(true);
+            core.notifyMessage("success force reload current id: ".concat(data.data, " of fiber"), "success");
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeStore) {
             var id = data.data;
             var f = coreExports.getFiberNodeById(id);
             if (f) {
                 console.log("[@my-react-devtool/hook] %cStore fiber node%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", f);
+                core.notifyMessage("success log current id: ".concat(id, " of fiber in the console"), "success");
             }
             else {
-                console.error("[@my-react-devtool/hook] fiber node not found", id);
+                core.notifyMessage("current id: ".concat(id, " of fiber not exist"), "error");
             }
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeTrigger) {
@@ -2801,9 +2809,10 @@
             var f = coreExports.getFiberNodeById(id);
             if (f) {
                 f._update(reactSharedExports.STATE_TYPE.__triggerConcurrentForce__);
+                core.notifyMessage("success trigger a update for current id: ".concat(id, " of fiber"), "success");
             }
             else {
-                console.error("[@my-react-devtool/hook] fiber node not found", id);
+                core.notifyMessage("current id: ".concat(id, " of fiber not exist"), "error");
             }
         }
         // if (data?.type === MessagePanelType.nodeInspect) {
@@ -2839,9 +2848,10 @@
                 globalThis[varName] = varStore;
                 console.log("[@my-react-devtool/hook] %cStore global variable%c Name: ".concat(varName), "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "");
                 console.log("[@my-react-devtool/hook] %cStore global variable%c Value: %o", "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px", "", varStore);
+                core.notifyMessage("success store current id: ".concat(id, " of data in the global variable: ").concat(varName), "success");
             }
             else {
-                console.error("[@my-react-devtool/hook] fiber node not found", id);
+                core.notifyMessage("current id: ".concat(id, " of data not exist"), "error");
             }
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varSource) {

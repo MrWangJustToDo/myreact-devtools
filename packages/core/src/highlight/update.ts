@@ -1,7 +1,8 @@
 import { STATE_TYPE, include } from "@my-react/react-shared";
 
-import { debounce, type DevToolCore } from "../instance";
+import { debounce } from "../utils";
 
+import type { DevToolCore } from "../instance";
 import type { MyReactFiberNode } from "@my-react/react-reconciler";
 
 export const color = {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { HOOK_TYPE } from "@my-react/react-shared";
 
 import { getNode, getNodeForce } from "./data";
@@ -276,7 +277,7 @@ export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
           if (isHook) {
             const hookTree: HOOKTree = { k: id, i: index, h: isHook, d: i, n: name.startsWith("use") ? name.substring(3) : name };
             parentHookChild.push(hookTree);
-            prevHookTree = hookTree
+            prevHookTree = hookTree;
           } else {
             prevHookTree.c = prevHookTree.c || [];
             parentHookChild = prevHookTree.c;
@@ -318,23 +319,23 @@ export const getState = (fiber: MyReactFiberNodeDev, force?: boolean) => {
   return force ? getNodeForce(fiber.pendingState) : getNode(fiber.pendingState);
 };
 
-export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
-  const nodes: HTMLElement[] = [];
+export const debounce = <T extends Function>(callback: T, time?: number): T => {
+  let id = null;
+  return ((...args) => {
+    clearTimeout(id);
+    id = setTimeout(() => {
+      callback.call(null, ...args);
+    }, time || 40);
+  }) as unknown as T;
+};
 
-  const fibers = fiber ? [fiber] : [];
-
-  while (fibers.length) {
-    const c = fibers.shift();
-    if (c.nativeNode) {
-      nodes.push(c.nativeNode as HTMLElement);
-    } else {
-      let l = c.child;
-      while (l) {
-        fibers.push(l);
-        l = l.sibling;
-      }
-    }
-  }
-
-  return nodes;
+export const throttle = <T extends Function>(callback: T, time?: number): T => {
+  let id = null;
+  return ((...args) => {
+    if (id) return;
+    id = setTimeout(() => {
+      callback.call(null, ...args);
+      id = null;
+    }, time || 40);
+  }) as unknown as T;
 };

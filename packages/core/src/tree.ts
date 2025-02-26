@@ -269,6 +269,27 @@ export const getComponentFiberByDom = (dom: HTMLElement) => {
   }
 };
 
+export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
+  const nodes: HTMLElement[] = [];
+
+  const fibers = fiber ? [fiber] : [];
+
+  while (fibers.length) {
+    const c = fibers.shift();
+    if (c.nativeNode) {
+      nodes.push(c.nativeNode as HTMLElement);
+    } else {
+      let l = c.child;
+      while (l) {
+        fibers.push(l);
+        l = l.sibling;
+      }
+    }
+  }
+
+  return nodes;
+};
+
 export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
 };

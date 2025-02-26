@@ -124,11 +124,7 @@ export const onRender = (data: DevToolMessageType) => {
 
   if (data.type === DevToolMessageEnum.source) {
     if (chrome?.devtools?.inspectedWindow?.eval) {
-      chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectSource?.()", (_, error) => {
-        if (error.isError || error.isException) {
-          toast.error(error.value);
-        }
-      });
+      chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectSource?.()");
     } else {
       toast.error("inspect not support");
     }
@@ -210,6 +206,27 @@ export const onRender = (data: DevToolMessageType) => {
 
       scrollIntoView();
     });
+  }
+
+  if (data.type === DevToolMessageEnum.message) {
+    const re = data.data as { message: string; type: "success" | "error" | "info" | "warning" };
+
+    switch (re.type) {
+      case "success":
+        toast.success(re.message);
+        break;
+      case "error":
+        toast.error(re.message);
+        break;
+      case "info":
+        toast.info(re.message);
+        break;
+      case "warning":
+        toast.warning(re.message);
+        break;
+      default:
+        toast.message(re.message);
+    }
   }
 };
 

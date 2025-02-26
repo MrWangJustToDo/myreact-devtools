@@ -32,4 +32,39 @@ export enum MessageWorkerType {
   close = "worker-close",
 }
 
+export enum DevToolMessageEnum {
+  // 初始化，判断是否用@my-react进行页面渲染
+  init = "init",
+  dir = "dir",
+  config = "config",
+  // tree ready
+  ready = "ready",
+  // tree update
+  update = "update",
+  changed = "changed",
+  highlight = "highlight",
+  trigger = "trigger",
+  hmr = "hmr",
+  hmrStatus = "hmrStatus",
+  run = "run",
+  source = "source",
+  detail = "detail",
+  unmount = "unmount",
+  ["select-unmount"] = "select-unmount",
+
+  message = "message",
+
+  warn = "warn",
+  error = "error",
+
+  chunks = "chunks",
+
+  ["dom-hover"] = "dom-hover",
+}
+
+export enum HMRStatus {
+  refresh = 1,
+  remount = 2,
+}
+
 export const DevToolSource = "@my-react/devtool";

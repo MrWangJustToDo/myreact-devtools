@@ -1,6 +1,5 @@
 import { debounce, type PlainNode } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
-import { toast } from "sonner";
 
 import { flattenNode } from "@/utils/node";
 
@@ -68,15 +67,11 @@ export const useTreeNode = createState(
         storeFiber: () => {
           if (s.select) {
             s.store++;
-
-            toast.success("store fiber success");
           }
         },
         triggerFiber: () => {
           if (s.select) {
             s.trigger++;
-
-            toast.success("trigger fiber success");
           }
         },
         scrollIntoView: () => {

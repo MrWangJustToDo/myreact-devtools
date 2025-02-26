@@ -26,6 +26,8 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
 
   if (data?.type === MessagePanelType.nodeSelectForce) {
     core.notifySelect(true);
+
+    core.notifyMessage(`success force reload current id: ${data.data} of fiber`, "success");
   }
 
   if (data?.type === MessagePanelType.nodeStore) {
@@ -40,8 +42,10 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
         "",
         f
       );
+
+      core.notifyMessage(`success log current id: ${id} of fiber in the console`, "success");
     } else {
-      console.error("[@my-react-devtool/hook] fiber node not found", id);
+      core.notifyMessage(`current id: ${id} of fiber not exist`, "error");
     }
   }
 
@@ -52,8 +56,10 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
 
     if (f) {
       f._update(STATE_TYPE.__triggerConcurrentForce__);
+
+      core.notifyMessage(`success trigger a update for current id: ${id} of fiber`, "success");
     } else {
-      console.error("[@my-react-devtool/hook] fiber node not found", id);
+      core.notifyMessage(`current id: ${id} of fiber not exist`, "error");
     }
   }
 
@@ -104,14 +110,17 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
         "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
         ""
       );
+
       console.log(
         "[@my-react-devtool/hook] %cStore global variable%c Value: %o",
         "color: white;background-color: rgba(10, 190, 235, 0.8); border-radius: 2px; padding: 2px 5px",
         "",
         varStore
       );
+
+      core.notifyMessage(`success store current id: ${id} of data in the global variable: ${varName}`, "success");
     } else {
-      console.error("[@my-react-devtool/hook] fiber node not found", id);
+      core.notifyMessage(`current id: ${id} of data not exist`, "error");
     }
   }
 

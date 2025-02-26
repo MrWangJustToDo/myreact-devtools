@@ -1,7 +1,6 @@
 import { CubeIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { memo } from "react";
-import { toast } from "sonner";
 
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useUISize } from "@/hooks/useUISize";
@@ -44,7 +43,6 @@ export const ContextMenu = memo(() => {
                   setStore();
                   await new Promise((r) => setTimeout(r, 100));
                   contextMenuClose();
-                  toast.success("Stored as global variable success!", { position: "top-right" });
                 }}
               >
                 <CubeIcon className="mr-2" width={sizeNum} height={sizeNum} />

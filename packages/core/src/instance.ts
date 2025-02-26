@@ -3,81 +3,28 @@
 import { isNormalEquals } from "@my-react/react-shared";
 
 import { getNode, getNodeFromId } from "./data";
+import { DevToolMessageEnum, HMRStatus } from "./event";
 import { HighLight, Overlay, color as _color } from "./highlight";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
   generateTreeMap,
-  getComponentFiberByDom,
   getDetailNodeByFiber,
   getFiberNodeById,
   getPlainNodeArrayByList,
   getPlainNodeIdByFiber,
   getTreeByFiber,
+  getComponentFiberByDom,
+  getElementNodesFromFiber,
 } from "./tree";
-import { getElementNodesFromFiber } from "./utils";
+import { debounce, throttle } from "./utils";
 
 import type { Tree } from "./tree";
 import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
-// 事件类型
-export enum DevToolMessageEnum {
-  // 初始化，判断是否用@my-react进行页面渲染
-  init = "init",
-  dir = "dir",
-  config = "config",
-  // tree ready
-  ready = "ready",
-  // tree update
-  update = "update",
-  changed = "changed",
-  highlight = "highlight",
-  trigger = "trigger",
-  hmr = "hmr",
-  hmrStatus = "hmrStatus",
-  run = "run",
-  source = "source",
-  detail = "detail",
-  unmount = "unmount",
-  ["select-unmount"] = "select-unmount",
-
-  warn = "warn",
-  error = "error",
-
-  chunks = "chunks",
-
-  ["dom-hover"] = "dom-hover",
-}
-
-export enum HMRStatus {
-  refresh = 1,
-  remount = 2,
-}
-
 export type DevToolMessageType = {
   type: DevToolMessageEnum;
   data: any;
-};
-
-export const debounce = <T extends Function>(callback: T, time?: number): T => {
-  let id = null;
-  return ((...args) => {
-    clearTimeout(id);
-    id = setTimeout(() => {
-      callback.call(null, ...args);
-    }, time || 40);
-  }) as unknown as T;
-};
-
-export const throttle = <T extends Function>(callback: T, time?: number): T => {
-  let id = null;
-  return ((...args) => {
-    if (id) return;
-    id = setTimeout(() => {
-      callback.call(null, ...args);
-      id = null;
-    }, time || 40);
-  }) as unknown as T;
 };
 
 let cb = () => {};
@@ -117,7 +64,7 @@ export class DevToolCore {
 
   _state = {};
 
-  _source = () => {};
+  _source = null;
 
   _needUnmount = false;
 
@@ -554,10 +501,11 @@ export class DevToolCore {
 
     if (typeof inspect === "function" && dom) {
       inspect(dom);
+
       return;
     }
 
-    throw new Error("current fiber not contain dom node");
+    this.notifyMessage(`current id: ${this._selectId} of fiber not contain dom node`, "warning");
   }
 
   inspectSource() {
@@ -573,7 +521,7 @@ export class DevToolCore {
       return;
     }
 
-    throw new Error("can not view source for current item");
+    this.notifyMessage(`can not view source for current item`, "warning");
   }
 
   notifyDir() {
@@ -707,6 +655,12 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.chunks, data });
   }
 
+  notifyMessage(message: string, type: "success" | "info" | "warning" | "error") {
+    if (!this.hasEnable) return;
+
+    this._notify({ type: DevToolMessageEnum.message, data: { message, type } });
+  }
+
   notifyDispatch(dispatch: DevToolRenderDispatch, force?: boolean) {
     if (!this.hasEnable) return;
 
@@ -797,6 +751,8 @@ export class DevToolCore {
     this._hoverId = "";
 
     this._selectId = "";
+
+    this._source = null;
 
     this._hmrStatus = {};
 

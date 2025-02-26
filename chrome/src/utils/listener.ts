@@ -75,11 +75,7 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
         if (currentSelect) {
           // postMessage({ type: MessagePanelType.nodeInspect, data: currentSelect });
           if (chrome?.devtools?.inspectedWindow?.eval) {
-            chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.()", (_, error) => {
-              if (error.isError || error.isException) {
-                toast.error(error.value);
-              }
-            });
+            chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.()");
           } else {
             toast.error("inspect not support");
           }
