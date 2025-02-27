@@ -70,6 +70,12 @@ export const getTypeName = (type: number) => {
       return "Plain";
     case NODE_TYPE.__initial__:
       return "Initial";
+    case NODE_TYPE.__context__:
+      return "Context";
+    case NODE_TYPE.__scopeLazy__:
+      return "ScopeLazy";
+    case NODE_TYPE.__scopeSuspense__:
+      return "ScopeSuspense";
     default:
       return "";
   }
@@ -123,6 +129,12 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
     const name = typedElementType.Context.displayName;
     return `${name || "Context"}.Provider`;
   }
+  if (fiber.type & NODE_TYPE.__context__) {
+    // fix: next version
+    const typedElementType = fiber.elementType as unknown as ReturnType<typeof createContext>;
+    const name = typedElementType.displayName;
+    return `${name || "Context"}`;
+  }
   if (fiber.type & NODE_TYPE.__consumer__) {
     const typedElementType = fiber.elementType as ReturnType<typeof createContext>["Consumer"];
     const name = typedElementType.Context.displayName;
@@ -141,6 +153,8 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   if (fiber.type & NODE_TYPE.__null__) return `Null`;
   if (fiber.type & NODE_TYPE.__empty__) return `Empty`;
   if (fiber.type & NODE_TYPE.__scope__) return `Scope`;
+  if (fiber.type & NODE_TYPE.__scopeLazy__) return `ScopeLazy`;
+  if (fiber.type & NODE_TYPE.__scopeSuspense__) return `ScopeSuspense`;
   if (fiber.type & NODE_TYPE.__strict__) return `Strict`;
   if (fiber.type & NODE_TYPE.__profiler__) return `Profiler`;
   if (fiber.type & NODE_TYPE.__suspense__) return `Suspense`;
