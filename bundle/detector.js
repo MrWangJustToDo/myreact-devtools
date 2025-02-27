@@ -1011,6 +1011,9 @@
     		    NODE_TYPE[NODE_TYPE["__scope__"] = 65536] = "__scope__";
     		    NODE_TYPE[NODE_TYPE["__comment__"] = 131072] = "__comment__";
     		    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
+    		    NODE_TYPE[NODE_TYPE["__context__"] = 524288] = "__context__";
+    		    NODE_TYPE[NODE_TYPE["__scopeLazy__"] = 1048576] = "__scopeLazy__";
+    		    NODE_TYPE[NODE_TYPE["__scopeSuspense__"] = 2097152] = "__scopeSuspense__";
     		})(exports.NODE_TYPE || (exports.NODE_TYPE = {}));
 
     		var treeMap = new Map();
@@ -1261,6 +1264,12 @@
     		            return "Plain";
     		        case exports.NODE_TYPE.__initial__:
     		            return "Initial";
+    		        case exports.NODE_TYPE.__context__:
+    		            return "Context";
+    		        case exports.NODE_TYPE.__scopeLazy__:
+    		            return "ScopeLazy";
+    		        case exports.NODE_TYPE.__scopeSuspense__:
+    		            return "ScopeSuspense";
     		        default:
     		            return "";
     		    }
@@ -1304,19 +1313,25 @@
     		        var name_1 = typedElementType.Context.displayName;
     		        return "".concat(name_1 || "Context", ".Provider");
     		    }
+    		    if (fiber.type & exports.NODE_TYPE.__context__) {
+    		        // fix: next version
+    		        var typedElementType = fiber.elementType;
+    		        var name_2 = typedElementType.displayName;
+    		        return "".concat(name_2 || "Context");
+    		    }
     		    if (fiber.type & exports.NODE_TYPE.__consumer__) {
     		        var typedElementType = fiber.elementType;
-    		        var name_2 = typedElementType.Context.displayName;
-    		        return "".concat(name_2 || "Context", ".Consumer");
+    		        var name_3 = typedElementType.Context.displayName;
+    		        return "".concat(name_3 || "Context", ".Consumer");
     		    }
     		    if (fiber.type & exports.NODE_TYPE.__lazy__) {
     		        var typedElementType = fiber.elementType;
     		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
-    		        var name_3 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
+    		        var name_4 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
     		        var element = typedFiber._debugElement;
     		        var type = element === null || element === void 0 ? void 0 : element.type;
-    		        name_3 = (type === null || type === void 0 ? void 0 : type.displayName) || name_3;
-    		        return "".concat(name_3 || "Anonymous");
+    		        name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
+    		        return "".concat(name_4 || "Anonymous");
     		    }
     		    if (fiber.type & exports.NODE_TYPE.__portal__)
     		        return "Portal";
@@ -1326,6 +1341,10 @@
     		        return "Empty";
     		    if (fiber.type & exports.NODE_TYPE.__scope__)
     		        return "Scope";
+    		    if (fiber.type & exports.NODE_TYPE.__scopeLazy__)
+    		        return "ScopeLazy";
+    		    if (fiber.type & exports.NODE_TYPE.__scopeSuspense__)
+    		        return "ScopeSuspense";
     		    if (fiber.type & exports.NODE_TYPE.__strict__)
     		        return "Strict";
     		    if (fiber.type & exports.NODE_TYPE.__profiler__)
@@ -1344,12 +1363,12 @@
     		        return "".concat(fiber.elementType);
     		    if (typeof fiber.elementType === "function") {
     		        var typedElementType = fiber.elementType;
-    		        var name_4 = typedElementType.displayName || typedElementType.name || "Anonymous";
+    		        var name_5 = typedElementType.displayName || typedElementType.name || "Anonymous";
     		        var element = typedFiber._debugElement;
     		        // may be a Suspense element
     		        var type = element === null || element === void 0 ? void 0 : element.type;
-    		        name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
-    		        return "".concat(name_4);
+    		        name_5 = (type === null || type === void 0 ? void 0 : type.displayName) || name_5;
+    		        return "".concat(name_5);
     		    }
     		    return "unknown";
     		};
@@ -1449,10 +1468,10 @@
     		            var parentHookChild = final;
     		            for (var i = 0; i < stack.length; i++) {
     		                var isHook = i === stack.length - 1;
-    		                var _c = stack[i], name_5 = _c.name, id = _c.id;
+    		                var _c = stack[i], name_6 = _c.name, id = _c.id;
     		                if (id === (prevHookTree === null || prevHookTree === void 0 ? void 0 : prevHookTree.k)) {
     		                    if (isHook) {
-    		                        var hookTree = { k: id, i: index, h: isHook, d: i, n: name_5.startsWith("use") ? name_5.substring(3) : name_5 };
+    		                        var hookTree = { k: id, i: index, h: isHook, d: i, n: name_6.startsWith("use") ? name_6.substring(3) : name_6 };
     		                        parentHookChild.push(hookTree);
     		                        prevHookTree = hookTree;
     		                    }
@@ -1463,7 +1482,7 @@
     		                    }
     		                }
     		                else {
-    		                    var hookTree = { k: id, i: isHook ? index : undefined, h: isHook, d: i, n: name_5.startsWith("use") ? name_5.substring(3) : name_5 };
+    		                    var hookTree = { k: id, i: isHook ? index : undefined, h: isHook, d: i, n: name_6.startsWith("use") ? name_6.substring(3) : name_6 };
     		                    if (isHook) {
     		                        parentHookChild.push(hookTree);
     		                        prevHookTree = hookTree;
