@@ -1120,17 +1120,30 @@
     		    var rootNode = loopTree(rootFiber);
     		    return rootNode;
     		};
-    		var unmountPlainNode = function (fiber, runtime) {
-    		    var plain = treeMap.get(fiber);
+    		var unmountPlainNode = function (_fiber, _runtime) {
+    		    if (!_fiber)
+    		        return;
+    		    var plain = treeMap.get(_fiber);
     		    if (plain) {
-    		        if (plain.i === runtime._selectId) {
-    		            runtime.notifyUnSelect();
+    		        if (plain.i === _runtime._selectId) {
+    		            _runtime.notifyUnSelect();
     		        }
     		        fiberStore.delete(plain.i);
     		        plainStore.delete(plain.i);
     		    }
-    		    treeMap.delete(fiber);
-    		    detailMap.delete(fiber);
+    		    treeMap.delete(_fiber);
+    		    detailMap.delete(_fiber);
+    		};
+    		var initPlainNode = function (_fiber, _runtime) {
+    		    if (!_fiber)
+    		        return;
+    		    var plain = treeMap.get(_fiber);
+    		    if (!plain) {
+    		        var newPlain = new PlainNode();
+    		        treeMap.set(_fiber, newPlain);
+    		        fiberStore.set(newPlain.i, _fiber);
+    		        plainStore.set(newPlain.i, newPlain);
+    		    }
     		};
     		var getPlainNodeByFiber = function (fiber) {
     		    return treeMap.get(fiber);
@@ -2012,10 +2025,23 @@
     		        };
     		    }
     		}
+    		function overridePatchToFiberInit(dispatch, runtime) {
+    		    if (typeof dispatch.onFiberInitial === 'function') {
+    		        dispatch.onFiberInitial(function (f) { return initPlainNode(f); });
+    		    }
+    		    else {
+    		        var originalPatchInit_1 = dispatch.patchToFiberInitial;
+    		        dispatch.patchToFiberInitial = function (fiber) {
+    		            originalPatchInit_1.call(this, fiber);
+    		            initPlainNode(fiber);
+    		        };
+    		    }
+    		}
     		var setupDispatch = function (dispatch, runtime) {
     		    if (dispatch["$$hasDevToolInject"])
     		        return;
     		    dispatch["$$hasDevToolInject"] = true;
+    		    overridePatchToFiberInit(dispatch);
     		    overridePatchToFiberUnmount(dispatch, runtime);
     		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
@@ -2589,6 +2615,7 @@
     		exports.getTreeByFiber = getTreeByFiber;
     		exports.getTypeName = getTypeName;
     		exports.getValueById = getValueById;
+    		exports.initPlainNode = initPlainNode;
     		exports.loopChangedTree = loopChangedTree;
     		exports.loopTree = loopTree;
     		exports.shallowAssignFiber = shallowAssignFiber;

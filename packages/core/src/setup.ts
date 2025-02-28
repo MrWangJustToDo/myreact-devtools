@@ -1,4 +1,4 @@
-import { unmountPlainNode } from "./tree";
+import { initPlainNode, unmountPlainNode } from "./tree";
 
 import type { DevToolCore } from "./instance";
 import type { CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
@@ -31,10 +31,29 @@ function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch, runtime: D
   }
 }
 
+function overridePatchToFiberInit(dispatch: DevToolRenderDispatch, runtime: DevToolCore) {
+  if (typeof dispatch.onFiberInitial === 'function') {
+    dispatch.onFiberInitial((f) => initPlainNode(f, runtime));
+  } else {
+    if (__DEV__) {
+      console.warn("[@my-react-devtool/core] current version of @my-react will deprecate in next update, please upgrade to latest version");
+    }
+
+    const originalPatchInit = dispatch.patchToFiberInitial;
+
+    dispatch.patchToFiberInitial = function (this: CustomRenderDispatch, fiber) {
+      originalPatchInit.call(this, fiber);
+      initPlainNode(fiber, runtime);
+    };
+  }
+}
+
 export const setupDispatch = (dispatch: DevToolRenderDispatch, runtime: DevToolCore) => {
   if (dispatch["$$hasDevToolInject"]) return;
 
   dispatch["$$hasDevToolInject"] = true;
+
+  overridePatchToFiberInit(dispatch, runtime);
 
   overridePatchToFiberUnmount(dispatch, runtime);
 

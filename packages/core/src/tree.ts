@@ -171,12 +171,14 @@ export const generateTreeMap = (dispatch: CustomRenderDispatch) => {
 
 export type Tree = ReturnType<typeof generateTreeMap>["current"];
 
-export const unmountPlainNode = (fiber: MyReactFiberNode, runtime: DevToolCore) => {
-  const plain = treeMap.get(fiber);
+export const unmountPlainNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) => {
+  if (!_fiber) return;
+
+  const plain = treeMap.get(_fiber);
 
   if (plain) {
-    if (plain.i === runtime._selectId) {
-      runtime.notifyUnSelect();
+    if (plain.i === _runtime._selectId) {
+      _runtime.notifyUnSelect();
     }
 
     fiberStore.delete(plain.i);
@@ -184,9 +186,25 @@ export const unmountPlainNode = (fiber: MyReactFiberNode, runtime: DevToolCore) 
     plainStore.delete(plain.i);
   }
 
-  treeMap.delete(fiber);
+  treeMap.delete(_fiber);
 
-  detailMap.delete(fiber);
+  detailMap.delete(_fiber);
+};
+
+export const initPlainNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) => {
+  if (!_fiber) return;
+
+  const plain = treeMap.get(_fiber);
+
+  if (!plain) {
+    const newPlain = new PlainNode();
+
+    treeMap.set(_fiber, newPlain);
+
+    fiberStore.set(newPlain.i, _fiber);
+
+    plainStore.set(newPlain.i, newPlain);
+  }
 };
 
 export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
