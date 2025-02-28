@@ -50,6 +50,7 @@ export enum DevToolMessageEnum {
   source = "source",
   detail = "detail",
   unmount = "unmount",
+  ["select-sync"] = "select-sync",
   ["select-unmount"] = "select-unmount",
 
   message = "message",

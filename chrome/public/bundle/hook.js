@@ -966,6 +966,7 @@
     		    DevToolMessageEnum["source"] = "source";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["select-sync"] = "select-sync";
     		    DevToolMessageEnum["select-unmount"] = "select-unmount";
     		    DevToolMessageEnum["message"] = "message";
     		    DevToolMessageEnum["warn"] = "warn";
@@ -2066,6 +2067,8 @@
     		        this._warn = {};
     		        this._hoverId = "";
     		        this._selectId = "";
+    		        this._selectDom = null;
+    		        this._hasSelectChange = false;
     		        this._tempDomHoverId = "";
     		        this._domHoverId = "";
     		        this._trigger = {};
@@ -2091,6 +2094,7 @@
     		                    _this.notifyDispatch(dispatch);
     		                });
     		            }
+    		            _this.notifySelectSync();
     		            _this.notifyConfig();
     		            _this.notifyDir();
     		            _this.notifyTrigger();
@@ -2371,7 +2375,23 @@
     		        return current;
     		    };
     		    DevToolCore.prototype.setSelect = function (id) {
+    		        var fiber = getFiberNodeById(id);
+    		        if (!fiber)
+    		            return;
+    		        var domArray = getElementNodesFromFiber(fiber);
     		        this._selectId = id;
+    		        this._selectDom = domArray[0];
+    		    };
+    		    DevToolCore.prototype.setSelectDom = function (dom) {
+    		        var fiber = getComponentFiberByDom(dom);
+    		        if (!fiber)
+    		            return;
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (id === this._selectId)
+    		            return;
+    		        this._selectId = id;
+    		        this._selectDom = dom;
+    		        this._hasSelectChange = true;
     		    };
     		    DevToolCore.prototype.setHover = function (id) {
     		        this._hoverId = id;
@@ -2399,11 +2419,9 @@
     		    DevToolCore.prototype.inspectDom = function () {
     		        if (!this.hasEnable)
     		            return;
-    		        var fiber = getFiberNodeById(this._selectId);
-    		        var domArray = getElementNodesFromFiber(fiber);
-    		        var dom = domArray[0];
-    		        if (typeof inspect === "function" && dom) {
-    		            inspect(dom);
+    		        var dom = this._selectDom;
+    		        if (typeof globalThis['inspect'] === "function" && dom) {
+    		            globalThis['inspect'](dom);
     		            return;
     		        }
     		        this.notifyMessage("current id: ".concat(this._selectId, " of fiber not contain dom node"), "warning");
@@ -2411,10 +2429,10 @@
     		    DevToolCore.prototype.inspectSource = function () {
     		        if (!this.hasEnable)
     		            return;
-    		        if (typeof this._source === "function") {
+    		        if (typeof this._source === "function" && typeof globalThis['inspect'] === "function") {
     		            var s = this._source;
     		            this._source = null;
-    		            inspect(s);
+    		            globalThis['inspect'](s);
     		            return;
     		        }
     		        this.notifyMessage("can not view source for current item", "warning");
@@ -2503,6 +2521,14 @@
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
     		        }
     		    };
+    		    DevToolCore.prototype.notifySelectSync = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        if (this._hasSelectChange) {
+    		            this._hasSelectChange = false;
+    		            this._notify({ type: exports.DevToolMessageEnum["select-sync"], data: this._selectId });
+    		        }
+    		    };
     		    DevToolCore.prototype.notifyUnSelect = function () {
     		        if (!this.hasEnable)
     		            return;
@@ -2573,6 +2599,7 @@
     		        this._hmr = {};
     		        this._hoverId = "";
     		        this._selectId = "";
+    		        this._selectDom = null;
     		        this._source = null;
     		        this._hmrStatus = {};
     		        this._domHoverId = "";

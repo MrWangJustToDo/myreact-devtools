@@ -78,6 +78,13 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
+  if (data.type === DevToolMessageEnum['select-sync']) {
+    safeAction(() => {
+      useTreeNode.getActions().setSelect(data.data as string);
+      useTreeNode.getActions().scrollIntoView();
+    })
+  }
+
   if (data.type === DevToolMessageEnum.hmr) {
     const nodes = data.data as Record<string, number>;
 

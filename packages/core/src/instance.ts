@@ -56,6 +56,10 @@ export class DevToolCore {
 
   _selectId = "";
 
+  _selectDom = null;
+
+  _hasSelectChange = false;
+
   _tempDomHoverId = "";
 
   _domHoverId = "";
@@ -459,7 +463,31 @@ export class DevToolCore {
   }
 
   setSelect(id: string) {
+    const fiber = getFiberNodeById(id);
+
+    if (!fiber) return;
+
+    const domArray = getElementNodesFromFiber(fiber);
+
     this._selectId = id;
+
+    this._selectDom = domArray[0];
+  }
+
+  setSelectDom(dom: HTMLElement) {
+    const fiber = getComponentFiberByDom(dom);
+
+    if (!fiber) return;
+
+    const id = getPlainNodeIdByFiber(fiber);
+
+    if (id === this._selectId) return;
+
+    this._selectId = id;
+
+    this._selectDom = dom;
+
+    this._hasSelectChange = true;
   }
 
   setHover(id: string) {
@@ -493,14 +521,10 @@ export class DevToolCore {
   inspectDom() {
     if (!this.hasEnable) return;
 
-    const fiber = getFiberNodeById(this._selectId);
+    const dom = this._selectDom;
 
-    const domArray = getElementNodesFromFiber(fiber);
-
-    const dom = domArray[0];
-
-    if (typeof inspect === "function" && dom) {
-      inspect(dom);
+    if (typeof globalThis['inspect'] === "function" && dom) {
+      globalThis['inspect'](dom);
 
       return;
     }
@@ -511,12 +535,12 @@ export class DevToolCore {
   inspectSource() {
     if (!this.hasEnable) return;
 
-    if (typeof this._source === "function") {
+    if (typeof this._source === "function" && typeof globalThis['inspect'] === "function") {
       const s = this._source;
 
       this._source = null;
 
-      inspect(s);
+      globalThis['inspect'](s);
 
       return;
     }
@@ -554,7 +578,7 @@ export class DevToolCore {
     this._notify({
       type: DevToolMessageEnum.warn,
       data: Object.keys(this._warn).reduce((p, c) => {
-        p[c] = this._warn[c].map((i) => getNode(i));
+        p[c] = this._warn[c].map((i: any) => getNode(i));
         return p;
       }, {}),
     });
@@ -566,7 +590,7 @@ export class DevToolCore {
     this._notify({
       type: DevToolMessageEnum.error,
       data: Object.keys(this._error).reduce((p, c) => {
-        p[c] = this._error[c].map((i) => getNode(i));
+        p[c] = this._error[c].map((i: any) => getNode(i));
         return p;
       }, {}),
     });
@@ -619,6 +643,16 @@ export class DevToolCore {
       this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber, force) });
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
+    }
+  }
+
+  notifySelectSync() {
+    if (!this.hasEnable) return;
+
+    if (this._hasSelectChange) {
+      this._hasSelectChange = false;
+
+      this._notify({ type: DevToolMessageEnum["select-sync"], data: this._selectId });
     }
   }
 
@@ -701,6 +735,8 @@ export class DevToolCore {
       });
     }
 
+    this.notifySelectSync();
+
     this.notifyConfig();
 
     this.notifyDir();
@@ -751,6 +787,8 @@ export class DevToolCore {
     this._hoverId = "";
 
     this._selectId = "";
+
+    this._selectDom = null;
 
     this._source = null;
 

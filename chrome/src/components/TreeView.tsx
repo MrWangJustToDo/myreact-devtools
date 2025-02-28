@@ -1,3 +1,4 @@
+import { debounce, type PlainNode } from "@my-react-devtool/core";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
@@ -10,10 +11,9 @@ import { UISize, useUISize } from "@/hooks/useUISize";
 import { TreeItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
 
-import type { PlainNode } from "@my-react-devtool/core";
 import type { VirtuosoHandle } from "react-virtuoso";
 
-const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: { current: number }, lastContainerWidthRef: { current: number }) => {
+const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndentSizeRef: { current: number }, lastContainerWidthRef: { current: number }) => {
   const children = Array.from(container.querySelectorAll("[data-depth]")) as HTMLDivElement[];
 
   const listWidth = container.clientWidth;
@@ -45,7 +45,7 @@ const updateIndentationSizeVar = (container: HTMLDivElement, lastIndentSizeRef: 
   container.style.setProperty("--indentation-size", `${maxIndentationSize}px`);
 
   container.style.setProperty("--width-size", `${listWidth}px`);
-};
+}, 16);
 
 const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; data: PlainNode[]; onMount: (s?: VirtuosoHandle) => void }) => {
   const [isScrolling, setIsScrolling] = useState(false);
@@ -133,6 +133,10 @@ export const TreeView = memo(() => {
 
   useEffect(() => {
     onScroll();
+
+    const cb = useTreeNode.subscribe((s) => s.scroll, () => setTimeout(onScroll, 100));
+
+    return cb;
   }, [width, height, nodes.length, onScroll]);
 
   return (
