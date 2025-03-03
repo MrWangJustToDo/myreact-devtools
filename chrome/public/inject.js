@@ -1,9 +1,11 @@
-const script = document.createElement('script')
+const script = document.createElement("script");
 
-script.src = chrome.runtime.getURL('bundle/hook.js')
+script.src = chrome.runtime.getURL("bundle/hook.js");
 
 script.onload = () => {
-  script.remove()
-}
+  script.remove();
+};
 
-;(document.head || document.documentElement).appendChild(script)
+if (!window["__MY_REACT_DEVTOOL_RUNTIME__"]) {
+  (document.head || document.documentElement).appendChild(script);
+}
