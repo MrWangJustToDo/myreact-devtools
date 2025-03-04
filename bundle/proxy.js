@@ -2420,8 +2420,9 @@
     		        if (!this.hasEnable)
     		            return;
     		        var dom = this._selectDom;
-    		        if (typeof globalThis['inspect'] === "function" && dom) {
-    		            globalThis['inspect'](dom);
+    		        if (typeof globalThis["inspect"] === "function" && dom) {
+    		            globalThis["inspect"](dom);
+    		            window["$$$$0"] = dom;
     		            return;
     		        }
     		        this.notifyMessage("current id: ".concat(this._selectId, " of fiber not contain dom node"), "warning");
@@ -2429,10 +2430,10 @@
     		    DevToolCore.prototype.inspectSource = function () {
     		        if (!this.hasEnable)
     		            return;
-    		        if (typeof this._source === "function" && typeof globalThis['inspect'] === "function") {
+    		        if (typeof this._source === "function" && typeof globalThis["inspect"] === "function") {
     		            var s = this._source;
     		            this._source = null;
-    		            globalThis['inspect'](s);
+    		            globalThis["inspect"](s);
     		            return;
     		        }
     		        this.notifyMessage("can not view source for current item", "warning");
