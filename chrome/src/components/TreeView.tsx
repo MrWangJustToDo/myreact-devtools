@@ -52,6 +52,12 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
   const ref = useRef<VirtuosoHandle>(null);
 
+  const [initialIndex] = useState(() => {
+    const select = useTreeNode.getReadonlyState().select;
+    const index = data.findIndex((item) => item.i === select);
+    return index;
+  });
+
   const dataRef = useRef(data);
 
   dataRef.current = data;
@@ -102,6 +108,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
       ref={ref}
       increaseViewportBy={500}
       isScrolling={setIsScrolling}
+      initialTopMostItemIndex={{ index: initialIndex, align: "center" }}
       context={{ isScrolling }}
       onScroll={onScroll}
       totalCount={data.length}
@@ -134,7 +141,10 @@ export const TreeView = memo(() => {
   useEffect(() => {
     onScroll();
 
-    const cb = useTreeNode.subscribe((s) => s.scroll, () => setTimeout(onScroll, 100));
+    const cb = useTreeNode.subscribe(
+      (s) => s.scroll,
+      () => setTimeout(onScroll, 100)
+    );
 
     return cb;
   }, [width, height, nodes.length, onScroll]);
@@ -142,7 +152,7 @@ export const TreeView = memo(() => {
   return (
     <div className="tree-view h-full p-1">
       <div className="group h-full transform-gpu" ref={ref}>
-        <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />
+        {nodes.length > 0 && <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />}
         <TreeViewSetting handle={r} />
       </div>
     </div>
