@@ -22,6 +22,8 @@ export const NameView = () => {
 
   const sizeClass = size === "sm" ? "text-[15px]" : size === "md" ? "text-[16px]" : "text-[17px]";
 
+  const sizeNum = size === "sm" ? 11 : size === "md" ? 12 : 13;
+
   if (currentSelectDetail) {
     return (
       <div className={`p-2 ${sizeClass} sticky top-0 bg-content1 transition-transform-background z-50`}>
@@ -29,27 +31,27 @@ export const NameView = () => {
         <ButtonGroup className="absolute right-4 top-0">
           <Tooltip content="force scroll to select" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={scrollIntoView}>
-              <Crosshair1Icon width="11" height="11" />
+              <Crosshair1Icon width={sizeNum} height={sizeNum} />
             </Button>
           </Tooltip>
           <Tooltip content="store fiber node" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={storeFiber}>
-              <CubeIcon width="11" height="11" />
+              <CubeIcon width={sizeNum} height={sizeNum} />
             </Button>
           </Tooltip>
           <Tooltip content="force trigger" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={triggerFiber}>
-              <PlayIcon width="11" height="11" />
+              <PlayIcon width={sizeNum} height={sizeNum} />
             </Button>
           </Tooltip>
           <Tooltip content="inspect dom" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={inspectDom}>
-              <EyeOpenIcon width="11" height="11" />
+              <EyeOpenIcon width={sizeNum} height={sizeNum} />
             </Button>
           </Tooltip>
           <Tooltip content="force reload" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={forceReload}>
-              <ReloadIcon width="10" height="10" />
+              <ReloadIcon width={sizeNum - 1} height={sizeNum - 1} />
             </Button>
           </Tooltip>
         </ButtonGroup>

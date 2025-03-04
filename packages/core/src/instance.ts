@@ -467,6 +467,8 @@ export class DevToolCore {
 
     if (!fiber) return;
 
+    if (id === this._selectId) return;
+
     const domArray = getElementNodesFromFiber(fiber);
 
     this._selectId = id;

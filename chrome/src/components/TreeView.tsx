@@ -68,6 +68,8 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     );
   });
 
+  const hasLength = data.length > 0;
+
   useEffect(() => {
     const cb = useTreeNode.subscribe(
       (s) => s.scroll,
@@ -81,9 +83,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     );
 
     return cb;
-  }, []);
-
-  const hasLength = data.length > 0;
+  }, [hasLength]);
 
   useEffect(() => {
     if (hasLength) {
