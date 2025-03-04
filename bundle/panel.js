@@ -2447,6 +2447,8 @@
     		        var fiber = getFiberNodeById(id);
     		        if (!fiber)
     		            return;
+    		        if (id === this._selectId)
+    		            return;
     		        var domArray = getElementNodesFromFiber(fiber);
     		        this._selectId = id;
     		        this._selectDom = domArray[0];
