@@ -525,8 +525,10 @@ export class DevToolCore {
 
     const dom = this._selectDom;
 
-    if (typeof globalThis['inspect'] === "function" && dom) {
-      globalThis['inspect'](dom);
+    if (typeof globalThis["inspect"] === "function" && dom) {
+      globalThis["inspect"](dom);
+
+      window["$$$$0"] = dom;
 
       return;
     }
@@ -537,12 +539,12 @@ export class DevToolCore {
   inspectSource() {
     if (!this.hasEnable) return;
 
-    if (typeof this._source === "function" && typeof globalThis['inspect'] === "function") {
+    if (typeof this._source === "function" && typeof globalThis["inspect"] === "function") {
       const s = this._source;
 
       this._source = null;
 
-      globalThis['inspect'](s);
+      globalThis["inspect"](s);
 
       return;
     }

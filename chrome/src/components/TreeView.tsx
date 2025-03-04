@@ -55,6 +55,9 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
   const [initialIndex] = useState(() => {
     const select = useTreeNode.getReadonlyState().select;
     const index = data.findIndex((item) => item.i === select);
+    if (index === -1) {
+      return 0;
+    }
     return index;
   });
 
@@ -74,7 +77,11 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     );
   });
 
-  const hasLength = data.length > 0;
+  useEffect(() => {
+    if (initialIndex !== 0) {
+      onScroll();
+    }
+  }, [initialIndex, onScroll]);
 
   useEffect(() => {
     const cb = useTreeNode.subscribe(
@@ -89,19 +96,13 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     );
 
     return cb;
-  }, [hasLength]);
+  }, []);
 
   useEffect(() => {
-    if (hasLength) {
-      onMount(ref.current as VirtuosoHandle);
-    }
+    onMount(ref.current as VirtuosoHandle);
 
-    return () => {
-      onMount();
-    };
-  }, [hasLength, onMount]);
-
-  if (!data.length) return null;
+    return () => onMount();
+  }, [onMount]);
 
   return (
     <Virtuoso
@@ -143,7 +144,7 @@ export const TreeView = memo(() => {
 
     const cb = useTreeNode.subscribe(
       (s) => s.scroll,
-      () => setTimeout(onScroll, 100)
+      () => setTimeout(onScroll, 20)
     );
 
     return cb;

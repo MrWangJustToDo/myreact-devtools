@@ -22,6 +22,8 @@ declare global {
     onRender: (data: DevToolMessageType) => void;
 
     onClear: () => void;
+
+    $$$$0: any;
   }
 
   namespace NodeJS {

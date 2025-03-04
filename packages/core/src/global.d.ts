@@ -6,6 +6,10 @@ declare global {
     inspect: (obj: any) => void;
   }
 
+  interface Window {
+    $$$$0: any;
+  }
+
   namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV: "development" | "production" | "test";
