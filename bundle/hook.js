@@ -2243,6 +2243,11 @@
     		            if (!id)
     		                return;
     		            _this._trigger[id] = _this._trigger[id] || [];
+    		            // 长数据过滤
+    		            if (_this._trigger[id].length > 10) {
+    		                var index = _this._trigger[id].length - 11;
+    		                _this._trigger[id][index] = { isRetrigger: _this._trigger[id][index].isRetrigger };
+    		            }
     		            _this._trigger[id].push(state);
     		            if (!_this.hasEnable)
     		                return;
@@ -2288,6 +2293,10 @@
     		            if (!id)
     		                return;
     		            _this._warn[id] = _this._warn[id] || [];
+    		            if (_this._warn[id].length > 10) {
+    		                var index = _this._warn[id].length - 11;
+    		                _this._warn[id][index] = 1;
+    		            }
     		            _this._warn[id].push(args);
     		            _this.notifyWarn();
     		        };
@@ -2300,6 +2309,10 @@
     		            if (!id)
     		                return;
     		            _this._error[id] = _this._error[id] || [];
+    		            if (_this._error[id].length > 10) {
+    		                var index = _this._error[id].length - 11;
+    		                _this._error[id][index] = 1;
+    		            }
     		            _this._error[id].push(args);
     		            _this.notifyError();
     		        };
@@ -2498,7 +2511,7 @@
     		        var status = this._trigger[id];
     		        if (!status)
     		            return;
-    		        var finalStatus = status.filter(function (i) { return (i.isRetrigger ? _this._enableRetrigger : true); });
+    		        var finalStatus = status.filter(function (i) { return (i.isRetrigger ? _this._enableRetrigger : true); }).slice(-10);
     		        this._notify({ type: exports.DevToolMessageEnum.triggerStatus, data: finalStatus.map(function (i) { return getNode(i); }) });
     		    };
     		    DevToolCore.prototype.notifyHighlight = function (id, type) {
@@ -2527,7 +2540,8 @@
     		        var status = this._warn[id];
     		        if (!status)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.warnStatus, data: status.map(function (i) { return getNode(i); }) });
+    		        var finalStatus = status.slice(-10);
+    		        this._notify({ type: exports.DevToolMessageEnum.warnStatus, data: finalStatus.map(function (i) { return getNode(i); }) });
     		    };
     		    DevToolCore.prototype.notifyError = function () {
     		        var _this = this;
@@ -2550,7 +2564,8 @@
     		        var status = this._error[id];
     		        if (!status)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.errorStatus, data: status.map(function (i) { return getNode(i); }) });
+    		        var finalStatus = status.slice(-10);
+    		        this._notify({ type: exports.DevToolMessageEnum.errorStatus, data: finalStatus.map(function (i) { return getNode(i); }) });
     		    };
     		    // TODO
     		    DevToolCore.prototype.notifyChanged = function (list) {
