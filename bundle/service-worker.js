@@ -930,6 +930,7 @@
     		    MessagePanelType["varSource"] = "panel-var-source";
     		    MessagePanelType["enableHover"] = "panel-enable-hover";
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
+    		    MessagePanelType["enableRetrigger"] = "panel-enable-retrigger";
     		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
@@ -958,6 +959,7 @@
     		    DevToolMessageEnum["changed"] = "changed";
     		    DevToolMessageEnum["highlight"] = "highlight";
     		    DevToolMessageEnum["trigger"] = "trigger";
+    		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
     		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
     		    DevToolMessageEnum["run"] = "run";
@@ -968,12 +970,15 @@
     		    DevToolMessageEnum["select-unmount"] = "select-unmount";
     		    DevToolMessageEnum["message"] = "message";
     		    DevToolMessageEnum["warn"] = "warn";
+    		    DevToolMessageEnum["warnStatus"] = "warnStatus";
     		    DevToolMessageEnum["error"] = "error";
+    		    DevToolMessageEnum["errorStatus"] = "errorStatus";
     		    DevToolMessageEnum["chunks"] = "chunks";
     		    DevToolMessageEnum["dom-hover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
     		exports.HMRStatus = void 0;
     		(function (HMRStatus) {
+    		    HMRStatus[HMRStatus["none"] = 0] = "none";
     		    HMRStatus[HMRStatus["refresh"] = 1] = "refresh";
     		    HMRStatus[HMRStatus["remount"] = 2] = "remount";
     		})(exports.HMRStatus || (exports.HMRStatus = {}));
@@ -2060,7 +2065,6 @@
     		        // 字符串字典
     		        this._dir = {};
     		        this._hmr = {};
-    		        this._hmrStatus = {};
     		        this._error = {};
     		        this._warn = {};
     		        this._hoverId = "";
@@ -2079,6 +2083,8 @@
     		        this._enableUpdate = false;
     		        // 在浏览器中选中dom定位到开发工具组件树中
     		        this._enableHoverOnBrowser = false;
+    		        // 显示Retrigger的触发状态
+    		        this._enableRetrigger = false;
     		        this._listeners = new Set();
     		        this.version = "0.0.1";
     		        this.notifyAll = debounce(function () {
@@ -2095,12 +2101,15 @@
     		            _this.notifySelectSync();
     		            _this.notifyConfig();
     		            _this.notifyDir();
+    		            _this.notifySelect();
     		            _this.notifyTrigger();
+    		            _this.notifyTriggerStatus();
     		            _this.notifyHMR();
     		            _this.notifyHMRStatus();
-    		            _this.notifySelect();
     		            _this.notifyWarn();
+    		            _this.notifyWarnStatus();
     		            _this.notifyError();
+    		            _this.notifyErrorStatus();
     		        }, 200);
     		        this.update = new HighLight(this);
     		    }
@@ -2184,6 +2193,11 @@
     		    DevToolCore.prototype.setUpdateStatus = function (d) {
     		        this._enableUpdate = d;
     		    };
+    		    DevToolCore.prototype.setRetriggerStatus = function (d) {
+    		        this._enableRetrigger = d;
+    		        this.notifyTrigger();
+    		        this.notifyTriggerStatus();
+    		    };
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
     		        if (dispatch)
     		            this._detector = true;
@@ -2204,6 +2218,10 @@
     		                return;
     		            _this.notifyDispatch(dispatch);
     		            _this.notifySelect();
+    		            _this.notifyHMRStatus();
+    		            _this.notifyTriggerStatus();
+    		            _this.notifyWarnStatus();
+    		            _this.notifyErrorStatus();
     		        }, 200);
     		        var onChange = function (list) {
     		            var directory = getPlainNodeArrayByList(list).directory;
@@ -2218,11 +2236,12 @@
     		            _this._needUnmount = true;
     		            _this.delDispatch(dispatch);
     		        };
-    		        var onFiberTrigger = function (fiber) {
+    		        var onFiberTrigger = function (fiber, state) {
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
-    		            _this._trigger[id] = _this._trigger[id] ? _this._trigger[id] + 1 : 1;
+    		            _this._trigger[id] = _this._trigger[id] || [];
+    		            _this._trigger[id].push(state);
     		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyTrigger();
@@ -2233,8 +2252,13 @@
     		                return;
     		            if (!_this.hasEnable)
     		                return;
-    		            if (id === _this._selectId)
+    		            if (id === _this._selectId) {
     		                _this.notifySelect();
+    		                _this.notifyHMRStatus();
+    		                _this.notifyTriggerStatus();
+    		                _this.notifyWarnStatus();
+    		                _this.notifyErrorStatus();
+    		            }
     		        };
     		        var onFiberState = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);
@@ -2246,16 +2270,11 @@
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
-    		            _this._hmr[id] = _this._hmr[id] ? _this._hmr[id] + 1 : 1;
-    		            if (typeof forceRefresh === "boolean") {
-    		                _this._hmrStatus[id] = forceRefresh ? exports.HMRStatus.remount : exports.HMRStatus.refresh;
-    		            }
+    		            _this._hmr[id] = _this._hmr[id] || [];
+    		            _this._hmr[id].push(typeof forceRefresh === "boolean" ? (forceRefresh ? exports.HMRStatus.remount : exports.HMRStatus.refresh) : exports.HMRStatus.none);
     		            if (!_this.hasEnable)
     		                return;
     		            _this.notifyHMR();
-    		            if (typeof forceRefresh === "boolean") {
-    		                _this.notifyHMRStatus();
-    		            }
     		            _this.notifyDispatch(dispatch, true);
     		        };
     		        var onFiberWarn = function (fiber) {
@@ -2436,6 +2455,13 @@
     		            globalThis["inspect"](s);
     		            return;
     		        }
+    		        if (this._source && this._source instanceof HTMLElement && typeof globalThis["inspect"] === "function") {
+    		            var s = this._source;
+    		            this._source = null;
+    		            globalThis["inspect"](s);
+    		            window["$$$$0"] = s;
+    		            return;
+    		        }
     		        this.notifyMessage("can not view source for current item", "warning");
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
@@ -2449,9 +2475,29 @@
     		        this._notify({ type: exports.DevToolMessageEnum.init, data: this._detector });
     		    };
     		    DevToolCore.prototype.notifyTrigger = function () {
+    		        var _this = this;
     		        if (!this.hasEnable)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: this._trigger });
+    		        var state = Object.keys(this._trigger).reduce(function (p, c) {
+    		            var t = _this._trigger[c];
+    		            var f = t.filter(function (i) { return (i.isRetrigger ? _this._enableRetrigger : true); });
+    		            p[c] = f.length;
+    		            return p;
+    		        }, {});
+    		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: state });
+    		    };
+    		    DevToolCore.prototype.notifyTriggerStatus = function () {
+    		        var _this = this;
+    		        if (!this.hasEnable)
+    		            return;
+    		        var id = this._selectId;
+    		        if (!id)
+    		            return;
+    		        var status = this._trigger[id];
+    		        if (!status)
+    		            return;
+    		        var finalStatus = status.filter(function (i) { return (i.isRetrigger ? _this._enableRetrigger : true); });
+    		        this._notify({ type: exports.DevToolMessageEnum.triggerStatus, data: finalStatus.map(function (i) { return getNode(i); }) });
     		    };
     		    DevToolCore.prototype.notifyHighlight = function (id, type) {
     		        if (!this.hasEnable)
@@ -2465,10 +2511,21 @@
     		        this._notify({
     		            type: exports.DevToolMessageEnum.warn,
     		            data: Object.keys(this._warn).reduce(function (p, c) {
-    		                p[c] = _this._warn[c].map(function (i) { return getNode(i); });
+    		                p[c] = _this._warn[c].length;
     		                return p;
     		            }, {}),
     		        });
+    		    };
+    		    DevToolCore.prototype.notifyWarnStatus = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        var id = this._selectId;
+    		        if (!id)
+    		            return;
+    		        var status = this._warn[id];
+    		        if (!status)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.warnStatus, data: status.map(function (i) { return getNode(i); }) });
     		    };
     		    DevToolCore.prototype.notifyError = function () {
     		        var _this = this;
@@ -2477,10 +2534,21 @@
     		        this._notify({
     		            type: exports.DevToolMessageEnum.error,
     		            data: Object.keys(this._error).reduce(function (p, c) {
-    		                p[c] = _this._error[c].map(function (i) { return getNode(i); });
+    		                p[c] = _this._error[c].length;
     		                return p;
     		            }, {}),
     		        });
+    		    };
+    		    DevToolCore.prototype.notifyErrorStatus = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        var id = this._selectId;
+    		        if (!id)
+    		            return;
+    		        var status = this._error[id];
+    		        if (!status)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.errorStatus, data: status.map(function (i) { return getNode(i); }) });
     		    };
     		    // TODO
     		    DevToolCore.prototype.notifyChanged = function (list) {
@@ -2490,21 +2558,37 @@
     		        this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
     		    };
     		    DevToolCore.prototype.notifyHMR = function () {
+    		        var _this = this;
     		        if (!this.hasEnable)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.hmr, data: this._hmr });
+    		        var state = Object.keys(this._hmr).reduce(function (p, c) {
+    		            p[c] = _this._hmr[c].length;
+    		            return p;
+    		        }, {});
+    		        this._notify({ type: exports.DevToolMessageEnum.hmr, data: state });
     		    };
     		    DevToolCore.prototype.notifyHMRStatus = function () {
     		        if (!this.hasEnable)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.hmrStatus, data: this._hmrStatus });
+    		        var id = this._selectId;
+    		        if (!id)
+    		            return;
+    		        var status = this._hmr[id];
+    		        if (!status)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.hmrStatus, data: status });
     		    };
     		    DevToolCore.prototype.notifyConfig = function () {
     		        if (!this.hasEnable)
     		            return;
     		        this._notify({
     		            type: exports.DevToolMessageEnum.config,
-    		            data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate, enableHoverOnBrowser: this._enableHoverOnBrowser },
+    		            data: {
+    		                enableHover: this._enableHover,
+    		                enableUpdate: this._enableUpdate,
+    		                enableRetrigger: this._enableRetrigger,
+    		                enableHoverOnBrowser: this._enableHoverOnBrowser,
+    		            },
     		        });
     		    };
     		    DevToolCore.prototype.notifySelect = function (force) {
@@ -2602,7 +2686,6 @@
     		        this._selectId = "";
     		        this._selectDom = null;
     		        this._source = null;
-    		        this._hmrStatus = {};
     		        this._domHoverId = "";
     		        this._tempDomHoverId = "";
     		        this._state = {};
