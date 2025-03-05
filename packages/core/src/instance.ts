@@ -288,6 +288,12 @@ export class DevToolCore {
 
       this._trigger[id] = this._trigger[id] || [];
 
+      // 长数据过滤
+      if (this._trigger[id].length > 10) {
+        const index = this._trigger[id].length - 11;
+        this._trigger[id][index] = { isRetrigger: this._trigger[id][index].isRetrigger };
+      }
+
       this._trigger[id].push(state);
 
       if (!this.hasEnable) return;
@@ -346,6 +352,11 @@ export class DevToolCore {
 
       this._warn[id] = this._warn[id] || [];
 
+      if (this._warn[id].length > 10) {
+        const index = this._warn[id].length - 11;
+        this._warn[id][index] = 1;
+      }
+
       this._warn[id].push(args);
 
       this.notifyWarn();
@@ -357,6 +368,11 @@ export class DevToolCore {
       if (!id) return;
 
       this._error[id] = this._error[id] || [];
+
+      if (this._error[id].length > 10) {
+        const index = this._error[id].length - 11;
+        this._error[id][index] = 1;
+      }
 
       this._error[id].push(args);
 
@@ -627,7 +643,7 @@ export class DevToolCore {
 
     if (!status) return;
 
-    const finalStatus = status.filter((i: { isRetrigger?: boolean }) => (i.isRetrigger ? this._enableRetrigger : true));
+    const finalStatus = status.filter((i: { isRetrigger?: boolean }) => (i.isRetrigger ? this._enableRetrigger : true)).slice(-10);
 
     this._notify({ type: DevToolMessageEnum.triggerStatus, data: finalStatus.map((i: any) => getNode(i)) });
   }
@@ -661,7 +677,9 @@ export class DevToolCore {
 
     if (!status) return;
 
-    this._notify({ type: DevToolMessageEnum.warnStatus, data: status.map((i: any) => getNode(i)) });
+    const finalStatus = status.slice(-10);
+
+    this._notify({ type: DevToolMessageEnum.warnStatus, data: finalStatus.map((i: any) => getNode(i)) });
   }
 
   notifyError() {
@@ -687,7 +705,9 @@ export class DevToolCore {
 
     if (!status) return;
 
-    this._notify({ type: DevToolMessageEnum.errorStatus, data: status.map((i: any) => getNode(i)) });
+    const finalStatus = status.slice(-10);
+
+    this._notify({ type: DevToolMessageEnum.errorStatus, data: finalStatus.map((i: any) => getNode(i)) });
   }
 
   // TODO
