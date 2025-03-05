@@ -129,6 +129,10 @@ const Error = () => {
 export const ExtendView = () => {
   const select = useSelectNode((s) => s.select);
 
+  const enable = useDetailNodeExt(s => s.enable);
+
+  if (!enable) return null;
+
   return (
     <>
       <Trigger key={select} />

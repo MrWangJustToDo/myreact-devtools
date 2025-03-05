@@ -25,6 +25,7 @@ import { memo } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
+import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { UISize, useUISize } from "@/hooks/useUISize";
 
@@ -35,6 +36,8 @@ import type { VirtuosoHandle } from "react-virtuoso";
 
 const onChange = useFilterNode.getActions().onChange;
 
+const onToggle = useDetailNodeExt.getActions().toggleEnable;
+
 export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) => {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -43,6 +46,8 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
   const { state: configState, setEnableHover, setEnableUpdate } = useConfig();
 
   const { state: size, setUISize } = useUISize();
+
+  const enable = useDetailNodeExt((s) => s.enable);
 
   const { state, cb } = useConnect((s) => ({ state: s.state, cb: s.cb }));
 
@@ -127,6 +132,9 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                 </Checkbox>
                 <Checkbox isSelected={configState.enableHover} radius="full" onValueChange={setEnableHover} color="secondary">
                   Hover Overlay
+                </Checkbox>
+                <Checkbox isSelected={enable} radius="full" onValueChange={onToggle} color="default">
+                  Extend Node Detail
                 </Checkbox>
               </div>
             </div>

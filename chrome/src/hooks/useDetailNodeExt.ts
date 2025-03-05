@@ -4,15 +4,17 @@ import type { HMRStatus, NodeValue } from "@my-react-devtool/core";
 
 export const useDetailNodeExt = createState(
   () =>
-    ({ hmrStatus: [], triggerStatus: [], warnStatus: [], errorStatus: [] }) as {
+    ({ hmrStatus: [], triggerStatus: [], warnStatus: [], errorStatus: [], enable: false, }) as {
       hmrStatus: HMRStatus[];
       triggerStatus: NodeValue[];
       warnStatus: NodeValue[];
       errorStatus: NodeValue[];
+      enable: boolean;
     },
   {
     withActions: (s) => {
       return {
+        toggleEnable: () => s.enable = !s.enable,
         updateHMRStatus: (status: HMRStatus[]) => {
           s.hmrStatus = status;
         },
