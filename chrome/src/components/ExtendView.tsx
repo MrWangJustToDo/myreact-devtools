@@ -35,7 +35,7 @@ const Trigger = () => {
       <Divider />
     </div>
   ) : null;
-}
+};
 
 const HMR = () => {
   const status = useDetailNodeExt((s) => s.hmrStatus);
@@ -129,16 +129,16 @@ const Error = () => {
 export const ExtendView = () => {
   const select = useSelectNode((s) => s.select);
 
-  const enable = useDetailNodeExt(s => s.enable);
+  const enable = useDetailNodeExt((s) => s.enable);
 
-  if (!enable) return null;
+  if (!enable || !select) return null;
 
   return (
     <>
-      <Trigger key={select} />
-      <HMR key={select} />
-      <Warn key={select} />
-      <Error key={select} />
+      <Trigger />
+      <HMR />
+      <Warn />
+      <Error />
     </>
   );
 };
