@@ -930,6 +930,7 @@
     		    MessagePanelType["varSource"] = "panel-var-source";
     		    MessagePanelType["enableHover"] = "panel-enable-hover";
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
+    		    MessagePanelType["enableRetrigger"] = "panel-enable-retrigger";
     		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
@@ -2082,6 +2083,8 @@
     		        this._enableUpdate = false;
     		        // 在浏览器中选中dom定位到开发工具组件树中
     		        this._enableHoverOnBrowser = false;
+    		        // 显示Retrigger的触发状态
+    		        this._enableRetrigger = false;
     		        this._listeners = new Set();
     		        this.version = "0.0.1";
     		        this.notifyAll = debounce(function () {
@@ -2098,11 +2101,11 @@
     		            _this.notifySelectSync();
     		            _this.notifyConfig();
     		            _this.notifyDir();
+    		            _this.notifySelect();
     		            _this.notifyTrigger();
+    		            _this.notifyTriggerStatus();
     		            _this.notifyHMR();
     		            _this.notifyHMRStatus();
-    		            _this.notifySelect();
-    		            _this.notifyTriggerStatus();
     		            _this.notifyWarn();
     		            _this.notifyWarnStatus();
     		            _this.notifyError();
@@ -2189,6 +2192,11 @@
     		    };
     		    DevToolCore.prototype.setUpdateStatus = function (d) {
     		        this._enableUpdate = d;
+    		    };
+    		    DevToolCore.prototype.setRetriggerStatus = function (d) {
+    		        this._enableRetrigger = d;
+    		        this.notifyTrigger();
+    		        this.notifyTriggerStatus();
     		    };
     		    DevToolCore.prototype.addDispatch = function (dispatch) {
     		        if (dispatch)
@@ -2447,6 +2455,13 @@
     		            globalThis["inspect"](s);
     		            return;
     		        }
+    		        if (this._source && this._source instanceof HTMLElement && typeof globalThis["inspect"] === "function") {
+    		            var s = this._source;
+    		            this._source = null;
+    		            globalThis["inspect"](s);
+    		            window["$$$$0"] = s;
+    		            return;
+    		        }
     		        this.notifyMessage("can not view source for current item", "warning");
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
@@ -2464,10 +2479,25 @@
     		        if (!this.hasEnable)
     		            return;
     		        var state = Object.keys(this._trigger).reduce(function (p, c) {
-    		            p[c] = _this._trigger[c].length;
+    		            var t = _this._trigger[c];
+    		            var f = t.filter(function (i) { return (i.isRetrigger ? _this._enableRetrigger : true); });
+    		            p[c] = f.length;
     		            return p;
     		        }, {});
     		        this._notify({ type: exports.DevToolMessageEnum.trigger, data: state });
+    		    };
+    		    DevToolCore.prototype.notifyTriggerStatus = function () {
+    		        var _this = this;
+    		        if (!this.hasEnable)
+    		            return;
+    		        var id = this._selectId;
+    		        if (!id)
+    		            return;
+    		        var status = this._trigger[id];
+    		        if (!status)
+    		            return;
+    		        var finalStatus = status.filter(function (i) { return (i.isRetrigger ? _this._enableRetrigger : true); });
+    		        this._notify({ type: exports.DevToolMessageEnum.triggerStatus, data: finalStatus.map(function (i) { return getNode(i); }) });
     		    };
     		    DevToolCore.prototype.notifyHighlight = function (id, type) {
     		        if (!this.hasEnable)
@@ -2553,7 +2583,12 @@
     		            return;
     		        this._notify({
     		            type: exports.DevToolMessageEnum.config,
-    		            data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate, enableHoverOnBrowser: this._enableHoverOnBrowser },
+    		            data: {
+    		                enableHover: this._enableHover,
+    		                enableUpdate: this._enableUpdate,
+    		                enableRetrigger: this._enableRetrigger,
+    		                enableHoverOnBrowser: this._enableHoverOnBrowser,
+    		            },
     		        });
     		    };
     		    DevToolCore.prototype.notifySelect = function (force) {
@@ -2570,17 +2605,6 @@
     		        else {
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
     		        }
-    		    };
-    		    DevToolCore.prototype.notifyTriggerStatus = function () {
-    		        if (!this.hasEnable)
-    		            return;
-    		        var id = this._selectId;
-    		        if (!id)
-    		            return;
-    		        var status = this._trigger[id];
-    		        if (!status)
-    		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.triggerStatus, data: status.map(function (i) { return getNode(i); }) });
     		    };
     		    DevToolCore.prototype.notifySelectSync = function () {
     		        if (!this.hasEnable)

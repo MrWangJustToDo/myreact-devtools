@@ -80,6 +80,9 @@ export class DevToolCore {
   // 在浏览器中选中dom定位到开发工具组件树中
   _enableHoverOnBrowser = false;
 
+  // 显示Retrigger的触发状态
+  _enableRetrigger = false;
+
   _listeners: Set<(data: DevToolMessageType) => void> = new Set();
 
   version = __VERSION__;
@@ -211,6 +214,18 @@ export class DevToolCore {
     }
 
     this._enableUpdate = d;
+  }
+
+  setRetriggerStatus(d: boolean) {
+    if (__DEV__) {
+      console.log(`[@my-react-devtool/core] retriggerStatus ${d ? "enable" : "disable"}`);
+    }
+
+    this._enableRetrigger = d;
+
+    this.notifyTrigger();
+
+    this.notifyTriggerStatus();
   }
 
   addDispatch(dispatch: DevToolRenderDispatch) {
@@ -561,6 +576,18 @@ export class DevToolCore {
       return;
     }
 
+    if (this._source && this._source instanceof HTMLElement && typeof globalThis["inspect"] === "function") {
+      const s = this._source;
+
+      this._source = null;
+
+      globalThis["inspect"](s);
+
+      window["$$$$0"] = s;
+
+      return;
+    }
+
     this.notifyMessage(`can not view source for current item`, "warning");
   }
 
@@ -580,11 +607,29 @@ export class DevToolCore {
     if (!this.hasEnable) return;
 
     const state = Object.keys(this._trigger).reduce((p, c) => {
-      p[c] = this._trigger[c].length;
+      const t = this._trigger[c];
+      const f = t.filter((i: { isRetrigger?: boolean }) => (i.isRetrigger ? this._enableRetrigger : true));
+      p[c] = f.length;
       return p;
     }, {});
 
     this._notify({ type: DevToolMessageEnum.trigger, data: state });
+  }
+
+  notifyTriggerStatus() {
+    if (!this.hasEnable) return;
+
+    const id = this._selectId;
+
+    if (!id) return;
+
+    const status = this._trigger[id];
+
+    if (!status) return;
+
+    const finalStatus = status.filter((i: { isRetrigger?: boolean }) => (i.isRetrigger ? this._enableRetrigger : true));
+
+    this._notify({ type: DevToolMessageEnum.triggerStatus, data: finalStatus.map((i: any) => getNode(i)) });
   }
 
   notifyHighlight(id: string, type: "performance") {
@@ -684,7 +729,12 @@ export class DevToolCore {
 
     this._notify({
       type: DevToolMessageEnum.config,
-      data: { enableHover: this._enableHover, enableUpdate: this._enableUpdate, enableHoverOnBrowser: this._enableHoverOnBrowser },
+      data: {
+        enableHover: this._enableHover,
+        enableUpdate: this._enableUpdate,
+        enableRetrigger: this._enableRetrigger,
+        enableHoverOnBrowser: this._enableHoverOnBrowser,
+      },
     });
   }
 
@@ -706,20 +756,6 @@ export class DevToolCore {
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
     }
-  }
-
-  notifyTriggerStatus() {
-    if (!this.hasEnable) return;
-
-    const id = this._selectId;
-
-    if (!id) return;
-
-    const status = this._trigger[id];
-
-    if (!status) return;
-
-    this._notify({ type: DevToolMessageEnum.triggerStatus, data: status.map((i: any) => getNode(i)) });
   }
 
   notifySelectSync() {
@@ -817,15 +853,15 @@ export class DevToolCore {
 
     this.notifyDir();
 
+    this.notifySelect();
+
     this.notifyTrigger();
+
+    this.notifyTriggerStatus();
 
     this.notifyHMR();
 
     this.notifyHMRStatus();
-
-    this.notifySelect();
-
-    this.notifyTriggerStatus();
 
     this.notifyWarn();
 

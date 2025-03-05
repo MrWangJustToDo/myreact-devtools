@@ -33,7 +33,7 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   } else if (type === "Function") {
     return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
   } else if (typeof val === "string") {
-    if (type === 'String') {
+    if (type === "String") {
       return `"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`;
     } else {
       return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
@@ -48,18 +48,18 @@ export function getText(type: string, data: any) {
     const keys = Object.keys(data as {});
 
     const str = keys
-      .slice(0, 3)
-      .map((key) => `${key}: ${getShortTextFromHookValue(data[key])}`)
-      .concat(keys.length > 3 ? ["…"] : [])
-      .join(", ");
+      ?.slice(0, 3)
+      ?.map((key) => `${key}: ${getShortTextFromHookValue(data[key])}`)
+      ?.concat(keys.length > 3 ? ["…"] : [])
+      ?.join(", ");
 
     return `{ ${str} }`;
   } else if (type === "Array") {
     const str = data
-      .slice(0, 4)
-      .map((val: any) => getShortTextFromHookValue(val))
-      .concat(data.length > 4 ? ["…"] : [])
-      .join(", ");
+      ?.slice(0, 4)
+      ?.map((val: any) => getShortTextFromHookValue(val))
+      ?.concat(data.length > 4 ? ["…"] : [])
+      ?.join(", ");
 
     return `[${str as string}]`;
   } else {

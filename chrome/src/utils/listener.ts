@@ -135,6 +135,17 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
   unSubscribeArray.push(
     useConfig.subscribe(
+      (s) => s.state.enableRetrigger,
+      () => {
+        const enableRetrigger = useConfig.getReadonlyState().state.enableRetrigger;
+
+        postMessage({ type: MessagePanelType.enableRetrigger, data: enableRetrigger });
+      }
+    )
+  )
+
+  unSubscribeArray.push(
+    useConfig.subscribe(
       (s) => s.state.enableHoverOnBrowser,
       () => {
         const enableHoverOnBrowser = useConfig.getReadonlyState().state.enableHoverOnBrowser;

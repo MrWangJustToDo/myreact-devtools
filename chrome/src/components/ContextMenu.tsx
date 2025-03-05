@@ -48,7 +48,7 @@ export const ContextMenu = memo(() => {
                 <CubeIcon className="mr-2" width={sizeNum} height={sizeNum} />
                 <span className="flex-grow">Store as global variable</span>
               </div>
-              {type === "Function" && (
+              {(type === "Function" || type === "Element") && (
                 <div
                   className="context-menu-item px-2 py-1 cursor-pointer select-none flex justify-center items-center node-item-hover"
                   onClick={async () => {
@@ -58,7 +58,8 @@ export const ContextMenu = memo(() => {
                   }}
                 >
                   <EyeOpenIcon className="mr-2" width={sizeNum} height={sizeNum} />
-                  <span className="flex-grow">Inspect Function source</span>
+                  {type === "Function" && <span className="flex-grow">Inspect Function source</span>}
+                  {type === "Element" && <span className="flex-grow">Inspect Element node</span>}
                 </div>
               )}
             </motion.div>

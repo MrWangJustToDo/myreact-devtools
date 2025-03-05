@@ -79,7 +79,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
   useEffect(() => {
     if (initialIndex !== 0) {
-      onScroll();
+      setTimeout(onScroll);
     }
   }, [initialIndex, onScroll]);
 

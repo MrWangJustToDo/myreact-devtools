@@ -99,6 +99,12 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
     }
   }
 
+  if (data?.type === MessagePanelType.enableRetrigger) {
+    const d = data.data;
+
+    core.setRetriggerStatus(d);
+  }
+
   if (data?.type === MessagePanelType.chunks) {
     core.notifyChunks(data.data);
   }

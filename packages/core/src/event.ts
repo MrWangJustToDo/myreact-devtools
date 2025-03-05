@@ -16,6 +16,7 @@ export enum MessagePanelType {
   varSource = "panel-var-source",
   enableHover = "panel-enable-hover",
   enableUpdate = "panel-enable-update",
+  enableRetrigger = "panel-enable-retrigger",
   enableHoverOnBrowser = "panel-enable-hover-on-browser",
   nodeHover = "panel-hover",
   nodeSelect = "panel-select",

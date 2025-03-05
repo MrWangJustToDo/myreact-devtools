@@ -43,7 +43,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
 
   const { theme, setTheme } = useTheme();
 
-  const { state: configState, setEnableHover, setEnableUpdate } = useConfig();
+  const { state: configState, setEnableHover, setEnableUpdate, toggleEnableRetrigger } = useConfig();
 
   const { state: size, setUISize } = useUISize();
 
@@ -132,6 +132,9 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                 </Checkbox>
                 <Checkbox isSelected={configState.enableHover} radius="full" onValueChange={setEnableHover} color="secondary">
                   Hover Overlay
+                </Checkbox>
+                <Checkbox isSelected={configState.enableRetrigger} radius="full" onValueChange={toggleEnableRetrigger} color="warning">
+                  Retrigger Status
                 </Checkbox>
                 <Checkbox isSelected={enable} radius="full" onValueChange={onToggle} color="default">
                   Extend Node Detail
