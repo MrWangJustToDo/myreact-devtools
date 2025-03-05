@@ -1,11 +1,11 @@
 import { Spacer } from "@heroui/react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useSelectNode } from "@/hooks/useSelectNode";
 import { useUISize } from "@/hooks/useUISize";
 
 export const SourceView = () => {
-  const select = useTreeNode((s) => s.select);
+  const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
 

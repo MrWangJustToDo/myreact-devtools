@@ -6,7 +6,7 @@ import { useAppTree } from "@/hooks/useAppTree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useFilterNode } from "@/hooks/useFilterNode";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useSelectNode } from "@/hooks/useSelectNode";
 import { useUISize } from "@/hooks/useUISize";
 import { checkHasInclude } from "@/utils/node";
 
@@ -15,7 +15,7 @@ import { TreeItem } from "./TreeItem";
 import type { PlainNode } from "@my-react-devtool/core";
 
 export const RenderView = () => {
-  const select = useTreeNode((s) => s.select);
+  const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
 

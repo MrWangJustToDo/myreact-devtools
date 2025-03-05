@@ -19,7 +19,7 @@ import {
 import { debounce, throttle } from "./utils";
 
 import type { Tree } from "./tree";
-import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
+import type { MyReactFiberNode, MyReactFiberNodeDev, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
 export type DevToolMessageType = {
@@ -45,8 +45,6 @@ export class DevToolCore {
   _dir = {};
 
   _hmr = {};
-
-  _hmrStatus = {};
 
   _error = {};
 
@@ -238,6 +236,14 @@ export class DevToolCore {
       this.notifyDispatch(dispatch);
 
       this.notifySelect();
+
+      this.notifyHMRStatus();
+
+      this.notifyTriggerStatus();
+
+      this.notifyWarnStatus();
+
+      this.notifyErrorStatus();
     }, 200);
 
     const onChange = (list: ListTree<MyReactFiberNode>) => {
@@ -260,12 +266,14 @@ export class DevToolCore {
       this.delDispatch(dispatch);
     };
 
-    const onFiberTrigger = (fiber: MyReactFiberNode) => {
+    const onFiberTrigger = (fiber: MyReactFiberNode, state: UpdateState) => {
       const id = getPlainNodeIdByFiber(fiber);
 
       if (!id) return;
 
-      this._trigger[id] = this._trigger[id] ? this._trigger[id] + 1 : 1;
+      this._trigger[id] = this._trigger[id] || [];
+
+      this._trigger[id].push(state);
 
       if (!this.hasEnable) return;
 
@@ -279,7 +287,17 @@ export class DevToolCore {
 
       if (!this.hasEnable) return;
 
-      if (id === this._selectId) this.notifySelect();
+      if (id === this._selectId) {
+        this.notifySelect();
+
+        this.notifyHMRStatus();
+
+        this.notifyTriggerStatus();
+
+        this.notifyWarnStatus();
+
+        this.notifyErrorStatus();
+      }
     };
 
     const onFiberState = (fiber: MyReactFiberNode) => {
@@ -295,19 +313,13 @@ export class DevToolCore {
 
       if (!id) return;
 
-      this._hmr[id] = this._hmr[id] ? this._hmr[id] + 1 : 1;
+      this._hmr[id] = this._hmr[id] || [];
 
-      if (typeof forceRefresh === "boolean") {
-        this._hmrStatus[id] = forceRefresh ? HMRStatus.remount : HMRStatus.refresh;
-      }
+      this._hmr[id].push(typeof forceRefresh === "boolean" ? (forceRefresh ? HMRStatus.remount : HMRStatus.refresh) : HMRStatus.none);
 
       if (!this.hasEnable) return;
 
       this.notifyHMR();
-
-      if (typeof forceRefresh === "boolean") {
-        this.notifyHMRStatus();
-      }
 
       this.notifyDispatch(dispatch, true);
     };
@@ -567,7 +579,12 @@ export class DevToolCore {
   notifyTrigger() {
     if (!this.hasEnable) return;
 
-    this._notify({ type: DevToolMessageEnum.trigger, data: this._trigger });
+    const state = Object.keys(this._trigger).reduce((p, c) => {
+      p[c] = this._trigger[c].length;
+      return p;
+    }, {});
+
+    this._notify({ type: DevToolMessageEnum.trigger, data: state });
   }
 
   notifyHighlight(id: string, type: "performance") {
@@ -582,10 +599,24 @@ export class DevToolCore {
     this._notify({
       type: DevToolMessageEnum.warn,
       data: Object.keys(this._warn).reduce((p, c) => {
-        p[c] = this._warn[c].map((i: any) => getNode(i));
+        p[c] = this._warn[c].length;
         return p;
       }, {}),
     });
+  }
+
+  notifyWarnStatus() {
+    if (!this.hasEnable) return;
+
+    const id = this._selectId;
+
+    if (!id) return;
+
+    const status = this._warn[id];
+
+    if (!status) return;
+
+    this._notify({ type: DevToolMessageEnum.warnStatus, data: status.map((i: any) => getNode(i)) });
   }
 
   notifyError() {
@@ -594,10 +625,24 @@ export class DevToolCore {
     this._notify({
       type: DevToolMessageEnum.error,
       data: Object.keys(this._error).reduce((p, c) => {
-        p[c] = this._error[c].map((i: any) => getNode(i));
+        p[c] = this._error[c].length;
         return p;
       }, {}),
     });
+  }
+
+  notifyErrorStatus() {
+    if (!this.hasEnable) return;
+
+    const id = this._selectId;
+
+    if (!id) return;
+
+    const status = this._error[id];
+
+    if (!status) return;
+
+    this._notify({ type: DevToolMessageEnum.errorStatus, data: status.map((i: any) => getNode(i)) });
   }
 
   // TODO
@@ -612,13 +657,26 @@ export class DevToolCore {
   notifyHMR() {
     if (!this.hasEnable) return;
 
-    this._notify({ type: DevToolMessageEnum.hmr, data: this._hmr });
+    const state = Object.keys(this._hmr).reduce((p, c) => {
+      p[c] = this._hmr[c].length;
+      return p;
+    }, {});
+
+    this._notify({ type: DevToolMessageEnum.hmr, data: state });
   }
 
   notifyHMRStatus() {
     if (!this.hasEnable) return;
 
-    this._notify({ type: DevToolMessageEnum.hmrStatus, data: this._hmrStatus });
+    const id = this._selectId;
+
+    if (!id) return;
+
+    const status = this._hmr[id];
+
+    if (!status) return;
+
+    this._notify({ type: DevToolMessageEnum.hmrStatus, data: status });
   }
 
   notifyConfig() {
@@ -648,6 +706,20 @@ export class DevToolCore {
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
     }
+  }
+
+  notifyTriggerStatus() {
+    if (!this.hasEnable) return;
+
+    const id = this._selectId;
+
+    if (!id) return;
+
+    const status = this._trigger[id];
+
+    if (!status) return;
+
+    this._notify({ type: DevToolMessageEnum.triggerStatus, data: status.map((i: any) => getNode(i)) });
   }
 
   notifySelectSync() {
@@ -753,9 +825,15 @@ export class DevToolCore {
 
     this.notifySelect();
 
+    this.notifyTriggerStatus();
+
     this.notifyWarn();
 
+    this.notifyWarnStatus();
+
     this.notifyError();
+
+    this.notifyErrorStatus();
   }, 200);
 
   // TODO support multiple connect agent
@@ -795,8 +873,6 @@ export class DevToolCore {
     this._selectDom = null;
 
     this._source = null;
-
-    this._hmrStatus = {};
 
     this._domHoverId = "";
 

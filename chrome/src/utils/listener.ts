@@ -5,7 +5,8 @@ import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
+import { useSelectNode } from "@/hooks/useSelectNode";
 
 import { isServer } from "./isServer";
 
@@ -20,10 +21,12 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
   const unSubscribeArray: Array<() => void> = [];
 
   unSubscribeArray.push(
-    useTreeNode.subscribe(
+    useSelectNode.subscribe(
       (s) => s.select,
       () => {
-        const currentSelect = useTreeNode.getReadonlyState().select;
+        const currentSelect = useSelectNode.getReadonlyState().select;
+
+        useDetailNodeExt.getActions().clear();
 
         if (currentSelect) {
           useDetailNode.getActions().setLoading(true);
@@ -37,10 +40,10 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
   );
 
   unSubscribeArray.push(
-    useTreeNode.subscribe(
+    useSelectNode.subscribe(
       (s) => s.reload,
       () => {
-        const currentSelect = useTreeNode.getReadonlyState().select;
+        const currentSelect = useSelectNode.getReadonlyState().select;
 
         if (currentSelect) {
           useDetailNode.getActions().setLoading(true);
@@ -52,10 +55,10 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
   );
 
   unSubscribeArray.push(
-    useTreeNode.subscribe(
+    useSelectNode.subscribe(
       (s) => s.trigger,
       () => {
-        const currentSelect = useTreeNode.getReadonlyState().select;
+        const currentSelect = useSelectNode.getReadonlyState().select;
 
         if (currentSelect) {
           useDetailNode.getActions().setLoading(true);
@@ -67,10 +70,10 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
   );
 
   unSubscribeArray.push(
-    useTreeNode.subscribe(
+    useSelectNode.subscribe(
       (s) => s.inspect,
       () => {
-        const currentSelect = useTreeNode.getReadonlyState().select;
+        const currentSelect = useSelectNode.getReadonlyState().select;
 
         if (currentSelect) {
           // postMessage({ type: MessagePanelType.nodeInspect, data: currentSelect });
@@ -85,10 +88,10 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
   );
 
   unSubscribeArray.push(
-    useTreeNode.subscribe(
+    useSelectNode.subscribe(
       (s) => s.store,
       () => {
-        const currentSelect = useTreeNode.getReadonlyState().select;
+        const currentSelect = useSelectNode.getReadonlyState().select;
 
         if (currentSelect) {
           postMessage({ type: MessagePanelType.nodeStore, data: currentSelect });
@@ -98,10 +101,10 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
   );
 
   unSubscribeArray.push(
-    useTreeNode.subscribe(
+    useSelectNode.subscribe(
       (s) => s.hover,
       () => {
-        const currentHover = useTreeNode.getReadonlyState().hover;
+        const currentHover = useSelectNode.getReadonlyState().hover;
 
         postMessage({ type: MessagePanelType.nodeHover, data: currentHover });
       }

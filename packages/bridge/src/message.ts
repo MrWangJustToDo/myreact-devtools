@@ -22,6 +22,14 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
     core.setSelect(data.data);
 
     core.notifySelect();
+
+    core.notifyHMRStatus();
+
+    core.notifyTriggerStatus();
+
+    core.notifyWarnStatus();
+
+    core.notifyErrorStatus();
   }
 
   if (data?.type === MessagePanelType.nodeSelectForce) {

@@ -2,13 +2,13 @@ import { Divider, Spacer } from "@heroui/react";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useSelectNode } from "@/hooks/useSelectNode";
 import { useUISize } from "@/hooks/useUISize";
 
 import { NodeValue } from "./NodeValue";
 
 export const PropsView = () => {
-  const select = useTreeNode((s) => s.select);
+  const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
 

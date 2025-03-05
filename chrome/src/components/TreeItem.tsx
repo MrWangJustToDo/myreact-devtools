@@ -1,17 +1,17 @@
 import { Chip, Spacer, Tooltip } from "@heroui/react";
-import { getFiberTag, HMRStatus } from "@my-react-devtool/core";
+import { getFiberTag } from "@my-react-devtool/core";
 import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { memo, useCallback, useMemo } from "react";
 
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
-const { setSelect, setClose, setHover } = useTreeNode.getActions();
+const { setSelect, setClose, setHover } = useSelectNode.getActions();
 
 const RenderTag = memo(({ node }: { node: PlainNode }) => {
   const tag = getFiberTag(node);
@@ -89,18 +89,18 @@ export const TreeItem = ({
 
   const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
-  const { hmrCount, hmrStatus } = useHMRNode(useCallback((s) => ({ hmrCount: s.state?.[node.i], hmrStatus: s.status?.[node.i] }), [node.i]));
+  const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
   const highlightType = useHighlightNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
   const { error, warn } = useHighlightNode.useShallowSelector(
-    (s) => ({ error: s.error?.[node.i]?.length, warn: s.warn?.[node.i]?.length }),
+    (s) => ({ error: s.error?.[node.i], warn: s.warn?.[node.i] }),
     (p, c) => p.error === c.error && p.warn === c.warn
   );
 
   const finalName = useNodeName(useCallback((s) => s.map[current.n], [current.n]));
 
-  const { select, closeList, selectList } = useTreeNode.useShallowStableSelector((s) => ({
+  const { select, closeList, selectList } = useSelectNode.useShallowStableSelector((s) => ({
     select: s.select,
     closeList: s.closeList,
     selectList: s.selectList,
@@ -194,7 +194,7 @@ export const TreeItem = ({
             {withHMR && hmrCount > 0 && (
               <>
                 <Spacer x={1} />
-                <Tooltip content={hmrStatus ? `hmr update with ~${HMRStatus[hmrStatus]}~` : "hmr update"} showArrow color="success">
+                <Tooltip content="hmr update" showArrow color="success">
                   <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
                     {hmrCount}
                   </Chip>

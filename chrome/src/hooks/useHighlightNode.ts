@@ -1,9 +1,7 @@
 import { createState } from "reactivity-store";
 
-import type { NodeValue } from "@my-react-devtool/core";
-
 export const useHighlightNode = createState(
-  () => ({ state: {}, warn: {}, error: {} }) as { state: Record<string, string>; warn: Record<string, Array<NodeValue>>; error: Record<string, Array<NodeValue>> },
+  () => ({ state: {}, warn: {}, error: {} }) as { state: Record<string, string>; warn: Record<string, number>; error: Record<string, number> },
   {
     withActions: (s) => {
       return {
@@ -14,11 +12,11 @@ export const useHighlightNode = createState(
           }, 3000);
         },
 
-        setError: (state: Record<string, Array<NodeValue>>) => {
+        setError: (state: Record<string, number>) => {
           s.error = state;
         },
 
-        setWarn: (state: Record<string, Array<NodeValue>>) => {
+        setWarn: (state: Record<string, number>) => {
           s.warn = state;
         },
 

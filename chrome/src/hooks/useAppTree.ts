@@ -4,7 +4,7 @@ import { createState } from "reactivity-store";
 import { flattenNode } from "@/utils/node";
 
 import { useFilterNode } from "./useFilterNode";
-import { useTreeNode } from "./useTreeNode";
+import { useSelectNode } from "./useSelectNode";
 
 type AppTreeType = { nodes: Tree[]; list: PlainNode[] };
 
@@ -18,7 +18,7 @@ export const useAppTree = createState(
     withActions: (state) => {
       return {
         addNode: (node: Tree) => {
-          const closeList = useTreeNode.getReadonlyState().closeList;
+          const closeList = useSelectNode.getReadonlyState().closeList;
           const filterSet = useFilterNode.getReadonlyState().filter;
           const filterArray = Array.from(filterSet);
           const exist = state.nodes.find((n) => n.i === node.i);
@@ -34,7 +34,7 @@ export const useAppTree = createState(
                 )
               )
               .flat(1);
-            useTreeNode.getActions().updateSelectList();
+            useSelectNode.getActions().updateSelectList();
           } else {
             state.nodes = [...state.nodes, node];
             state.list = [
@@ -45,11 +45,11 @@ export const useAppTree = createState(
                 (node) => filterArray.some((i) => +i & node.t)
               ),
             ];
-            useTreeNode.getActions().updateSelectList();
+            useSelectNode.getActions().updateSelectList();
           }
         },
         update: () => {
-          const closeList = useTreeNode.getReadonlyState().closeList;
+          const closeList = useSelectNode.getReadonlyState().closeList;
           const filterSet = useFilterNode.getReadonlyState().filter;
           const filterArray = Array.from(filterSet);
           state.list = state.nodes
@@ -61,7 +61,7 @@ export const useAppTree = createState(
               )
             )
             .flat(1);
-          useTreeNode.getActions().updateSelectList();
+          useSelectNode.getActions().updateSelectList();
         },
         clear: () => {
           state.nodes = [];

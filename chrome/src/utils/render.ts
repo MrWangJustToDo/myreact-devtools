@@ -7,11 +7,12 @@ import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
+import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useRunNode } from "@/hooks/useRunNode";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import { isServer } from "./isServer";
@@ -74,7 +75,7 @@ export const onRender = (data: DevToolMessageType) => {
       useChunk.getActions().clear();
       useAppTree.getActions().clear();
       useNodeName.getActions().clear();
-      useTreeNode.getActions().clear();
+      useSelectNode.getActions().clear();
       useDetailNode.getActions().clear();
       useContextMenu.getActions().clear?.();
     });
@@ -82,14 +83,14 @@ export const onRender = (data: DevToolMessageType) => {
 
   if (data.type === DevToolMessageEnum["select-unmount"]) {
     safeAction(() => {
-      useTreeNode.getActions().clearSelect?.();
+      useSelectNode.getActions().clearSelect?.();
     });
   }
 
   if (data.type === DevToolMessageEnum["select-sync"]) {
     safeAction(() => {
-      useTreeNode.getActions().setSelect(data.data as string);
-      useTreeNode.getActions().scrollIntoView();
+      useSelectNode.getActions().setSelect(data.data as string);
+      useSelectNode.getActions().scrollIntoView();
     });
   }
 
@@ -104,12 +105,12 @@ export const onRender = (data: DevToolMessageType) => {
   }
 
   if (data.type === DevToolMessageEnum.hmrStatus) {
-    const nodes = data.data as Record<string, HMRStatus>;
+    const nodes = data.data as HMRStatus[];
 
     safeAction(() => {
-      const { updateStatus } = useHMRNode.getActions();
+      const { updateHMRStatus } = useDetailNodeExt.getActions();
 
-      updateStatus(nodes);
+      updateHMRStatus(nodes);
     });
   }
 
@@ -120,6 +121,16 @@ export const onRender = (data: DevToolMessageType) => {
       const { update } = useTriggerNode.getActions();
 
       update(nodes);
+    });
+  }
+
+  if (data.type === DevToolMessageEnum.triggerStatus) {
+    const nodes = data.data as NodeValue[];
+
+    safeAction(() => {
+      const { updateTriggerStatus } = useDetailNodeExt.getActions();
+
+      updateTriggerStatus(nodes);
     });
   }
 
@@ -190,7 +201,7 @@ export const onRender = (data: DevToolMessageType) => {
   }
 
   if (data.type === DevToolMessageEnum.warn) {
-    const warn = data.data as Record<string, Array<NodeValue>>;
+    const warn = data.data as Record<string, number>;
 
     safeAction(() => {
       const { setWarn } = useHighlightNode.getActions();
@@ -199,8 +210,18 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
+  if (data.type === DevToolMessageEnum.warnStatus) {
+    const warn = data.data as NodeValue[];
+
+    safeAction(() => {
+      const { updateWarnStatus } = useDetailNodeExt.getActions();
+
+      updateWarnStatus(warn);
+    });
+  }
+
   if (data.type === DevToolMessageEnum.error) {
-    const error = data.data as Record<string, Array<NodeValue>>;
+    const error = data.data as Record<string, number>;
 
     safeAction(() => {
       const { setError } = useHighlightNode.getActions();
@@ -209,11 +230,21 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
+  if (data.type === DevToolMessageEnum.errorStatus) {
+    const error = data.data as NodeValue[];
+
+    safeAction(() => {
+      const { updateErrorStatus } = useDetailNodeExt.getActions();
+
+      updateErrorStatus(error);
+    });
+  }
+
   if (data.type === DevToolMessageEnum["dom-hover"]) {
     const id = data.data as string;
 
     safeAction(() => {
-      const { setSelect, scrollIntoView, clearSelect } = useTreeNode.getActions();
+      const { setSelect, scrollIntoView, clearSelect } = useSelectNode.getActions();
 
       clearSelect();
 

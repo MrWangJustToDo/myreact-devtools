@@ -3,7 +3,7 @@ import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useSelectNode } from "@/hooks/useSelectNode";
 import { useUISize } from "@/hooks/useUISize";
 
 import { NodeValue } from "./NodeValue";
@@ -52,7 +52,7 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
 
 
 export const HookView = () => {
-  const select = useTreeNode((s) => s.select);
+  const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
 

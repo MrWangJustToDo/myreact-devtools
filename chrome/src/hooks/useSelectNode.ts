@@ -11,7 +11,7 @@ const clearChunk = useChunk.getActions().clear;
 
 const delNode = useDetailNode.getActions().delNode;
 
-export const useTreeNode = createState(
+export const useSelectNode = createState(
   () =>
     ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0, scroll: 0, inspect: 0 }) as {
       select: string | null;

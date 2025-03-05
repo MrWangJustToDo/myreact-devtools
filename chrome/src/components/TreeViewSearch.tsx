@@ -6,13 +6,13 @@ import { toast } from "sonner";
 import { useAppTree } from "@/hooks/useAppTree";
 import { useConfig } from "@/hooks/useConfig";
 import { useNodeName } from "@/hooks/useNodeName";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useSelectNode } from "@/hooks/useSelectNode";
 
 import type { PlainNode } from "@my-react-devtool/core";
 import type { FormEvent } from "react";
 import type { VirtuosoHandle } from "react-virtuoso";
 
-const { setSelect } = useTreeNode.getActions();
+const { setSelect } = useSelectNode.getActions();
 
 const { toggleHoverOnBrowser } = useConfig.getActions();
 

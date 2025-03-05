@@ -44,6 +44,7 @@ export enum DevToolMessageEnum {
   changed = "changed",
   highlight = "highlight",
   trigger = "trigger",
+  triggerStatus = "triggerStatus",
   hmr = "hmr",
   hmrStatus = "hmrStatus",
   run = "run",
@@ -56,7 +57,9 @@ export enum DevToolMessageEnum {
   message = "message",
 
   warn = "warn",
+  warnStatus = "warnStatus",
   error = "error",
+  errorStatus = "errorStatus",
 
   chunks = "chunks",
 
@@ -64,6 +67,7 @@ export enum DevToolMessageEnum {
 }
 
 export enum HMRStatus {
+  none = 0,
   refresh = 1,
   remount = 2,
 }

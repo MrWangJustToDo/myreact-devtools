@@ -2,17 +2,17 @@ import { Button, ButtonGroup, Divider, Tooltip } from "@heroui/react";
 import { Crosshair1Icon, CubeIcon, EyeOpenIcon, PlayIcon, ReloadIcon } from "@radix-ui/react-icons";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
-import { useTreeNode } from "@/hooks/useTreeNode";
+import { useSelectNode } from "@/hooks/useSelectNode";
 import { useUISize } from "@/hooks/useUISize";
 
 import { TreeItem } from "./TreeItem";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
-const { forceReload, storeFiber, triggerFiber, scrollIntoView, inspectDom } = useTreeNode.getActions();
+const { forceReload, storeFiber, triggerFiber, scrollIntoView, inspectDom } = useSelectNode.getActions();
 
 export const NameView = () => {
-  const select = useTreeNode((s) => s.select);
+  const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
 

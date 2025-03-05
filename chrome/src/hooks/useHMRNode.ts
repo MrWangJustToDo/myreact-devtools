@@ -1,8 +1,6 @@
 import { createState } from "reactivity-store";
 
-import type { HMRStatus } from "@my-react-devtool/core";
-
-export const useHMRNode = createState(() => ({ state: {}, status: {} }) as { state: Record<string, number>; status: Record<string, HMRStatus> }, {
+export const useHMRNode = createState(() => ({ state: {} }) as { state: Record<string, number> }, {
   withDeepSelector: false,
   withActions: (s) => {
     return {
@@ -11,14 +9,8 @@ export const useHMRNode = createState(() => ({ state: {}, status: {} }) as { sta
           s.state[key] = state[key];
         });
       },
-      updateStatus: (status: Record<string, HMRStatus>) => {
-        Object.keys(status).forEach((key) => {
-          s.status[key] = status[key];
-        });
-      },
       clear: () => {
         s.state = {};
-        s.status = {};
       },
     };
   },
