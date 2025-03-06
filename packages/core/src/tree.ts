@@ -279,7 +279,7 @@ export const getComponentFiberByDom = (dom: HTMLElement) => {
   let r = fiber;
 
   while (r) {
-    if (include(r.type, NODE_TYPE.__class__) | include(r.type, NODE_TYPE.__function__)) {
+    if (include(r.type, NODE_TYPE.__class__) || include(r.type, NODE_TYPE.__function__)) {
       return r;
     }
 

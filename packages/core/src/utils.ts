@@ -268,7 +268,7 @@ export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
   const hookList = fiber.hookList;
 
   const processStack = (hook: MyReactHookNodeDev, index: number) => {
-    const stack = hook._debugStack;
+    const stack = (hook as any)._debugStack;
 
     if (!stack || !Array.isArray(stack) || stack.length === 0) {
       const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
