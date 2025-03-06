@@ -48,18 +48,7 @@ const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndent
 }, 16);
 
 const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; data: PlainNode[]; onMount: (s?: VirtuosoHandle) => void }) => {
-  const [isScrolling, setIsScrolling] = useState(false);
-
   const ref = useRef<VirtuosoHandle>(null);
-
-  const [initialIndex] = useState(() => {
-    const select = useSelectNode.getReadonlyState().select;
-    const index = data.findIndex((item) => item.i === select);
-    if (index === -1) {
-      return 0;
-    }
-    return index;
-  });
 
   const dataRef = useRef(data);
 
@@ -67,21 +56,13 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
-  const render = useCallbackRef((index: number, _: unknown, { isScrolling }: { isScrolling?: boolean }) => {
+  const render = useCallbackRef((index: number, _: unknown) => {
     const node = data[index];
 
     if (!node) return null;
 
-    return (
-      <TreeItem node={node} isScrolling={isScrolling} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[14px]" : "text-[16px]"} />
-    );
+    return <TreeItem node={node} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[14px]" : "text-[16px]"} />;
   });
-
-  useEffect(() => {
-    if (initialIndex !== 0) {
-      setTimeout(onScroll);
-    }
-  }, [initialIndex, onScroll]);
 
   useEffect(() => {
     const cb = useSelectNode.subscribe(
@@ -90,13 +71,13 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
         const select = useSelectNode.getReadonlyState().select;
         const index = dataRef.current?.findIndex((item) => item.i === select);
         if (index !== -1) {
-          ref.current?.scrollIntoView({ index, align: "center" });
+          ref.current?.scrollIntoView({ index, align: "center", done: onScroll });
         }
       }
     );
 
     return cb;
-  }, []);
+  }, [onScroll]);
 
   useEffect(() => {
     onMount(ref.current as VirtuosoHandle);
@@ -104,18 +85,17 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     return () => onMount();
   }, [onMount]);
 
-  return (
-    <Virtuoso
-      ref={ref}
-      increaseViewportBy={500}
-      isScrolling={setIsScrolling}
-      initialTopMostItemIndex={{ index: initialIndex, align: "center" }}
-      context={{ isScrolling }}
-      onScroll={onScroll}
-      totalCount={data.length}
-      itemContent={render}
-    />
-  );
+  useEffect(() => {
+    chrome.devtools?.inspectedWindow?.eval?.(`(() => {
+      if (window['$$$$0'] !== $0) {
+        window.__MY_REACT_DEVTOOL_INTERNAL__?.setSelectDom?.($0);
+        window.__MY_REACT_DEVTOOL_INTERNAL__?.notifySelectSync?.();
+        window['$$$$0'] = $0;
+      }
+    })()`);
+  }, []);
+
+  return <Virtuoso ref={ref} increaseViewportBy={500} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
 });
 
 TreeViewImpl.displayName = "TreeViewImpl";
@@ -125,7 +105,7 @@ export const TreeView = memo(() => {
 
   const nodes = useAppTree.useShallowStableSelector((s) => s.list) as PlainNode[];
 
-  const { width, height } = useDomSize({ ref });
+  const { width } = useDomSize({ ref });
 
   const [r, setR] = useState<VirtuosoHandle>();
 
@@ -133,22 +113,13 @@ export const TreeView = memo(() => {
 
   const lastContainerWidthRef = useRef(width);
 
+  lastContainerWidthRef.current = width;
+
   const onScroll = useCallback(() => {
     if (ref.current) {
       updateIndentationSizeVar(ref.current as HTMLDivElement, lastIndentSizeRef, lastContainerWidthRef);
     }
   }, []);
-
-  useEffect(() => {
-    onScroll();
-
-    const cb = useSelectNode.subscribe(
-      (s) => s.scroll,
-      () => setTimeout(onScroll, 20)
-    );
-
-    return cb;
-  }, [width, height, nodes.length, onScroll]);
 
   return (
     <div className="tree-view h-full p-1">

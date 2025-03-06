@@ -867,8 +867,6 @@ export class DevToolCore {
       });
     }
 
-    this.notifySelectSync();
-
     this.notifyConfig();
 
     this.notifyDir();

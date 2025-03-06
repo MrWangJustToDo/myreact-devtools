@@ -38,14 +38,6 @@ export const onRender = (data: DevToolMessageType) => {
 
       setRender(detector);
     });
-
-    chrome.devtools?.inspectedWindow?.eval?.(`(() => {
-      if (window['$$$$0'] !== $0) {
-        window.__MY_REACT_DEVTOOL_INTERNAL__?.setSelectDom?.($0);
-        window.__MY_REACT_DEVTOOL_INTERNAL__?.notifySelectSync?.();
-        window['$$$$0'] = $0;
-      }
-    })()`);
   }
 
   if (data.type === DevToolMessageEnum.dir) {
@@ -67,6 +59,14 @@ export const onRender = (data: DevToolMessageType) => {
       if (node) {
         addNode(node);
       }
+
+      chrome.devtools?.inspectedWindow?.eval?.(`(() => {
+        if (window['$$$$0'] !== $0) {
+          window.__MY_REACT_DEVTOOL_INTERNAL__?.setSelectDom?.($0);
+          window.__MY_REACT_DEVTOOL_INTERNAL__?.notifySelectSync?.();
+          window['$$$$0'] = $0;
+        }
+      })()`);
     });
   }
 

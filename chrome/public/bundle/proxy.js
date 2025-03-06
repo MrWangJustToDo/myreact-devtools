@@ -2115,7 +2115,6 @@
     		                    _this.notifyDispatch(dispatch);
     		                });
     		            }
-    		            _this.notifySelectSync();
     		            _this.notifyConfig();
     		            _this.notifyDir();
     		            _this.notifySelect();

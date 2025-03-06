@@ -39,7 +39,7 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
 
 RenderTag.displayName = "RenderTag";
 
-const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: boolean }) => {
+const RenderKey = memo(({ node }: { node: PlainNode }) => {
   const finalKey = useNodeName(useCallback((s) => s.map?.[node.k!], [node.k]));
 
   return (
@@ -48,13 +48,9 @@ const RenderKey = memo(({ node, isScrolling }: { node: PlainNode; isScrolling?: 
       <div className=" text-gray-400">=</div>
       <div className="flex">
         {'"'}
-        {isScrolling ? (
+        <Tooltip content={finalKey} delay={800} showArrow color="foreground">
           <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
-        ) : (
-          <Tooltip content={finalKey} delay={800} showArrow color="foreground">
-            <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
-          </Tooltip>
-        )}
+        </Tooltip>
         {'"'}
       </div>
     </div>
@@ -65,7 +61,7 @@ RenderKey.displayName = "RenderKey";
 
 export const TreeItem = ({
   node,
-  isScrolling,
+  // isScrolling,
   className,
   withKey = true,
   withTag = true,
@@ -77,7 +73,7 @@ export const TreeItem = ({
   width?: number;
   node: PlainNode;
   className?: string;
-  isScrolling?: boolean;
+  // isScrolling?: boolean;
   withCollapse?: boolean;
   withTrigger?: boolean;
   withSelect?: boolean;
@@ -164,13 +160,9 @@ export const TreeItem = ({
                 }}
               >
                 {hasChild ? (
-                  !isScrolling ? (
-                    <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow color="foreground">
-                      {StateIcon}
-                    </Tooltip>
-                  ) : (
-                    StateIcon
-                  )
+                  <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow color="foreground">
+                    {StateIcon}
+                  </Tooltip>
                 ) : null}
               </span>
             )}
@@ -228,7 +220,7 @@ export const TreeItem = ({
             {withKey && current.k && (
               <>
                 <Spacer x={1} />
-                <RenderKey node={current} isScrolling={isScrolling} />
+                <RenderKey node={current} />
               </>
             )}
           </div>
