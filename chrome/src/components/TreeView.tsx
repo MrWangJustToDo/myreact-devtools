@@ -65,6 +65,8 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
   });
 
   useEffect(() => {
+    onScroll();
+
     const cb = useSelectNode.subscribe(
       (s) => s.scroll,
       () => {
@@ -120,6 +122,10 @@ export const TreeView = memo(() => {
       updateIndentationSizeVar(ref.current as HTMLDivElement, lastIndentSizeRef, lastContainerWidthRef);
     }
   }, []);
+
+  useEffect(() => {
+    onScroll();
+  }, [onScroll, width]);
 
   return (
     <div className="tree-view h-full p-1">
