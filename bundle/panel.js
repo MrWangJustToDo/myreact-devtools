@@ -99,7 +99,7 @@
     		    }
     		};
     		var include = function (src, rest) {
-    		    return src & rest;
+    		    return !!(src & rest);
     		};
     		var exclude = function (src, rest) {
     		    return !(src & rest);
@@ -167,6 +167,8 @@
     		// TODO
     		var KeepLive = Symbol.for("react.keep_live");
     		var Scope = Symbol.for("react.scope");
+    		var ScopeLazy = Symbol.for("react.scope_lazy");
+    		var ScopeSuspense = Symbol.for("react.scope_suspense");
     		var Comment = Symbol.for("react.comment");
     		var Offscreen = Symbol.for("react.offscreen");
     		var Profiler = Symbol.for("react.profiler");
@@ -275,6 +277,9 @@
     		    UpdateQueueType[UpdateQueueType["component"] = 1] = "component";
     		    UpdateQueueType[UpdateQueueType["lazy"] = 3] = "lazy";
     		    UpdateQueueType[UpdateQueueType["context"] = 4] = "context";
+    		    UpdateQueueType[UpdateQueueType["promise"] = 5] = "promise";
+    		    UpdateQueueType[UpdateQueueType["hmr"] = 6] = "hmr";
+    		    UpdateQueueType[UpdateQueueType["trigger"] = 7] = "trigger";
     		})(exports.UpdateQueueType || (exports.UpdateQueueType = {}));
 
     		exports.STATE_TYPE = void 0;
@@ -292,7 +297,8 @@
     		    STATE_TYPE[STATE_TYPE["__unmount__"] = 512] = "__unmount__";
     		    STATE_TYPE[STATE_TYPE["__hmr__"] = 1024] = "__hmr__";
     		    STATE_TYPE[STATE_TYPE["__retrigger__"] = 2048] = "__retrigger__";
-    		    STATE_TYPE[STATE_TYPE["__rerun__"] = 4096] = "__rerun__";
+    		    STATE_TYPE[STATE_TYPE["__reschedule__"] = 4096] = "__reschedule__";
+    		    STATE_TYPE[STATE_TYPE["__promise__"] = 8192] = "__promise__";
     		})(exports.STATE_TYPE || (exports.STATE_TYPE = {}));
 
     		exports.PATCH_TYPE = void 0;
@@ -455,9 +461,11 @@
     		            this.push(node_1.value);
     		            this.stickyFoot = null;
     		        }
+    		        else {
+    		            this.length++;
+    		        }
     		        var listNode = new ListTreeNode(node);
     		        this.stickyFoot = listNode;
-    		        this.length++;
     		    };
     		    ListTree.prototype.pushToHead = function (node) {
     		        if (this.stickyHead) {
@@ -465,12 +473,14 @@
     		            this.unshift(node_2.value);
     		            this.stickyHead = null;
     		        }
+    		        else {
+    		            this.length++;
+    		        }
     		        var listNode = new ListTreeNode(node);
     		        this.stickyHead = listNode;
-    		        this.length++;
     		    };
     		    ListTree.prototype.pop = function () {
-    		        var foot = this.stickyFoot || this.foot;
+    		        var foot = this.stickyFoot || this.foot || this.stickyHead;
     		        if (foot) {
     		            this.delete(foot);
     		            return foot.value;
@@ -498,6 +508,9 @@
     		            this.unshift(node_3.value);
     		            this.stickyHead = null;
     		        }
+    		        else {
+    		            this.length++;
+    		        }
     		        var listNode = new ListTreeNode(node);
     		        this.stickyHead = listNode;
     		    };
@@ -507,11 +520,14 @@
     		            this.push(node_4.value);
     		            this.stickyFoot = null;
     		        }
+    		        else {
+    		            this.length++;
+    		        }
     		        var listNode = new ListTreeNode(node);
     		        this.stickyFoot = listNode;
     		    };
     		    ListTree.prototype.shift = function () {
-    		        var head = this.stickyHead || this.head;
+    		        var head = this.stickyHead || this.head || this.stickyFoot;
     		        if (head) {
     		            this.delete(head);
     		            return head.value;
@@ -684,6 +700,8 @@
     		exports.Profiler = Profiler;
     		exports.Provider = Provider;
     		exports.Scope = Scope;
+    		exports.ScopeLazy = ScopeLazy;
+    		exports.ScopeSuspense = ScopeSuspense;
     		exports.Strict = Strict;
     		exports.Suspense = Suspense;
     		exports.TYPEKEY = TYPEKEY;
@@ -704,8 +722,7 @@
     		exports.isSymbol = isSymbol;
     		exports.merge = merge;
     		exports.once = once;
-    		exports.remove = remove;
-    		
+    		exports.remove = remove; 
     	} (index_production));
     	return index_production;
     }
@@ -1276,7 +1293,7 @@
     		        return;
     		    var r = fiber;
     		    while (r) {
-    		        if (reactShared.include(r.type, exports.NODE_TYPE.__class__) | reactShared.include(r.type, exports.NODE_TYPE.__function__)) {
+    		        if (reactShared.include(r.type, exports.NODE_TYPE.__class__) || reactShared.include(r.type, exports.NODE_TYPE.__function__)) {
     		            return r;
     		        }
     		        r = r.parent;
