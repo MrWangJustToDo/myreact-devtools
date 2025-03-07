@@ -2616,7 +2616,7 @@
     		    return parseHooksTreeToHOOKTree(hookTree, 0, force);
     		};
     		var getHook = function (fiber, force) {
-    		    if (platform) {
+    		    if (platform && platform.dispatcher) {
     		        try {
     		            return getHookStack(fiber, force);
     		        }
