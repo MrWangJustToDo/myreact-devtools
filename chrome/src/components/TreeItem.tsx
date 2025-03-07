@@ -61,7 +61,6 @@ RenderKey.displayName = "RenderKey";
 
 export const TreeItem = ({
   node,
-  // isScrolling,
   className,
   withKey = true,
   withTag = true,
@@ -73,7 +72,6 @@ export const TreeItem = ({
   width?: number;
   node: PlainNode;
   className?: string;
-  // isScrolling?: boolean;
   withCollapse?: boolean;
   withTrigger?: boolean;
   withSelect?: boolean;
@@ -159,11 +157,11 @@ export const TreeItem = ({
                   setClose(node.i);
                 }}
               >
-                {hasChild ? (
+                {hasChild && (
                   <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow color="foreground">
                     {StateIcon}
                   </Tooltip>
-                ) : null}
+                )}
               </span>
             )}
             <p className="node-name line-clamp-1">{finalName}</p>

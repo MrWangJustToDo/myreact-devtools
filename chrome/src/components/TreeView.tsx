@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
 import { useAppTree } from "@/hooks/useAppTree";
-import { useCallbackRef } from "@/hooks/useCallbackRef";
+// import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useDomSize } from "@/hooks/useSize";
 import { UISize, useUISize } from "@/hooks/useUISize";
@@ -56,22 +56,22 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
 
-  const render = useCallbackRef((index: number, _: unknown) => {
+  const render = (index: number, _: unknown) => {
     const node = data[index];
 
     if (!node) return null;
 
     return <TreeItem node={node} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[14px]" : "text-[16px]"} />;
-  });
+  };
 
   useEffect(() => {
-    onScroll();
-
     const cb = useSelectNode.subscribe(
       (s) => s.scroll,
       () => {
         const select = useSelectNode.getReadonlyState().select;
+
         const index = dataRef.current?.findIndex((item) => item.i === select);
+
         if (index !== -1) {
           ref.current?.scrollIntoView({ index, align: "center", done: onScroll });
         }
@@ -87,16 +87,6 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     return () => onMount();
   }, [onMount]);
 
-  useEffect(() => {
-    chrome.devtools?.inspectedWindow?.eval?.(`(() => {
-      if (window['$$$$0'] !== $0) {
-        window.__MY_REACT_DEVTOOL_INTERNAL__?.setSelectDom?.($0);
-        window.__MY_REACT_DEVTOOL_INTERNAL__?.notifySelectSync?.();
-        window['$$$$0'] = $0;
-      }
-    })()`);
-  }, []);
-
   return <Virtuoso ref={ref} increaseViewportBy={500} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
 });
 
@@ -107,7 +97,7 @@ export const TreeView = memo(() => {
 
   const nodes = useAppTree.useShallowStableSelector((s) => s.list) as PlainNode[];
 
-  const { width } = useDomSize({ ref });
+  const { width, height } = useDomSize({ ref });
 
   const [r, setR] = useState<VirtuosoHandle>();
 
@@ -125,7 +115,7 @@ export const TreeView = memo(() => {
 
   useEffect(() => {
     onScroll();
-  }, [onScroll, width]);
+  }, [onScroll, width, height, nodes.length]);
 
   return (
     <div className="tree-view h-full p-1">
