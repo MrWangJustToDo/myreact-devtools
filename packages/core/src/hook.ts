@@ -69,7 +69,7 @@ function getPrimitiveStackCache(): Map<string, Array<any>> {
           void 0;
         }
       }
-
+      Dispatcher.useSignal(null);
       Dispatcher.useId();
     } finally {
       readHookLog = hookLog;
@@ -93,7 +93,7 @@ function nextHook(): null | MyReactHookNode {
   if (hook !== null) {
     currentHookNode = currentHookNode.next;
   }
-  
+
   return hook?.value;
 }
 
@@ -432,6 +432,22 @@ function useId(): string {
   return id;
 }
 
+function useSignal<T>(initial: T | (() => T)) {
+  const hook = nextHook();
+
+  const value = hook ? hook.result.getValue : typeof initial === "function" ? initial : () => initial;
+
+  hookLog.push({
+    displayName: null,
+    primitive: "Signal",
+    stackError: new Error(),
+    value: value(),
+    dispatcherHookName: "Signal",
+  });
+
+  return [value, () => {}];
+}
+
 const Dispatcher = {
   readContext,
 
@@ -451,6 +467,7 @@ const Dispatcher = {
   useTransition,
   useSyncExternalStore,
   useId,
+  useSignal,
 };
 
 export type DispatcherType = typeof Dispatcher & { proxy: typeof Dispatcher | null };

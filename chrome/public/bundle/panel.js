@@ -1507,6 +1507,7 @@
     		                    void 0;
     		                }
     		            }
+    		            Dispatcher.useSignal(null);
     		            Dispatcher.useId();
     		        }
     		        finally {
@@ -1805,6 +1806,18 @@
     		    });
     		    return id;
     		}
+    		function useSignal(initial) {
+    		    var hook = nextHook();
+    		    var value = hook ? hook.result.getValue : typeof initial === "function" ? initial : function () { return initial; };
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Signal",
+    		        stackError: new Error(),
+    		        value: value(),
+    		        dispatcherHookName: "Signal",
+    		    });
+    		    return [value, function () { }];
+    		}
     		var Dispatcher = {
     		    readContext: readContext,
     		    use: use,
@@ -1823,6 +1836,7 @@
     		    useTransition: useTransition,
     		    useSyncExternalStore: useSyncExternalStore,
     		    useId: useId,
+    		    useSignal: useSignal,
     		};
     		// create a proxy to throw a custom error
     		// in case future versions of React adds more hooks
