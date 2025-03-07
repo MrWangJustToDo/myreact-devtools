@@ -668,6 +668,367 @@
     	return reactShared.exports;
     }
 
+    var errorStackParser$1 = {exports: {}};
+
+    var stackframe$1 = {exports: {}};
+
+    var stackframe = stackframe$1.exports;
+
+    var hasRequiredStackframe;
+
+    function requireStackframe () {
+    	if (hasRequiredStackframe) return stackframe$1.exports;
+    	hasRequiredStackframe = 1;
+    	(function (module, exports) {
+    		(function(root, factory) {
+    		    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
+
+    		    /* istanbul ignore next */
+    		    {
+    		        module.exports = factory();
+    		    }
+    		}(stackframe, function() {
+    		    function _isNumber(n) {
+    		        return !isNaN(parseFloat(n)) && isFinite(n);
+    		    }
+
+    		    function _capitalize(str) {
+    		        return str.charAt(0).toUpperCase() + str.substring(1);
+    		    }
+
+    		    function _getter(p) {
+    		        return function() {
+    		            return this[p];
+    		        };
+    		    }
+
+    		    var booleanProps = ['isConstructor', 'isEval', 'isNative', 'isToplevel'];
+    		    var numericProps = ['columnNumber', 'lineNumber'];
+    		    var stringProps = ['fileName', 'functionName', 'source'];
+    		    var arrayProps = ['args'];
+    		    var objectProps = ['evalOrigin'];
+
+    		    var props = booleanProps.concat(numericProps, stringProps, arrayProps, objectProps);
+
+    		    function StackFrame(obj) {
+    		        if (!obj) return;
+    		        for (var i = 0; i < props.length; i++) {
+    		            if (obj[props[i]] !== undefined) {
+    		                this['set' + _capitalize(props[i])](obj[props[i]]);
+    		            }
+    		        }
+    		    }
+
+    		    StackFrame.prototype = {
+    		        getArgs: function() {
+    		            return this.args;
+    		        },
+    		        setArgs: function(v) {
+    		            if (Object.prototype.toString.call(v) !== '[object Array]') {
+    		                throw new TypeError('Args must be an Array');
+    		            }
+    		            this.args = v;
+    		        },
+
+    		        getEvalOrigin: function() {
+    		            return this.evalOrigin;
+    		        },
+    		        setEvalOrigin: function(v) {
+    		            if (v instanceof StackFrame) {
+    		                this.evalOrigin = v;
+    		            } else if (v instanceof Object) {
+    		                this.evalOrigin = new StackFrame(v);
+    		            } else {
+    		                throw new TypeError('Eval Origin must be an Object or StackFrame');
+    		            }
+    		        },
+
+    		        toString: function() {
+    		            var fileName = this.getFileName() || '';
+    		            var lineNumber = this.getLineNumber() || '';
+    		            var columnNumber = this.getColumnNumber() || '';
+    		            var functionName = this.getFunctionName() || '';
+    		            if (this.getIsEval()) {
+    		                if (fileName) {
+    		                    return '[eval] (' + fileName + ':' + lineNumber + ':' + columnNumber + ')';
+    		                }
+    		                return '[eval]:' + lineNumber + ':' + columnNumber;
+    		            }
+    		            if (functionName) {
+    		                return functionName + ' (' + fileName + ':' + lineNumber + ':' + columnNumber + ')';
+    		            }
+    		            return fileName + ':' + lineNumber + ':' + columnNumber;
+    		        }
+    		    };
+
+    		    StackFrame.fromString = function StackFrame$$fromString(str) {
+    		        var argsStartIndex = str.indexOf('(');
+    		        var argsEndIndex = str.lastIndexOf(')');
+
+    		        var functionName = str.substring(0, argsStartIndex);
+    		        var args = str.substring(argsStartIndex + 1, argsEndIndex).split(',');
+    		        var locationString = str.substring(argsEndIndex + 1);
+
+    		        if (locationString.indexOf('@') === 0) {
+    		            var parts = /@(.+?)(?::(\d+))?(?::(\d+))?$/.exec(locationString, '');
+    		            var fileName = parts[1];
+    		            var lineNumber = parts[2];
+    		            var columnNumber = parts[3];
+    		        }
+
+    		        return new StackFrame({
+    		            functionName: functionName,
+    		            args: args || undefined,
+    		            fileName: fileName,
+    		            lineNumber: lineNumber || undefined,
+    		            columnNumber: columnNumber || undefined
+    		        });
+    		    };
+
+    		    for (var i = 0; i < booleanProps.length; i++) {
+    		        StackFrame.prototype['get' + _capitalize(booleanProps[i])] = _getter(booleanProps[i]);
+    		        StackFrame.prototype['set' + _capitalize(booleanProps[i])] = (function(p) {
+    		            return function(v) {
+    		                this[p] = Boolean(v);
+    		            };
+    		        })(booleanProps[i]);
+    		    }
+
+    		    for (var j = 0; j < numericProps.length; j++) {
+    		        StackFrame.prototype['get' + _capitalize(numericProps[j])] = _getter(numericProps[j]);
+    		        StackFrame.prototype['set' + _capitalize(numericProps[j])] = (function(p) {
+    		            return function(v) {
+    		                if (!_isNumber(v)) {
+    		                    throw new TypeError(p + ' must be a Number');
+    		                }
+    		                this[p] = Number(v);
+    		            };
+    		        })(numericProps[j]);
+    		    }
+
+    		    for (var k = 0; k < stringProps.length; k++) {
+    		        StackFrame.prototype['get' + _capitalize(stringProps[k])] = _getter(stringProps[k]);
+    		        StackFrame.prototype['set' + _capitalize(stringProps[k])] = (function(p) {
+    		            return function(v) {
+    		                this[p] = String(v);
+    		            };
+    		        })(stringProps[k]);
+    		    }
+
+    		    return StackFrame;
+    		})); 
+    	} (stackframe$1));
+    	return stackframe$1.exports;
+    }
+
+    var errorStackParser = errorStackParser$1.exports;
+
+    var hasRequiredErrorStackParser;
+
+    function requireErrorStackParser () {
+    	if (hasRequiredErrorStackParser) return errorStackParser$1.exports;
+    	hasRequiredErrorStackParser = 1;
+    	(function (module, exports) {
+    		(function(root, factory) {
+    		    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
+
+    		    /* istanbul ignore next */
+    		    {
+    		        module.exports = factory(requireStackframe());
+    		    }
+    		}(errorStackParser, function ErrorStackParser(StackFrame) {
+
+    		    var FIREFOX_SAFARI_STACK_REGEXP = /(^|@)\S+:\d+/;
+    		    var CHROME_IE_STACK_REGEXP = /^\s*at .*(\S+:\d+|\(native\))/m;
+    		    var SAFARI_NATIVE_CODE_REGEXP = /^(eval@)?(\[native code])?$/;
+
+    		    return {
+    		        /**
+    		         * Given an Error object, extract the most information from it.
+    		         *
+    		         * @param {Error} error object
+    		         * @return {Array} of StackFrames
+    		         */
+    		        parse: function ErrorStackParser$$parse(error) {
+    		            if (typeof error.stacktrace !== 'undefined' || typeof error['opera#sourceloc'] !== 'undefined') {
+    		                return this.parseOpera(error);
+    		            } else if (error.stack && error.stack.match(CHROME_IE_STACK_REGEXP)) {
+    		                return this.parseV8OrIE(error);
+    		            } else if (error.stack) {
+    		                return this.parseFFOrSafari(error);
+    		            } else {
+    		                throw new Error('Cannot parse given Error object');
+    		            }
+    		        },
+
+    		        // Separate line and column numbers from a string of the form: (URI:Line:Column)
+    		        extractLocation: function ErrorStackParser$$extractLocation(urlLike) {
+    		            // Fail-fast but return locations like "(native)"
+    		            if (urlLike.indexOf(':') === -1) {
+    		                return [urlLike];
+    		            }
+
+    		            var regExp = /(.+?)(?::(\d+))?(?::(\d+))?$/;
+    		            var parts = regExp.exec(urlLike.replace(/[()]/g, ''));
+    		            return [parts[1], parts[2] || undefined, parts[3] || undefined];
+    		        },
+
+    		        parseV8OrIE: function ErrorStackParser$$parseV8OrIE(error) {
+    		            var filtered = error.stack.split('\n').filter(function(line) {
+    		                return !!line.match(CHROME_IE_STACK_REGEXP);
+    		            }, this);
+
+    		            return filtered.map(function(line) {
+    		                if (line.indexOf('(eval ') > -1) {
+    		                    // Throw away eval information until we implement stacktrace.js/stackframe#8
+    		                    line = line.replace(/eval code/g, 'eval').replace(/(\(eval at [^()]*)|(,.*$)/g, '');
+    		                }
+    		                var sanitizedLine = line.replace(/^\s+/, '').replace(/\(eval code/g, '(').replace(/^.*?\s+/, '');
+
+    		                // capture and preseve the parenthesized location "(/foo/my bar.js:12:87)" in
+    		                // case it has spaces in it, as the string is split on \s+ later on
+    		                var location = sanitizedLine.match(/ (\(.+\)$)/);
+
+    		                // remove the parenthesized location from the line, if it was matched
+    		                sanitizedLine = location ? sanitizedLine.replace(location[0], '') : sanitizedLine;
+
+    		                // if a location was matched, pass it to extractLocation() otherwise pass all sanitizedLine
+    		                // because this line doesn't have function name
+    		                var locationParts = this.extractLocation(location ? location[1] : sanitizedLine);
+    		                var functionName = location && sanitizedLine || undefined;
+    		                var fileName = ['eval', '<anonymous>'].indexOf(locationParts[0]) > -1 ? undefined : locationParts[0];
+
+    		                return new StackFrame({
+    		                    functionName: functionName,
+    		                    fileName: fileName,
+    		                    lineNumber: locationParts[1],
+    		                    columnNumber: locationParts[2],
+    		                    source: line
+    		                });
+    		            }, this);
+    		        },
+
+    		        parseFFOrSafari: function ErrorStackParser$$parseFFOrSafari(error) {
+    		            var filtered = error.stack.split('\n').filter(function(line) {
+    		                return !line.match(SAFARI_NATIVE_CODE_REGEXP);
+    		            }, this);
+
+    		            return filtered.map(function(line) {
+    		                // Throw away eval information until we implement stacktrace.js/stackframe#8
+    		                if (line.indexOf(' > eval') > -1) {
+    		                    line = line.replace(/ line (\d+)(?: > eval line \d+)* > eval:\d+:\d+/g, ':$1');
+    		                }
+
+    		                if (line.indexOf('@') === -1 && line.indexOf(':') === -1) {
+    		                    // Safari eval frames only have function names and nothing else
+    		                    return new StackFrame({
+    		                        functionName: line
+    		                    });
+    		                } else {
+    		                    var functionNameRegex = /((.*".+"[^@]*)?[^@]*)(?:@)/;
+    		                    var matches = line.match(functionNameRegex);
+    		                    var functionName = matches && matches[1] ? matches[1] : undefined;
+    		                    var locationParts = this.extractLocation(line.replace(functionNameRegex, ''));
+
+    		                    return new StackFrame({
+    		                        functionName: functionName,
+    		                        fileName: locationParts[0],
+    		                        lineNumber: locationParts[1],
+    		                        columnNumber: locationParts[2],
+    		                        source: line
+    		                    });
+    		                }
+    		            }, this);
+    		        },
+
+    		        parseOpera: function ErrorStackParser$$parseOpera(e) {
+    		            if (!e.stacktrace || (e.message.indexOf('\n') > -1 &&
+    		                e.message.split('\n').length > e.stacktrace.split('\n').length)) {
+    		                return this.parseOpera9(e);
+    		            } else if (!e.stack) {
+    		                return this.parseOpera10(e);
+    		            } else {
+    		                return this.parseOpera11(e);
+    		            }
+    		        },
+
+    		        parseOpera9: function ErrorStackParser$$parseOpera9(e) {
+    		            var lineRE = /Line (\d+).*script (?:in )?(\S+)/i;
+    		            var lines = e.message.split('\n');
+    		            var result = [];
+
+    		            for (var i = 2, len = lines.length; i < len; i += 2) {
+    		                var match = lineRE.exec(lines[i]);
+    		                if (match) {
+    		                    result.push(new StackFrame({
+    		                        fileName: match[2],
+    		                        lineNumber: match[1],
+    		                        source: lines[i]
+    		                    }));
+    		                }
+    		            }
+
+    		            return result;
+    		        },
+
+    		        parseOpera10: function ErrorStackParser$$parseOpera10(e) {
+    		            var lineRE = /Line (\d+).*script (?:in )?(\S+)(?:: In function (\S+))?$/i;
+    		            var lines = e.stacktrace.split('\n');
+    		            var result = [];
+
+    		            for (var i = 0, len = lines.length; i < len; i += 2) {
+    		                var match = lineRE.exec(lines[i]);
+    		                if (match) {
+    		                    result.push(
+    		                        new StackFrame({
+    		                            functionName: match[3] || undefined,
+    		                            fileName: match[2],
+    		                            lineNumber: match[1],
+    		                            source: lines[i]
+    		                        })
+    		                    );
+    		                }
+    		            }
+
+    		            return result;
+    		        },
+
+    		        // Opera 10.65+ Error.stack very similar to FF/Safari
+    		        parseOpera11: function ErrorStackParser$$parseOpera11(error) {
+    		            var filtered = error.stack.split('\n').filter(function(line) {
+    		                return !!line.match(FIREFOX_SAFARI_STACK_REGEXP) && !line.match(/^Error created at/);
+    		            }, this);
+
+    		            return filtered.map(function(line) {
+    		                var tokens = line.split('@');
+    		                var locationParts = this.extractLocation(tokens.pop());
+    		                var functionCall = (tokens.shift() || '');
+    		                var functionName = functionCall
+    		                    .replace(/<anonymous function(: (\w+))?>/, '$2')
+    		                    .replace(/\([^)]*\)/g, '') || undefined;
+    		                var argsRaw;
+    		                if (functionCall.match(/\(([^)]*)\)/)) {
+    		                    argsRaw = functionCall.replace(/^[^(]+\(([^)]*)\)$/, '$1');
+    		                }
+    		                var args = (argsRaw === undefined || argsRaw === '[arguments not available]') ?
+    		                    undefined : argsRaw.split(',');
+
+    		                return new StackFrame({
+    		                    functionName: functionName,
+    		                    args: args,
+    		                    fileName: locationParts[0],
+    		                    lineNumber: locationParts[1],
+    		                    columnNumber: locationParts[2],
+    		                    source: line
+    		                });
+    		            }, this);
+    		        }
+    		    };
+    		})); 
+    	} (errorStackParser$1));
+    	return errorStackParser$1.exports;
+    }
+
     var hasRequiredIndex_production;
 
     function requireIndex_production () {
@@ -676,6 +1037,7 @@
     	(function (exports) {
 
     		var reactShared = requireReactShared();
+    		var ErrorStackParser = requireErrorStackParser();
 
     		/******************************************************************************
     		Copyright (c) Microsoft Corporation.
@@ -1001,16 +1363,6 @@
     		})(exports.HMRStatus || (exports.HMRStatus = {}));
     		var DevToolSource = "@my-react/devtool";
 
-    		var id = 0;
-    		// PlainNode is a simplified version of FiberNode just for show the structure
-    		var PlainNode = /** @class */ (function () {
-    		    // hooks: HOOKTree[];
-    		    function PlainNode(_id) {
-    		        this.i = _id || "".concat(id++);
-    		    }
-    		    return PlainNode;
-    		}());
-
     		// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
     		exports.NODE_TYPE = void 0;
     		(function (NODE_TYPE) {
@@ -1038,6 +1390,743 @@
     		    NODE_TYPE[NODE_TYPE["__scopeLazy__"] = 1048576] = "__scopeLazy__";
     		    NODE_TYPE[NODE_TYPE["__scopeSuspense__"] = 2097152] = "__scopeSuspense__";
     		})(exports.NODE_TYPE || (exports.NODE_TYPE = {}));
+
+    		// https://github.com/facebook/react/blob/main/packages/react-debug-tools/src/ReactDebugHooks.js
+    		/* eslint-disable @typescript-eslint/no-unused-vars */
+    		/* eslint-disable max-lines */
+    		/* eslint-disable @typescript-eslint/ban-ts-comment */
+    		var hookLog = [];
+    		var primitiveStackCache = null;
+    		function getPrimitiveStackCache() {
+    		    var _a, _b;
+    		    // This initializes a cache of all primitive hooks so that the top
+    		    // most stack frames added by calling the primitive hook can be removed.
+    		    if (primitiveStackCache === null) {
+    		        var cache = new Map();
+    		        var readHookLog = void 0;
+    		        try {
+    		            // Use all hooks here to add them to the hook log.
+    		            Dispatcher.useContext((_a = {}, _a[reactShared.TYPEKEY] = reactShared.Context, _a.Provider = { value: null }, _a));
+    		            Dispatcher.useState(null);
+    		            Dispatcher.useReducer(function (s, a) { return s; }, null);
+    		            Dispatcher.useRef(null);
+    		            Dispatcher.useLayoutEffect(function () { });
+    		            Dispatcher.useInsertionEffect(function () { });
+    		            Dispatcher.useEffect(function () { });
+    		            Dispatcher.useImperativeHandle(undefined, function () { return null; });
+    		            Dispatcher.useDebugValue(null, function () { });
+    		            Dispatcher.useCallback(function () { });
+    		            Dispatcher.useTransition();
+    		            Dispatcher.useSyncExternalStore(function () { return function () { }; }, function () { return null; }, function () { return null; });
+    		            Dispatcher.useDeferredValue(null);
+    		            Dispatcher.useMemo(function () { return null; });
+    		            if (typeof Dispatcher.use === "function") {
+    		                Dispatcher.use((_b = {}, _b[reactShared.TYPEKEY] = reactShared.Context, _b.Provider = { value: null }, _b));
+    		                Dispatcher.use({
+    		                    then: function () { },
+    		                    status: "fulfilled",
+    		                    value: null,
+    		                });
+    		                try {
+    		                    Dispatcher.use({
+    		                        then: function () { },
+    		                    });
+    		                }
+    		                catch (x) {
+    		                    void 0;
+    		                }
+    		            }
+    		            Dispatcher.useId();
+    		        }
+    		        finally {
+    		            readHookLog = hookLog;
+    		            hookLog = [];
+    		        }
+    		        for (var i = 0; i < readHookLog.length; i++) {
+    		            var hook = readHookLog[i];
+    		            cache.set(hook.primitive, ErrorStackParser.parse(hook.stackError));
+    		        }
+    		        primitiveStackCache = cache;
+    		    }
+    		    return primitiveStackCache;
+    		}
+    		var currentFiber = null;
+    		var currentHookNode = null;
+    		function nextHook() {
+    		    var hook = currentHookNode;
+    		    if (hook !== null) {
+    		        currentHookNode = currentHookNode.next;
+    		    }
+    		    return hook === null || hook === void 0 ? void 0 : hook.value;
+    		}
+    		var defaultGetContextFiber = function (fiber, ContextObject) {
+    		    if ((fiber === null || fiber === void 0 ? void 0 : fiber.parent) && ContextObject) {
+    		        var parent_1 = fiber.parent;
+    		        while (parent_1) {
+    		            if (reactShared.include(parent_1.type, exports.NODE_TYPE.__provider__)) {
+    		                var typedElementType = parent_1.elementType;
+    		                var contextObj = typedElementType["Context"];
+    		                if (contextObj === ContextObject) {
+    		                    return parent_1;
+    		                }
+    		            }
+    		            if (reactShared.include(parent_1.type, exports.NODE_TYPE.__context__)) {
+    		                var typedElementType = parent_1.elementType;
+    		                var contextObj = typedElementType;
+    		                if (contextObj === ContextObject) {
+    		                    return parent_1;
+    		                }
+    		            }
+    		            parent_1 = parent_1.parent;
+    		        }
+    		    }
+    		    else {
+    		        return null;
+    		    }
+    		};
+    		var defaultGetContextValue = function (fiber, ContextObject) {
+    		    if (fiber) {
+    		        return fiber.pendingProps["value"];
+    		    }
+    		    else {
+    		        return ContextObject === null || ContextObject === void 0 ? void 0 : ContextObject.Provider["value"];
+    		    }
+    		};
+    		function readContext(context) {
+    		    if (currentFiber === null) {
+    		        return context.Provider.value;
+    		    }
+    		    else {
+    		        var fiber = defaultGetContextFiber(currentFiber, context);
+    		        var value = defaultGetContextValue(fiber, context);
+    		        return value;
+    		    }
+    		}
+    		var SuspenseException = new Error("Suspense Exception: This is not a real error! It's an implementation " +
+    		    "detail of `use` to interrupt the current render. You must either " +
+    		    "rethrow it immediately, or move the `use` call outside of the " +
+    		    "`try/catch` block. Capturing without rethrowing will lead to " +
+    		    "unexpected behavior.\n\n" +
+    		    "To handle async errors, wrap your component in an error boundary, or " +
+    		    "call the promise's `.catch` method and pass the result to `use`.");
+    		function use(usable) {
+    		    if (usable !== null && typeof usable === "object") {
+    		        if (typeof usable.then === "function") {
+    		            var thenable = usable;
+    		            switch (thenable.status) {
+    		                case "fulfilled": {
+    		                    var fulfilledValue = thenable.value;
+    		                    hookLog.push({
+    		                        displayName: null,
+    		                        primitive: "Promise",
+    		                        stackError: new Error(),
+    		                        value: fulfilledValue,
+    		                        dispatcherHookName: "Use",
+    		                    });
+    		                    return fulfilledValue;
+    		                }
+    		                case "rejected": {
+    		                    var rejectedError = thenable.reason;
+    		                    throw rejectedError;
+    		                }
+    		            }
+    		            // If this was an uncached Promise we have to abandon this attempt
+    		            // but we can still emit anything up until this point.
+    		            hookLog.push({
+    		                displayName: null,
+    		                primitive: "Unresolved",
+    		                stackError: new Error(),
+    		                value: thenable,
+    		                dispatcherHookName: "Use",
+    		            });
+    		            throw SuspenseException;
+    		        }
+    		        else if (usable[reactShared.TYPEKEY] === reactShared.Context) {
+    		            var context = usable;
+    		            var value = readContext(context);
+    		            hookLog.push({
+    		                displayName: context.displayName || "Context",
+    		                primitive: "Context (use)",
+    		                stackError: new Error(),
+    		                value: value,
+    		                dispatcherHookName: "Use",
+    		            });
+    		            return value;
+    		        }
+    		    }
+    		    throw new Error("An unsupported type was passed to use(): " + String(usable));
+    		}
+    		function useContext(context) {
+    		    nextHook();
+    		    var value = readContext(context);
+    		    hookLog.push({
+    		        displayName: context.displayName || null,
+    		        primitive: "Context",
+    		        stackError: new Error(),
+    		        value: value,
+    		        dispatcherHookName: "Context",
+    		    });
+    		    return value;
+    		}
+    		function useState(initialState) {
+    		    var hook = nextHook();
+    		    var typedInitialState = initialState;
+    		    var state = hook ? hook.result : typeof initialState === "function" ? typedInitialState() : initialState;
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "State",
+    		        stackError: new Error(),
+    		        value: state,
+    		        dispatcherHookName: "State",
+    		    });
+    		    return [state, function (action) { }];
+    		}
+    		function useReducer(reducer, initialArg, init) {
+    		    var hook = nextHook();
+    		    var state = hook ? hook.result : init !== undefined ? init(initialArg) : initialArg;
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Reducer",
+    		        stackError: new Error(),
+    		        value: state,
+    		        dispatcherHookName: "Reducer",
+    		    });
+    		    return [state, function (action) { }];
+    		}
+    		function useRef(initialValue) {
+    		    var hook = nextHook();
+    		    var ref = hook ? hook.result : { current: initialValue };
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Ref",
+    		        stackError: new Error(),
+    		        value: ref,
+    		        dispatcherHookName: "Ref",
+    		    });
+    		    return ref;
+    		}
+    		function useLayoutEffect(create, inputs) {
+    		    nextHook();
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "LayoutEffect",
+    		        stackError: new Error(),
+    		        value: create,
+    		        dispatcherHookName: "LayoutEffect",
+    		    });
+    		}
+    		function useInsertionEffect(create, inputs) {
+    		    nextHook();
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "InsertionEffect",
+    		        stackError: new Error(),
+    		        value: create,
+    		        dispatcherHookName: "InsertionEffect",
+    		    });
+    		}
+    		function useEffect(create, deps) {
+    		    nextHook();
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Effect",
+    		        stackError: new Error(),
+    		        value: create,
+    		        dispatcherHookName: "Effect",
+    		    });
+    		}
+    		function useImperativeHandle(ref, create, inputs) {
+    		    nextHook();
+    		    // We don't actually store the instance anywhere if there is no ref callback
+    		    // and if there is a ref callback it might not store it but if it does we
+    		    // have no way of knowing where. So let's only enable introspection of the
+    		    // ref itself if it is using the object form.
+    		    var instance = undefined;
+    		    if (ref !== null && typeof ref === "object") {
+    		        instance = ref.current;
+    		    }
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "ImperativeHandle",
+    		        stackError: new Error(),
+    		        value: instance,
+    		        dispatcherHookName: "ImperativeHandle",
+    		    });
+    		}
+    		function useDebugValue(value, formatterFn) {
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "DebugValue",
+    		        stackError: new Error(),
+    		        value: typeof formatterFn === "function" ? formatterFn(value) : value,
+    		        dispatcherHookName: "DebugValue",
+    		    });
+    		}
+    		function useCallback(callback, inputs) {
+    		    var hook = nextHook();
+    		    var value = hook ? hook.result : callback;
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Callback",
+    		        stackError: new Error(),
+    		        value: value,
+    		        dispatcherHookName: "Callback",
+    		    });
+    		    return value;
+    		}
+    		function useMemo(nextCreate, inputs) {
+    		    var hook = nextHook();
+    		    var value = hook ? hook.result : nextCreate();
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Memo",
+    		        stackError: new Error(),
+    		        value: value,
+    		        dispatcherHookName: "Memo",
+    		    });
+    		    return value;
+    		}
+    		function useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
+    		    nextHook();
+    		    var value = getSnapshot();
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "SyncExternalStore",
+    		        stackError: new Error(),
+    		        value: value,
+    		        dispatcherHookName: "SyncExternalStore",
+    		    });
+    		    return value;
+    		}
+    		function useTransition() {
+    		    var hook = nextHook();
+    		    var isPending = hook ? hook.result[0] : false;
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Transition",
+    		        stackError: new Error(),
+    		        value: isPending,
+    		        dispatcherHookName: "Transition",
+    		    });
+    		    return [isPending, function () { }];
+    		}
+    		function useDeferredValue(value, initialValue) {
+    		    var hook = nextHook();
+    		    var prevValue = hook ? hook.result : value;
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "DeferredValue",
+    		        stackError: new Error(),
+    		        value: prevValue,
+    		        dispatcherHookName: "DeferredValue",
+    		    });
+    		    return prevValue;
+    		}
+    		function useId() {
+    		    var hook = nextHook();
+    		    var id = hook ? hook.result : "";
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Id",
+    		        stackError: new Error(),
+    		        value: id,
+    		        dispatcherHookName: "Id",
+    		    });
+    		    return id;
+    		}
+    		var Dispatcher = {
+    		    readContext: readContext,
+    		    use: use,
+    		    useCallback: useCallback,
+    		    useContext: useContext,
+    		    useEffect: useEffect,
+    		    useImperativeHandle: useImperativeHandle,
+    		    useLayoutEffect: useLayoutEffect,
+    		    useInsertionEffect: useInsertionEffect,
+    		    useMemo: useMemo,
+    		    useReducer: useReducer,
+    		    useRef: useRef,
+    		    useState: useState,
+    		    useDebugValue: useDebugValue,
+    		    useDeferredValue: useDeferredValue,
+    		    useTransition: useTransition,
+    		    useSyncExternalStore: useSyncExternalStore,
+    		    useId: useId,
+    		};
+    		// create a proxy to throw a custom error
+    		// in case future versions of React adds more hooks
+    		var DispatcherProxyHandler = {
+    		    get: function (target, prop) {
+    		        if (Object.prototype.hasOwnProperty.call(target, prop)) {
+    		            return target[prop];
+    		        }
+    		        var error = new Error("Missing method in Dispatcher: " + prop);
+    		        // Note: This error name needs to stay in sync with react-devtools-shared
+    		        // TODO: refactor this if we ever combine the devtools and debug tools packages
+    		        error.name = "ReactDebugToolsUnsupportedHookError";
+    		        throw error;
+    		    },
+    		};
+    		// `Proxy` may not exist on some platforms
+    		var DispatcherProxy = typeof Proxy === "undefined" ? Dispatcher : new Proxy(Dispatcher, DispatcherProxyHandler);
+    		// Don't assume
+    		//
+    		// We can't assume that stack frames are nth steps away from anything.
+    		// E.g. we can't assume that the root call shares all frames with the stack
+    		// of a hook call. A simple way to demonstrate this is wrapping `new Error()`
+    		// in a wrapper constructor like a polyfill. That'll add an extra frame.
+    		// Similar things can happen with the call to the dispatcher. The top frame
+    		// may not be the primitive.
+    		//
+    		// We also can't assume that the last frame of the root call is the same
+    		// frame as the last frame of the hook call because long stack traces can be
+    		// truncated to a stack trace limit.
+    		var mostLikelyAncestorIndex = 0;
+    		function findSharedIndex(hookStack, rootStack, rootIndex) {
+    		    var source = rootStack[rootIndex].source;
+    		    hookSearch: for (var i = 0; i < hookStack.length; i++) {
+    		        if (hookStack[i].source === source) {
+    		            // This looks like a match. Validate that the rest of both stack match up.
+    		            for (var a = rootIndex + 1, b = i + 1; a < rootStack.length && b < hookStack.length; a++, b++) {
+    		                if (hookStack[b].source !== rootStack[a].source) {
+    		                    // If not, give up and try a different match.
+    		                    continue hookSearch;
+    		                }
+    		            }
+    		            return i;
+    		        }
+    		    }
+    		    return -1;
+    		}
+    		function findCommonAncestorIndex(rootStack, hookStack) {
+    		    var rootIndex = findSharedIndex(hookStack, rootStack, mostLikelyAncestorIndex);
+    		    if (rootIndex !== -1) {
+    		        return rootIndex;
+    		    }
+    		    // If the most likely one wasn't a hit, try any other frame to see if it is shared.
+    		    // If that takes more than 5 frames, something probably went wrong.
+    		    for (var i = 0; i < rootStack.length && i < 5; i++) {
+    		        rootIndex = findSharedIndex(hookStack, rootStack, i);
+    		        if (rootIndex !== -1) {
+    		            mostLikelyAncestorIndex = i;
+    		            return rootIndex;
+    		        }
+    		    }
+    		    return -1;
+    		}
+    		function isReactWrapper(functionName, wrapperName) {
+    		    var hookName = parseHookName(functionName);
+    		    if (wrapperName === "HostTransitionStatus") {
+    		        return hookName === wrapperName || hookName === "FormStatus";
+    		    }
+    		    return hookName === wrapperName;
+    		}
+    		function findPrimitiveIndex(hookStack, hook) {
+    		    var stackCache = getPrimitiveStackCache();
+    		    var primitiveStack = stackCache.get(hook.primitive);
+    		    if (primitiveStack === undefined) {
+    		        return -1;
+    		    }
+    		    for (var i = 0; i < primitiveStack.length && i < hookStack.length; i++) {
+    		        // Note: there is no guarantee that we will find the top-most primitive frame in the stack
+    		        // For React Native (uses Hermes), these source fields will be identical and skipped
+    		        if (primitiveStack[i].source !== hookStack[i].source) {
+    		            // If the next two frames are functions called `useX` then we assume that they're part of the
+    		            // wrappers that the React package or other packages adds around the dispatcher.
+    		            if (i < hookStack.length - 1 && isReactWrapper(hookStack[i].functionName, hook.dispatcherHookName)) {
+    		                i++;
+    		            }
+    		            if (i < hookStack.length - 1 && isReactWrapper(hookStack[i].functionName, hook.dispatcherHookName)) {
+    		                i++;
+    		            }
+    		            return i;
+    		        }
+    		    }
+    		    return -1;
+    		}
+    		function parseTrimmedStack(rootStack, hook) {
+    		    // Get the stack trace between the primitive hook function and
+    		    // the root function call. I.e. the stack frames of custom hooks.
+    		    var hookStack = ErrorStackParser.parse(hook.stackError);
+    		    var rootIndex = findCommonAncestorIndex(rootStack, hookStack);
+    		    var primitiveIndex = findPrimitiveIndex(hookStack, hook);
+    		    if (rootIndex === -1 || primitiveIndex === -1 || rootIndex - primitiveIndex < 2) {
+    		        if (primitiveIndex === -1) {
+    		            // Something went wrong. Give up.
+    		            return [null, null];
+    		        }
+    		        else {
+    		            return [hookStack[primitiveIndex - 1], null];
+    		        }
+    		    }
+    		    return [hookStack[primitiveIndex - 1], hookStack.slice(primitiveIndex, rootIndex - 1)];
+    		}
+    		function parseHookName(functionName) {
+    		    if (!functionName) {
+    		        return "";
+    		    }
+    		    var startIndex = functionName.lastIndexOf("[as ");
+    		    if (startIndex !== -1) {
+    		        // Workaround for sourcemaps in Jest and Chrome.
+    		        // In `node --enable-source-maps`, we don't see "Object.useHostTransitionStatus [as useFormStatus]" but "Object.useFormStatus"
+    		        // "Object.useHostTransitionStatus [as useFormStatus]" -> "useFormStatus"
+    		        return parseHookName(functionName.slice(startIndex + "[as ".length, -1));
+    		    }
+    		    startIndex = functionName.lastIndexOf(".");
+    		    if (startIndex === -1) {
+    		        startIndex = 0;
+    		    }
+    		    else {
+    		        startIndex += 1;
+    		    }
+    		    if (functionName.slice(startIndex).startsWith("unstable_")) {
+    		        startIndex += "unstable_".length;
+    		    }
+    		    if (functionName.slice(startIndex).startsWith("experimental_")) {
+    		        startIndex += "experimental_".length;
+    		    }
+    		    if (functionName.slice(startIndex, startIndex + 3) === "use") {
+    		        if (functionName.length - startIndex === 3) {
+    		            return "Use";
+    		        }
+    		        startIndex += 3;
+    		    }
+    		    return functionName.slice(startIndex);
+    		}
+    		function buildTree(rootStack, readHookLog) {
+    		    var rootChildren = [];
+    		    var prevStack = null;
+    		    var levelChildren = rootChildren;
+    		    var nativeHookID = 0;
+    		    var stackOfChildren = [];
+    		    for (var i = 0; i < readHookLog.length; i++) {
+    		        var hook = readHookLog[i];
+    		        var parseResult = parseTrimmedStack(rootStack, hook);
+    		        var primitiveFrame = parseResult[0];
+    		        var stack = parseResult[1];
+    		        var displayName = hook.displayName;
+    		        if (displayName === null && primitiveFrame !== null) {
+    		            displayName =
+    		                // @ts-ignore
+    		                parseHookName(primitiveFrame === null || primitiveFrame === void 0 ? void 0 : primitiveFrame.functionName) ||
+    		                    // Older versions of React do not have sourcemaps.
+    		                    // In those versions there was always a 1:1 mapping between wrapper and dispatcher method.
+    		                    parseHookName(hook.dispatcherHookName);
+    		        }
+    		        if (stack !== null) {
+    		            stack = Array.isArray(stack) ? stack : [stack];
+    		            // Note: The indices 0 <= n < length-1 will contain the names.
+    		            // The indices 1 <= n < length will contain the source locations.
+    		            // That's why we get the name from n - 1 and don't check the source
+    		            // of index 0.
+    		            var commonSteps = 0;
+    		            if (prevStack !== null) {
+    		                // Compare the current level's stack to the new stack.
+    		                while (commonSteps < stack.length && commonSteps < prevStack.length) {
+    		                    var stackSource = stack[stack.length - commonSteps - 1].source;
+    		                    var prevSource = prevStack[prevStack.length - commonSteps - 1].source;
+    		                    if (stackSource !== prevSource) {
+    		                        break;
+    		                    }
+    		                    commonSteps++;
+    		                }
+    		                // Pop back the stack as many steps as were not common.
+    		                for (var j = prevStack.length - 1; j > commonSteps; j--) {
+    		                    // $FlowFixMe[incompatible-type]
+    		                    levelChildren = stackOfChildren.pop();
+    		                }
+    		            }
+    		            // The remaining part of the new stack are custom hooks. Push them
+    		            // to the tree.
+    		            for (var j = stack.length - commonSteps - 1; j >= 1; j--) {
+    		                var children = [];
+    		                var stackFrame = stack[j];
+    		                var levelChild_1 = {
+    		                    id: null,
+    		                    isStateEditable: false,
+    		                    name: parseHookName(stack[j - 1].functionName),
+    		                    value: undefined,
+    		                    subHooks: children,
+    		                    hookSource: {
+    		                        lineNumber: stackFrame.lineNumber,
+    		                        columnNumber: stackFrame.columnNumber,
+    		                        functionName: stackFrame.functionName,
+    		                        fileName: stackFrame.fileName,
+    		                    },
+    		                };
+    		                levelChildren.push(levelChild_1);
+    		                stackOfChildren.push(levelChildren);
+    		                levelChildren = children;
+    		            }
+    		            prevStack = stack;
+    		        }
+    		        var primitive = hook.primitive;
+    		        var id = nativeHookID++;
+    		        // For the time being, only State and Reducer hooks support runtime overrides.
+    		        var isStateEditable = primitive === "Reducer" || primitive === "State";
+    		        var name_1 = displayName || primitive;
+    		        var levelChild = {
+    		            id: id,
+    		            isStateEditable: isStateEditable,
+    		            name: name_1,
+    		            value: hook.value,
+    		            subHooks: [],
+    		            hookSource: null,
+    		        };
+    		        var hookSource = {
+    		            lineNumber: null,
+    		            functionName: null,
+    		            fileName: null,
+    		            columnNumber: null,
+    		        };
+    		        if (stack && Array.isArray(stack) && stack.length >= 1) {
+    		            var stackFrame = stack[0];
+    		            hookSource.lineNumber = stackFrame.lineNumber;
+    		            hookSource.functionName = stackFrame.functionName;
+    		            hookSource.fileName = stackFrame.fileName;
+    		            hookSource.columnNumber = stackFrame.columnNumber;
+    		        }
+    		        levelChild.hookSource = hookSource;
+    		        levelChildren.push(levelChild);
+    		    }
+    		    // Associate custom hook values (useDebugValue() hook entries) with the correct hooks.
+    		    processDebugValues(rootChildren, null);
+    		    return rootChildren;
+    		}
+    		// Custom hooks support user-configurable labels (via the special useDebugValue() hook).
+    		// That hook adds user-provided values to the hooks tree,
+    		// but these values aren't intended to appear alongside of the other hooks.
+    		// Instead they should be attributed to their parent custom hook.
+    		// This method walks the tree and assigns debug values to their custom hook owners.
+    		function processDebugValues(hooksTree, parentHooksNode) {
+    		    var debugValueHooksNodes = [];
+    		    for (var i = 0; i < hooksTree.length; i++) {
+    		        var hooksNode = hooksTree[i];
+    		        if (hooksNode.name === "DebugValue" && hooksNode.subHooks.length === 0) {
+    		            hooksTree.splice(i, 1);
+    		            i--;
+    		            debugValueHooksNodes.push(hooksNode);
+    		        }
+    		        else {
+    		            processDebugValues(hooksNode.subHooks, hooksNode);
+    		        }
+    		    }
+    		    // Bubble debug value labels to their custom hook owner.
+    		    // If there is no parent hook, just ignore them for now.
+    		    // (We may warn about this in the future.)
+    		    if (parentHooksNode !== null) {
+    		        if (debugValueHooksNodes.length === 1) {
+    		            parentHooksNode.value = debugValueHooksNodes[0].value;
+    		        }
+    		        else if (debugValueHooksNodes.length > 1) {
+    		            parentHooksNode.value = debugValueHooksNodes.map(function (_a) {
+    		                var value = _a.value;
+    		                return value;
+    		            });
+    		        }
+    		    }
+    		}
+    		function handleRenderFunctionError(error) {
+    		    // original error might be any type.
+    		    if (error === SuspenseException) {
+    		        // An uncached Promise was used. We can't synchronously resolve the rest of
+    		        // the Hooks but we can at least show what ever we got so far.
+    		        return;
+    		    }
+    		    if (error instanceof Error && error.name === "ReactDebugToolsUnsupportedHookError") {
+    		        throw error;
+    		    }
+    		    // If the error is not caused by an unsupported feature, it means
+    		    // that the error is caused by user's code in renderFunction.
+    		    // In this case, we should wrap the original error inside a custom error
+    		    // so that devtools can give a clear message about it.
+    		    // @ts-ignore
+    		    var wrapperError = new Error("Error rendering inspected component", {
+    		        cause: error,
+    		    });
+    		    // Note: This error name needs to stay in sync with react-devtools-shared
+    		    // TODO: refactor this if we ever combine the devtools and debug tools packages
+    		    wrapperError.name = "ReactDebugToolsRenderError";
+    		    // this stage-4 proposal is not supported by all environments yet.
+    		    // @ts-ignore
+    		    wrapperError.cause = error;
+    		    throw wrapperError;
+    		}
+    		function inspectHooks(renderFunction, props, currentDispatcher) {
+    		    // DevTools will pass the current renderer's injected dispatcher.
+    		    // Other apps might compile debug hooks as part of their app though.
+    		    currentDispatcher.current.proxy = DispatcherProxy;
+    		    var readHookLog;
+    		    var ancestorStackError;
+    		    try {
+    		        ancestorStackError = new Error();
+    		        renderFunction(props);
+    		    }
+    		    catch (error) {
+    		        handleRenderFunctionError(error);
+    		    }
+    		    finally {
+    		        readHookLog = hookLog;
+    		        hookLog = [];
+    		        currentDispatcher.current.proxy = null;
+    		    }
+    		    var rootStack = ErrorStackParser.parse(ancestorStackError);
+    		    return buildTree(rootStack, readHookLog);
+    		}
+    		function inspectHooksOfForwardRef(renderFunction, props, ref, currentDispatcher) {
+    		    currentDispatcher.current.proxy = DispatcherProxy;
+    		    var readHookLog;
+    		    var ancestorStackError;
+    		    try {
+    		        ancestorStackError = new Error();
+    		        renderFunction(props, ref);
+    		    }
+    		    catch (error) {
+    		        handleRenderFunctionError(error);
+    		    }
+    		    finally {
+    		        readHookLog = hookLog;
+    		        hookLog = [];
+    		        currentDispatcher.current.proxy = null;
+    		    }
+    		    var rootStack = ErrorStackParser.parse(ancestorStackError);
+    		    return buildTree(rootStack, readHookLog);
+    		}
+    		function inspectHooksOfFiber(fiber, dispatch) {
+    		    if (!reactShared.include(fiber.type, exports.NODE_TYPE.__function__)) {
+    		        return;
+    		    }
+    		    // Warm up the cache so that it doesn't consume the currentHook.
+    		    getPrimitiveStackCache();
+    		    // Set up the current hook so that we can step through and read the
+    		    // current state from them.
+    		    currentHookNode = fiber.hookList.head;
+    		    currentFiber = fiber;
+    		    var typedElementType = fiber.elementType;
+    		    var props = fiber.memoizedProps;
+    		    try {
+    		        if (reactShared.include(fiber.type, exports.NODE_TYPE.__forwardRef__)) {
+    		            return inspectHooksOfForwardRef(typedElementType, props, fiber.ref, dispatch);
+    		        }
+    		        else {
+    		            return inspectHooks(typedElementType, props, dispatch);
+    		        }
+    		    }
+    		    finally {
+    		        currentHookNode = null;
+    		        currentFiber = null;
+    		    }
+    		}
+
+    		var id = 0;
+    		// PlainNode is a simplified version of FiberNode just for show the structure
+    		var PlainNode = /** @class */ (function () {
+    		    // hooks: HOOKTree[];
+    		    function PlainNode(_id) {
+    		        this.i = _id || "".concat(id++);
+    		    }
+    		    return PlainNode;
+    		}());
 
     		var treeMap = new Map();
     		var detailMap = new Map();
@@ -1251,6 +2340,10 @@
     		};
 
     		var typeKeys = [];
+    		var platform = null;
+    		var setPlatform = function (p) {
+    		    platform = p;
+    		};
     		// SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
     		var reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
     		Object.keys(exports.NODE_TYPE).forEach(function (key) {
@@ -1480,68 +2573,61 @@
     		    }
     		    return tree;
     		};
-    		var getHook = function (fiber, force) {
+    		var parseHooksTreeToHOOKTree = function (node, d, force) {
+    		    return node.map(function (item) {
+    		        var id = item.id, name = item.name, value = item.value, subHooks = item.subHooks;
+    		        return {
+    		            k: id === null || id === void 0 ? void 0 : id.toString(),
+    		            i: id,
+    		            n: name || 'Anonymous',
+    		            v: force ? getNodeForce(value) : getNode(value),
+    		            d: d,
+    		            h: !subHooks.length ? true : false,
+    		            c: subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, force) : undefined,
+    		        };
+    		    });
+    		};
+    		var getHookNormal = function (fiber, force) {
     		    var _a;
     		    var final = [];
+    		    if (!fiber.hookList)
+    		        return final;
     		    var hookList = fiber.hookList;
     		    var processStack = function (hook, index) {
-    		        var _a, _b;
-    		        var stack = hook._debugStack;
-    		        if (!stack || !Array.isArray(stack) || stack.length === 0) {
-    		            var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
-    		            var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
-    		            final.push({
-    		                k: index.toString(),
-    		                h: true,
-    		                i: index,
-    		                n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-    		                v: force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result),
-    		                d: 0,
-    		            });
-    		        }
-    		        else {
-    		            var prevHookTree = final.at(-1);
-    		            var parentHookChild = final;
-    		            for (var i = 0; i < stack.length; i++) {
-    		                var isHook = i === stack.length - 1;
-    		                var _c = stack[i], name_6 = _c.name, id = _c.id;
-    		                if (id === (prevHookTree === null || prevHookTree === void 0 ? void 0 : prevHookTree.k)) {
-    		                    if (isHook) {
-    		                        var hookTree = { k: id, i: index, h: isHook, d: i, n: name_6.startsWith("use") ? name_6.substring(3) : name_6 };
-    		                        parentHookChild.push(hookTree);
-    		                        prevHookTree = hookTree;
-    		                    }
-    		                    else {
-    		                        prevHookTree.c = prevHookTree.c || [];
-    		                        parentHookChild = prevHookTree.c;
-    		                        prevHookTree = (_a = prevHookTree.c) === null || _a === void 0 ? void 0 : _a.at(-1);
-    		                    }
-    		                }
-    		                else {
-    		                    var hookTree = { k: id, i: isHook ? index : undefined, h: isHook, d: i, n: name_6.startsWith("use") ? name_6.substring(3) : name_6 };
-    		                    if (isHook) {
-    		                        parentHookChild.push(hookTree);
-    		                        prevHookTree = hookTree;
-    		                    }
-    		                    else {
-    		                        parentHookChild.push(hookTree);
-    		                        hookTree.c = hookTree.c || [];
-    		                        parentHookChild = hookTree.c;
-    		                        prevHookTree = (_b = hookTree.c) === null || _b === void 0 ? void 0 : _b.at(-1);
-    		                    }
-    		                }
-    		                if (isHook) {
-    		                    var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
-    		                    var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
-    		                    // overwrite name
-    		                    prevHookTree.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
-    		                    prevHookTree.v = force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result);
-    		                }
-    		            }
-    		        }
+    		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
+    		        var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
+    		        final.push({
+    		            k: index.toString(),
+    		            h: true,
+    		            i: index,
+    		            n: isContext ? getContextName(hook.value) : getHookName(hook.type),
+    		            v: force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result),
+    		            d: 0,
+    		        });
     		    };
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.toArray()) === null || _a === void 0 ? void 0 : _a.forEach(processStack);
     		    return final;
+    		};
+    		var getHookStack = function (fiber, force) {
+    		    var final = [];
+    		    if (!fiber.hookList)
+    		        return final;
+    		    var hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
+    		    return parseHooksTreeToHOOKTree(hookTree, 0, force);
+    		};
+    		var getHook = function (fiber, force) {
+    		    if (platform) {
+    		        try {
+    		            return getHookStack(fiber, force);
+    		        }
+    		        catch (e) {
+    		            console.error(e);
+    		            return getHookNormal(fiber, force);
+    		        }
+    		    }
+    		    else {
+    		        return getHookNormal(fiber, force);
+    		    }
     		};
     		var getProps = function (fiber, force) {
     		    return force ? getNodeForce(fiber.pendingProps) : getNode(fiber.pendingProps);
@@ -1680,8 +2766,8 @@
     		    };
     		}
 
-    		/* eslint-disable @typescript-eslint/ban-ts-comment */
     		// https://github.com/facebook/react/blob/main/packages/react-devtools-shared/src/backend/views/Highlighter/Overlay.js
+    		/* eslint-disable @typescript-eslint/ban-ts-comment */
     		var assign = Object.assign;
     		// Note that the Overlay components are not affected by the active Theme,
     		// because they highlight elements in the main Chrome window (outside of devtools).
@@ -2214,13 +3300,20 @@
     		        this.notifyTrigger();
     		        this.notifyTriggerStatus();
     		    };
-    		    DevToolCore.prototype.addDispatch = function (dispatch) {
+    		    DevToolCore.prototype.addDispatch = function (dispatch, platform) {
     		        if (dispatch)
     		            this._detector = true;
     		        if (this.hasDispatch(dispatch))
     		            return;
     		        setupDispatch(dispatch, this);
     		        this._dispatch.add(dispatch);
+    		        if (platform && this._platform && platform !== this._platform) {
+    		            console.warn("[@my-react-devtool/core] you have multiple platform connect, please check");
+    		        }
+    		        if (platform) {
+    		            this._platform = platform;
+    		            setPlatform(this._platform);
+    		        }
     		        this.patchDispatch(dispatch);
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
@@ -2722,6 +3815,7 @@
     		        this._state = {};
     		        this._trigger = {};
     		        this._warn = {};
+    		        this._platform = null;
     		        this._enableHoverOnBrowser = false;
     		        this.disableBrowserHover();
     		    };
@@ -2762,6 +3856,7 @@
     		exports.initPlainNode = initPlainNode;
     		exports.loopChangedTree = loopChangedTree;
     		exports.loopTree = loopTree;
+    		exports.setPlatform = setPlatform;
     		exports.shallowAssignFiber = shallowAssignFiber;
     		exports.throttle = throttle;
     		exports.typeKeys = typeKeys;
