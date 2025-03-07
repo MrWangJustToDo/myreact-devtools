@@ -321,8 +321,7 @@ const getHookStack = (fiber: MyReactFiberNodeDev, force?: boolean) => {
 };
 
 export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
-  
-  if (platform) {
+  if (platform && platform.dispatcher) {
     try {
       return getHookStack(fiber, force);
     } catch(e) {
