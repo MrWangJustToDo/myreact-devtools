@@ -5,6 +5,7 @@ import { isNormalEquals } from "@my-react/react-shared";
 import { getNode, getNodeFromId } from "./data";
 import { DevToolMessageEnum, HMRStatus } from "./event";
 import { HighLight, Overlay, color as _color } from "./highlight";
+import { type DispatcherType } from "./hook";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
   generateTreeMap,
@@ -16,15 +17,19 @@ import {
   getComponentFiberByDom,
   getElementNodesFromFiber,
 } from "./tree";
-import { debounce, throttle } from "./utils";
+import { debounce, setPlatform, throttle } from "./utils";
 
 import type { Tree } from "./tree";
-import type { MyReactFiberNode, MyReactFiberNodeDev, UpdateState } from "@my-react/react-reconciler";
+import type { CustomRenderPlatform, MyReactFiberNode, MyReactFiberNodeDev, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
 export type DevToolMessageType = {
   type: DevToolMessageEnum;
   data: any;
+};
+
+export type DevToolRenderPlatform = CustomRenderPlatform & {
+  dispatcher: { current: DispatcherType };
 };
 
 let cb = () => {};
@@ -40,6 +45,8 @@ export class DevToolCore {
   _origin = "";
 
   _map: Map<DevToolRenderDispatch, Tree> = new Map();
+
+  _platform: DevToolRenderPlatform;
 
   // 字符串字典
   _dir = {};
@@ -228,7 +235,7 @@ export class DevToolCore {
     this.notifyTriggerStatus();
   }
 
-  addDispatch(dispatch: DevToolRenderDispatch) {
+  addDispatch(dispatch: DevToolRenderDispatch, platform?: CustomRenderPlatform) {
     if (dispatch) this._detector = true;
 
     if (this.hasDispatch(dispatch)) return;
@@ -236,6 +243,16 @@ export class DevToolCore {
     setupDispatch(dispatch, this);
 
     this._dispatch.add(dispatch);
+
+    if (platform && this._platform && platform !== this._platform) {
+      console.warn("[@my-react-devtool/core] you have multiple platform connect, please check");
+    }
+
+    if (platform) {
+      this._platform = platform as DevToolRenderPlatform;
+      
+      setPlatform(this._platform);
+    }
 
     this.patchDispatch(dispatch);
   }
@@ -937,6 +954,8 @@ export class DevToolCore {
     this._trigger = {};
 
     this._warn = {};
+
+    this._platform = null;
 
     this._enableHoverOnBrowser = false;
 

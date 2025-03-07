@@ -2,6 +2,7 @@
   "compilerOptions": {
     "rootDir": "src",
     "target": "ES5",
+    "esModuleInterop": true,
     "stripInternal": true
   },
   "include": ["./src"],

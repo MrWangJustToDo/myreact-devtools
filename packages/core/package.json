@@ -38,6 +38,7 @@
     "@types/lodash": "^4.17.15"
   },
   "dependencies": {
+    "error-stack-parser": "^2.1.4",
     "lodash": "^4.17.21"
   }
 }

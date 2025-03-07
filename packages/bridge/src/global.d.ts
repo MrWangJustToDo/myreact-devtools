@@ -1,5 +1,5 @@
-import { DevToolMessageType, NodeValue, PlainNode, Tree } from "@my-react-devtool/core";
-import { CustomRenderDispatch } from "@my-react/react-reconciler";
+import { DevToolMessageType } from "@my-react-devtool/core";
+import { CustomRenderDispatch, CustomRenderPlatform } from "@my-react/react-reconciler";
 import { UseSelectorWithState } from "reactivity-store";
 import { io } from "socket.io-client";
 
@@ -31,7 +31,7 @@ declare global {
       }
     >;
 
-    __MY_REACT_DEVTOOL_RUNTIME__?: ((dispatch: CustomRenderDispatch) => void) & { init: () => void };
+    __MY_REACT_DEVTOOL_RUNTIME__?: ((dispatch: CustomRenderDispatch, platform?: CustomRenderPlatform) => void) & { init: () => void };
 
     ["__@my-react/dispatch__"]?: CustomRenderDispatch[];
 

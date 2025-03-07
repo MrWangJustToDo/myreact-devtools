@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 // https://github.com/facebook/react/blob/main/packages/react-devtools-shared/src/backend/views/Highlighter/Overlay.js
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { getFiberName } from "../utils";
 
 import { getElementDimensions, getNestedBoundingClientRect } from "./utils";

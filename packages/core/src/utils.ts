@@ -2,9 +2,11 @@
 import { HOOK_TYPE } from "@my-react/react-shared";
 
 import { getNode, getNodeForce } from "./data";
+import { inspectHooksOfFiber, type HooksTree } from "./hook";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
+import type { DevToolRenderPlatform } from "./instance";
 import type { HOOKTree, PlainNode } from "./plain";
 import type { DevToolRenderDispatch } from "./setup";
 import type {
@@ -18,6 +20,12 @@ import type {
 import type { MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode, MyReactHookNodeDev } from "@my-react/react-reconciler";
 
 export const typeKeys: number[] = [];
+
+let platform: DevToolRenderPlatform | null = null;
+
+export const setPlatform = (p: DevToolRenderPlatform) => {
+  platform = p;
+};
 
 // SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
 const reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
@@ -262,67 +270,68 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
   return tree;
 };
 
-export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
+const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, force?: boolean): HOOKTree[] => {
+  return node.map<HOOKTree>((item) => {
+    const { id, name, value, subHooks } = item;
+    return {
+      k: id?.toString(),
+      i: id,
+      n: name || 'Anonymous',
+      v: force ? getNodeForce(value) : getNode(value),
+      d,
+      h: !subHooks.length ? true : false,
+      c: subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, force) : undefined,
+    };
+  });
+};
+
+const getHookNormal = (fiber: MyReactFiberNodeDev, force?: boolean) => {
   const final: HOOKTree[] = [];
+
+  if (!fiber.hookList) return final;
 
   const hookList = fiber.hookList;
 
   const processStack = (hook: MyReactHookNodeDev, index: number) => {
-    const stack = (hook as any)._debugStack;
-
-    if (!stack || !Array.isArray(stack) || stack.length === 0) {
-      const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
-      const isContext = hook.type === HOOK_TYPE.useContext;
-      final.push({
-        k: index.toString(),
-        h: true,
-        i: index,
-        n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-        v: force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result),
-        d: 0,
-      });
-    } else {
-      let prevHookTree = final.at(-1);
-      let parentHookChild = final;
-      for (let i = 0; i < stack.length; i++) {
-        const isHook = i === stack.length - 1;
-        const { name, id } = stack[i];
-        if (id === prevHookTree?.k) {
-          if (isHook) {
-            const hookTree: HOOKTree = { k: id, i: index, h: isHook, d: i, n: name.startsWith("use") ? name.substring(3) : name };
-            parentHookChild.push(hookTree);
-            prevHookTree = hookTree;
-          } else {
-            prevHookTree.c = prevHookTree.c || [];
-            parentHookChild = prevHookTree.c;
-            prevHookTree = prevHookTree.c?.at(-1);
-          }
-        } else {
-          const hookTree: HOOKTree = { k: id, i: isHook ? index : undefined, h: isHook, d: i, n: name.startsWith("use") ? name.substring(3) : name };
-          if (isHook) {
-            parentHookChild.push(hookTree);
-            prevHookTree = hookTree;
-          } else {
-            parentHookChild.push(hookTree);
-            hookTree.c = hookTree.c || [];
-            parentHookChild = hookTree.c;
-            prevHookTree = hookTree.c?.at(-1);
-          }
-        }
-        if (isHook) {
-          const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
-          const isContext = hook.type === HOOK_TYPE.useContext;
-          // overwrite name
-          prevHookTree.n = isContext ? getContextName(hook.value) : getHookName(hook.type);
-          prevHookTree.v = force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result);
-        }
-      }
-    }
+    const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
+    const isContext = hook.type === HOOK_TYPE.useContext;
+    final.push({
+      k: index.toString(),
+      h: true,
+      i: index,
+      n: isContext ? getContextName(hook.value) : getHookName(hook.type),
+      v: force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result),
+      d: 0,
+    });
   };
 
   hookList?.toArray()?.forEach(processStack);
 
   return final;
+};
+
+const getHookStack = (fiber: MyReactFiberNodeDev, force?: boolean) => {
+  const final: HOOKTree[] = [];
+
+  if (!fiber.hookList) return final;
+
+  const hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
+
+  return parseHooksTreeToHOOKTree(hookTree, 0, force);
+};
+
+export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
+  
+  if (platform) {
+    try {
+      return getHookStack(fiber, force);
+    } catch(e) {
+      console.error(e);
+      return getHookNormal(fiber, force);      
+    }
+  } else {
+    return getHookNormal(fiber, force);
+  }
 };
 
 export const getProps = (fiber: MyReactFiberNodeDev, force?: boolean) => {

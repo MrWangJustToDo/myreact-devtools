@@ -9,7 +9,7 @@ import { initWEB_DEV } from "./web-dev";
 import { generatePostMessageWithSource } from "./window";
 
 import type { MessageDetectorDataType, MessagePanelDataType, MessageWorkerDataType } from "./type";
-import type { CustomRenderDispatch } from "@my-react/react-reconciler";
+import type { CustomRenderDispatch, CustomRenderPlatform } from "@my-react/react-reconciler";
 
 const hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
 
@@ -91,10 +91,10 @@ const onceOrigin = once(() => {
   }
 });
 
-const globalHook = (dispatch: CustomRenderDispatch) => {
+const globalHook = (dispatch: CustomRenderDispatch, platform?: CustomRenderPlatform) => {
   set.add(dispatch);
 
-  core.addDispatch(dispatch);
+  core.addDispatch(dispatch, platform);
 
   runWhenDetectorReady(onceMount);
 
