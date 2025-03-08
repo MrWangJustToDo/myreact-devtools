@@ -159,7 +159,7 @@ function use<T>(usable: any): T {
   if (usable !== null && typeof usable === "object") {
     if (typeof usable.then === "function") {
       const thenable = usable;
-      switch (thenable.status) {
+      switch (thenable.state) {
         case "fulfilled": {
           const fulfilledValue: T = thenable.value;
           hookLog.push({
