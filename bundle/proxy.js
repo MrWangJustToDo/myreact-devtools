@@ -1514,7 +1514,7 @@
     		    if (usable !== null && typeof usable === "object") {
     		        if (typeof usable.then === "function") {
     		            var thenable = usable;
-    		            switch (thenable.status) {
+    		            switch (thenable.state) {
     		                case "fulfilled": {
     		                    var fulfilledValue = thenable.value;
     		                    hookLog.push({
