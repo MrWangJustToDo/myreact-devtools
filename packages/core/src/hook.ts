@@ -58,7 +58,7 @@ function getPrimitiveStackCache(): Map<string, Array<any>> {
         Dispatcher.use({ [TYPEKEY]: Context, Provider: { value: null } });
         Dispatcher.use({
           then() {},
-          status: "fulfilled",
+          state: "fulfilled",
           value: null,
         });
         try {

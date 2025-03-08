@@ -1424,7 +1424,7 @@
     		                Dispatcher.use((_b = {}, _b[reactShared.TYPEKEY] = reactShared.Context, _b.Provider = { value: null }, _b));
     		                Dispatcher.use({
     		                    then: function () { },
-    		                    status: "fulfilled",
+    		                    state: "fulfilled",
     		                    value: null,
     		                });
     		                try {
