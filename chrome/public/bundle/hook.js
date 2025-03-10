@@ -1560,7 +1560,10 @@
     		    throw new Error("An unsupported type was passed to use(): " + String(usable));
     		}
     		function useContext(context) {
-    		    nextHook();
+    		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useContext) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var value = readContext(context);
     		    hookLog.push({
     		        displayName: context.displayName || null,
@@ -1573,6 +1576,9 @@
     		}
     		function useState(initialState) {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useState) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var typedInitialState = initialState;
     		    var state = hook ? hook.result : typeof initialState === "function" ? typedInitialState() : initialState;
     		    hookLog.push({
@@ -1586,6 +1592,9 @@
     		}
     		function useReducer(reducer, initialArg, init) {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useReducer) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var state = hook ? hook.result : init !== undefined ? init(initialArg) : initialArg;
     		    hookLog.push({
     		        displayName: null,
@@ -1598,6 +1607,9 @@
     		}
     		function useRef(initialValue) {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useRef) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var ref = hook ? hook.result : { current: initialValue };
     		    hookLog.push({
     		        displayName: null,
@@ -1609,7 +1621,10 @@
     		    return ref;
     		}
     		function useLayoutEffect(create, inputs) {
-    		    nextHook();
+    		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useLayoutEffect) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    hookLog.push({
     		        displayName: null,
     		        primitive: "LayoutEffect",
@@ -1619,7 +1634,10 @@
     		    });
     		}
     		function useInsertionEffect(create, inputs) {
-    		    nextHook();
+    		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useInsertionEffect) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    hookLog.push({
     		        displayName: null,
     		        primitive: "InsertionEffect",
@@ -1629,7 +1647,10 @@
     		    });
     		}
     		function useEffect(create, deps) {
-    		    nextHook();
+    		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useEffect) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    hookLog.push({
     		        displayName: null,
     		        primitive: "Effect",
@@ -1639,7 +1660,10 @@
     		    });
     		}
     		function useImperativeHandle(ref, create, inputs) {
-    		    nextHook();
+    		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useImperativeHandle) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    // We don't actually store the instance anywhere if there is no ref callback
     		    // and if there is a ref callback it might not store it but if it does we
     		    // have no way of knowing where. So let's only enable introspection of the
@@ -1657,6 +1681,10 @@
     		    });
     		}
     		function useDebugValue(value, formatterFn) {
+    		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useDebugValue) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    hookLog.push({
     		        displayName: null,
     		        primitive: "DebugValue",
@@ -1667,6 +1695,9 @@
     		}
     		function useCallback(callback, inputs) {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useCallback) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var value = hook ? hook.result : callback;
     		    hookLog.push({
     		        displayName: null,
@@ -1679,6 +1710,9 @@
     		}
     		function useMemo(nextCreate, inputs) {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useMemo) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var value = hook ? hook.result : nextCreate();
     		    hookLog.push({
     		        displayName: null,
@@ -1690,7 +1724,10 @@
     		    return value;
     		}
     		function useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
-    		    nextHook();
+    		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useSyncExternalStore) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var value = getSnapshot();
     		    hookLog.push({
     		        displayName: null,
@@ -1703,6 +1740,9 @@
     		}
     		function useTransition() {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useTransition) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var isPending = hook ? hook.result[0] : false;
     		    hookLog.push({
     		        displayName: null,
@@ -1715,6 +1755,9 @@
     		}
     		function useDeferredValue(value, initialValue) {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useDeferredValue) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var prevValue = hook ? hook.result : value;
     		    hookLog.push({
     		        displayName: null,
@@ -1727,6 +1770,9 @@
     		}
     		function useId() {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useId) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var id = hook ? hook.result : "";
     		    hookLog.push({
     		        displayName: null,
@@ -1739,6 +1785,9 @@
     		}
     		function useSignal(initial) {
     		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useSignal) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
     		    var value = hook ? hook.result.getValue : typeof initial === "function" ? initial : function () { return initial; };
     		    hookLog.push({
     		        displayName: null,
@@ -2047,6 +2096,9 @@
     		    if (error === SuspenseException) {
     		        // An uncached Promise was used. We can't synchronously resolve the rest of
     		        // the Hooks but we can at least show what ever we got so far.
+    		        return;
+    		    }
+    		    if (reactShared.isPromise(error)) {
     		        return;
     		    }
     		    if (error instanceof Error && error.name === "ReactDebugToolsUnsupportedHookError") {

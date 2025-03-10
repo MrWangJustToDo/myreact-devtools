@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Context, include, TYPEKEY } from "@my-react/react-shared";
+import { Context, HOOK_TYPE, include, isPromise, TYPEKEY } from "@my-react/react-shared";
 import ErrorStackParser from "error-stack-parser";
 
 import { NODE_TYPE } from "./type";
@@ -206,7 +206,11 @@ function use<T>(usable: any): T {
 }
 
 function useContext<T>(context: any): T {
-  nextHook();
+  const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useContext) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   const value = readContext<T>(context);
 
@@ -223,6 +227,10 @@ function useContext<T>(context: any): T {
 
 function useState<S>(initialState: (() => S) | S): [S, Dispatch<BasicStateAction<S>>] {
   const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useState) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   const typedInitialState = initialState as () => S;
 
@@ -242,6 +250,10 @@ function useState<S>(initialState: (() => S) | S): [S, Dispatch<BasicStateAction
 function useReducer<S, I, A>(reducer: (p1: S, p2: A) => S, initialArg: I, init?: (p: I) => S): [S, Dispatch<A>] {
   const hook = nextHook();
 
+  if (hook && hook.type !== HOOK_TYPE.useReducer) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
   const state = hook ? hook.result : init !== undefined ? init(initialArg) : (initialArg as unknown as S);
 
   hookLog.push({
@@ -258,6 +270,10 @@ function useReducer<S, I, A>(reducer: (p1: S, p2: A) => S, initialArg: I, init?:
 function useRef<T>(initialValue: T): { current: T } {
   const hook = nextHook();
 
+  if (hook && hook.type !== HOOK_TYPE.useRef) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
   const ref = hook ? hook.result : { current: initialValue };
 
   hookLog.push({
@@ -272,7 +288,11 @@ function useRef<T>(initialValue: T): { current: T } {
 }
 
 function useLayoutEffect(create: () => (() => void) | void, inputs: Array<any> | void | null): void {
-  nextHook();
+  const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useLayoutEffect) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   hookLog.push({
     displayName: null,
@@ -284,7 +304,11 @@ function useLayoutEffect(create: () => (() => void) | void, inputs: Array<any> |
 }
 
 function useInsertionEffect(create: () => any, inputs: Array<any> | void | null): void {
-  nextHook();
+  const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useInsertionEffect) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   hookLog.push({
     displayName: null,
@@ -296,7 +320,11 @@ function useInsertionEffect(create: () => any, inputs: Array<any> | void | null)
 }
 
 function useEffect(create: () => (() => void) | void, deps?: any[] | void | null): void {
-  nextHook();
+  const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useEffect) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   hookLog.push({
     displayName: null,
@@ -308,7 +336,12 @@ function useEffect(create: () => (() => void) | void, deps?: any[] | void | null
 }
 
 function useImperativeHandle<T>(ref: { current: T | null } | ((inst: T | null) => any) | null | void, create: () => T, inputs: Array<any> | void | null): void {
-  nextHook();
+  const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useImperativeHandle) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
   // We don't actually store the instance anywhere if there is no ref callback
   // and if there is a ref callback it might not store it but if it does we
   // have no way of knowing where. So let's only enable introspection of the
@@ -328,6 +361,12 @@ function useImperativeHandle<T>(ref: { current: T | null } | ((inst: T | null) =
 }
 
 function useDebugValue(value: any, formatterFn: (value: any) => any) {
+  const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useDebugValue) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
   hookLog.push({
     displayName: null,
     primitive: "DebugValue",
@@ -339,6 +378,10 @@ function useDebugValue(value: any, formatterFn: (value: any) => any) {
 
 function useCallback<T>(callback: T, inputs: Array<any> | void | null): T {
   const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useCallback) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   const value = hook ? hook.result : callback;
 
@@ -355,6 +398,10 @@ function useCallback<T>(callback: T, inputs: Array<any> | void | null): T {
 function useMemo<T>(nextCreate: () => T, inputs: Array<any> | void | null): T {
   const hook = nextHook();
 
+  if (hook && hook.type !== HOOK_TYPE.useMemo) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
   const value = hook ? hook.result : nextCreate();
 
   hookLog.push({
@@ -369,7 +416,11 @@ function useMemo<T>(nextCreate: () => T, inputs: Array<any> | void | null): T {
 }
 
 function useSyncExternalStore<T>(subscribe: (p: () => void) => () => void, getSnapshot: () => T, getServerSnapshot?: () => T): T {
-  nextHook();
+  const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useSyncExternalStore) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   const value = getSnapshot();
 
@@ -387,6 +438,10 @@ function useSyncExternalStore<T>(subscribe: (p: () => void) => () => void, getSn
 function useTransition(): [boolean, (callback: () => void, options?: any) => void] {
   const hook = nextHook();
 
+  if (hook && hook.type !== HOOK_TYPE.useTransition) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
   const isPending = hook ? hook.result[0] : false;
 
   hookLog.push({
@@ -402,6 +457,10 @@ function useTransition(): [boolean, (callback: () => void, options?: any) => voi
 
 function useDeferredValue<T>(value: T, initialValue?: T): T {
   const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useDeferredValue) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   const prevValue = hook ? hook.result : value;
 
@@ -419,6 +478,10 @@ function useDeferredValue<T>(value: T, initialValue?: T): T {
 function useId(): string {
   const hook = nextHook();
 
+  if (hook && hook.type !== HOOK_TYPE.useId) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
   const id = hook ? hook.result : "";
 
   hookLog.push({
@@ -434,6 +497,10 @@ function useId(): string {
 
 function useSignal<T>(initial: T | (() => T)) {
   const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useSignal) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
 
   const value = hook ? hook.result.getValue : typeof initial === "function" ? initial : () => initial;
 
@@ -790,6 +857,9 @@ function handleRenderFunctionError(error: any): void {
   if (error === SuspenseException) {
     // An uncached Promise was used. We can't synchronously resolve the rest of
     // the Hooks but we can at least show what ever we got so far.
+    return;
+  }
+  if (isPromise(error)) {
     return;
   }
   if (error instanceof Error && error.name === "ReactDebugToolsUnsupportedHookError") {
