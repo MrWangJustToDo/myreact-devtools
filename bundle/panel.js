@@ -1412,7 +1412,6 @@
     		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
     		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
-    		    DevToolMessageEnum["run"] = "run";
     		    DevToolMessageEnum["source"] = "source";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
