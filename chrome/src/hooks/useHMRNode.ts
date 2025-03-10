@@ -5,9 +5,7 @@ export const useHMRNode = createState(() => ({ state: {} }) as { state: Record<s
   withActions: (s) => {
     return {
       update: (state: Record<string, number>) => {
-        Object.keys(state).forEach((key) => {
-          s.state[key] = state[key];
-        });
+        s.state = state;
       },
       clear: () => {
         s.state = {};

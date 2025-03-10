@@ -48,7 +48,6 @@ export enum DevToolMessageEnum {
   triggerStatus = "triggerStatus",
   hmr = "hmr",
   hmrStatus = "hmrStatus",
-  run = "run",
   source = "source",
   detail = "detail",
   unmount = "unmount",

@@ -11,7 +11,6 @@ import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
-import { useRunNode } from "@/hooks/useRunNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
@@ -177,16 +176,6 @@ export const onRender = (data: DevToolMessageType) => {
       setEnableUpdate(config?.enableUpdate);
 
       setEnableHoverOnBrowser(config?.enableHoverOnBrowser);
-    });
-  }
-
-  if (data.type === DevToolMessageEnum.run) {
-    const nodes = data.data as Record<string, { c: number; t?: number }>;
-
-    safeAction(() => {
-      const { update } = useRunNode.getActions();
-
-      update(nodes);
     });
   }
 

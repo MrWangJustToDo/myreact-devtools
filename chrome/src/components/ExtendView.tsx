@@ -3,15 +3,19 @@ import { type NodeValue as NodeValueType } from "@my-react-devtool/core";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
+import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
+import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useUISize } from "@/hooks/useUISize";
 
 import { NodeValue } from "./NodeValue";
 
-const Trigger = () => {
+const Trigger = ({ select }: { select: string }) => {
   const trigger = useDetailNodeExt((s) => s.triggerStatus);
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
+
+  const triggerCount = useTriggerNode.useShallowSelector((s) => s.state?.[select]);
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
@@ -22,6 +26,8 @@ const Trigger = () => {
       </div>
     );
   });
+
+  const startCount = triggerCount - 9 >= 0 ? triggerCount - 9 : 0;
 
   const hasTrigger = trigger?.length > 0;
 
@@ -31,16 +37,18 @@ const Trigger = () => {
         <span>trigger</span>
       </div>
       <Spacer y={1} />
-      <div className="w-full">{trigger?.map((w, index) => render(index, w))}</div>
+      <div className="w-full">{trigger?.map((w, index) => render(startCount + index, w))}</div>
       <Divider />
     </div>
   ) : null;
 };
 
-const Warn = () => {
+const Warn = ({ select }: { select: string }) => {
   const warn = useDetailNodeExt((s) => s.warnStatus);
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
+
+  const warnCount = useHighlightNode.useShallowSelector((s) => s.warn[select]);
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
@@ -51,6 +59,8 @@ const Warn = () => {
       </div>
     );
   });
+
+  const startCount = warnCount - 9 >= 0 ? warnCount - 9 : 0;
 
   const hasWarn = warn?.length > 0;
 
@@ -60,16 +70,18 @@ const Warn = () => {
         <span>warn</span>
       </div>
       <Spacer y={1} />
-      <div className="w-full">{warn?.map((w, index) => render(index, w))}</div>
+      <div className="w-full">{warn?.map((w, index) => render(startCount + index, w))}</div>
       <Divider />
     </div>
   ) : null;
 };
 
-const Error = () => {
+const Error = ({ select }: { select: string }) => {
   const error = useDetailNodeExt((s) => s.errorStatus);
 
   const size = useUISize.useShallowStableSelector((s) => s.state);
+
+  const errorCount = useHighlightNode.useShallowSelector((s) => s.error[select]);
 
   const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
@@ -81,6 +93,8 @@ const Error = () => {
     );
   });
 
+  const startCount = errorCount - 9 >= 0 ? errorCount - 9 : 0;
+
   const hasError = error?.length > 0;
 
   return hasError ? (
@@ -89,7 +103,7 @@ const Error = () => {
         <span>error</span>
       </div>
       <Spacer y={1} />
-      <div className="w-full">{error?.map((w, index) => render(index, w))}</div>
+      <div className="w-full">{error?.map((w, index) => render(startCount + index, w))}</div>
       <Divider />
     </div>
   ) : null;
@@ -104,9 +118,9 @@ export const ExtendView = () => {
 
   return (
     <>
-      <Trigger />
-      <Warn />
-      <Error />
+      <Trigger select={select} />
+      <Warn select={select} />
+      <Error select={select} />
     </>
   );
 };

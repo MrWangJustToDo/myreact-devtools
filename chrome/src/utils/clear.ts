@@ -6,7 +6,6 @@ import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
-import { useRunNode } from "@/hooks/useRunNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
@@ -18,7 +17,6 @@ export const onClear = () => {
   useNodeName?.getActions?.()?.clear?.();
   useSelectNode?.getActions?.()?.clear?.();
   useDetailNode?.getActions?.()?.clear?.();
-  useRunNode?.getActions?.()?.clear?.();
   useHMRNode?.getActions?.()?.clear?.();
   useContextMenu?.getActions?.()?.clear?.();
   useTriggerNode?.getActions?.()?.clear?.();
