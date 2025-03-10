@@ -3469,6 +3469,8 @@
     		            _this.notifyErrorStatus();
     		        }, 200);
     		        var onChange = function (list) {
+    		            if (!_this.hasEnable)
+    		                return;
     		            var directory = getPlainNodeArrayByList(list).directory;
     		            if (!reactShared.isNormalEquals(_this._dir, directory)) {
     		                _this._dir = __assign({}, directory);
