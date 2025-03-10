@@ -279,6 +279,8 @@ export class DevToolCore {
     }, 200);
 
     const onChange = (list: ListTree<MyReactFiberNode>) => {
+      if (!this.hasEnable) return;
+      
       const { directory } = getPlainNodeArrayByList(list);
 
       if (!isNormalEquals(this._dir, directory)) {

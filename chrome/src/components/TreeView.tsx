@@ -45,6 +45,8 @@ const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndent
   container.style.setProperty("--indentation-size", `${maxIndentationSize}px`);
 
   container.style.setProperty("--width-size", `${listWidth}px`);
+
+  container.style.opacity = "1";
 }, 16);
 
 const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; data: PlainNode[]; onMount: (s?: VirtuosoHandle) => void }) => {
@@ -61,7 +63,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
     if (!node) return null;
 
-    return <TreeItem node={node} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[14px]" : "text-[16px]"} />;
+    return <TreeItem node={node} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[13.5px]" : "text-[15px]"} />;
   };
 
   useEffect(() => {
@@ -119,7 +121,7 @@ export const TreeView = memo(() => {
 
   return (
     <div className="tree-view h-full p-1">
-      <div className="group h-full transform-gpu" ref={ref}>
+      <div className="group h-full transform-gpu" ref={ref} style={{ opacity: 0 }}>
         {nodes.length > 0 && <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />}
         <TreeViewSetting handle={r} />
       </div>
