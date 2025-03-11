@@ -598,6 +598,28 @@ export class DevToolCore {
     this.notifyMessage(`current id: ${this._selectId} of fiber not contain dom node`, "warning");
   }
 
+  inspectCom() {
+    if (!this.hasEnable) return;
+
+    const id = this._selectId;
+
+    if (!id) return;
+
+    const fiber = getFiberNodeById(id);
+
+    if (fiber) {
+      const elementType = fiber.elementType;
+
+      if (typeof globalThis["inspect"] === "function" && elementType) {
+        globalThis["inspect"](elementType);
+
+        return;
+      }
+    }
+
+    this.notifyMessage(`current id: ${id} of fiber can not inspect`, "warning");
+  }
+
   inspectSource() {
     if (!this.hasEnable) return;
 

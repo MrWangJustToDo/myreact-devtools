@@ -107,8 +107,6 @@ export const TreeView = memo(() => {
 
   const lastContainerWidthRef = useRef(width);
 
-  lastContainerWidthRef.current = width;
-
   const onScroll = useCallback(() => {
     if (ref.current) {
       updateIndentationSizeVar(ref.current as HTMLDivElement, lastIndentSizeRef, lastContainerWidthRef);

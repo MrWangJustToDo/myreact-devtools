@@ -13,6 +13,7 @@ export const useConfig = createState(() => ({ state: { enableHover: false, enabl
     },
     toggleHoverOnBrowser() {
       s.state.enableHoverOnBrowser = !s.state.enableHoverOnBrowser;
+      s.state.enableHover = s.state.enableHoverOnBrowser;
     },
     toggleEnableRetrigger() {
       s.state.enableRetrigger = !s.state.enableRetrigger;

@@ -71,12 +71,11 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
   unSubscribeArray.push(
     useSelectNode.subscribe(
-      (s) => s.inspect,
+      (s) => s.inspectDom,
       () => {
         const currentSelect = useSelectNode.getReadonlyState().select;
 
         if (currentSelect) {
-          // postMessage({ type: MessagePanelType.nodeInspect, data: currentSelect });
           if (chrome?.devtools?.inspectedWindow?.eval) {
             chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.()");
           } else {
@@ -86,6 +85,23 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
       }
     )
   );
+
+  unSubscribeArray.push(
+    useSelectNode.subscribe(
+      (s) => s.inspectCom,
+      () => {
+        const currentSelect = useSelectNode.getReadonlyState().select;
+
+        if (currentSelect) {
+          if (chrome?.devtools?.inspectedWindow?.eval) {
+            chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectCom?.()");
+          } else {
+            toast.error("inspect not support");
+          }
+        }
+      }
+    )
+  )
 
   unSubscribeArray.push(
     useSelectNode.subscribe(

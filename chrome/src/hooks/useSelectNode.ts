@@ -13,14 +13,15 @@ const delNode = useDetailNode.getActions().delNode;
 
 export const useSelectNode = createState(
   () =>
-    ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0, scroll: 0, inspect: 0 }) as {
+    ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0, scroll: 0, inspectDom: 0, inspectCom: 0 }) as {
       select: string | null;
       hover: string | null;
       reload: number;
       trigger: number;
       store: number;
       scroll: number;
-      inspect: number;
+      inspectDom: number;
+      inspectCom: number;
       closeList: Record<string, boolean>;
       selectList: Record<string, boolean>;
     },
@@ -81,7 +82,12 @@ export const useSelectNode = createState(
         },
         inspectDom: () => {
           if (s.select) {
-            s.inspect++;
+            s.inspectDom++;
+          }
+        },
+        inspectCom: () => {
+          if (s.select) {
+            s.inspectCom++;
           }
         },
         updateSelectList,
