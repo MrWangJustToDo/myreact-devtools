@@ -57,5 +57,5 @@ export const setupDispatch = (dispatch: DevToolRenderDispatch, runtime: DevToolC
 
   overridePatchToFiberUnmount(dispatch, runtime);
 
-  Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: __VERSION__ } });
+  Object.defineProperty(dispatch, "__dev_devtool_runtime__", { value: { core: runtime, version: __VERSION__ } });
 };
