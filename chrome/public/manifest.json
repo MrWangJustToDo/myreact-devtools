@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "my-react/devtools",
-  "short_name": "my-react/devtools",
+  "name": "@my-react devtools",
+  "short_name": "@my-react/devtools",
   "version": "0.0.1",
   "description": "A browser devtools for @my-react framework",
   "icons": {

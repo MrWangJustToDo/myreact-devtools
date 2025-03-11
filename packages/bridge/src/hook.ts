@@ -25,10 +25,13 @@ const set = new Set<CustomRenderDispatch>();
 
 let detectorReady = false;
 
-let id = null;
+const idMap = new Map<() => void, NodeJS.Timeout>();
 
 const runWhenDetectorReady = (fn: () => void, count?: number) => {
+  const id = idMap.get(fn);
+
   clearTimeout(id);
+
   if (detectorReady) {
     fn();
   } else {
@@ -42,7 +45,9 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
       return;
     }
 
-    id = setTimeout(() => runWhenDetectorReady(fn, count ? count + 1 : 1), 1000);
+    const newId = setTimeout(() => runWhenDetectorReady(fn, count ? count + 1 : 1), 1000);
+
+    idMap.set(fn, newId);
   }
 };
 
@@ -104,10 +109,15 @@ const globalHook = (dispatch: CustomRenderDispatch, platform?: CustomRenderPlatf
 window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
 
 window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+
+window["__@my-react/react-devtool-inject__"] = globalHook;
+
 // support local dev
 window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
 // support iframe dev
 window["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+
+window["__@my-react/react-devtool-inject-pending__"]?.();
 
 hookPostMessageWithSource({ type: MessageHookType.init });
 
