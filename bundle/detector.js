@@ -3217,7 +3217,7 @@
     		    dispatch["$$hasDevToolInject"] = true;
     		    overridePatchToFiberInit(dispatch);
     		    overridePatchToFiberUnmount(dispatch, runtime);
-    		    Object.defineProperty(dispatch, "__devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
+    		    Object.defineProperty(dispatch, "__dev_devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
 
     		var cb = function () { };
