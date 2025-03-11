@@ -2307,6 +2307,11 @@
     		        }
     		        fiberStore.delete(plain.i);
     		        plainStore.delete(plain.i);
+    		        delete _runtime._hmr[plain.i];
+    		        delete _runtime._warn[plain.i];
+    		        delete _runtime._error[plain.i];
+    		        delete _runtime._state[plain.i];
+    		        delete _runtime._trigger[plain.i];
     		    }
     		    treeMap.delete(_fiber);
     		    detailMap.delete(_fiber);
