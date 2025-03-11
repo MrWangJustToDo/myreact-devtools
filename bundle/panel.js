@@ -3711,6 +3711,22 @@
     		        }
     		        this.notifyMessage("current id: ".concat(this._selectId, " of fiber not contain dom node"), "warning");
     		    };
+    		    DevToolCore.prototype.inspectCom = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        var id = this._selectId;
+    		        if (!id)
+    		            return;
+    		        var fiber = getFiberNodeById(id);
+    		        if (fiber) {
+    		            var elementType = fiber.elementType;
+    		            if (typeof globalThis["inspect"] === "function" && elementType) {
+    		                globalThis["inspect"](elementType);
+    		                return;
+    		            }
+    		        }
+    		        this.notifyMessage("current id: ".concat(id, " of fiber can not inspect"), "warning");
+    		    };
     		    DevToolCore.prototype.inspectSource = function () {
     		        if (!this.hasEnable)
     		            return;
