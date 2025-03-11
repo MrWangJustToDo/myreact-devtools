@@ -4275,14 +4275,16 @@
         };
     };
 
+    var _a;
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
     core.subscribe(function (message) {
         hookPostMessageWithSource({ type: coreExports.MessageHookType.render, data: message });
     });
     var set = new Set();
     var detectorReady = false;
-    var id = null;
+    var idMap = new Map();
     var runWhenDetectorReady = function (fn, count) {
+        var id = idMap.get(fn);
         clearTimeout(id);
         if (detectorReady) {
             fn();
@@ -4291,7 +4293,8 @@
             if (count && count > 18) {
                 return;
             }
-            id = setTimeout(function () { return runWhenDetectorReady(fn, count ? count + 1 : 1); }, 1000);
+            var newId = setTimeout(function () { return runWhenDetectorReady(fn, count ? count + 1 : 1); }, 1000);
+            idMap.set(fn, newId);
         }
     };
     var onMessage = function (message) {
@@ -4333,10 +4336,12 @@
     };
     window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
     window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+    window["__@my-react/react-devtool-inject__"] = globalHook;
     // support local dev
     window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
     // support iframe dev
     window["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+    (_a = window["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(window);
     hookPostMessageWithSource({ type: coreExports.MessageHookType.init });
     globalHook.init = function () { return hookPostMessageWithSource({ type: coreExports.MessageHookType.init }); };
 
