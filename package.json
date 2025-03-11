@@ -18,9 +18,9 @@
   },
   "packageManager": "pnpm@9.12.0",
   "devDependencies": {
-    "@my-react/react": "^0.3.5",
-    "@my-react/react-dom": "^0.3.5",
-    "@my-react/react-reconciler": "^0.3.5",
+    "@my-react/react": "^0.3.6",
+    "@my-react/react-dom": "^0.3.6",
+    "@my-react/react-reconciler": "^0.3.6",
     "@types/node": "^22.8.4",
     "eslint": "^8.57.0",
     "prettier": "^3.4.2",
