@@ -1,5 +1,28 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { HOOK_TYPE } from "@my-react/react-shared";
+import { type MyReactFiberNode, type MyReactFiberNodeDev, type MyReactHookNode, type MyReactHookNodeDev } from "@my-react/react-reconciler";
+import {
+  Consumer,
+  Context,
+  ForwardRef,
+  Fragment,
+  HOOK_TYPE,
+  KeepLive,
+  Lazy,
+  Memo,
+  Element,
+  merge,
+  Portal,
+  Profiler,
+  Provider,
+  Scope,
+  ScopeLazy,
+  ScopeSuspense,
+  Strict,
+  Suspense,
+  TYPEKEY,
+  Comment,
+} from "@my-react/react-shared";
 
 import { getNode, getNodeForce } from "./data";
 import { inspectHooksOfFiber, type HooksTree } from "./hook";
@@ -14,10 +37,13 @@ import type {
   MixinMyReactFunctionComponent,
   MixinMyReactObjectComponent,
   MyReactElement,
+  MyReactElementNode,
+  MyReactObjectComponent,
   createContext,
+  forwardRef,
   lazy,
+  memo,
 } from "@my-react/react";
-import type { MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode, MyReactHookNodeDev } from "@my-react/react-reconciler";
 
 export const typeKeys: number[] = [];
 
@@ -183,6 +209,133 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   return `unknown`;
 };
 
+export const isValidElement = (element?: MyReactElementNode | any): element is MyReactElement => {
+  return typeof element === "object" && !Array.isArray(element) && element !== null && element?.[TYPEKEY] === Element;
+};
+
+export const getMockFiberFromElement = (element: MyReactElement): MyReactFiberNodeDev => {
+  let nodeType = NODE_TYPE.__initial__;
+
+  let elementType = element.type;
+
+  const finalElement = element;
+
+  const pendingProps = element.props;
+
+  const ref: MyReactElement["ref"] | null = element.ref ?? undefined;
+
+  const key: MyReactElement["key"] | null = element.key ?? undefined;
+
+  if (typeof elementType === "object" && elementType !== null) {
+    const typedElementType = elementType as MyReactObjectComponent;
+    switch (typedElementType[TYPEKEY]) {
+      case Provider:
+        nodeType = merge(nodeType, NODE_TYPE.__provider__);
+        break;
+      // support react 19 context api
+      case Context:
+        nodeType = merge(nodeType, NODE_TYPE.__context__);
+        break;
+      case Consumer:
+        nodeType = merge(nodeType, NODE_TYPE.__consumer__);
+        break;
+      case Memo:
+        nodeType = merge(nodeType, NODE_TYPE.__memo__);
+        elementType = (typedElementType as ReturnType<typeof memo>).render;
+        break;
+      case ForwardRef:
+        nodeType = merge(nodeType, NODE_TYPE.__forwardRef__);
+        elementType = (typedElementType as ReturnType<typeof forwardRef>).render;
+        break;
+      case Lazy:
+        nodeType = merge(nodeType, NODE_TYPE.__lazy__);
+        break;
+      default:
+        throw new Error(`[@my-react/react] invalid object element type "${typedElementType[TYPEKEY]?.toString()}"`);
+    }
+    if (typeof elementType === "object") {
+      if (elementType[TYPEKEY] === ForwardRef) {
+        nodeType = merge(nodeType, NODE_TYPE.__forwardRef__);
+        elementType = (elementType as ReturnType<typeof forwardRef>).render;
+      }
+      if (elementType[TYPEKEY] === Provider) {
+        nodeType = merge(nodeType, NODE_TYPE.__provider__);
+      }
+      if (elementType[TYPEKEY] === Context) {
+        nodeType = merge(nodeType, NODE_TYPE.__context__);
+      }
+      if (elementType[TYPEKEY] === Consumer) {
+        nodeType = merge(nodeType, NODE_TYPE.__consumer__);
+      }
+    }
+    if (typeof elementType === "function") {
+      if (elementType.prototype?.isMyReactComponent) {
+        nodeType = merge(nodeType, NODE_TYPE.__class__);
+      } else {
+        nodeType = merge(nodeType, NODE_TYPE.__function__);
+      }
+    }
+  } else if (typeof elementType === "function") {
+    if (elementType.prototype?.isMyReactComponent) {
+      nodeType = merge(nodeType, NODE_TYPE.__class__);
+    } else {
+      nodeType = merge(nodeType, NODE_TYPE.__function__);
+    }
+  } else if (typeof elementType === "symbol") {
+    switch (elementType) {
+      case KeepLive:
+        nodeType = merge(nodeType, NODE_TYPE.__keepLive__);
+        break;
+      case Fragment:
+        nodeType = merge(nodeType, NODE_TYPE.__fragment__);
+        break;
+      case Strict:
+        nodeType = merge(nodeType, NODE_TYPE.__strict__);
+        break;
+      case Suspense:
+        nodeType = merge(nodeType, NODE_TYPE.__suspense__);
+        break;
+      case Scope:
+        nodeType = merge(nodeType, NODE_TYPE.__scope__);
+        break;
+      case ScopeLazy:
+        nodeType = merge(nodeType, NODE_TYPE.__scopeLazy__);
+        break;
+      case ScopeSuspense:
+        nodeType = merge(nodeType, NODE_TYPE.__scopeSuspense__);
+        break;
+      case Comment:
+        nodeType = merge(nodeType, NODE_TYPE.__comment__);
+        break;
+      case Portal:
+        nodeType = merge(nodeType, NODE_TYPE.__portal__);
+        break;
+      case Profiler:
+        nodeType = merge(nodeType, NODE_TYPE.__profiler__);
+        break;
+      default:
+        throw new Error(`[@my-react/react] invalid symbol element type "${elementType?.toString()}"`);
+    }
+  } else if (typeof elementType === "string") {
+    nodeType = merge(nodeType, NODE_TYPE.__plain__);
+  } else {
+    nodeType = merge(nodeType, NODE_TYPE.__empty__);
+  }
+
+  const mockFiber = {
+    type: nodeType,
+    elementType: elementType,
+    pendingProps: pendingProps,
+    key: key,
+    ref: ref,
+    _debugElement: finalElement,
+  };
+
+  return mockFiber as unknown as MyReactFiberNodeDev;
+};
+
+export const getElementName = (element: MyReactElement) => `<${getFiberName(getMockFiberFromElement(element))} />`;
+
 export const getHookName = (type: number) => {
   switch (type) {
     case HOOK_TYPE.useReducer:
@@ -276,7 +429,7 @@ const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, force?: boolean): 
     return {
       k: id?.toString(),
       i: id,
-      n: name || 'Anonymous',
+      n: name || "Anonymous",
       v: force ? getNodeForce(value) : getNode(value),
       d,
       h: !subHooks.length ? true : false,
@@ -324,9 +477,9 @@ export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
   if (platform && platform.dispatcher) {
     try {
       return getHookStack(fiber, force);
-    } catch(e) {
+    } catch (e) {
       console.error(e);
-      return getHookNormal(fiber, force);      
+      return getHookNormal(fiber, force);
     }
   } else {
     return getHookNormal(fiber, force);

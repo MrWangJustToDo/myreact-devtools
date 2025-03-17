@@ -1084,286 +1084,6 @@
     		    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     		};
 
-    		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
-    		var emptyConstructor = {}.constructor;
-    		var id$1 = 1;
-    		var loadById = false;
-    		var idToValueMap = new Map();
-    		var valueToIdMap = new Map();
-    		var cacheMap = new WeakMap();
-    		var getType = function (value) {
-    		    if (isInBrowser && value && value instanceof Element) {
-    		        return "Element";
-    		    }
-    		    var type = Object.prototype.toString.call(value).slice(8, -1);
-    		    if (type === "Object" && typeof value[Symbol.iterator] === "function") {
-    		        return "Iterable";
-    		    }
-    		    if (type === "Custom" && value.constructor !== Object && value instanceof Object) {
-    		        // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
-    		        return "Object";
-    		    }
-    		    return type;
-    		};
-    		var isObject = function (value) {
-    		    return (value === "Object" ||
-    		        // value === "Error" ||
-    		        // value === "WeakMap" ||
-    		        // value === "WeakSet" ||
-    		        value === "Array" ||
-    		        value === "Iterable" ||
-    		        value === "Map" ||
-    		        // value === "Promise" ||
-    		        value === "Set");
-    		};
-    		var getTargetNode = function (value, type, deep) {
-    		    if (deep === void 0) { deep = 3; }
-    		    var existId = valueToIdMap.get(value);
-    		    var currentId = existId || id$1++;
-    		    idToValueMap.set(currentId, value);
-    		    valueToIdMap.set(value, currentId);
-    		    // full deep to load
-    		    if (deep === 0) {
-    		        return {
-    		            i: currentId,
-    		            t: type,
-    		            v: undefined,
-    		            e: true,
-    		            l: false,
-    		        };
-    		    }
-    		    else {
-    		        if (type === "Array") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                v: value.map(function (val) { return getNode(val, deep - 1); }),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "Iterable") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "Map") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                v: Array.from(value.entries()).map(function (_a) {
-    		                    var key = _a[0], val = _a[1];
-    		                    return ({
-    		                        t: "Array",
-    		                        e: true,
-    		                        v: [getNode(key, deep - 1), getNode(val, deep - 1)],
-    		                    });
-    		                }),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "Set") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "Object") {
-    		            if (typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    n: value.constructor.name,
-    		                    v: Object.keys(value).reduce(function (acc, key) {
-    		                        acc[key] = getNode(value[key], deep - 1);
-    		                        return acc;
-    		                    }, {}),
-    		                    e: true,
-    		                };
-    		            }
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                v: Object.keys(value).reduce(function (acc, key) {
-    		                    acc[key] = getNode(value[key], deep - 1);
-    		                    return acc;
-    		                }, {}),
-    		                e: true,
-    		            };
-    		        }
-    		    }
-    		};
-    		var getNodeWithCache = function (value, type, deep) {
-    		    if (deep === void 0) { deep = 3; }
-    		    if (loadById) {
-    		        var cache = cacheMap.get(value);
-    		        if (cache) {
-    		            return __assign(__assign({}, cache), { c: true });
-    		        }
-    		    }
-    		    var v = getTargetNode(value, type, deep);
-    		    if ((v === null || v === void 0 ? void 0 : v.l) === false) {
-    		        return v;
-    		    }
-    		    cacheMap.set(value, v);
-    		    return v;
-    		};
-    		var getNode = function (value, deep) {
-    		    if (deep === void 0) { deep = 3; }
-    		    try {
-    		        var type = getType(value);
-    		        var expandable = isObject(type);
-    		        if (expandable) {
-    		            // full deep to load
-    		            return getNodeWithCache(value, type, deep);
-    		        }
-    		        else {
-    		            var existId = valueToIdMap.get(value);
-    		            var currentId = existId || id$1++;
-    		            idToValueMap.set(currentId, value);
-    		            valueToIdMap.set(value, currentId);
-    		            if (type === "Element") {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    v: "<".concat(value.tagName.toLowerCase(), " />"),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            if (type === "Error") {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    v: value.message,
-    		                    e: expandable,
-    		                };
-    		            }
-    		            if (typeof value === "object" && value !== null) {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    v: Object.prototype.toString.call(value),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            else {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    v: String(value),
-    		                    e: expandable,
-    		                };
-    		            }
-    		        }
-    		    }
-    		    catch (e) {
-    		        return {
-    		            i: NaN,
-    		            t: "ReadError",
-    		            v: "Read data error: " + e.message,
-    		            e: false,
-    		        };
-    		    }
-    		};
-    		var getNodeForce = function (value, deep) {
-    		    if (deep === void 0) { deep = 3; }
-    		    cacheMap = new WeakMap();
-    		    return getNode(value, deep);
-    		};
-    		var getNodeFromId = function (id) {
-    		    var value = idToValueMap.get(id);
-    		    if (value) {
-    		        loadById = true;
-    		        var res = getNode(value);
-    		        loadById = false;
-    		        return res;
-    		    }
-    		};
-    		var getValueById = function (id) {
-    		    if (id && !Number.isNaN(id)) {
-    		        return { v: idToValueMap.get(id), f: true };
-    		    }
-    		    else {
-    		        return { v: undefined, f: false };
-    		    }
-    		};
-
-    		exports.MessageHookType = void 0;
-    		(function (MessageHookType) {
-    		    MessageHookType["init"] = "hook-init";
-    		    MessageHookType["mount"] = "hook-mount";
-    		    MessageHookType["render"] = "hook-render";
-    		    MessageHookType["origin"] = "hook-origin";
-    		})(exports.MessageHookType || (exports.MessageHookType = {}));
-    		exports.MessageDetectorType = void 0;
-    		(function (MessageDetectorType) {
-    		    MessageDetectorType["init"] = "detector-init";
-    		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
-    		exports.MessagePanelType = void 0;
-    		(function (MessagePanelType) {
-    		    MessagePanelType["show"] = "panel-show";
-    		    MessagePanelType["hide"] = "panel-hide";
-    		    MessagePanelType["varStore"] = "panel-var-store";
-    		    MessagePanelType["varSource"] = "panel-var-source";
-    		    MessagePanelType["enableHover"] = "panel-enable-hover";
-    		    MessagePanelType["enableUpdate"] = "panel-enable-update";
-    		    MessagePanelType["enableRetrigger"] = "panel-enable-retrigger";
-    		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
-    		    MessagePanelType["nodeHover"] = "panel-hover";
-    		    MessagePanelType["nodeSelect"] = "panel-select";
-    		    MessagePanelType["nodeStore"] = "panel-store";
-    		    MessagePanelType["nodeTrigger"] = "panel-trigger";
-    		    MessagePanelType["nodeInspect"] = "panel-inspect";
-    		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
-    		    MessagePanelType["chunks"] = "panel-chunks";
-    		    MessagePanelType["clear"] = "panel-clear";
-    		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
-    		exports.MessageWorkerType = void 0;
-    		(function (MessageWorkerType) {
-    		    MessageWorkerType["init"] = "worker-init";
-    		    MessageWorkerType["close"] = "worker-close";
-    		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
-    		exports.DevToolMessageEnum = void 0;
-    		(function (DevToolMessageEnum) {
-    		    // 初始化，判断是否用@my-react进行页面渲染
-    		    DevToolMessageEnum["init"] = "init";
-    		    DevToolMessageEnum["dir"] = "dir";
-    		    DevToolMessageEnum["config"] = "config";
-    		    // tree ready
-    		    DevToolMessageEnum["ready"] = "ready";
-    		    // tree update
-    		    DevToolMessageEnum["update"] = "update";
-    		    DevToolMessageEnum["changed"] = "changed";
-    		    DevToolMessageEnum["highlight"] = "highlight";
-    		    DevToolMessageEnum["trigger"] = "trigger";
-    		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
-    		    DevToolMessageEnum["hmr"] = "hmr";
-    		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
-    		    DevToolMessageEnum["source"] = "source";
-    		    DevToolMessageEnum["detail"] = "detail";
-    		    DevToolMessageEnum["unmount"] = "unmount";
-    		    DevToolMessageEnum["select-sync"] = "select-sync";
-    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
-    		    DevToolMessageEnum["message"] = "message";
-    		    DevToolMessageEnum["warn"] = "warn";
-    		    DevToolMessageEnum["warnStatus"] = "warnStatus";
-    		    DevToolMessageEnum["error"] = "error";
-    		    DevToolMessageEnum["errorStatus"] = "errorStatus";
-    		    DevToolMessageEnum["chunks"] = "chunks";
-    		    DevToolMessageEnum["dom-hover"] = "dom-hover";
-    		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
-    		exports.HMRStatus = void 0;
-    		(function (HMRStatus) {
-    		    HMRStatus[HMRStatus["none"] = 0] = "none";
-    		    HMRStatus[HMRStatus["refresh"] = 1] = "refresh";
-    		    HMRStatus[HMRStatus["remount"] = 2] = "remount";
-    		})(exports.HMRStatus || (exports.HMRStatus = {}));
-    		var DevToolSource = "@my-react/devtool";
-
     		// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
     		exports.NODE_TYPE = void 0;
     		(function (NODE_TYPE) {
@@ -2185,12 +1905,12 @@
     		    }
     		}
 
-    		var id = 0;
+    		var id$1 = 0;
     		// PlainNode is a simplified version of FiberNode just for show the structure
     		var PlainNode = /** @class */ (function () {
     		    // hooks: HOOKTree[];
     		    function PlainNode(_id) {
-    		        this.i = _id || "".concat(id++);
+    		        this.i = _id || "".concat(id$1++);
     		    }
     		    return PlainNode;
     		}());
@@ -2573,6 +2293,129 @@
     		    }
     		    return "unknown";
     		};
+    		var isValidElement = function (element) {
+    		    return typeof element === "object" && !Array.isArray(element) && element !== null && (element === null || element === void 0 ? void 0 : element[reactShared.TYPEKEY]) === reactShared.Element;
+    		};
+    		var getMockFiberFromElement = function (element) {
+    		    var _a, _b, _c, _d, _e;
+    		    var nodeType = exports.NODE_TYPE.__initial__;
+    		    var elementType = element.type;
+    		    var finalElement = element;
+    		    var pendingProps = element.props;
+    		    var ref = (_a = element.ref) !== null && _a !== void 0 ? _a : undefined;
+    		    var key = (_b = element.key) !== null && _b !== void 0 ? _b : undefined;
+    		    if (typeof elementType === "object" && elementType !== null) {
+    		        var typedElementType = elementType;
+    		        switch (typedElementType[reactShared.TYPEKEY]) {
+    		            case reactShared.Provider:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__provider__);
+    		                break;
+    		            // support react 19 context api
+    		            case reactShared.Context:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__context__);
+    		                break;
+    		            case reactShared.Consumer:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__consumer__);
+    		                break;
+    		            case reactShared.Memo:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__memo__);
+    		                elementType = typedElementType.render;
+    		                break;
+    		            case reactShared.ForwardRef:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__forwardRef__);
+    		                elementType = typedElementType.render;
+    		                break;
+    		            case reactShared.Lazy:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__lazy__);
+    		                break;
+    		            default:
+    		                throw new Error("[@my-react/react] invalid object element type \"".concat((_c = typedElementType[reactShared.TYPEKEY]) === null || _c === void 0 ? void 0 : _c.toString(), "\""));
+    		        }
+    		        if (typeof elementType === "object") {
+    		            if (elementType[reactShared.TYPEKEY] === reactShared.ForwardRef) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__forwardRef__);
+    		                elementType = elementType.render;
+    		            }
+    		            if (elementType[reactShared.TYPEKEY] === reactShared.Provider) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__provider__);
+    		            }
+    		            if (elementType[reactShared.TYPEKEY] === reactShared.Context) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__context__);
+    		            }
+    		            if (elementType[reactShared.TYPEKEY] === reactShared.Consumer) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__consumer__);
+    		            }
+    		        }
+    		        if (typeof elementType === "function") {
+    		            if ((_d = elementType.prototype) === null || _d === void 0 ? void 0 : _d.isMyReactComponent) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__class__);
+    		            }
+    		            else {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__function__);
+    		            }
+    		        }
+    		    }
+    		    else if (typeof elementType === "function") {
+    		        if ((_e = elementType.prototype) === null || _e === void 0 ? void 0 : _e.isMyReactComponent) {
+    		            nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__class__);
+    		        }
+    		        else {
+    		            nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__function__);
+    		        }
+    		    }
+    		    else if (typeof elementType === "symbol") {
+    		        switch (elementType) {
+    		            case reactShared.KeepLive:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__keepLive__);
+    		                break;
+    		            case reactShared.Fragment:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__fragment__);
+    		                break;
+    		            case reactShared.Strict:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__strict__);
+    		                break;
+    		            case reactShared.Suspense:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__suspense__);
+    		                break;
+    		            case reactShared.Scope:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scope__);
+    		                break;
+    		            case reactShared.ScopeLazy:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scopeLazy__);
+    		                break;
+    		            case reactShared.ScopeSuspense:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scopeSuspense__);
+    		                break;
+    		            case reactShared.Comment:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__comment__);
+    		                break;
+    		            case reactShared.Portal:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__portal__);
+    		                break;
+    		            case reactShared.Profiler:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__profiler__);
+    		                break;
+    		            default:
+    		                throw new Error("[@my-react/react] invalid symbol element type \"".concat(elementType === null || elementType === void 0 ? void 0 : elementType.toString(), "\""));
+    		        }
+    		    }
+    		    else if (typeof elementType === "string") {
+    		        nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__plain__);
+    		    }
+    		    else {
+    		        nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__empty__);
+    		    }
+    		    var mockFiber = {
+    		        type: nodeType,
+    		        elementType: elementType,
+    		        pendingProps: pendingProps,
+    		        key: key,
+    		        ref: ref,
+    		        _debugElement: finalElement,
+    		    };
+    		    return mockFiber;
+    		};
+    		var getElementName = function (element) { return "<".concat(getFiberName(getMockFiberFromElement(element)), " />"); };
     		var getHookName = function (type) {
     		    switch (type) {
     		        case reactShared.HOOK_TYPE.useReducer:
@@ -2651,7 +2494,7 @@
     		        return {
     		            k: id === null || id === void 0 ? void 0 : id.toString(),
     		            i: id,
-    		            n: name || 'Anonymous',
+    		            n: name || "Anonymous",
     		            v: force ? getNodeForce(value) : getNode(value),
     		            d: d,
     		            h: !subHooks.length ? true : false,
@@ -2735,6 +2578,299 @@
     		        }, time || 40);
     		    });
     		};
+
+    		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
+    		var emptyConstructor = {}.constructor;
+    		var id = 1;
+    		var loadById = false;
+    		var idToValueMap = new Map();
+    		var valueToIdMap = new Map();
+    		var cacheMap = new WeakMap();
+    		var getType = function (value) {
+    		    if (isValidElement(value)) {
+    		        return "ReactElement";
+    		    }
+    		    if (isInBrowser && value && value instanceof Element) {
+    		        return "Element";
+    		    }
+    		    var type = Object.prototype.toString.call(value).slice(8, -1);
+    		    if (type === "Object" && typeof value[Symbol.iterator] === "function") {
+    		        return "Iterable";
+    		    }
+    		    if (type === "Custom" && value.constructor !== Object && value instanceof Object) {
+    		        // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
+    		        return "Object";
+    		    }
+    		    return type;
+    		};
+    		var isObject = function (value) {
+    		    return (value === "Object" ||
+    		        // value === "Error" ||
+    		        // value === "WeakMap" ||
+    		        // value === "WeakSet" ||
+    		        value === "Array" ||
+    		        value === "Iterable" ||
+    		        value === "Map" ||
+    		        // value === "Promise" ||
+    		        value === "Set" ||
+    		        value === "ReactElement");
+    		};
+    		var getTargetNode = function (value, type, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    var existId = valueToIdMap.get(value);
+    		    var currentId = existId || id++;
+    		    var n = undefined;
+    		    if (type === 'Object' && typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
+    		        n = value.constructor.name;
+    		    }
+    		    if (type === 'ReactElement') {
+    		        n = getElementName(value);
+    		    }
+    		    idToValueMap.set(currentId, value);
+    		    valueToIdMap.set(value, currentId);
+    		    // full deep to load
+    		    if (deep === 0) {
+    		        return {
+    		            i: currentId,
+    		            t: type,
+    		            n: n,
+    		            v: undefined,
+    		            e: true,
+    		            l: false,
+    		        };
+    		    }
+    		    else {
+    		        if (type === "Array") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                v: value.map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Iterable") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Map") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                v: Array.from(value.entries()).map(function (_a) {
+    		                    var key = _a[0], val = _a[1];
+    		                    return ({
+    		                        t: "Array",
+    		                        e: true,
+    		                        v: [getNode(key, deep - 1), getNode(val, deep - 1)],
+    		                    });
+    		                }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Set") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Object") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                n: n,
+    		                v: Object.keys(value).reduce(function (acc, key) {
+    		                    acc[key] = getNode(value[key], deep - 1);
+    		                    return acc;
+    		                }, {}),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === 'ReactElement') {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                n: n,
+    		                v: Object.keys(value).reduce(function (acc, key) {
+    		                    acc[key] = getNode(value[key], deep - 1);
+    		                    return acc;
+    		                }, {}),
+    		                e: true,
+    		            };
+    		        }
+    		    }
+    		};
+    		var getNodeWithCache = function (value, type, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    if (loadById) {
+    		        var cache = cacheMap.get(value);
+    		        if (cache) {
+    		            return __assign(__assign({}, cache), { c: true });
+    		        }
+    		    }
+    		    var v = getTargetNode(value, type, deep);
+    		    if ((v === null || v === void 0 ? void 0 : v.l) === false) {
+    		        return v;
+    		    }
+    		    cacheMap.set(value, v);
+    		    return v;
+    		};
+    		var getNode = function (value, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    try {
+    		        var type = getType(value);
+    		        var expandable = isObject(type);
+    		        if (expandable) {
+    		            // full deep to load
+    		            return getNodeWithCache(value, type, deep);
+    		        }
+    		        else {
+    		            var existId = valueToIdMap.get(value);
+    		            var currentId = existId || id++;
+    		            idToValueMap.set(currentId, value);
+    		            valueToIdMap.set(value, currentId);
+    		            if (type === "Element") {
+    		                return {
+    		                    i: currentId,
+    		                    t: type,
+    		                    v: "<".concat(value.tagName.toLowerCase(), " />"),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            if (type === "Error") {
+    		                return {
+    		                    i: currentId,
+    		                    t: type,
+    		                    v: value.message,
+    		                    e: expandable,
+    		                };
+    		            }
+    		            if (typeof value === "object" && value !== null) {
+    		                return {
+    		                    i: currentId,
+    		                    t: type,
+    		                    v: Object.prototype.toString.call(value),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            else {
+    		                return {
+    		                    i: currentId,
+    		                    t: type,
+    		                    v: String(value),
+    		                    e: expandable,
+    		                };
+    		            }
+    		        }
+    		    }
+    		    catch (e) {
+    		        return {
+    		            i: NaN,
+    		            t: "ReadError",
+    		            v: "Read data error: " + e.message,
+    		            e: false,
+    		        };
+    		    }
+    		};
+    		var getNodeForce = function (value, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    cacheMap = new WeakMap();
+    		    return getNode(value, deep);
+    		};
+    		var getNodeFromId = function (id) {
+    		    var value = idToValueMap.get(id);
+    		    if (value) {
+    		        loadById = true;
+    		        var res = getNode(value);
+    		        loadById = false;
+    		        return res;
+    		    }
+    		};
+    		var getValueById = function (id) {
+    		    if (id && !Number.isNaN(id)) {
+    		        return { v: idToValueMap.get(id), f: true };
+    		    }
+    		    else {
+    		        return { v: undefined, f: false };
+    		    }
+    		};
+
+    		exports.MessageHookType = void 0;
+    		(function (MessageHookType) {
+    		    MessageHookType["init"] = "hook-init";
+    		    MessageHookType["mount"] = "hook-mount";
+    		    MessageHookType["render"] = "hook-render";
+    		    MessageHookType["origin"] = "hook-origin";
+    		})(exports.MessageHookType || (exports.MessageHookType = {}));
+    		exports.MessageDetectorType = void 0;
+    		(function (MessageDetectorType) {
+    		    MessageDetectorType["init"] = "detector-init";
+    		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessagePanelType = void 0;
+    		(function (MessagePanelType) {
+    		    MessagePanelType["show"] = "panel-show";
+    		    MessagePanelType["hide"] = "panel-hide";
+    		    MessagePanelType["varStore"] = "panel-var-store";
+    		    MessagePanelType["varSource"] = "panel-var-source";
+    		    MessagePanelType["enableHover"] = "panel-enable-hover";
+    		    MessagePanelType["enableUpdate"] = "panel-enable-update";
+    		    MessagePanelType["enableRetrigger"] = "panel-enable-retrigger";
+    		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
+    		    MessagePanelType["nodeHover"] = "panel-hover";
+    		    MessagePanelType["nodeSelect"] = "panel-select";
+    		    MessagePanelType["nodeStore"] = "panel-store";
+    		    MessagePanelType["nodeTrigger"] = "panel-trigger";
+    		    MessagePanelType["nodeInspect"] = "panel-inspect";
+    		    MessagePanelType["nodeSelectForce"] = "panel-select-force";
+    		    MessagePanelType["chunks"] = "panel-chunks";
+    		    MessagePanelType["clear"] = "panel-clear";
+    		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
+    		exports.MessageWorkerType = void 0;
+    		(function (MessageWorkerType) {
+    		    MessageWorkerType["init"] = "worker-init";
+    		    MessageWorkerType["close"] = "worker-close";
+    		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
+    		exports.DevToolMessageEnum = void 0;
+    		(function (DevToolMessageEnum) {
+    		    // 初始化，判断是否用@my-react进行页面渲染
+    		    DevToolMessageEnum["init"] = "init";
+    		    DevToolMessageEnum["dir"] = "dir";
+    		    DevToolMessageEnum["config"] = "config";
+    		    // tree ready
+    		    DevToolMessageEnum["ready"] = "ready";
+    		    // tree update
+    		    DevToolMessageEnum["update"] = "update";
+    		    DevToolMessageEnum["changed"] = "changed";
+    		    DevToolMessageEnum["highlight"] = "highlight";
+    		    DevToolMessageEnum["trigger"] = "trigger";
+    		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
+    		    DevToolMessageEnum["hmr"] = "hmr";
+    		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
+    		    DevToolMessageEnum["source"] = "source";
+    		    DevToolMessageEnum["detail"] = "detail";
+    		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["select-sync"] = "select-sync";
+    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
+    		    DevToolMessageEnum["message"] = "message";
+    		    DevToolMessageEnum["warn"] = "warn";
+    		    DevToolMessageEnum["warnStatus"] = "warnStatus";
+    		    DevToolMessageEnum["error"] = "error";
+    		    DevToolMessageEnum["errorStatus"] = "errorStatus";
+    		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["dom-hover"] = "dom-hover";
+    		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
+    		exports.HMRStatus = void 0;
+    		(function (HMRStatus) {
+    		    HMRStatus[HMRStatus["none"] = 0] = "none";
+    		    HMRStatus[HMRStatus["refresh"] = 1] = "refresh";
+    		    HMRStatus[HMRStatus["remount"] = 2] = "remount";
+    		})(exports.HMRStatus || (exports.HMRStatus = {}));
+    		var DevToolSource = "@my-react/devtool";
 
     		// Get the window object for the document that a node belongs to,
     		// or return null if it cannot be found (node not attached to DOM,
@@ -3923,6 +4059,7 @@
     		exports.getComponentFiberByDom = getComponentFiberByDom;
     		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
+    		exports.getElementName = getElementName;
     		exports.getElementNodesFromFiber = getElementNodesFromFiber;
     		exports.getFiberName = getFiberName;
     		exports.getFiberNodeById = getFiberNodeById;
@@ -3930,6 +4067,7 @@
     		exports.getFiberType = getFiberType;
     		exports.getHook = getHook;
     		exports.getHookName = getHookName;
+    		exports.getMockFiberFromElement = getMockFiberFromElement;
     		exports.getNode = getNode;
     		exports.getNodeForce = getNodeForce;
     		exports.getNodeFromId = getNodeFromId;
@@ -3944,6 +4082,7 @@
     		exports.getTypeName = getTypeName;
     		exports.getValueById = getValueById;
     		exports.initPlainNode = initPlainNode;
+    		exports.isValidElement = isValidElement;
     		exports.loopChangedTree = loopChangedTree;
     		exports.loopTree = loopTree;
     		exports.setPlatform = setPlatform;

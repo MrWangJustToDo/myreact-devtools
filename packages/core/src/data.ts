@@ -1,3 +1,5 @@
+import { getElementName, isValidElement } from "./utils";
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const KnownType = {
   Object: true,
@@ -20,6 +22,7 @@ const KnownType = {
   RegExp: true,
   Element: true,
   ReadError: true,
+  ReactElement: true,
 };
 
 export type NodeValue = {
@@ -54,6 +57,10 @@ const valueToIdMap = new Map<any, number>();
 let cacheMap = new WeakMap<any, NodeValue>();
 
 const getType = (value: any): NodeValue["t"] => {
+  if (isValidElement(value)) {
+    return "ReactElement";
+  }
+
   if (isInBrowser && value && value instanceof Element) {
     return "Element";
   }
@@ -82,7 +89,8 @@ const isObject = (value: NodeValue["t"]) => {
     value === "Iterable" ||
     value === "Map" ||
     // value === "Promise" ||
-    value === "Set"
+    value === "Set" ||
+    value === "ReactElement"
   );
 };
 
@@ -90,6 +98,16 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
   const existId = valueToIdMap.get(value);
 
   const currentId = existId || id++;
+
+  let n = undefined;
+
+  if (type === 'Object' && typeof value?.constructor === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
+    n = value.constructor.name;
+  }
+
+  if (type === 'ReactElement') {
+    n = getElementName(value);
+  }
 
   idToValueMap.set(currentId, value);
 
@@ -99,6 +117,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
     return {
       i: currentId,
       t: type,
+      n,
       v: undefined,
       e: true,
       l: false,
@@ -137,21 +156,21 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
         e: true,
       };
     } else if (type === "Object") {
-      if (typeof value?.constructor === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
-        return {
-          i: currentId,
-          t: type,
-          n: value.constructor.name,
-          v: Object.keys(value).reduce((acc, key) => {
-            acc[key] = getNode(value[key], deep - 1);
-            return acc;
-          }, {}),
-          e: true,
-        };
-      }
       return {
         i: currentId,
         t: type,
+        n,
+        v: Object.keys(value).reduce((acc, key) => {
+          acc[key] = getNode(value[key], deep - 1);
+          return acc;
+        }, {}),
+        e: true,
+      };
+    } else if (type === 'ReactElement') {
+      return {
+        i: currentId,
+        t: type,
+        n,
         v: Object.keys(value).reduce((acc, key) => {
           acc[key] = getNode(value[key], deep - 1);
           return acc;
