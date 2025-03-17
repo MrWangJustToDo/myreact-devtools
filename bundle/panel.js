@@ -2296,6 +2296,7 @@
     		    });
     		    return { t: t, hasCompiler: hasCompiler };
     		};
+    		// SEE @my-react/react-reconciler
     		var getFiberName = function (fiber) {
     		    var typedFiber = fiber;
     		    if (fiber.type & exports.NODE_TYPE.__provider__) {
@@ -2304,7 +2305,6 @@
     		        return "".concat(name_1 || "Context", ".Provider");
     		    }
     		    if (fiber.type & exports.NODE_TYPE.__context__) {
-    		        // fix: next version
     		        var typedElementType = fiber.elementType;
     		        var name_2 = typedElementType.displayName;
     		        return "".concat(name_2 || "Context");
@@ -2362,9 +2362,11 @@
     		    }
     		    return "unknown";
     		};
+    		// SEE @my-react/react-reconciler
     		var isValidElement = function (element) {
     		    return typeof element === "object" && !Array.isArray(element) && element !== null && (element === null || element === void 0 ? void 0 : element[reactShared.TYPEKEY]) === reactShared.Element;
     		};
+    		// SEE @my-react/react-reconciler
     		var getMockFiberFromElement = function (element) {
     		    var _a, _b, _c, _d, _e;
     		    var nodeType = exports.NODE_TYPE.__initial__;
