@@ -156,6 +156,7 @@ export const getFiberType = (fiber: MyReactFiberNode) => {
   return { t, hasCompiler };
 };
 
+// SEE @my-react/react-reconciler
 export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   const typedFiber = fiber as MyReactFiberNodeDev;
   if (fiber.type & NODE_TYPE.__provider__) {
@@ -164,8 +165,7 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
     return `${name || "Context"}.Provider`;
   }
   if (fiber.type & NODE_TYPE.__context__) {
-    // fix: next version
-    const typedElementType = fiber.elementType as unknown as ReturnType<typeof createContext>;
+    const typedElementType = fiber.elementType as ReturnType<typeof createContext>;
     const name = typedElementType.displayName;
     return `${name || "Context"}`;
   }
@@ -209,10 +209,12 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   return `unknown`;
 };
 
+// SEE @my-react/react-reconciler
 export const isValidElement = (element?: MyReactElementNode | any): element is MyReactElement => {
   return typeof element === "object" && !Array.isArray(element) && element !== null && element?.[TYPEKEY] === Element;
 };
 
+// SEE @my-react/react-reconciler
 export const getMockFiberFromElement = (element: MyReactElement): MyReactFiberNodeDev => {
   let nodeType = NODE_TYPE.__initial__;
 
