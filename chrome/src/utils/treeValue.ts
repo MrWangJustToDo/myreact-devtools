@@ -11,6 +11,9 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   if (type === "Element" || type === "Date" || type === "Boolean" || type === "Error" || type === "Number" || type === "Symbol") {
     return val;
   }
+  if (item?.n) {
+    return item.n;
+  }
   if (item?.l === false) {
     if (item.t === "Array" || item.t === "Set") {
       return "[…]";
