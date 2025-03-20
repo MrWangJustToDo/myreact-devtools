@@ -215,12 +215,12 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
     useUpdateState.subscribe(
       (s) => s.id,
       () => {
-        const { id, oldVal, newVal, hookIndex, path } = useUpdateState.getReadonlyState();
+        const { id, oldVal, newVal, hookIndex, path, rootId, parentId } = useUpdateState.getReadonlyState();
 
         const select = useSelectNode.getReadonlyState().select;
 
         if (id && select) {
-          postMessage({ type: MessagePanelType.nodeEditor, data: { id, oldVal, newVal, hookIndex, path } });
+          postMessage({ type: MessagePanelType.nodeEditor, data: { id, oldVal, newVal, hookIndex, path, rootId, parentId } });
         }
       }
     )

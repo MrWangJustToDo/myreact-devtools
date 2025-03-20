@@ -863,14 +863,22 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.chunks, data });
   }
 
-  notifyEditor(params: { id: number | string; oldVal: any; newVal: any; hookIndex: number | string; path: string }) {
+  notifyEditor(params: {
+    id: number | string;
+    oldVal: any;
+    newVal: any;
+    hookIndex: number | string;
+    path: string;
+    rootId?: number | string;
+    parentId?: number | string;
+  }) {
     if (!this.hasEnable) return;
 
     const fiber = getFiberNodeById(this._selectId);
 
     const res = updateFiberHookById(fiber, params);
 
-    if (typeof res === 'string') {
+    if (typeof res === "string") {
       // have error
       this.notifyMessage(res, "error");
     } else {

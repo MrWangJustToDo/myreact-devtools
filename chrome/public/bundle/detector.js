@@ -5780,32 +5780,17 @@
 			var getFiberNodeById = function (id) {
 			    return fiberStore.get(id);
 			};
-			var getRootDataFromId = function (id) {
-			    var nodeId = Number(id);
-			    var currentNode = getNodeFromId(nodeId);
-			    var parentId = currentNode === null || currentNode === void 0 ? void 0 : currentNode.p;
-			    if (parentId) {
-			        return getRootDataFromId(parentId);
-			    }
-			    else {
-			        return getValueById(nodeId);
-			    }
-			};
-			var getParentDataFromId = function (id) {
-			    var nodeId = Number(id);
-			    var currentNode = getNodeFromId(nodeId);
-			    var parentId = currentNode === null || currentNode === void 0 ? void 0 : currentNode.p;
-			    return getValueById(parentId);
-			};
 			var updateFiberHookById = function (fiber, params) {
 			    var _a, _b, _c;
 			    var hookNode = (_c = (_b = (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.toArray) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c[params.hookIndex];
 			    if (!hookNode)
 			        return "hook not found";
 			    var nodeId = Number(params.id);
+			    var parentId = Number(params.parentId);
+			    var rootId = Number(params.rootId);
 			    var currentData = getValueById(nodeId);
-			    var rootData = getRootDataFromId(nodeId);
-			    var parentData = getParentDataFromId(nodeId);
+			    var parentData = getValueById(parentId);
+			    var rootData = getValueById(rootId);
 			    if (!currentData.f)
 			        return "current state not exist";
 			    var currentDataType = typeof currentData.v;
@@ -6316,15 +6301,15 @@
 			        value === "Set" ||
 			        value === "ReactElement");
 			};
-			var getTargetNode = function (value, type, deep, parentId) {
+			var getTargetNode = function (value, type, deep) {
 			    if (deep === void 0) { deep = 3; }
 			    var existId = valueToIdMap.get(value);
 			    var currentId = existId || id++;
 			    var n = undefined;
-			    if (type === 'Object' && typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
+			    if (type === "Object" && typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
 			        n = value.constructor.name;
 			    }
-			    if (type === 'ReactElement') {
+			    if (type === "ReactElement") {
 			        n = getElementName(value);
 			    }
 			    idToValueMap.set(currentId, value);
@@ -6332,7 +6317,6 @@
 			    // full deep to load
 			    if (deep === 0) {
 			        return {
-			            p: parentId,
 			            i: currentId,
 			            t: type,
 			            n: n,
@@ -6344,7 +6328,6 @@
 			    else {
 			        if (type === "Array") {
 			            return {
-			                p: parentId,
 			                i: currentId,
 			                t: type,
 			                v: value.map(function (val) { return getNode(val, deep - 1); }),
@@ -6353,7 +6336,6 @@
 			        }
 			        else if (type === "Iterable") {
 			            return {
-			                p: parentId,
 			                i: currentId,
 			                t: type,
 			                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
@@ -6362,7 +6344,6 @@
 			        }
 			        else if (type === "Map") {
 			            return {
-			                p: parentId,
 			                i: currentId,
 			                t: type,
 			                v: Array.from(value.entries()).map(function (_a) {
@@ -6378,7 +6359,6 @@
 			        }
 			        else if (type === "Set") {
 			            return {
-			                p: parentId,
 			                i: currentId,
 			                t: type,
 			                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
@@ -6387,7 +6367,6 @@
 			        }
 			        else if (type === "Object") {
 			            return {
-			                p: parentId,
 			                i: currentId,
 			                t: type,
 			                n: n,
@@ -6398,9 +6377,8 @@
 			                e: true,
 			            };
 			        }
-			        else if (type === 'ReactElement') {
+			        else if (type === "ReactElement") {
 			            return {
-			                p: parentId,
 			                i: currentId,
 			                t: type,
 			                n: n,
@@ -6413,29 +6391,29 @@
 			        }
 			    }
 			};
-			var getNodeWithCache = function (value, type, deep, parentId) {
+			var getNodeWithCache = function (value, type, deep) {
 			    if (deep === void 0) { deep = 3; }
 			    if (loadById) {
 			        var cache = cacheMap.get(value);
 			        if (cache) {
-			            return __assign(__assign({}, cache), { p: parentId, c: true });
+			            return __assign(__assign({}, cache), { c: true });
 			        }
 			    }
-			    var v = getTargetNode(value, type, deep, parentId);
+			    var v = getTargetNode(value, type, deep);
 			    if ((v === null || v === void 0 ? void 0 : v.l) === false) {
 			        return v;
 			    }
 			    cacheMap.set(value, v);
 			    return v;
 			};
-			var getNode = function (value, deep, parentId) {
+			var getNode = function (value, deep) {
 			    if (deep === void 0) { deep = 3; }
 			    try {
 			        var type = getType(value);
 			        var expandable = isObject(type);
 			        if (expandable) {
 			            // full deep to load
-			            return getNodeWithCache(value, type, deep, parentId);
+			            return getNodeWithCache(value, type, deep);
 			        }
 			        else {
 			            var existId = valueToIdMap.get(value);
@@ -6444,7 +6422,6 @@
 			            valueToIdMap.set(value, currentId);
 			            if (type === "Element") {
 			                return {
-			                    p: parentId,
 			                    i: currentId,
 			                    t: type,
 			                    v: "<".concat(value.tagName.toLowerCase(), " />"),
@@ -6453,7 +6430,6 @@
 			            }
 			            if (type === "Error") {
 			                return {
-			                    p: parentId,
 			                    i: currentId,
 			                    t: type,
 			                    v: value.message,
@@ -6462,7 +6438,6 @@
 			            }
 			            if (typeof value === "object" && value !== null) {
 			                return {
-			                    p: parentId,
 			                    i: currentId,
 			                    t: type,
 			                    v: Object.prototype.toString.call(value),
@@ -6471,7 +6446,6 @@
 			            }
 			            else {
 			                return {
-			                    p: parentId,
 			                    i: currentId,
 			                    t: type,
 			                    v: String(value),
@@ -6482,7 +6456,6 @@
 			    }
 			    catch (e) {
 			        return {
-			            p: parentId,
 			            i: NaN,
 			            t: "ReadError",
 			            v: "Read data error: " + e.message,
@@ -7709,7 +7682,7 @@
 			            return;
 			        var fiber = getFiberNodeById(this._selectId);
 			        var res = updateFiberHookById(fiber, params);
-			        if (typeof res === 'string') {
+			        if (typeof res === "string") {
 			            // have error
 			            this.notifyMessage(res, "error");
 			        }

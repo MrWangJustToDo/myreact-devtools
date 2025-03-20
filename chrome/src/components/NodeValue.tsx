@@ -17,12 +17,16 @@ const { open: contextOpen, setId, setType } = useContextMenu.getActions();
 export const NodeValue = ({
   name,
   item,
+  rootItem,
+  parentItem,
   prefix,
   editable,
   index,
 }: {
   name: string;
   item?: NodeValueType;
+  rootItem?: NodeValueType;
+  parentItem?: NodeValueType;
   prefix?: ReactNode;
   editable?: boolean;
   index?: number;
@@ -128,7 +132,7 @@ export const NodeValue = ({
             : <span className="hook-value-placeholder">{element}</span>
             {currentIsEditable && (
               <span>
-                <NodeValueChange item={item} index={index!} path={name} />
+                <NodeValueChange item={item} index={index!} path={name} rootItem={rootItem} parentItem={parentItem} />
               </span>
             )}
           </div>
@@ -160,7 +164,7 @@ export const NodeValue = ({
                 Array.isArray(data) ? (
                   <>
                     {data.map((i: HOOKTree["v"], index: number) => (
-                      <NodeValue key={index} name={index.toString()} item={i} index={index} editable={editable} />
+                      <NodeValue key={index} name={index.toString()} item={i} rootItem={rootItem || item} parentItem={item} index={index} editable={editable} />
                     ))}
                   </>
                 ) : (
@@ -169,7 +173,7 @@ export const NodeValue = ({
                       .sort()
                       .reverse()
                       .map((key) => (
-                        <NodeValue key={key} name={key} item={data[key]} index={index} editable={editable} />
+                        <NodeValue key={key} name={key} item={data[key]} rootItem={rootItem || item} parentItem={item} index={index} editable={editable} />
                       ))}
                   </>
                 )

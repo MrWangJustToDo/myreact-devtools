@@ -1,7 +1,7 @@
 import { include, type ListTree } from "@my-react/react-shared";
 import cloneDeep from "lodash/cloneDeep";
 
-import { getNodeFromId, getValueById } from "./data";
+import { getValueById } from "./data";
 import { PlainNode } from "./plain";
 import { NODE_TYPE } from "./type";
 import { getFiberName, getFiberType, getHook, getProps, getSource, getState, getTree } from "./utils";
@@ -324,33 +324,9 @@ export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
 };
 
-const getRootDataFromId = (id: number | string) => {
-  const nodeId = Number(id);
-
-  const currentNode = getNodeFromId(nodeId);
-
-  const parentId = currentNode?.p;
-
-  if (parentId) {
-    return getRootDataFromId(parentId);
-  } else {
-    return getValueById(nodeId);
-  }
-};
-
-const getParentDataFromId = (id: number | string) => {
-  const nodeId = Number(id);
-
-  const currentNode = getNodeFromId(nodeId);
-
-  const parentId = currentNode?.p;
-
-  return getValueById(parentId);
-};
-
 export const updateFiberHookById = (
   fiber: MyReactFiberNode,
-  params: { id: string | number; oldVal: any; newVal: any; hookIndex: number | string; path: string }
+  params: { id: string | number; oldVal: any; newVal: any; hookIndex: number | string; path: string, rootId?: string | number, parentId?: string | number }
 ): string => {
   const hookNode = fiber.hookList?.toArray?.()?.[params.hookIndex];
 
@@ -358,11 +334,15 @@ export const updateFiberHookById = (
 
   const nodeId = Number(params.id);
 
+  const parentId = Number(params.parentId);
+
+  const rootId = Number(params.rootId);
+
   const currentData = getValueById(nodeId);
 
-  const rootData = getRootDataFromId(nodeId);
+  const parentData = getValueById(parentId);
 
-  const parentData = getParentDataFromId(nodeId);
+  const rootData = getValueById(rootId);
 
   if (!currentData.f) return "current state not exist";
 

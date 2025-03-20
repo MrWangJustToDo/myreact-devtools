@@ -6,6 +6,8 @@ export const useUpdateState = createState(
   () =>
     ({ id: "", oldVal: "", newVal: "", hookIndex: "", path: "" }) as {
       id: number | string;
+      rootId?: number | string;
+      parentId?: number | string;
       oldVal: any;
       newVal: any;
       hookIndex: number | string;
@@ -15,12 +17,16 @@ export const useUpdateState = createState(
     withActions: (state) => ({
       setUpdateState: ({
         id,
+        rootId,
+        parentId,
         path,
         oldVal,
         newVal,
         hookIndex,
       }: {
         id: number | string;
+        rootId?: number | string;
+        parentId?: number | string;
         path: string;
         oldVal: any;
         newVal: any;
@@ -28,6 +34,8 @@ export const useUpdateState = createState(
       }) => {
         if (!useSelectNode.getReadonlyState().select) return;
         state.id = id;
+        state.rootId = rootId;
+        state.parentId = parentId;
         state.path = path;
         state.oldVal = oldVal;
         state.newVal = newVal;
@@ -35,6 +43,8 @@ export const useUpdateState = createState(
       },
       clear: () => {
         state.id = "";
+        state.rootId = "";
+        state.parentId = "";
         state.path = "";
         state.oldVal = "";
         state.newVal = "";

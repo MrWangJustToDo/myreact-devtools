@@ -8,7 +8,19 @@ import type { NodeValue } from "@my-react-devtool/core";
 
 const { setUpdateState } = useUpdateState.getActions();
 
-export const NodeValueChange = ({ item, index, path }: { item: NodeValue; index: number; path: string }) => {
+export const NodeValueChange = ({
+  item,
+  rootItem,
+  parentItem,
+  index,
+  path,
+}: {
+  item: NodeValue;
+  rootItem?: NodeValue;
+  parentItem?: NodeValue;
+  index: number;
+  path: string;
+}) => {
   const [val, setVal] = useState("");
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -22,7 +34,7 @@ export const NodeValueChange = ({ item, index, path }: { item: NodeValue; index:
   const onUpdate = () => {
     if (val === item.v) return;
 
-    setUpdateState({ id: item.i, oldVal: item.v, newVal: val, hookIndex: index, path });
+    setUpdateState({ id: item.i, rootId: rootItem?.i, parentId: parentItem?.i, oldVal: item.v, newVal: val, hookIndex: index, path });
 
     onClose();
   };
