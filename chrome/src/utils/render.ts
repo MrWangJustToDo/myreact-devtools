@@ -1,5 +1,5 @@
+import { addToast } from "@heroui/react";
 import { DevToolMessageEnum } from "@my-react-devtool/core";
-import { toast } from "sonner";
 
 import { useAppTree } from "@/hooks/useAppTree";
 import { useChunk } from "@/hooks/useChunk";
@@ -151,7 +151,7 @@ export const onRender = (data: DevToolMessageType) => {
     if (chrome?.devtools?.inspectedWindow?.eval) {
       chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectSource?.()");
     } else {
-      toast.error("inspect not support");
+      addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
     }
   }
 
@@ -180,7 +180,7 @@ export const onRender = (data: DevToolMessageType) => {
   }
 
   if (data.type === DevToolMessageEnum.chunks) {
-    const chunks = data.data as Record<number | string, { loaded: any }>;
+    const chunks = data.data as Record<number | string, { loaded: NodeValue }>;
 
     safeAction(() => {
       const { setChunk } = useChunk.getActions();
@@ -248,19 +248,19 @@ export const onRender = (data: DevToolMessageType) => {
 
     switch (re.type) {
       case "success":
-        toast.success(re.message);
+        addToast({ severity: "success", description: re.message, title: "success", color: "success" });
         break;
       case "error":
-        toast.error(re.message);
+        addToast({ severity: "danger", description: re.message, title: "error", color: "danger" });
         break;
       case "info":
-        toast.info(re.message);
+        addToast({ severity: "secondary", description: re.message, title: "info", color: "secondary" });
         break;
       case "warning":
-        toast.warning(re.message);
+        addToast({ severity: "warning", description: re.message, title: "warning", color: "warning" });
         break;
       default:
-        toast.message(re.message);
+        addToast({ severity: "default", description: re.message, title: "default", color: "default" });
     }
   }
 };

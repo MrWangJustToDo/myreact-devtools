@@ -1,5 +1,5 @@
+import { addToast } from "@heroui/react";
 import { MessagePanelType } from "@my-react-devtool/core";
-import { toast } from "sonner";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
@@ -7,6 +7,7 @@ import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useSelectNode } from "@/hooks/useSelectNode";
+import { useUpdateState } from "@/hooks/useUpdateState";
 
 import { isServer } from "./isServer";
 
@@ -79,7 +80,7 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
           if (chrome?.devtools?.inspectedWindow?.eval) {
             chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.()");
           } else {
-            toast.error("inspect not support");
+            addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
           }
         }
       }
@@ -96,12 +97,12 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
           if (chrome?.devtools?.inspectedWindow?.eval) {
             chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectCom?.()");
           } else {
-            toast.error("inspect not support");
+            addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
           }
         }
       }
     )
-  )
+  );
 
   unSubscribeArray.push(
     useSelectNode.subscribe(
@@ -158,7 +159,7 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
         postMessage({ type: MessagePanelType.enableRetrigger, data: enableRetrigger });
       }
     )
-  )
+  );
 
   unSubscribeArray.push(
     useConfig.subscribe(
@@ -205,6 +206,21 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
         if (ids.length) {
           postMessage({ type: MessagePanelType.chunks, data: Array.from(ids) });
+        }
+      }
+    )
+  );
+
+  unSubscribeArray.push(
+    useUpdateState.subscribe(
+      (s) => s.id,
+      () => {
+        const { id, oldVal, newVal, hookIndex, path } = useUpdateState.getReadonlyState();
+
+        const select = useSelectNode.getReadonlyState().select;
+
+        if (id && select) {
+          postMessage({ type: MessagePanelType.nodeEditor, data: { id, oldVal, newVal, hookIndex, path } });
         }
       }
     )

@@ -1,5 +1,5 @@
 import { Chip, Divider, Spacer } from "@heroui/react";
-import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
+import { Play } from "lucide-react";
 import { useState } from "react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
@@ -15,13 +15,15 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
 
   const currentIsExpand = item.h;
 
-  const StateIcon = expand ? <TriangleDownIcon width="16" height="16" /> : <TriangleRightIcon width="16" height="16" />;
+  const StateIcon = <Play fill="currentColor" className={`origin-center ${expand ? "rotate-90" : ""}`} width="0.6em" height="0.6em" />;
 
   if (currentIsExpand) {
     return (
       <NodeValue
         name={item.n}
         item={item.v}
+        index={item.i}
+        editable={item.e}
         prefix={
           <Chip
             classNames={{ content: "p-0" }}
@@ -38,10 +40,16 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
       <>
         <div className="hook-stack-view">
           <div className="flex w-full my-0.5">
-            <span className={"text-gray-400 hover:text-gray-700"} onClick={() => setExpand(!expand)}>
+            <span
+              className={"text-gray-400 w-[1.5em] h-[1.5em] cursor-pointer inline-flex justify-center items-center hover:text-gray-700"}
+              onClick={() => setExpand(!expand)}
+            >
               {StateIcon}
             </span>
-            <div className="max-w-full line-clamp-1 cursor-pointer" onClick={() => setExpand(!expand)}>{item.n}</div>:
+            <div className="max-w-full line-clamp-1 cursor-pointer" onClick={() => setExpand(!expand)}>
+              {item.n}
+            </div>
+            :
           </div>
           <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>{item.c?.map((i, index) => <HookViewTree key={i.n + "-" + index} item={i} />)}</div>
         </div>
@@ -49,7 +57,6 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
     );
   }
 };
-
 
 export const HookView = () => {
   const select = useSelectNode((s) => s.select);

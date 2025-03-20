@@ -15,6 +15,8 @@ export type HOOKTree = {
   k: string;
   // index
   i?: number;
+  // editable
+  e?: boolean;
   // isHook
   h?: boolean;
   // deep

@@ -80,12 +80,12 @@ export const useSelectNode = createState(
             s.scroll++;
           }
         },
-        inspectDom: () => {
+        inspectDomAction: () => {
           if (s.select) {
             s.inspectDom++;
           }
         },
-        inspectCom: () => {
+        inspectComAction: () => {
           if (s.select) {
             s.inspectCom++;
           }

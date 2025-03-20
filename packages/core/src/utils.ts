@@ -425,17 +425,18 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
   return tree;
 };
 
-const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, force?: boolean): HOOKTree[] => {
+const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, parentId?: number, force?: boolean): HOOKTree[] => {
   return node.map<HOOKTree>((item) => {
-    const { id, name, value, subHooks } = item;
+    const { id, name, value, subHooks, isStateEditable } = item;
     return {
       k: id?.toString(),
+      e: isStateEditable,
       i: id,
       n: name || "Anonymous",
       v: force ? getNodeForce(value) : getNode(value),
       d,
       h: !subHooks.length ? true : false,
-      c: subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, force) : undefined,
+      c: subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, id, force) : undefined,
     };
   });
 };
@@ -452,11 +453,11 @@ const getHookNormal = (fiber: MyReactFiberNodeDev, force?: boolean) => {
     const isContext = hook.type === HOOK_TYPE.useContext;
     final.push({
       k: index.toString(),
-      h: true,
       i: index,
       n: isContext ? getContextName(hook.value) : getHookName(hook.type),
       v: force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result),
       d: 0,
+      h: true,
     });
   };
 
@@ -472,7 +473,7 @@ const getHookStack = (fiber: MyReactFiberNodeDev, force?: boolean) => {
 
   const hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
 
-  return parseHooksTreeToHOOKTree(hookTree, 0, force);
+  return parseHooksTreeToHOOKTree(hookTree, 0, null, force);
 };
 
 export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {

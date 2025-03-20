@@ -1,6 +1,6 @@
 import { Button, ButtonGroup, Divider, Tooltip } from "@heroui/react";
 import { NODE_TYPE, type PlainNode } from "@my-react-devtool/core";
-import { Crosshair1Icon, CubeIcon, EyeOpenIcon, PlayIcon, ReloadIcon, CodeIcon } from "@radix-ui/react-icons";
+import { Bug, Locate, Package, Play, RefreshCcw, SquareMousePointer } from "lucide-react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
@@ -8,7 +8,7 @@ import { useUISize } from "@/hooks/useUISize";
 
 import { TreeItem } from "./TreeItem";
 
-const { forceReload, storeFiber, triggerFiber, scrollIntoView, inspectDom, inspectCom } = useSelectNode.getActions();
+const { forceReload, storeFiber, triggerFiber, scrollIntoView, inspectComAction, inspectDomAction } = useSelectNode.getActions();
 
 export const NameView = () => {
   const select = useSelectNode((s) => s.select);
@@ -32,33 +32,33 @@ export const NameView = () => {
         <ButtonGroup className="absolute right-4 top-0">
           <Tooltip content="force scroll to select" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={scrollIntoView}>
-              <Crosshair1Icon width={sizeNum} height={sizeNum} />
+              <Locate width={sizeNum} height={sizeNum} />
             </Button>
           </Tooltip>
           <Tooltip content="store fiber node" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={storeFiber}>
-              <CubeIcon width={sizeNum} height={sizeNum} />
+              <Package width={sizeNum} height={sizeNum} />
             </Button>
           </Tooltip>
           <Tooltip content="force trigger" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={triggerFiber}>
-              <PlayIcon width={sizeNum} height={sizeNum} />
+              <Play width={sizeNum} height={sizeNum} />
             </Button>
           </Tooltip>
           <Tooltip content="inspect dom" showArrow color="foreground" placement="bottom-end">
-            <Button isIconOnly size="sm" variant="flat" onPress={inspectDom}>
-              <EyeOpenIcon width={sizeNum} height={sizeNum} />
+            <Button isIconOnly size="sm" variant="flat" onPress={inspectDomAction}>
+              <SquareMousePointer width={sizeNum} height={sizeNum} />
             </Button>
           </Tooltip>
           <Tooltip content="force reload" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={forceReload}>
-              <ReloadIcon width={sizeNum - 1} height={sizeNum - 1} />
+              <RefreshCcw width={sizeNum - 1} height={sizeNum - 1} />
             </Button>
           </Tooltip>
           {isComponent > 0 && (
             <Tooltip content="inspect code" showArrow color="foreground" placement="bottom-end">
-              <Button isIconOnly size="sm" variant="flat" onPress={inspectCom}>
-                <CodeIcon width={sizeNum} height={sizeNum} />
+              <Button isIconOnly size="sm" variant="flat" onPress={inspectComAction}>
+                <Bug width={sizeNum} height={sizeNum} />
               </Button>
             </Tooltip>
           )}

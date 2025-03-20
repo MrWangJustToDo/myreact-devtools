@@ -1,7 +1,6 @@
-import { Button, ButtonGroup, Input, Spacer, Tooltip } from "@heroui/react";
-import { ArrowDownIcon, ArrowUpIcon, CursorArrowIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { addToast, Button, ButtonGroup, Input, Spacer, Tooltip } from "@heroui/react";
+import { ChevronDown, ChevronUp, MousePointer, Search } from "lucide-react";
 import { memo, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 import { useAppTree } from "@/hooks/useAppTree";
 import { useConfig } from "@/hooks/useConfig";
@@ -50,9 +49,9 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
       setIndexArray(_indexArray);
 
       if (_indexArray.length === 0) {
-        toast.error(`Can't find current name`, { position: "top-right" });
+        addToast({ severity: "danger", description: `Can't find current name`, title: "error", color: "danger" });
       } else {
-        toast.success(`Find ${_indexArray.length} items`, { position: "top-right" });
+        addToast({ severity: "success", description: `Find ${_indexArray.length} items`, title: "success", color: "success" });
       }
     }
   };
@@ -74,7 +73,7 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
     <>
       <Tooltip content="hover on the browser" showArrow color="foreground">
         <Button isIconOnly variant="flat" onPress={toggleHoverOnBrowser}>
-          <CursorArrowIcon height="14" className={enableHoverOnBrowser ? "text-green-400" : "text-gray-400"} />
+          <MousePointer className={enableHoverOnBrowser ? "text-green-400 h-[1.2em]" : "text-gray-400 h-[1.2em]"} />
         </Button>
       </Tooltip>
       <Spacer x={2} />
@@ -87,7 +86,7 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
           onChange={(e) => setV(e.target.value)}
           endContent={
             <button className="focus:outline-none" type="submit">
-              <MagnifyingGlassIcon className="text-black/50 dark:text-white/90 text-slate-400 flex-shrink-0" />
+              <Search className="text-black/50 h-[1em] dark:text-white/90 text-slate-400 flex-shrink-0" />
             </button>
           }
         />
@@ -99,12 +98,12 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
           <ButtonGroup variant="flat">
             <Tooltip content={`Total ${indexArray.length}, current ${index + 1}`} showArrow color="foreground">
               <Button isIconOnly onPress={() => setIndex((i) => (i - 1 + indexArray.length) % indexArray.length)} isDisabled={index === 0}>
-                <ArrowUpIcon />
+                <ChevronUp className="w-[1.2em]" />
               </Button>
             </Tooltip>
             <Tooltip content={`Total ${indexArray.length}, current ${index + 1}`} showArrow color="foreground">
               <Button isIconOnly onPress={() => setIndex((i) => (i + 1) % indexArray.length)} isDisabled={index === indexArray.length - 1}>
-                <ArrowDownIcon />
+                <ChevronDown className="w-[1.2em]" />
               </Button>
             </Tooltip>
           </ButtonGroup>

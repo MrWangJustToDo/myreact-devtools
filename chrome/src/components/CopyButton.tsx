@@ -1,5 +1,5 @@
 import { Button, Tooltip } from "@heroui/react";
-import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
+import { Copy, CopyCheck } from "lucide-react";
 import { useState } from "react";
 
 import { useCopy } from "@/hooks/useCopy";
@@ -22,7 +22,7 @@ export const CopyButton = ({ code }: { code: string }) => {
           setTimeout(() => setT(false), 1000);
         }}
       >
-        {!t ? <CopyIcon /> : <CheckIcon className="text-green-400" />}
+        {!t ? <Copy /> : <CopyCheck className="text-green-400" />}
       </Button>
     </Tooltip>
   );

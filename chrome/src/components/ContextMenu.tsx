@@ -1,5 +1,5 @@
-import { CubeIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
+import { Package, SquareMousePointer } from "lucide-react";
 import { memo } from "react";
 
 import { useContextMenu } from "@/hooks/useContextMenu";
@@ -45,7 +45,7 @@ export const ContextMenu = memo(() => {
                   contextMenuClose();
                 }}
               >
-                <CubeIcon className="mr-2" width={sizeNum} height={sizeNum} />
+                <Package className="mr-2" width={sizeNum} height={sizeNum} />
                 <span className="flex-grow">Store as global variable</span>
               </div>
               {(type === "Function" || type === "Element") && (
@@ -57,7 +57,7 @@ export const ContextMenu = memo(() => {
                     contextMenuClose();
                   }}
                 >
-                  <EyeOpenIcon className="mr-2" width={sizeNum} height={sizeNum} />
+                  <SquareMousePointer className="mr-2" width={sizeNum} height={sizeNum} />
                   {type === "Function" && <span className="flex-grow">Inspect Function source</span>}
                   {type === "Element" && <span className="flex-grow">Inspect Element node</span>}
                 </div>

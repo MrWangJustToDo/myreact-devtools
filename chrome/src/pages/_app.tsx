@@ -1,5 +1,5 @@
-import { Code, HeroUIProvider, Snippet, Spacer, Spinner, Tooltip, Button } from "@heroui/react";
-import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
+import { Code, HeroUIProvider, Snippet, Spacer, Spinner, Tooltip, Button, ToastProvider } from "@heroui/react";
+import { CircleCheck, CircleX } from "lucide-react";
 import { Fira_Code } from "next/font/google";
 import { useRouter } from "next/router";
 import { ThemeProvider } from "next-themes";
@@ -84,8 +84,12 @@ export default function App({ Component, pageProps, router }: AppProps) {
           <Spinner color="primary" size="lg" />
           {(isWebDev || isLocalDev) && <div className="text-center text-[18px] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
           {isWebDev || isLocalDev ? <Spacer className="my-2" /> : null}
-          {isWebDev && <CodePreview code={source(str, "web", query?.token as string)} title="Please run this code in the console of the page you want to debug" />}
-          {isLocalDev && <CodePreview code={source(str, "local", query?.token as string)} title="Please run this code in the console of the page you want to debug" />}
+          {isWebDev && (
+            <CodePreview code={source(str, "web", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
+          )}
+          {isLocalDev && (
+            <CodePreview code={source(str, "local", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
+          )}
         </div>
       </div>
     );
@@ -108,7 +112,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
                 placement="bottom-end"
               >
                 <Button isIconOnly disabled={state} onPress={() => reconnect?.()}>
-                  {state ? <CheckCircledIcon className="text-green-500" /> : <CrossCircledIcon className=" text-red-500" />}
+                  {state ? <CircleCheck className="text-green-500 w-[1.2em]" /> : <CircleX className=" text-red-500 w-[1.2em]" />}
                 </Button>
               </Tooltip>
             )}
@@ -142,6 +146,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
         }
       `}</style>
       <ThemeProvider attribute="class" defaultTheme="light">
+        <ToastProvider />
         {rendered}
       </ThemeProvider>
     </HeroUIProvider>

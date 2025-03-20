@@ -1,5 +1,7 @@
 import { include, type ListTree } from "@my-react/react-shared";
+import cloneDeep from "lodash/cloneDeep";
 
+import { getNodeFromId, getValueById } from "./data";
 import { PlainNode } from "./plain";
 import { NODE_TYPE } from "./type";
 import { getFiberName, getFiberType, getHook, getProps, getSource, getState, getTree } from "./utils";
@@ -194,7 +196,6 @@ export const unmountPlainNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore
     delete _runtime._state[plain.i];
 
     delete _runtime._trigger[plain.i];
-
   }
 
   treeMap.delete(_fiber);
@@ -321,4 +322,75 @@ export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
 
 export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
+};
+
+const getRootDataFromId = (id: number | string) => {
+  const nodeId = Number(id);
+
+  const currentNode = getNodeFromId(nodeId);
+
+  const parentId = currentNode?.p;
+
+  if (parentId) {
+    return getRootDataFromId(parentId);
+  } else {
+    return getValueById(nodeId);
+  }
+};
+
+const getParentDataFromId = (id: number | string) => {
+  const nodeId = Number(id);
+
+  const currentNode = getNodeFromId(nodeId);
+
+  const parentId = currentNode?.p;
+
+  return getValueById(parentId);
+};
+
+export const updateFiberHookById = (
+  fiber: MyReactFiberNode,
+  params: { id: string | number; oldVal: any; newVal: any; hookIndex: number | string; path: string }
+): string => {
+  const hookNode = fiber.hookList?.toArray?.()?.[params.hookIndex];
+
+  if (!hookNode) return "hook not found";
+
+  const nodeId = Number(params.id);
+
+  const currentData = getValueById(nodeId);
+
+  const rootData = getRootDataFromId(nodeId);
+
+  const parentData = getParentDataFromId(nodeId);
+
+  if (!currentData.f) return "current state not exist";
+
+  const currentDataType = typeof currentData.v;
+
+  if (!parentData.f && currentDataType !== "boolean" && currentDataType !== "number" && currentDataType !== "string") return "current state is not primitive";
+
+  const newVal =
+    currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
+
+  // 更新成功
+  if (!parentData.f) {
+    (hookNode as any)._dispatch(newVal);
+
+    return;
+  }
+
+  const parentDataValue = parentData.v;
+
+  try {
+    parentDataValue[params.path] = newVal;
+
+    const newRootData = cloneDeep(rootData.v);
+
+    (hookNode as any)._dispatch(newRootData);
+
+    return;
+  } catch (e) {
+    return e.message;
+  }
 };

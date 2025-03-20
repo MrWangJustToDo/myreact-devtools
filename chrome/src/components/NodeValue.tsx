@@ -1,5 +1,5 @@
 import { Spinner } from "@heroui/react";
-import { TriangleDownIcon, TriangleRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { Ellipsis, Play } from "lucide-react";
 import { useState, useRef, useMemo, useEffect } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
@@ -7,12 +7,26 @@ import { useContextMenu } from "@/hooks/useContextMenu";
 import { usePrevious } from "@/hooks/usePrevious";
 import { getText } from "@/utils/treeValue";
 
+import { NodeValueChange } from "./NodeValueChange";
+
 import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
 import type { ReactNode } from "react";
 
 const { open: contextOpen, setId, setType } = useContextMenu.getActions();
 
-export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeValueType; prefix?: ReactNode }) => {
+export const NodeValue = ({
+  name,
+  item,
+  prefix,
+  editable,
+  index,
+}: {
+  name: string;
+  item?: NodeValueType;
+  prefix?: ReactNode;
+  editable?: boolean;
+  index?: number;
+}) => {
   const [expand, setExpand] = useState(false);
 
   const hasOpenRef = useRef(false);
@@ -87,11 +101,13 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
     setType(item.t);
   };
 
+  const currentIsEditable = editable && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
+
   if (!item) return null;
 
   const currentIsExpandable = item.e;
 
-  const StateIcon = expand ? <TriangleDownIcon width="16" height="16" /> : <TriangleRightIcon width="16" height="16" />;
+  const StateIcon = <Play fill="currentColor" className={`origin-center ${expand ? "rotate-90" : ""}`} width="0.6em" height="0.6em" />;
 
   if (!currentIsExpandable) {
     const textContent = item.t === "String" ? `"${String(item.v)}"` : String(item.v);
@@ -103,13 +119,18 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
     return (
       <div className="hook-value-view">
         <div className="flex w-full my-0.5 items-center">
-          <span className="text-transparent">{StateIcon}</span>
+          <span className="text-transparent w-[1.5em] h-[1.5em] inline-block">{StateIcon}</span>
           {prefix}
-          <div className={`w-full relative line-clamp-1 break-all pr-2`}>
+          <div className={`w-full relative line-clamp-1 break-all ${currentIsEditable ? "pr-8" : "pr-2"}`}>
             <span className="cursor-pointer select-none" onContextMenu={onContextClick}>
               {name}
             </span>
             : <span className="hook-value-placeholder">{element}</span>
+            {currentIsEditable && (
+              <span>
+                <NodeValueChange item={item} index={index!} path={name} />
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -119,7 +140,10 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
       <>
         <div className="hook-value-view">
           <div className="flex w-full my-0.5 items-center">
-            <span className={"text-gray-400 hover:text-gray-700"} onClick={() => setExpand(!expand)}>
+            <span
+              className={"text-gray-400 w-[1.5em] h-[1.5em] cursor-pointer inline-flex justify-center items-center hover:text-gray-700"}
+              onClick={() => setExpand(!expand)}
+            >
               {StateIcon}
             </span>
             {prefix}
@@ -127,7 +151,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
               <span className="cursor-pointer select-none" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
                 {name}
               </span>
-              : <span className="hook-value-placeholder">{data ? text : <DotsHorizontalIcon className="inline-block" />}</span>
+              : <span className="hook-value-placeholder">{data ? text : <Ellipsis className="inline-block" />}</span>
             </div>
           </div>
           {(hasOpenRef.current || expand) && (
@@ -136,7 +160,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
                 Array.isArray(data) ? (
                   <>
                     {data.map((i: HOOKTree["v"], index: number) => (
-                      <NodeValue key={index} name={index.toString()} item={i} />
+                      <NodeValue key={index} name={index.toString()} item={i} index={index} editable={editable} />
                     ))}
                   </>
                 ) : (
@@ -145,7 +169,7 @@ export const NodeValue = ({ name, item, prefix }: { name: string; item?: NodeVal
                       .sort()
                       .reverse()
                       .map((key) => (
-                        <NodeValue key={key} name={key} item={data[key]} />
+                        <NodeValue key={key} name={key} item={data[key]} index={index} editable={editable} />
                       ))}
                   </>
                 )

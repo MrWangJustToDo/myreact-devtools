@@ -1,6 +1,6 @@
 import { Chip, Spacer, Tooltip } from "@heroui/react";
 import { getFiberTag } from "@my-react-devtool/core";
-import { TriangleDownIcon, TriangleRightIcon } from "@radix-ui/react-icons";
+import { Play } from "lucide-react";
 import { memo, useCallback, useMemo } from "react";
 
 import { useHighlightNode } from "@/hooks/useHighlightNode";
@@ -108,7 +108,11 @@ export const TreeItem = ({
 
   const hasChild = Array.isArray(current?.c);
 
-  const StateIcon = hasChild ? !currentIsClose ? <TriangleDownIcon width={16} height={16} /> : <TriangleRightIcon width={16} height={16} /> : null;
+  const StateIcon = hasChild ? (
+    <Play fill="currentColor" className={`origin-center ${!currentIsClose ? "rotate-90" : ""}`} width="0.7em" height="0.7em" />
+  ) : null;
+
+  // const StateIcon = hasChild ? !currentIsClose ? <TriangleDownIcon width={16} height={16} /> : <TriangleRightIcon width={16} height={16} /> : null;
 
   const deep = current._d || 0;
 
@@ -151,7 +155,7 @@ export const TreeItem = ({
           <div data-content className="flex items-center w-fit">
             {withCollapse && (
               <span
-                className={" text-gray-400 min-w-[18px]" + (hasChild ? " hover:text-gray-700" : "")}
+                className={" text-gray-400 w-[1em]" + (hasChild ? " hover:text-gray-700" : "")}
                 onClick={(e) => {
                   e.stopPropagation();
                   setClose(node.i);

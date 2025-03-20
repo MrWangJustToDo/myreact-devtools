@@ -19,7 +19,7 @@ import {
   Code,
 } from "@heroui/react";
 import { color, getTypeName, typeKeys } from "@my-react-devtool/core";
-import { CheckCircledIcon, CrossCircledIcon, GearIcon, MoonIcon, SunIcon } from "@radix-ui/react-icons";
+import { CircleCheck, CircleX, Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { memo } from "react";
 
@@ -65,15 +65,15 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
         <ButtonGroup variant="flat">
           <Tooltip content={<p className={state ? "text-green-400" : "text-red-400"}>{state ? "DevTool Connect" : "DevTool DisConnect"}</p>} showArrow>
             <Button isIconOnly onPress={() => cb?.()} disabled={state}>
-              {state ? <CheckCircledIcon className="text-green-500" /> : <CrossCircledIcon className=" text-red-500" />}
+              {state ? <CircleCheck className="text-green-500 w-[1.2em]" /> : <CircleX className=" text-red-500 w-[1.2em]" />}
             </Button>
           </Tooltip>
           <Button isIconOnly onPress={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            {theme === "dark" ? <MoonIcon className="text-gray-500" /> : <SunIcon className="text-orange-500" />}
+            {theme === "dark" ? <Moon className="text-gray-500 w-[1.2em]" /> : <Sun className="text-orange-500 w-[1.2em]" />}
           </Button>
           <Tooltip content="Setting" showArrow color="foreground">
             <Button isIconOnly onPress={onOpen}>
-              <GearIcon className={isOpen ? "text-green-500" : "text-gray-500"} />
+              <Settings className={isOpen ? "text-green-500 w-[1.2em]" : "text-gray-500 w-[1.2em]"} />
             </Button>
           </Tooltip>
         </ButtonGroup>
@@ -100,9 +100,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                     onChange={handleSelectionChange}
                   >
                     {typeKeys.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {getTypeName(type)}
-                      </SelectItem>
+                      <SelectItem key={type}>{getTypeName(type)}</SelectItem>
                     ))}
                   </Select>
                 </div>

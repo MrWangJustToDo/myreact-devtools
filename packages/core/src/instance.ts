@@ -16,6 +16,7 @@ import {
   getTreeByFiber,
   getComponentFiberByDom,
   getElementNodesFromFiber,
+  updateFiberHookById,
 } from "./tree";
 import { debounce, setPlatform, throttle } from "./utils";
 
@@ -250,7 +251,7 @@ export class DevToolCore {
 
     if (platform) {
       this._platform = platform as DevToolRenderPlatform;
-      
+
       setPlatform(this._platform);
     }
 
@@ -280,7 +281,7 @@ export class DevToolCore {
 
     const onChange = (list: ListTree<MyReactFiberNode>) => {
       if (!this.hasEnable) return;
-      
+
       const { directory } = getPlainNodeArrayByList(list);
 
       if (!isNormalEquals(this._dir, directory)) {
@@ -860,6 +861,21 @@ export class DevToolCore {
     }, {});
 
     this._notify({ type: DevToolMessageEnum.chunks, data });
+  }
+
+  notifyEditor(params: { id: number | string; oldVal: any; newVal: any; hookIndex: number | string; path: string }) {
+    if (!this.hasEnable) return;
+
+    const fiber = getFiberNodeById(this._selectId);
+
+    const res = updateFiberHookById(fiber, params);
+
+    if (typeof res === 'string') {
+      // have error
+      this.notifyMessage(res, "error");
+    } else {
+      this.notifyMessage("update success", "success");
+    }
   }
 
   notifyMessage(message: string, type: "success" | "info" | "warning" | "error") {
