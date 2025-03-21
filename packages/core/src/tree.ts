@@ -7,6 +7,7 @@ import { NODE_TYPE } from "./type";
 import { getFiberName, getFiberType, getHook, getProps, getSource, getState, getTree } from "./utils";
 
 import type { DevToolCore } from "./instance";
+import type { Action, Reducer } from "@my-react/react";
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode, MyReactFiberContainer } from "@my-react/react-reconciler";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
@@ -324,9 +325,13 @@ export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
 };
 
+const editorReducer: Reducer = (state?: unknown, action?: Action) => {
+  return typeof action === "function" ? action(state) : action;
+};
+
 export const updateFiberHookById = (
   fiber: MyReactFiberNode,
-  params: { id: string | number; oldVal: any; newVal: any; hookIndex: number | string; path: string, rootId?: string | number, parentId?: string | number }
+  params: { id: string | number; oldVal: any; newVal: any; hookIndex: number | string; path: string; rootId?: string | number; parentId?: string | number }
 ): string => {
   const hookNode = fiber.hookList?.toArray?.()?.[params.hookIndex];
 
@@ -355,7 +360,13 @@ export const updateFiberHookById = (
 
   // 更新成功
   if (!parentData.f) {
-    (hookNode as any)._dispatch(newVal);
+    const hookInstance = hookNode as any;
+    // oldVersion, not full support
+    if (hookInstance._dispatch) {
+      hookInstance._dispatch(newVal);
+    } else {
+      hookInstance._update({ payLoad: () => newVal, reducer: editorReducer, isForce: true });
+    }
 
     return;
   }
@@ -367,7 +378,13 @@ export const updateFiberHookById = (
 
     const newRootData = cloneDeep(rootData.v);
 
-    (hookNode as any)._dispatch(newRootData);
+    const hookInstance = hookNode as any;
+
+    if (hookInstance._dispatch) {
+      hookInstance._update({ isForce: true });
+    } else {
+      hookInstance._update({ payLoad: () => newRootData, reducer: editorReducer, isForce: true });
+    }
 
     return;
   } catch (e) {
