@@ -5780,6 +5780,9 @@
 			var getFiberNodeById = function (id) {
 			    return fiberStore.get(id);
 			};
+			var editorReducer = function (state, action) {
+			    return typeof action === "function" ? action(state) : action;
+			};
 			var updateFiberHookById = function (fiber, params) {
 			    var _a, _b, _c;
 			    var hookNode = (_c = (_b = (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.toArray) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c[params.hookIndex];
@@ -5799,14 +5802,27 @@
 			    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
 			    // 更新成功
 			    if (!parentData.f) {
-			        hookNode._dispatch(newVal);
+			        var hookInstance = hookNode;
+			        // oldVersion, not full support
+			        if (hookInstance._dispatch) {
+			            hookInstance._dispatch(newVal);
+			        }
+			        else {
+			            hookInstance._update({ payLoad: function () { return newVal; }, reducer: editorReducer, isForce: true });
+			        }
 			        return;
 			    }
 			    var parentDataValue = parentData.v;
 			    try {
 			        parentDataValue[params.path] = newVal;
-			        var newRootData = cloneDeep(rootData.v);
-			        hookNode._dispatch(newRootData);
+			        var newRootData_1 = cloneDeep(rootData.v);
+			        var hookInstance = hookNode;
+			        if (hookInstance._dispatch) {
+			            hookInstance._update({ isForce: true });
+			        }
+			        else {
+			            hookInstance._update({ payLoad: function () { return newRootData_1; }, reducer: editorReducer, isForce: true });
+			        }
 			        return;
 			    }
 			    catch (e) {
