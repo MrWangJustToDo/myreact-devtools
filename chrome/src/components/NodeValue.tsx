@@ -23,6 +23,7 @@ export const NodeValue = ({
   editable,
   hookIndex,
   type,
+  chunkId,
 }: {
   name: string;
   item?: NodeValueType;
@@ -32,6 +33,7 @@ export const NodeValue = ({
   editable?: boolean;
   hookIndex?: number;
   type?: string;
+  chunkId?: number;
 }) => {
   const [expand, setExpand] = useState(false);
 
@@ -109,6 +111,10 @@ export const NodeValue = ({
 
   if (!item) return null;
 
+  const isChunk = item.l === false;
+
+  const id = chunkData?.i || item.i;
+
   const currentIsExpandable = item.e;
 
   const StateIcon = <Play fill="currentColor" className={`origin-center ${expand ? "rotate-90" : ""}`} width="0.6em" height="0.6em" />;
@@ -123,7 +129,7 @@ export const NodeValue = ({
     const currentIsEditable = editable && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
 
     return (
-      <div className="hook-value-view">
+      <div data-id={id} data-chunk={isChunk} className="hook-value-view">
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block">{StateIcon}</span>
           {prefix}
@@ -133,7 +139,7 @@ export const NodeValue = ({
             </span>
             :{" "}
             {currentIsEditable ? (
-              <NodeValueChange item={item} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
+              <NodeValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
                 <span className="hook-value-placeholder">{element}</span>
               </NodeValueChange>
             ) : (
@@ -146,7 +152,7 @@ export const NodeValue = ({
   } else {
     return (
       <>
-        <div className="hook-value-view">
+        <div data-id={id} data-chunk={isChunk} className="hook-value-view">
           <div className="flex w-full my-0.5 items-center">
             <span
               className={"text-gray-400 w-[1.5em] h-[1.5em] cursor-pointer inline-flex justify-center items-center hover:text-gray-700"}
@@ -175,6 +181,7 @@ export const NodeValue = ({
                         type={type}
                         rootItem={rootItem || item}
                         editable={editable && typeof n !== "string"}
+                        chunkId={isChunk ? id : chunkId}
                         parentItem={item}
                         hookIndex={hookIndex}
                       />
@@ -194,6 +201,7 @@ export const NodeValue = ({
                           rootItem={rootItem || item}
                           parentItem={item}
                           editable={editable && typeof n !== "string"}
+                          chunkId={isChunk ? id : chunkId}
                           hookIndex={hookIndex}
                         />
                       ))}

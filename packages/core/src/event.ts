@@ -24,7 +24,6 @@ export enum MessagePanelType {
   nodeEditor = "panel-editor",
   nodeTrigger = "panel-trigger",
   nodeInspect = "panel-inspect",
-  nodeSelectForce = "panel-select-force",
   chunks = "panel-chunks",
   clear = "panel-clear",
 }

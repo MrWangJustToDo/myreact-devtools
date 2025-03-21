@@ -24,7 +24,7 @@ import {
   Comment,
 } from "@my-react/react-shared";
 
-import { getNode, getNodeForce } from "./data";
+import { getNode } from "./data";
 import { inspectHooksOfFiber, type HooksTree } from "./hook";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
@@ -425,7 +425,7 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
   return tree;
 };
 
-const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, parentId?: number, force?: boolean): HOOKTree[] => {
+const parseHooksTreeToHOOKTree = (node: HooksTree, d: number): HOOKTree[] => {
   return node.map<HOOKTree>((item) => {
     const { id, name, value, subHooks, isStateEditable } = item;
     return {
@@ -433,15 +433,15 @@ const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, parentId?: number,
       e: isStateEditable,
       i: id,
       n: name || "Anonymous",
-      v: force ? getNodeForce(value) : getNode(value),
+      v: getNode(value),
       d,
       h: !subHooks.length ? true : false,
-      c: subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, id, force) : undefined,
+      c: subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1) : undefined,
     };
   });
 };
 
-const getHookNormal = (fiber: MyReactFiberNodeDev, force?: boolean) => {
+const getHookNormal = (fiber: MyReactFiberNodeDev) => {
   const final: HOOKTree[] = [];
 
   if (!fiber.hookList) return final;
@@ -455,7 +455,7 @@ const getHookNormal = (fiber: MyReactFiberNodeDev, force?: boolean) => {
       k: index.toString(),
       i: index,
       n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-      v: force ? getNodeForce(isEffect ? hook.value : hook.result) : getNode(isEffect ? hook.value : hook.result),
+      v: getNode(isEffect ? hook.value : hook.result),
       d: 0,
       h: true,
     });
@@ -466,35 +466,35 @@ const getHookNormal = (fiber: MyReactFiberNodeDev, force?: boolean) => {
   return final;
 };
 
-const getHookStack = (fiber: MyReactFiberNodeDev, force?: boolean) => {
+const getHookStack = (fiber: MyReactFiberNodeDev) => {
   const final: HOOKTree[] = [];
 
   if (!fiber.hookList) return final;
 
   const hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
 
-  return parseHooksTreeToHOOKTree(hookTree, 0, null, force);
+  return parseHooksTreeToHOOKTree(hookTree, 0);
 };
 
-export const getHook = (fiber: MyReactFiberNodeDev, force?: boolean) => {
+export const getHook = (fiber: MyReactFiberNodeDev) => {
   if (platform && platform.dispatcher) {
     try {
-      return getHookStack(fiber, force);
+      return getHookStack(fiber);
     } catch (e) {
       console.error(e);
-      return getHookNormal(fiber, force);
+      return getHookNormal(fiber);
     }
   } else {
-    return getHookNormal(fiber, force);
+    return getHookNormal(fiber);
   }
 };
 
-export const getProps = (fiber: MyReactFiberNodeDev, force?: boolean) => {
-  return force ? getNodeForce(fiber.pendingProps) : getNode(fiber.pendingProps);
+export const getProps = (fiber: MyReactFiberNodeDev) => {
+  return getNode(fiber.pendingProps);
 };
 
-export const getState = (fiber: MyReactFiberNodeDev, force?: boolean) => {
-  return force ? getNodeForce(fiber.pendingState) : getNode(fiber.pendingState);
+export const getState = (fiber: MyReactFiberNodeDev) => {
+  return getNode(fiber.pendingState);
 };
 
 export const debounce = <T extends Function>(callback: T, time?: number): T => {

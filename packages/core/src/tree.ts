@@ -1,5 +1,4 @@
 import { include, STATE_TYPE, type ListTree } from "@my-react/react-shared";
-import cloneDeep from "lodash/cloneDeep";
 
 import { getValueById } from "./data";
 import { PlainNode } from "./plain";
@@ -60,19 +59,19 @@ export const shallowAssignFiber = (plain: PlainNode, fiber: MyReactFiberNode) =>
   plain.n = directory[name];
 };
 
-export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode, force: boolean) => {
+export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
   shallowAssignFiber(plain, fiber);
 
-  plain.p = getProps(fiber as MyReactFiberNodeDev, force);
+  plain.p = getProps(fiber as MyReactFiberNodeDev);
 
   plain._s = getSource(fiber as MyReactFiberNodeDev);
 
   plain._t = getTree(fiber as MyReactFiberNodeDev);
 
-  plain._h = getHook(fiber as MyReactFiberNodeDev, force);
+  plain._h = getHook(fiber as MyReactFiberNodeDev);
 
   if (fiber.type & NODE_TYPE.__class__) {
-    plain.s = getState(fiber as MyReactFiberNodeDev, force);
+    plain.s = getState(fiber as MyReactFiberNodeDev);
   }
 };
 
@@ -260,7 +259,7 @@ export const getPlainNodeArrayByList = (list: ListTree<MyReactFiberNode>) => {
   return { result, directory };
 };
 
-export const getDetailNodeByFiber = (fiber: MyReactFiberNode, force?: boolean) => {
+export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
   const plainNode = getPlainNodeByFiber(fiber);
 
   if (!plainNode) {
@@ -270,13 +269,13 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode, force?: boolean) =
   const exist = detailMap.get(fiber);
 
   if (exist) {
-    assignFiber(exist, fiber, force);
+    assignFiber(exist, fiber);
 
     return exist;
   } else {
     const created = new PlainNode(plainNode.i);
 
-    assignFiber(created, fiber, force);
+    assignFiber(created, fiber);
 
     detailMap.set(fiber, created);
 
@@ -360,11 +359,12 @@ const updateFiberByHook = (
 
   const rootData = getValueById(rootId);
 
-  if (!currentData.f) return "current state not exist";
+  if (!currentData.f) return "current hook state not exist";
 
   const currentDataType = typeof currentData.v;
 
-  if (!parentData.f && currentDataType !== "boolean" && currentDataType !== "number" && currentDataType !== "string") return "current state is not primitive";
+  if (!parentData.f && currentDataType !== "boolean" && currentDataType !== "number" && currentDataType !== "string")
+    return "current hook state is not primitive";
 
   const newVal =
     currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
@@ -382,24 +382,38 @@ const updateFiberByHook = (
     return;
   }
 
-  const parentDataValue = parentData.v;
+  if (parentData.f && !rootData.f) {
+    return "root hook state not exist";
+  }
 
-  try {
-    parentDataValue[params.path] = newVal;
+  // const parentDataValue = parentData.v;
 
-    const newRootData = cloneDeep(rootData.v);
+  // shallow update
+  if (parentData.v === rootData.v) {
+    const newPayLoad = Object.assign({}, rootData.v);
+
+    newPayLoad[params.path] = newVal;
 
     const hookInstance = hookNode as any;
 
     if (hookInstance._dispatch) {
       hookInstance._update({ isForce: true });
     } else {
-      hookInstance._update({ payLoad: () => newRootData, reducer: editorReducer, isForce: true });
+      hookInstance._update({ payLoad: () => newPayLoad, reducer: editorReducer, isForce: true });
     }
+  } else {
+    // deep update
+    const newPayLoad = Object.assign({}, rootData.v);
 
-    return;
-  } catch (e) {
-    return e.message;
+    parentData.v[params.path] = newVal;
+
+    const hookInstance = hookNode as any;
+
+    if (hookInstance._dispatch) {
+      hookInstance._update({ isForce: true });
+    } else {
+      hookInstance._update({ payLoad: () => newPayLoad, reducer: editorReducer, isForce: true });
+    }
   }
 };
 
@@ -514,14 +528,18 @@ export const updateFiberNode = (
     type?: string;
   }
 ): string => {
-  if (params.type === "hook") {
-    return updateFiberByHook(fiber, params);
+  try {
+    if (params.type === "state") {
+      return updateFiberByState(fiber, params);
+    }
+    if (params.type === "hook") {
+      return updateFiberByHook(fiber, params);
+    }
+    if (params.type === "props") {
+      return updateFiberByProps(fiber, params);
+    }
+    return "type not valid";
+  } catch (e) {
+    return e.message;
   }
-  if (params.type === "props") {
-    return updateFiberByProps(fiber, params);
-  }
-  if (params.type === "state") {
-    return updateFiberByState(fiber, params);
-  }
-  return "type not valid";
 };

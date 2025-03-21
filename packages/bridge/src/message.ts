@@ -32,12 +32,6 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
     core.notifyErrorStatus();
   }
 
-  if (data?.type === MessagePanelType.nodeSelectForce) {
-    core.notifySelect(true);
-
-    core.notifyMessage(`success force reload current id: ${data.data} of fiber`, "success");
-  }
-
   if (data?.type === MessagePanelType.nodeStore) {
     const id = data.data;
 

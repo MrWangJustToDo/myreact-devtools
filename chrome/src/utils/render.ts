@@ -77,6 +77,7 @@ export const onRender = (data: DevToolMessageType) => {
       useSelectNode.getActions().clear();
       useDetailNode.getActions().clear();
       useContextMenu.getActions().clear?.();
+      useDetailNodeExt.getActions().clear();
     });
   }
 

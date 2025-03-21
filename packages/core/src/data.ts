@@ -36,8 +36,6 @@ export type NodeValue = {
   e: boolean;
   // loaded
   l?: boolean;
-  // cache
-  c?: boolean;
   // name
   n?: string;
 };
@@ -48,13 +46,9 @@ const emptyConstructor = {}.constructor;
 
 let id = 1;
 
-let loadById = false;
-
 const idToValueMap = new Map<number, any>();
 
 const valueToIdMap = new Map<any, number>();
-
-let cacheMap = new WeakMap<any, NodeValue>();
 
 const getType = (value: any): NodeValue["t"] => {
   if (isValidElement(value)) {
@@ -181,28 +175,6 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
   }
 };
 
-const getNodeWithCache = (value: any, type: NodeValue["t"], deep = 3): NodeValue => {
-  if (loadById) {
-    const cache = cacheMap.get(value);
-    if (cache) {
-      return {
-        ...cache,
-        c: true,
-      };
-    }
-  }
-
-  const v = getTargetNode(value, type, deep);
-
-  if (v?.l === false) {
-    return v;
-  }
-
-  cacheMap.set(value, v);
-
-  return v;
-};
-
 export const getNode = (value: any, deep = 3): NodeValue => {
   try {
     const type = getType(value);
@@ -211,7 +183,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
 
     if (expandable) {
       // full deep to load
-      return getNodeWithCache(value, type, deep);
+      return getTargetNode(value, type, deep);
     } else {
       const existId = valueToIdMap.get(value);
 
@@ -263,19 +235,10 @@ export const getNode = (value: any, deep = 3): NodeValue => {
   }
 };
 
-export const getNodeForce = (value: any, deep = 3): NodeValue => {
-  cacheMap = new WeakMap();
-
-  return getNode(value, deep);
-};
-
 export const getNodeFromId = (id: number) => {
   const value = idToValueMap.get(id);
   if (value) {
-    loadById = true;
-    const res = getNode(value);
-    loadById = false;
-    return res;
+    return getNode(value);
   }
 };
 

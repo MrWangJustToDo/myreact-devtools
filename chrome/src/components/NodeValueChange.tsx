@@ -1,6 +1,7 @@
 import { Button, Divider, Input, NumberInput, Popover, PopoverContent, PopoverTrigger, Switch, useDisclosure } from "@heroui/react";
 import { useEffect, useState } from "react";
 
+import { useChunk } from "@/hooks/useChunk";
 import { useUpdateState } from "@/hooks/useUpdateState";
 
 import type { NodeValue } from "@my-react-devtool/core";
@@ -15,6 +16,7 @@ export const NodeValueChange = ({
   hookIndex,
   path,
   type,
+  chunkId,
   children,
 }: {
   item: NodeValue;
@@ -23,6 +25,7 @@ export const NodeValueChange = ({
   hookIndex?: number;
   path: string;
   type: string;
+  chunkId?: number;
   children: ReactNode;
 }) => {
   const [val, setVal] = useState("");
@@ -41,6 +44,12 @@ export const NodeValueChange = ({
     setUpdateState({ id: item.i, rootId: rootItem?.i, parentId: parentItem?.i, oldVal: item.v, newVal: val, hookIndex, path, type });
 
     onClose();
+
+    setTimeout(() => {
+      if (chunkId) {
+        useChunk.getActions().setLoading(chunkId);
+      }
+    }, 60);
   };
 
   return (

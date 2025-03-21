@@ -800,7 +800,7 @@ export class DevToolCore {
     });
   }
 
-  notifySelect(force = false) {
+  notifySelect() {
     if (!this.hasEnable) return;
 
     const id = this._selectId;
@@ -814,7 +814,7 @@ export class DevToolCore {
         console.log("[@my-react-devtool/core] current select fiber", fiber);
       }
 
-      this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber, force) });
+      this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber) });
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
     }

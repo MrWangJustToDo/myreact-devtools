@@ -4,19 +4,12 @@ import { createState } from "reactivity-store";
 import { flattenNode } from "@/utils/node";
 
 import { useAppTree } from "./useAppTree";
-import { useChunk } from "./useChunk";
-import { useDetailNode } from "./useDetailNode";
-
-const clearChunk = useChunk.getActions().clear;
-
-const delNode = useDetailNode.getActions().delNode;
 
 export const useSelectNode = createState(
   () =>
-    ({ select: null, hover: null, closeList: {}, selectList: {}, reload: 0, store: 0, trigger: 0, scroll: 0, inspectDom: 0, inspectCom: 0 }) as {
+    ({ select: null, hover: null, closeList: {}, selectList: {}, store: 0, trigger: 0, scroll: 0, inspectDom: 0, inspectCom: 0 }) as {
       select: string | null;
       hover: string | null;
-      reload: number;
       trigger: number;
       store: number;
       scroll: number;
@@ -55,15 +48,6 @@ export const useSelectNode = createState(
           s.select = null;
           s.selectList = {};
           updateSelectList();
-        },
-        forceReload: () => {
-          if (s.select) {
-            s.reload++;
-
-            delNode(s.select);
-          }
-
-          clearChunk();
         },
         storeFiber: () => {
           if (s.select) {

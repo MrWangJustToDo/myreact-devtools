@@ -1,6 +1,6 @@
 import { Button, ButtonGroup, Divider, Tooltip } from "@heroui/react";
 import { NODE_TYPE, type PlainNode } from "@my-react-devtool/core";
-import { Bug, Locate, Package, Play, RefreshCcw, SquareMousePointer } from "lucide-react";
+import { Bug, Locate, Package, Play, SquareMousePointer } from "lucide-react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
@@ -8,7 +8,7 @@ import { useUISize } from "@/hooks/useUISize";
 
 import { TreeItem } from "./TreeItem";
 
-const { forceReload, storeFiber, triggerFiber, scrollIntoView, inspectComAction, inspectDomAction } = useSelectNode.getActions();
+const { storeFiber, triggerFiber, scrollIntoView, inspectComAction, inspectDomAction } = useSelectNode.getActions();
 
 export const NameView = () => {
   const select = useSelectNode((s) => s.select);
@@ -48,11 +48,6 @@ export const NameView = () => {
           <Tooltip content="inspect dom" showArrow color="foreground" placement="bottom-end">
             <Button isIconOnly size="sm" variant="flat" onPress={inspectDomAction}>
               <SquareMousePointer width={sizeNum} height={sizeNum} />
-            </Button>
-          </Tooltip>
-          <Tooltip content="force reload" showArrow color="foreground" placement="bottom-end">
-            <Button isIconOnly size="sm" variant="flat" onPress={forceReload}>
-              <RefreshCcw width={sizeNum - 1} height={sizeNum - 1} />
             </Button>
           </Tooltip>
           {isComponent > 0 && (

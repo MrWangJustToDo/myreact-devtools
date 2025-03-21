@@ -42,21 +42,6 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
   unSubscribeArray.push(
     useSelectNode.subscribe(
-      (s) => s.reload,
-      () => {
-        const currentSelect = useSelectNode.getReadonlyState().select;
-
-        if (currentSelect) {
-          useDetailNode.getActions().setLoading(true);
-
-          postMessage({ type: MessagePanelType.nodeSelectForce, data: currentSelect });
-        }
-      }
-    )
-  );
-
-  unSubscribeArray.push(
-    useSelectNode.subscribe(
       (s) => s.trigger,
       () => {
         const currentSelect = useSelectNode.getReadonlyState().select;
