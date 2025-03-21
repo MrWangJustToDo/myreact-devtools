@@ -1,10 +1,10 @@
-import { Button, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, NumberInput, Switch, useDisclosure } from "@heroui/react";
-import { Pencil } from "lucide-react";
+import { Button, Divider, Input, NumberInput, Popover, PopoverContent, PopoverTrigger, Switch, useDisclosure } from "@heroui/react";
 import { useEffect, useState } from "react";
 
 import { useUpdateState } from "@/hooks/useUpdateState";
 
 import type { NodeValue } from "@my-react-devtool/core";
+import type { ReactNode } from "react";
 
 const { setUpdateState } = useUpdateState.getActions();
 
@@ -14,16 +14,20 @@ export const NodeValueChange = ({
   parentItem,
   index,
   path,
+  children,
 }: {
   item: NodeValue;
   rootItem?: NodeValue;
   parentItem?: NodeValue;
   index: number;
   path: string;
+  children: ReactNode;
 }) => {
   const [val, setVal] = useState("");
 
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+  const { isOpen, onClose, onOpenChange } = useDisclosure();
+
+  console.log(isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -40,44 +44,26 @@ export const NodeValueChange = ({
   };
 
   return (
-    <>
-      <span className="absolute flex justify-center items-center right-2 top-0 cursor-pointer">
-        <Pencil className="w-[0.85em] h-[0.85em]" onClick={onOpen} />
-      </span>
-      <Modal isOpen={isOpen} size="2xl" onClose={onClose} onOpenChange={onOpenChange}>
-        <ModalContent>
-          <ModalHeader>Inspect State</ModalHeader>
-          <ModalBody>
-            <p>
-              <span className="font-semibold min-w-[8em] inline-block">Type: </span>
-              <span className="text-gray-500">{item.t}</span>
-            </p>
-            <Divider />
-            <p>
-              <span className="font-semibold min-w-[8em] inline-block">Value: </span>
-              <span className="text-gray-500">{item.v}</span>
-            </p>
-            <Divider />
-            <p>
-              <span className="font-semibold min-w-[8em] inline-block">Change To: </span>
-              <span className="text-gray-600">{val}</span>
-            </p>
-            <p>
-              {item.t === "Boolean" && <Switch isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
-              {item.t === "Number" && <NumberInput value={+val} onValueChange={(l) => setVal(l.toString())} />}
-              {item.t === "String" && <Input value={val} onValueChange={(l) => setVal(l)} />}
-            </p>
-          </ModalBody>
-          <ModalFooter>
-            <Button color="danger" variant="light" onPress={onClose}>
+    <Popover placement="bottom" isOpen={isOpen} backdrop="opaque" triggerScaleOnOpen={false} onOpenChange={onOpenChange}>
+      <PopoverTrigger>
+        <div className="inline-block cursor-pointer">✨ {children}</div>
+      </PopoverTrigger>
+      <PopoverContent className="text-[13px]">
+        <div className="p-2 min-w-[200px]">
+          {item.t === "Boolean" && <Switch autoFocus size="sm" isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
+          {item.t === "Number" && <NumberInput autoFocus size="sm" value={+val} onValueChange={(l) => setVal(l.toString())} />}
+          {item.t === "String" && <Input autoFocus size="sm" value={val} onValueChange={(l) => setVal(l)} />}
+          <Divider className="my-3" />
+          <div className="flex justify-end">
+            <Button size="sm" color="danger" onPress={onClose}>
               Cancel
             </Button>
-            <Button color="primary" onPress={onUpdate}>
+            <Button size="sm" className="ml-2" color="primary" onPress={onUpdate}>
               Confirm
             </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };

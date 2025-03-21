@@ -125,16 +125,23 @@ export const NodeValue = ({
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block">{StateIcon}</span>
           {prefix}
-          <div className={`w-full relative line-clamp-1 break-all ${currentIsEditable ? "pr-8" : "pr-2"}`}>
+          <div className={`w-full relative line-clamp-1 break-all pr-3`}>
             <span className="cursor-pointer select-none" onContextMenu={onContextClick}>
               {name}
             </span>
-            : <span className="hook-value-placeholder">{element}</span>
-            {currentIsEditable && (
+            :{" "}
+            {currentIsEditable ? (
+              <NodeValueChange item={item} index={index!} path={name} rootItem={rootItem} parentItem={parentItem}>
+                <span className="hook-value-placeholder">{element}</span>
+              </NodeValueChange>
+            ) : (
+              <span className="hook-value-placeholder">{element}</span>
+            )}
+            {/* {currentIsEditable && (
               <span>
                 <NodeValueChange item={item} index={index!} path={name} rootItem={rootItem} parentItem={parentItem} />
               </span>
-            )}
+            )} */}
           </div>
         </div>
       </div>
