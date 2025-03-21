@@ -1,4 +1,4 @@
-import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, NumberInput, Switch, useDisclosure } from "@heroui/react";
+import { Button, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, NumberInput, Switch, useDisclosure } from "@heroui/react";
 import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -52,16 +52,18 @@ export const NodeValueChange = ({
               <span className="font-semibold min-w-[8em] inline-block">Type: </span>
               <span className="text-gray-500">{item.t}</span>
             </p>
+            <Divider />
             <p>
               <span className="font-semibold min-w-[8em] inline-block">Value: </span>
               <span className="text-gray-500">{item.v}</span>
             </p>
+            <Divider />
             <p>
               <span className="font-semibold min-w-[8em] inline-block">Change To: </span>
               <span className="text-gray-600">{val}</span>
             </p>
             <p>
-              {item.t === "Boolean" && <Switch checked={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
+              {item.t === "Boolean" && <Switch isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
               {item.t === "Number" && <NumberInput value={+val} onValueChange={(l) => setVal(l.toString())} />}
               {item.t === "String" && <Input value={val} onValueChange={(l) => setVal(l)} />}
             </p>
