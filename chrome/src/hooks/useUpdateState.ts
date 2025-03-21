@@ -4,34 +4,19 @@ import { useSelectNode } from "./useSelectNode";
 
 export const useUpdateState = createState(
   () =>
-    ({ id: "", oldVal: "", newVal: "", hookIndex: "", path: "" }) as {
+    ({ id: "", oldVal: "", newVal: "", hookIndex: "", path: "", type: "" }) as {
       id: number | string;
       rootId?: number | string;
       parentId?: number | string;
       oldVal: any;
       newVal: any;
-      hookIndex: number | string;
+      hookIndex?: number | string;
       path: string;
+      type: string;
     },
   {
     withActions: (state) => ({
-      setUpdateState: ({
-        id,
-        rootId,
-        parentId,
-        path,
-        oldVal,
-        newVal,
-        hookIndex,
-      }: {
-        id: number | string;
-        rootId?: number | string;
-        parentId?: number | string;
-        path: string;
-        oldVal: any;
-        newVal: any;
-        hookIndex: number | string;
-      }) => {
+      setUpdateState: ({ id, rootId, parentId, path, oldVal, newVal, hookIndex, type }: typeof state) => {
         if (!useSelectNode.getReadonlyState().select) return;
         state.id = id;
         state.rootId = rootId;
@@ -40,6 +25,7 @@ export const useUpdateState = createState(
         state.oldVal = oldVal;
         state.newVal = newVal;
         state.hookIndex = hookIndex;
+        state.type = type;
       },
       clear: () => {
         state.id = "";
@@ -49,6 +35,7 @@ export const useUpdateState = createState(
         state.oldVal = "";
         state.newVal = "";
         state.hookIndex = "";
+        state.type = "";
       },
     }),
     withDeepSelector: false,

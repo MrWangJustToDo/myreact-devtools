@@ -1,4 +1,4 @@
-import { include, type ListTree } from "@my-react/react-shared";
+import { include, STATE_TYPE, type ListTree } from "@my-react/react-shared";
 import cloneDeep from "lodash/cloneDeep";
 
 import { getValueById } from "./data";
@@ -7,7 +7,7 @@ import { NODE_TYPE } from "./type";
 import { getFiberName, getFiberType, getHook, getProps, getSource, getState, getTree } from "./utils";
 
 import type { DevToolCore } from "./instance";
-import type { Action, Reducer } from "@my-react/react";
+import type { Action, MyReactComponent, Reducer } from "@my-react/react";
 import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode, MyReactFiberContainer } from "@my-react/react-reconciler";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
@@ -329,10 +329,21 @@ const editorReducer: Reducer = (state?: unknown, action?: Action) => {
   return typeof action === "function" ? action(state) : action;
 };
 
-export const updateFiberHookById = (
+const updateFiberByHook = (
   fiber: MyReactFiberNode,
-  params: { id: string | number; oldVal: any; newVal: any; hookIndex: number | string; path: string; rootId?: string | number; parentId?: string | number }
-): string => {
+  params: {
+    id: string | number;
+    oldVal: any;
+    newVal: any;
+    hookIndex?: number | string;
+    path: string;
+    rootId?: string | number;
+    parentId?: string | number;
+    type?: string;
+  }
+) => {
+  if (typeof params.hookIndex !== "number") return "params not valid";
+
   const hookNode = fiber.hookList?.toArray?.()?.[params.hookIndex];
 
   if (!hookNode) return "hook not found";
@@ -390,4 +401,127 @@ export const updateFiberHookById = (
   } catch (e) {
     return e.message;
   }
+};
+
+const updateFiberByProps = (
+  fiber: MyReactFiberNode,
+  params: {
+    id: string | number;
+    oldVal: any;
+    newVal: any;
+    hookIndex?: number | string;
+    path: string;
+    rootId?: string | number;
+    parentId?: string | number;
+    type?: string;
+  }
+) => {
+  const nodeId = Number(params.id);
+
+  const parentId = Number(params.parentId);
+
+  const currentData = getValueById(nodeId);
+
+  const parentData = getValueById(parentId);
+
+  if (!currentData.f) return "current props not exist";
+
+  const currentDataType = typeof currentData.v;
+
+  const newVal =
+    currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
+
+  // deep props update
+  if (parentData.f) {
+    const newProps = Object.assign({}, fiber.pendingProps);
+
+    parentData.v[params.path] = newVal;
+
+    fiber.pendingProps = newProps;
+
+    fiber._update(STATE_TYPE.__triggerSyncForce__);
+  } else {
+    // shallow props update
+    const newProps = Object.assign({}, fiber.pendingProps);
+
+    newProps[params.path] = newVal;
+
+    fiber.pendingProps = newProps;
+
+    fiber._update(STATE_TYPE.__triggerSyncForce__);
+  }
+};
+
+const updateFiberByState = (
+  fiber: MyReactFiberNode,
+  params: {
+    id: string | number;
+    oldVal: any;
+    newVal: any;
+    hookIndex?: number | string;
+    path: string;
+    rootId?: string | number;
+    parentId?: string | number;
+    type?: string;
+  }
+) => {
+  const nodeId = Number(params.id);
+
+  const parentId = Number(params.parentId);
+
+  const currentData = getValueById(nodeId);
+
+  const parentData = getValueById(parentId);
+
+  if (!currentData.f) return "current state not exist";
+
+  const currentDataType = typeof currentData.v;
+
+  const newVal =
+    currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
+
+  // deep state update
+  if (parentData.f) {
+    const typedInstance = fiber.instance as MyReactComponent;
+
+    const newState = Object.assign({}, typedInstance.state);
+
+    parentData.v[params.path] = newVal;
+
+    typedInstance.setState(newState);
+  } else {
+    // shallow state update
+    const typedInstance = fiber.instance as MyReactComponent;
+
+    const newState = Object.assign({}, typedInstance.state);
+
+    newState[params.path] = newVal;
+
+    typedInstance.setState(newState);
+  }
+};
+
+export const updateFiberNode = (
+  fiber: MyReactFiberNode,
+  params: {
+    id: string | number;
+    oldVal: any;
+    newVal: any;
+    hookIndex?: number | string;
+    path: string;
+    rootId?: string | number;
+    parentId?: string | number;
+    type?: string;
+  }
+): string => {
+  if (params.type === "hook") {
+    return updateFiberByHook(fiber, params);
+  }
+  if (params.type === "props") {
+    return updateFiberByProps(fiber, params);
+  }
+  if (params.type === "state") {
+    return updateFiberByState(fiber, params);
+  }
+  return "type not valid";
 };

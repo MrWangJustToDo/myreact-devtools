@@ -12,22 +12,22 @@ export const NodeValueChange = ({
   item,
   rootItem,
   parentItem,
-  index,
+  hookIndex,
   path,
+  type,
   children,
 }: {
   item: NodeValue;
   rootItem?: NodeValue;
   parentItem?: NodeValue;
-  index: number;
+  hookIndex?: number;
   path: string;
+  type: string;
   children: ReactNode;
 }) => {
   const [val, setVal] = useState("");
 
   const { isOpen, onClose, onOpenChange } = useDisclosure();
-
-  console.log(isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,7 +38,7 @@ export const NodeValueChange = ({
   const onUpdate = () => {
     if (val === item.v) return;
 
-    setUpdateState({ id: item.i, rootId: rootItem?.i, parentId: parentItem?.i, oldVal: item.v, newVal: val, hookIndex: index, path });
+    setUpdateState({ id: item.i, rootId: rootItem?.i, parentId: parentItem?.i, oldVal: item.v, newVal: val, hookIndex, path, type });
 
     onClose();
   };

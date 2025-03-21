@@ -16,7 +16,7 @@ import {
   getTreeByFiber,
   getComponentFiberByDom,
   getElementNodesFromFiber,
-  updateFiberHookById,
+  updateFiberNode,
 } from "./tree";
 import { debounce, setPlatform, throttle } from "./utils";
 
@@ -867,16 +867,17 @@ export class DevToolCore {
     id: number | string;
     oldVal: any;
     newVal: any;
-    hookIndex: number | string;
+    hookIndex?: number | string;
     path: string;
     rootId?: number | string;
     parentId?: number | string;
+    type?: string;
   }) {
     if (!this.hasEnable) return;
 
     const fiber = getFiberNodeById(this._selectId);
 
-    const res = updateFiberHookById(fiber, params);
+    const res = updateFiberNode(fiber, params);
 
     if (typeof res === "string") {
       // have error

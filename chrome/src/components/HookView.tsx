@@ -22,8 +22,9 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
       <NodeValue
         name={item.n}
         item={item.v}
-        index={item.i}
         editable={item.e}
+        hookIndex={item.i}
+        type="hook"
         prefix={
           <Chip
             classNames={{ content: "p-0" }}
@@ -49,7 +50,7 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
             <div className="max-w-full line-clamp-1 cursor-pointer" onClick={() => setExpand(!expand)}>
               {item.n}
             </div>
-            :
+            {item.n === "Anonymous" ? null : ":"}
           </div>
           <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>{item.c?.map((i, index) => <HookViewTree key={i.n + "-" + index} item={i} />)}</div>
         </div>

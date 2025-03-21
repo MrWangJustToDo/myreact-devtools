@@ -28,7 +28,7 @@ export const PropsView = () => {
     const key = propsKeys[index];
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={id + "-" + index}>
-        <NodeValue name={key} item={currentSelectDetail?.p?.v?.[key]} />
+        <NodeValue name={key} type="props" editable item={currentSelectDetail?.p?.v?.[key]} />
       </div>
     );
   });

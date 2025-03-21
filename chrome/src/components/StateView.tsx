@@ -30,7 +30,7 @@ export const StateView = () => {
     const key = stateKeys[index];
     return (
       <div className={`${sizeClass}  tree-wrapper`} key={id + "-" + index}>
-        <NodeValue name={key} item={currentSelectDetail?.s?.v?.[key]} />
+        <NodeValue name={key} type="state" editable item={currentSelectDetail?.s?.v?.[key]} />
       </div>
     );
   });

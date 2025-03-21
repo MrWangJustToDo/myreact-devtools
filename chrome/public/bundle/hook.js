@@ -5785,8 +5785,10 @@
 			var editorReducer = function (state, action) {
 			    return typeof action === "function" ? action(state) : action;
 			};
-			var updateFiberHookById = function (fiber, params) {
+			var updateFiberByHook = function (fiber, params) {
 			    var _a, _b, _c;
+			    if (typeof params.hookIndex !== "number")
+			        return "params not valid";
 			    var hookNode = (_c = (_b = (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.toArray) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c[params.hookIndex];
 			    if (!hookNode)
 			        return "hook not found";
@@ -5830,6 +5832,66 @@
 			    catch (e) {
 			        return e.message;
 			    }
+			};
+			var updateFiberByProps = function (fiber, params) {
+			    var nodeId = Number(params.id);
+			    var parentId = Number(params.parentId);
+			    var currentData = getValueById(nodeId);
+			    var parentData = getValueById(parentId);
+			    if (!currentData.f)
+			        return "current props not exist";
+			    var currentDataType = typeof currentData.v;
+			    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
+			    // deep props update
+			    if (parentData.f) {
+			        var newProps = Object.assign({}, fiber.pendingProps);
+			        parentData.v[params.path] = newVal;
+			        fiber.pendingProps = newProps;
+			        fiber._update(reactShared.STATE_TYPE.__triggerSyncForce__);
+			    }
+			    else {
+			        // shallow props update
+			        var newProps = Object.assign({}, fiber.pendingProps);
+			        newProps[params.path] = newVal;
+			        fiber.pendingProps = newProps;
+			        fiber._update(reactShared.STATE_TYPE.__triggerSyncForce__);
+			    }
+			};
+			var updateFiberByState = function (fiber, params) {
+			    var nodeId = Number(params.id);
+			    var parentId = Number(params.parentId);
+			    var currentData = getValueById(nodeId);
+			    var parentData = getValueById(parentId);
+			    if (!currentData.f)
+			        return "current state not exist";
+			    var currentDataType = typeof currentData.v;
+			    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
+			    // deep state update
+			    if (parentData.f) {
+			        var typedInstance = fiber.instance;
+			        var newState = Object.assign({}, typedInstance.state);
+			        parentData.v[params.path] = newVal;
+			        typedInstance.setState(newState);
+			    }
+			    else {
+			        // shallow state update
+			        var typedInstance = fiber.instance;
+			        var newState = Object.assign({}, typedInstance.state);
+			        newState[params.path] = newVal;
+			        typedInstance.setState(newState);
+			    }
+			};
+			var updateFiberNode = function (fiber, params) {
+			    if (params.type === "hook") {
+			        return updateFiberByHook(fiber, params);
+			    }
+			    if (params.type === "props") {
+			        return updateFiberByProps(fiber, params);
+			    }
+			    if (params.type === "state") {
+			        return updateFiberByState(fiber, params);
+			    }
+			    return "type not valid";
 			};
 
 			var typeKeys = [];
@@ -7699,7 +7761,7 @@
 			        if (!this.hasEnable)
 			            return;
 			        var fiber = getFiberNodeById(this._selectId);
-			        var res = updateFiberHookById(fiber, params);
+			        var res = updateFiberNode(fiber, params);
 			        if (typeof res === "string") {
 			            // have error
 			            this.notifyMessage(res, "error");
@@ -7808,7 +7870,7 @@
 			exports.throttle = throttle;
 			exports.typeKeys = typeKeys;
 			exports.unmountPlainNode = unmountPlainNode;
-			exports.updateFiberHookById = updateFiberHookById; 
+			exports.updateFiberNode = updateFiberNode; 
 		} (index_production));
 		return index_production;
 	}

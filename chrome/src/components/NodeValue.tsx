@@ -21,7 +21,8 @@ export const NodeValue = ({
   parentItem,
   prefix,
   editable,
-  index,
+  hookIndex,
+  type,
 }: {
   name: string;
   item?: NodeValueType;
@@ -29,7 +30,8 @@ export const NodeValue = ({
   parentItem?: NodeValueType;
   prefix?: ReactNode;
   editable?: boolean;
-  index?: number;
+  hookIndex?: number;
+  type?: string;
 }) => {
   const [expand, setExpand] = useState(false);
 
@@ -105,8 +107,6 @@ export const NodeValue = ({
     setType(item.t);
   };
 
-  const currentIsEditable = editable && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
-
   if (!item) return null;
 
   const currentIsExpandable = item.e;
@@ -120,6 +120,8 @@ export const NodeValue = ({
 
     const element = <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""}`}>{textContent}</span>;
 
+    const currentIsEditable = editable && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
+
     return (
       <div className="hook-value-view">
         <div className="flex w-full my-0.5 items-center">
@@ -131,17 +133,12 @@ export const NodeValue = ({
             </span>
             :{" "}
             {currentIsEditable ? (
-              <NodeValueChange item={item} index={index!} path={name} rootItem={rootItem} parentItem={parentItem}>
+              <NodeValueChange item={item} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
                 <span className="hook-value-placeholder">{element}</span>
               </NodeValueChange>
             ) : (
               <span className="hook-value-placeholder">{element}</span>
             )}
-            {/* {currentIsEditable && (
-              <span>
-                <NodeValueChange item={item} index={index!} path={name} rootItem={rootItem} parentItem={parentItem} />
-              </span>
-            )} */}
           </div>
         </div>
       </div>
@@ -171,7 +168,16 @@ export const NodeValue = ({
                 Array.isArray(data) ? (
                   <>
                     {data.map((i: HOOKTree["v"], index: number) => (
-                      <NodeValue key={index} name={index.toString()} item={i} rootItem={rootItem || item} parentItem={item} index={index} editable={editable} />
+                      <NodeValue
+                        key={index}
+                        name={index.toString()}
+                        item={i}
+                        type={type}
+                        rootItem={rootItem || item}
+                        editable={editable && typeof n !== "string"}
+                        parentItem={item}
+                        hookIndex={hookIndex}
+                      />
                     ))}
                   </>
                 ) : (
@@ -180,7 +186,16 @@ export const NodeValue = ({
                       .sort()
                       .reverse()
                       .map((key) => (
-                        <NodeValue key={key} name={key} item={data[key]} rootItem={rootItem || item} parentItem={item} index={index} editable={editable} />
+                        <NodeValue
+                          key={key}
+                          name={key}
+                          item={data[key]}
+                          type={type}
+                          rootItem={rootItem || item}
+                          parentItem={item}
+                          editable={editable && typeof n !== "string"}
+                          hookIndex={hookIndex}
+                        />
                       ))}
                   </>
                 )
