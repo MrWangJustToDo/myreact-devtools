@@ -133,17 +133,19 @@ export const NodeValue = ({
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block">{StateIcon}</span>
           {prefix}
-          <div className={`w-full relative line-clamp-1 break-all pr-2`}>
-            <span className="cursor-pointer select-none" onContextMenu={onContextClick}>
+          <div className={`w-full relative flex pr-2`}>
+            <span className="cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
               {name}
             </span>
             :{" "}
             {currentIsEditable ? (
-              <NodeValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
-                <span className="hook-value-placeholder">{element}</span>
-              </NodeValueChange>
+              <span className="hook-value-placeholder line-clamp-1 break-all relative">
+                <NodeValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
+                  {element}
+                </NodeValueChange>
+              </span>
             ) : (
-              <span className="hook-value-placeholder">{element}</span>
+              <span className="hook-value-placeholder line-clamp-1 break-all">{element}</span>
             )}
           </div>
         </div>
@@ -161,11 +163,11 @@ export const NodeValue = ({
               {StateIcon}
             </span>
             {prefix}
-            <div className="max-w-full line-clamp-1 break-all">
-              <span className="cursor-pointer select-none" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
+            <div className="max-w-full flex">
+              <span className="cursor-pointer select-none whitespace-nowrap" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
                 {name}
               </span>
-              : <span className="hook-value-placeholder">{data ? text : <Ellipsis className="inline-block" />}</span>
+              : <span className="hook-value-placeholder line-clamp-1 break-all">{data ? text : <Ellipsis className="inline-block" />}</span>
             </div>
           </div>
           {(hasOpenRef.current || expand) && (

@@ -1,5 +1,5 @@
-import { Button, Divider, Input, NumberInput, Popover, PopoverContent, PopoverTrigger, Switch, useDisclosure } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { Button, Divider, NumberInput, Popover, PopoverContent, PopoverTrigger, Switch, Textarea, useDisclosure } from "@heroui/react";
+import { useEffect, useRef, useState } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useUpdateState } from "@/hooks/useUpdateState";
@@ -30,11 +30,16 @@ export const NodeValueChange = ({
 }) => {
   const [val, setVal] = useState("");
 
+  const [width, setWidth] = useState(0);
+
+  const ref = useRef<HTMLDivElement>(null);
+
   const { isOpen, onClose, onOpenChange } = useDisclosure();
 
   useEffect(() => {
     if (isOpen) {
       setVal(String(item.v));
+      setWidth(ref.current?.offsetWidth || 0);
     }
   }, [isOpen, item.v]);
 
@@ -54,26 +59,29 @@ export const NodeValueChange = ({
   };
 
   return (
-    <Popover placement="bottom" isOpen={isOpen} backdrop="opaque" triggerScaleOnOpen={false} onOpenChange={onOpenChange}>
-      <PopoverTrigger>
-        <span className="cursor-pointer">✨ {children}</span>
-      </PopoverTrigger>
-      <PopoverContent className="text-[13px]">
-        <div className="p-2 min-w-[200px]">
-          {item.t === "Boolean" && <Switch autoFocus size="sm" isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
-          {item.t === "Number" && <NumberInput autoFocus size="sm" value={+val} onValueChange={(l) => setVal(l.toString())} />}
-          {item.t === "String" && <Input autoFocus size="sm" value={val} onValueChange={(l) => setVal(l)} />}
-          <Divider className="my-3" />
-          <div className="flex justify-end">
-            <Button size="sm" color="danger" onPress={onClose}>
-              Cancel
-            </Button>
-            <Button size="sm" className="ml-2" color="primary" onPress={onUpdate}>
-              Confirm
-            </Button>
+    <>
+      <span className="cursor-pointer">✨ {children}</span>
+      <Popover placement="bottom" isOpen={isOpen} backdrop="opaque" triggerScaleOnOpen={false} onOpenChange={onOpenChange}>
+        <PopoverTrigger>
+          <div ref={ref} className="absolute w-full h-full left-0 top-0 cursor-pointer" />
+        </PopoverTrigger>
+        <PopoverContent className="text-[13px]">
+          <div className="p-2 min-w-[200px]" style={{ minWidth: width ?? 200 }}>
+            {item.t === "Boolean" && <Switch autoFocus size="sm" isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
+            {item.t === "Number" && <NumberInput autoFocus size="sm" value={+val} onValueChange={(l) => setVal(l.toString())} />}
+            {item.t === "String" && <Textarea autoFocus size="sm" value={val} onValueChange={(l) => setVal(l)} />}
+            <Divider className="my-3" />
+            <div className="flex justify-end">
+              <Button size="sm" color="danger" onPress={onClose}>
+                Cancel
+              </Button>
+              <Button size="sm" className="ml-2" color="primary" onPress={onUpdate}>
+                Confirm
+              </Button>
+            </div>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 };
