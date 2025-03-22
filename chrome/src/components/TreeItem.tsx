@@ -148,8 +148,9 @@ export const TreeItem = ({
         <div
           className="flex-grow"
           style={{
-            width: `calc(100%-calc(${deep}*var(--indentation-size)))`,
-            marginLeft: `calc(${deep} * var(--indentation-size)`,
+            transform: `translateX(calc(${deep} * var(--indentation-size))`,
+            // width: `calc(100%-calc(${deep}*var(--indentation-size)))`,
+            // marginLeft: `calc(${deep} * var(--indentation-size)`,
           }}
         >
           <div data-content className="flex items-center w-fit">

@@ -65,11 +65,21 @@ export const NodeValueChange = ({
         <PopoverTrigger>
           <div ref={ref} className="absolute w-full h-full left-0 top-0 cursor-pointer" />
         </PopoverTrigger>
-        <PopoverContent className="text-[13px]">
+        <PopoverContent className="text-[16px]">
           <div className="p-2 min-w-[200px]" style={{ minWidth: width ?? 200 }}>
-            {item.t === "Boolean" && <Switch autoFocus size="sm" isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
-            {item.t === "Number" && <NumberInput autoFocus size="sm" value={+val} onValueChange={(l) => setVal(l.toString())} />}
-            {item.t === "String" && <Textarea autoFocus size="sm" value={val} onValueChange={(l) => setVal(l)} />}
+            {item.t === "Boolean" && <Switch size="sm" isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
+            {item.t === "Number" && <NumberInput variant="bordered" disableAnimation size="sm" value={+val} onValueChange={(l) => setVal(l.toString())} />}
+            {item.t === "String" && (
+              <Textarea
+                classNames={{ input: "resize-y min-h-[40px]" }}
+                variant="bordered"
+                disableAnimation
+                disableAutosize
+                size="sm"
+                value={val}
+                onValueChange={(l) => setVal(l)}
+              />
+            )}
             <Divider className="my-3" />
             <div className="flex justify-end">
               <Button size="sm" color="danger" onPress={onClose}>

@@ -134,10 +134,10 @@ export const NodeValue = ({
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block">{StateIcon}</span>
           {prefix}
           <div className={`w-full relative flex pr-2`}>
-            <span className="cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
+            <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
               {name}
             </span>
-            :{" "}
+            <span className="flex-shrink-0 pr-1">:</span>
             {currentIsEditable ? (
               <span className="hook-value-placeholder line-clamp-1 break-all relative">
                 <NodeValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
@@ -164,10 +164,11 @@ export const NodeValue = ({
             </span>
             {prefix}
             <div className="max-w-full flex">
-              <span className="cursor-pointer select-none whitespace-nowrap" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
+              <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
                 {name}
               </span>
-              : <span className="hook-value-placeholder line-clamp-1 break-all">{data ? text : <Ellipsis className="inline-block" />}</span>
+              <span className="flex-shrink-0 pr-1">:</span>
+              <span className="hook-value-placeholder line-clamp-1 break-all">{data ? text : <Ellipsis className="inline-block" />}</span>
             </div>
           </div>
           {(hasOpenRef.current || expand) && (

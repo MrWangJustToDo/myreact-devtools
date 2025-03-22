@@ -79,7 +79,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
         </ButtonGroup>
       </div>
 
-      <Modal isOpen={isOpen} size="2xl" onClose={onClose} onOpenChange={onOpenChange} placement="top">
+      <Modal isOpen={isOpen} backdrop="blur" size="2xl" onClose={onClose} onOpenChange={onOpenChange} placement="top">
         <ModalContent>
           <ModalHeader>
             <h3 className="text-[1em]">
@@ -94,6 +94,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                   <Select
                     selectionMode="multiple"
                     placeholder="Select a Type"
+                    variant="bordered"
                     selectedKeys={values}
                     aria-label="Filter Node"
                     className="flex items-center"
