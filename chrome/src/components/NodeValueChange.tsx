@@ -7,7 +7,7 @@ import { useUpdateState } from "@/hooks/useUpdateState";
 import type { NodeValue } from "@my-react-devtool/core";
 import type { ReactNode } from "react";
 
-const { setUpdateState } = useUpdateState.getActions();
+const { setUpdateState, clear } = useUpdateState.getActions();
 
 export const NodeValueChange = ({
   item,
@@ -49,13 +49,14 @@ export const NodeValueChange = ({
       if (chunkId) {
         useChunk.getActions().setLoading(chunkId);
       }
+      clear();
     }, 60);
   };
 
   return (
     <Popover placement="bottom" isOpen={isOpen} backdrop="opaque" triggerScaleOnOpen={false} onOpenChange={onOpenChange}>
       <PopoverTrigger>
-        <div className="inline-block cursor-pointer">✨ {children}</div>
+        <span className="cursor-pointer">✨ {children}</span>
       </PopoverTrigger>
       <PopoverContent className="text-[13px]">
         <div className="p-2 min-w-[200px]">

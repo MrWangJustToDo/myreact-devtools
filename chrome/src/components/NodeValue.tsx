@@ -133,7 +133,7 @@ export const NodeValue = ({
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block">{StateIcon}</span>
           {prefix}
-          <div className={`w-full relative line-clamp-1 break-all pr-3`}>
+          <div className={`w-full relative line-clamp-1 break-all pr-2`}>
             <span className="cursor-pointer select-none" onContextMenu={onContextClick}>
               {name}
             </span>
