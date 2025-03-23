@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { ThemeProvider } from "next-themes";
 
 import { CodePreview } from "@/components/CodePreview";
+import { FontSize } from "@/components/FontSize";
 import { useBridgeTarget } from "@/hooks/useBridgeTarget";
 import { useConnect } from "@/hooks/useConnect";
 import { useIsMounted } from "@/hooks/useIsMounted";
@@ -82,7 +83,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
       <div className="flex items-center justify-center w-screen h-screen">
         <div className="flex flex-col items-center">
           <Spinner color="primary" size="lg" />
-          {(isWebDev || isLocalDev) && <div className="text-center text-[18px] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
+          {(isWebDev || isLocalDev) && <div className="text-center text-[1.5rem] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
           {isWebDev || isLocalDev ? <Spacer className="my-2" /> : null}
           {isWebDev && (
             <CodePreview code={source(str, "web", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
@@ -96,9 +97,9 @@ export default function App({ Component, pageProps, router }: AppProps) {
   } else if (isPanelPage && !render) {
     children = (
       <div className="flex items-center justify-center w-screen h-screen">
-        <div className="text-center text-[20px] text-red-400 px-10">
+        <div className="text-center text-[1.5rem] text-red-400 px-10">
           <div>
-            This {isWebDev ? `${getWebTitle(name, url)} page` : "page"} not render By <Code className=" text-inherit text-[20px] ml-2">@my-react</Code>
+            This {isWebDev ? `${getWebTitle(name, url)} page` : "page"} not render By <Code className=" text-inherit text-[1.5rem] ml-2">@my-react</Code>
           </div>
           <Spacer className="my-2" />
           <Snippet symbol="" color="warning" variant="solid" hideCopyButton>
@@ -112,7 +113,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
                 placement="bottom-end"
               >
                 <Button isIconOnly disabled={state} onPress={() => reconnect?.()}>
-                  {state ? <CircleCheck className="text-green-500 w-[1.2em]" /> : <CircleX className=" text-red-500 w-[1.2em]" />}
+                  {state ? <CircleCheck className="text-green-500 w-[1.2rem]" /> : <CircleX className=" text-red-500 w-[1.2rem]" />}
                 </Button>
               </Tooltip>
             )}
@@ -137,14 +138,12 @@ export default function App({ Component, pageProps, router }: AppProps) {
   return (
     <HeroUIProvider>
       <style jsx global>{`
-        html {
+        .font-code {
           font-family: ${roboto.style.fontFamily} !important;
           --root-font--: ${roboto.style.fontFamily};
         }
-        body {
-          font-family: ${roboto.style.fontFamily} !important;
-        }
       `}</style>
+      <FontSize />
       <ThemeProvider attribute="class" defaultTheme="light">
         <ToastProvider />
         {rendered}

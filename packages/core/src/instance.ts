@@ -4,7 +4,7 @@ import { isNormalEquals } from "@my-react/react-shared";
 
 import { getNode, getNodeFromId } from "./data";
 import { DevToolMessageEnum, HMRStatus } from "./event";
-import { HighLight, Overlay, color as _color } from "./highlight";
+import { Highlight, Overlay } from "./highlight";
 import { type DispatcherType } from "./hook";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
@@ -97,10 +97,10 @@ export class DevToolCore {
 
   select: Overlay;
 
-  update: HighLight;
+  update: Highlight;
 
   constructor() {
-    this.update = new HighLight(this);
+    this.update = new Highlight(this);
   }
 
   getDispatch() {
@@ -147,6 +147,8 @@ export class DevToolCore {
 
     const debounceNotifyDomHover = debounce(() => {
       this.notifyDomHover();
+      this.disableBrowserHover();
+      this.notifyConfig();
     }, 100);
 
     const onMouseEnter = debounce((e: MouseEvent) => {
@@ -279,6 +281,14 @@ export class DevToolCore {
       this.notifyErrorStatus();
     }, 200);
 
+    const onTrace = () => {
+      if (!this.hasEnable) return;
+
+      if (!this._enableUpdate) return;
+
+      this.update.flushPending();
+    };
+
     const onChange = (list: ListTree<MyReactFiberNode>) => {
       if (!this.hasEnable) return;
 
@@ -405,7 +415,7 @@ export class DevToolCore {
       if (!id) return;
 
       if (this.hasEnable && this._enableUpdate) {
-        this.update.highLight(fiber, "warn");
+        this.update.addPending(fiber, "warn");
       }
 
       this.notifyHighlight(id, "performance");
@@ -413,24 +423,26 @@ export class DevToolCore {
 
     const onDOMUpdate = (fiber: MyReactFiberNode) => {
       if (this.hasEnable && this._enableUpdate) {
-        this.update.highLight(fiber, "update");
+        this.update.addPending(fiber, "update");
       }
     };
 
     const onDOMAppend = (fiber: MyReactFiberNode) => {
       if (this.hasEnable && this._enableUpdate) {
-        this.update.highLight(fiber, "append");
+        this.update.addPending(fiber, "append");
       }
     };
 
     const onDOMSetRef = (fiber: MyReactFiberNode) => {
       if (this.hasEnable && this._enableUpdate) {
-        this.update.highLight(fiber, "setRef");
+        this.update.addPending(fiber, "setRef");
       }
     };
 
     if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
       dispatch.onAfterCommit(onLoad);
+
+      dispatch.onAfterUpdate(onTrace);
 
       // dispatch.onAfterUpdate(onLoad);
 
@@ -666,8 +678,11 @@ export class DevToolCore {
 
     const state = Object.keys(this._trigger).reduce((p, c) => {
       const t = this._trigger[c];
+
       const f = t.filter((i: { isRetrigger?: boolean }) => (i.isRetrigger ? this._enableRetrigger : true));
+
       p[c] = f.length;
+
       return p;
     }, {});
 
@@ -703,6 +718,7 @@ export class DevToolCore {
       type: DevToolMessageEnum.warn,
       data: Object.keys(this._warn).reduce((p, c) => {
         p[c] = this._warn[c].length;
+
         return p;
       }, {}),
     });
@@ -731,6 +747,7 @@ export class DevToolCore {
       type: DevToolMessageEnum.error,
       data: Object.keys(this._error).reduce((p, c) => {
         p[c] = this._error[c].length;
+
         return p;
       }, {}),
     });
@@ -766,6 +783,7 @@ export class DevToolCore {
 
     const state = Object.keys(this._hmr).reduce((p, c) => {
       p[c] = this._hmr[c].length;
+
       return p;
     }, {});
 
@@ -1011,5 +1029,3 @@ export class DevToolCore {
     this.disableBrowserHover();
   }
 }
-
-export const color = _color;

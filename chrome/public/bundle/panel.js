@@ -3385,123 +3385,226 @@
     		    border: "rgba(255, 200, 50, 0.3)",
     		};
 
-    		var color$1 = {
-    		    update: "rgba(200,50,50,0.8)",
-    		    append: "rgba(50,200,50,0.8)",
-    		    setRef: "rgba(50,50,200,0.8)",
-    		    warn: "rgba(230,150,40,0.8)",
-    		};
-    		/**
-    		 * @internal
-    		 */
-    		var HighLight = /** @class */ (function () {
-    		    function HighLight(agent) {
-    		        var _this = this;
-    		        this.agent = agent;
-    		        this.mask = null;
-    		        this.range = document.createRange();
-    		        this.running = false;
-    		        this.__pendingUpdate__ = new Set();
-    		        this.__pendingAppend__ = new Set();
-    		        this.__pendingSetRef__ = new Set();
-    		        this.__pendingWarn__ = new Set();
-    		        this.width = 0;
-    		        this.height = 0;
-    		        this.ready = function () {
-    		            _this.mask = document.createElement("canvas");
-    		            _this.mask.setAttribute("data-update", "@my-react");
-    		            _this.mask.style.cssText = "\n      position: fixed;\n      z-index: 99999999;\n      left: 0;\n      top: 0;\n      pointer-events: none;\n      ";
-    		            document.documentElement.prepend(_this.mask);
-    		            _this.setSize();
-    		            window.addEventListener("resize", _this.setSize);
-    		        };
-    		        this.setSize = debounce(function () {
-    		            _this.width = window.innerWidth || document.documentElement.clientWidth;
-    		            _this.height = window.innerHeight || document.documentElement.clientHeight;
-    		            _this.mask.width = _this.width;
-    		            _this.mask.height = _this.height;
-    		        });
-    		        this.highLight = function (fiber, type) {
-    		            if (!_this.mask) {
-    		                _this.ready();
-    		            }
-    		            if (fiber.nativeNode) {
-    		                switch (type) {
-    		                    case "update":
-    		                        _this.__pendingUpdate__.add(fiber);
-    		                        break;
-    		                    case "append":
-    		                        _this.__pendingAppend__.add(fiber);
-    		                        break;
-    		                    case "setRef":
-    		                        _this.__pendingSetRef__.add(fiber);
-    		                        break;
-    		                    case "warn":
-    		                        _this.__pendingWarn__.add(fiber);
-    		                }
-    		            }
-    		            if (!_this.running) {
-    		                _this.running = true;
-    		                requestAnimationFrame(_this.flashPending);
-    		            }
-    		        };
-    		        this.processHighlight = function (fiber, context) {
-    		            if (reactShared.include(fiber.state, reactShared.STATE_TYPE.__unmount__) || !fiber.nativeNode)
-    		                return;
-    		            try {
-    		                var node = fiber.nativeNode;
-    		                if (node.nodeType === Node.TEXT_NODE) {
-    		                    _this.range.selectNodeContents(node);
-    		                }
-    		                else {
-    		                    _this.range.selectNode(node);
-    		                }
-    		                var rect = _this.range.getBoundingClientRect();
-    		                if ((rect.width || rect.height) &&
-    		                    rect.top >= 0 &&
-    		                    rect.left >= 0 &&
-    		                    rect.right <= (window.innerWidth || document.documentElement.clientWidth) &&
-    		                    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)) {
-    		                    // do the highlight paint
-    		                    var left = rect.left - 0.5;
-    		                    var top_1 = rect.top - 0.5;
-    		                    var width = rect.width + 1;
-    		                    var height = rect.height + 1;
-    		                    context.strokeRect(left < 0 ? 0 : left, top_1 < 0 ? 0 : top_1, width > window.innerWidth ? window.innerWidth : width, height > window.innerHeight ? window.innerHeight : height);
-    		                }
-    		            }
-    		            catch (_a) {
-    		            }
-    		        };
-    		        this.flashPending = function () {
-    		            var context = _this.mask.getContext("2d");
-    		            var allPendingUpdate = new Set(_this.__pendingUpdate__);
-    		            _this.__pendingUpdate__.clear();
-    		            context.strokeStyle = color$1.update;
-    		            allPendingUpdate.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
-    		            var allPendingAppend = new Set(_this.__pendingAppend__);
-    		            _this.__pendingAppend__.clear();
-    		            context.strokeStyle = color$1.append;
-    		            allPendingAppend.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
-    		            var allPendingSetRef = new Set(_this.__pendingSetRef__);
-    		            _this.__pendingSetRef__.clear();
-    		            context.strokeStyle = color$1.setRef;
-    		            allPendingSetRef.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
-    		            var allPendingWarn = new Set(_this.__pendingWarn__);
-    		            _this.__pendingWarn__.clear();
-    		            context.strokeStyle = color$1.warn;
-    		            allPendingWarn.forEach(function (fiber) { return _this.processHighlight(fiber, context); });
-    		            setTimeout(function () {
-    		                context.clearRect(0, 0, _this.width, _this.height);
-    		                _this.running = false;
-    		                if (_this.__pendingUpdate__.size || _this.__pendingAppend__.size || _this.__pendingSetRef__.size) {
-    		                    _this.running = true;
-    		                    _this.flashPending();
-    		                }
-    		            }, 100);
-    		        };
+    		// Note these colors are in sync with DevTools Profiler chart colors.
+    		var COLORS = ["#37afa9", "#63b19e", "#80b393", "#97b488", "#abb67d", "#beb771", "#cfb965", "#dfba57", "#efbb49", "#febc38"];
+    		var canvas = null;
+    		function drawWeb(nodeToData) {
+    		    if (canvas === null) {
+    		        initialize();
     		    }
-    		    return HighLight;
+    		    var dpr = window.devicePixelRatio || 1;
+    		    var canvasFlow = canvas;
+    		    canvasFlow.width = window.innerWidth * dpr;
+    		    canvasFlow.height = window.innerHeight * dpr;
+    		    canvasFlow.style.width = "".concat(window.innerWidth, "px");
+    		    canvasFlow.style.height = "".concat(window.innerHeight, "px");
+    		    var context = canvasFlow.getContext("2d");
+    		    context.scale(dpr, dpr);
+    		    context.clearRect(0, 0, canvasFlow.width / dpr, canvasFlow.height / dpr);
+    		    var mergedNodes = groupAndSortNodes(nodeToData);
+    		    mergedNodes.forEach(function (group) {
+    		        drawGroupBorders(context, group);
+    		        drawGroupLabel(context, group);
+    		    });
+    		}
+    		function groupAndSortNodes(nodeToData) {
+    		    var positionGroups = new Map();
+    		    iterateNodes(nodeToData, function (_a) {
+    		        var _b;
+    		        var rect = _a.rect, color = _a.color, displayName = _a.displayName, count = _a.count;
+    		        if (!rect)
+    		            return;
+    		        var key = "".concat(rect.left, ",").concat(rect.top);
+    		        if (!positionGroups.has(key))
+    		            positionGroups.set(key, []);
+    		        (_b = positionGroups.get(key)) === null || _b === void 0 ? void 0 : _b.push({ rect: rect, color: color, displayName: displayName, count: count });
+    		    });
+    		    return Array.from(positionGroups.values()).sort(function (groupA, groupB) {
+    		        var maxCountA = Math.max.apply(Math, groupA.map(function (item) { return item.count; }));
+    		        var maxCountB = Math.max.apply(Math, groupB.map(function (item) { return item.count; }));
+    		        return maxCountA - maxCountB;
+    		    });
+    		}
+    		function drawGroupBorders(context, group) {
+    		    group.forEach(function (_a) {
+    		        var color = _a.color, rect = _a.rect;
+    		        context.beginPath();
+    		        context.strokeStyle = color;
+    		        context.rect(rect.left, rect.top, rect.width - 1, rect.height - 1);
+    		        context.stroke();
+    		    });
+    		}
+    		function drawGroupLabel(context, group) {
+    		    var mergedName = group
+    		        .map(function (_a) {
+    		        var displayName = _a.displayName, count = _a.count;
+    		        return (displayName ? "".concat(displayName).concat(count > 1 ? " x".concat(count) : "") : "");
+    		    })
+    		        .filter(Boolean)
+    		        .join(", ");
+    		    if (mergedName) {
+    		        drawLabel(context, group[0].rect, mergedName, group[0].color);
+    		    }
+    		}
+    		function draw(nodeToData) {
+    		    drawWeb(nodeToData);
+    		}
+    		function iterateNodes(nodeToData, execute) {
+    		    nodeToData.forEach(function (data, node) {
+    		        var colorIndex = Math.min(COLORS.length - 1, data.count - 1);
+    		        var color = COLORS[colorIndex];
+    		        execute({
+    		            color: color,
+    		            node: node,
+    		            count: data.count,
+    		            displayName: data.displayName,
+    		            expirationTime: data.expirationTime,
+    		            lastMeasuredAt: data.lastMeasuredAt,
+    		            rect: data.rect,
+    		        });
+    		    });
+    		}
+    		function drawLabel(context, rect, text, color) {
+    		    var left = rect.left, top = rect.top;
+    		    context.font = "10px monospace";
+    		    context.textBaseline = "middle";
+    		    context.textAlign = "center";
+    		    var padding = 2;
+    		    var textHeight = 14;
+    		    var metrics = context.measureText(text);
+    		    var backgroundWidth = metrics.width + padding * 2;
+    		    var backgroundHeight = textHeight;
+    		    var labelX = left;
+    		    var labelY = top - backgroundHeight;
+    		    context.fillStyle = color;
+    		    context.fillRect(labelX, labelY, backgroundWidth, backgroundHeight);
+    		    context.fillStyle = "#000000";
+    		    context.fillText(text, labelX + backgroundWidth / 2, labelY + backgroundHeight / 2);
+    		}
+    		function destroyWeb() {
+    		    if (canvas !== null) {
+    		        if (canvas.parentNode != null) {
+    		            canvas.parentNode.removeChild(canvas);
+    		        }
+    		        canvas = null;
+    		    }
+    		}
+    		function destroy() {
+    		    return destroyWeb();
+    		}
+    		function initialize() {
+    		    canvas = window.document.createElement("canvas");
+    		    canvas.style.cssText = "\n    xx-background-color: red;\n    xx-opacity: 0.5;\n    bottom: 0;\n    left: 0;\n    pointer-events: none;\n    position: fixed;\n    right: 0;\n    top: 0;\n    z-index: 1000000000;\n  ";
+    		    canvas.setAttribute("data-update", "@my-react");
+    		    var root = window.document.documentElement;
+    		    root.insertBefore(canvas, root.firstChild);
+    		}
+
+    		// How long the rect should be shown for?
+    		var DISPLAY_DURATION = 250;
+    		// What's the longest we are willing to show the overlay for?
+    		// This can be important if we're getting a flurry of events (e.g. scroll update).
+    		var MAX_DISPLAY_DURATION = 3000;
+    		// How long should a rect be considered valid for?
+    		var REMEASUREMENT_AFTER_DURATION = 250;
+    		// Markers for different types of HOCs
+    		// const HOC_MARKERS = new Map([
+    		//   ['Forget', '✨'],
+    		//   ['Memo', '🧠'],
+    		// ]);
+    		// Some environments (e.g. React Native / Hermes) don't support the performance API yet.
+    		var getCurrentTime = 
+    		// $FlowFixMe[method-unbinding]
+    		typeof performance === "object" && typeof performance.now === "function" ? function () { return performance.now(); } : function () { return Date.now(); };
+    		var nodeToData = new Map();
+    		var drawAnimationFrameID = null;
+    		var redrawTimeoutID = null;
+    		function traceUpdates(fibers) {
+    		    fibers.forEach(function (fiber) {
+    		        var node = fiber.nativeNode;
+    		        if (!node)
+    		            return;
+    		        var data = nodeToData.get(node);
+    		        var now = getCurrentTime();
+    		        var lastMeasuredAt = data != null ? data.lastMeasuredAt : 0;
+    		        var rect = data != null ? data.rect : null;
+    		        if (rect === null || lastMeasuredAt + REMEASUREMENT_AFTER_DURATION < now) {
+    		            lastMeasuredAt = now;
+    		            rect = measureNode(node);
+    		        }
+    		        var displayName = getFiberName(fiber);
+    		        nodeToData.set(node, {
+    		            count: data != null ? data.count + 1 : 1,
+    		            expirationTime: data != null ? Math.min(now + MAX_DISPLAY_DURATION, data.expirationTime + DISPLAY_DURATION) : now + DISPLAY_DURATION,
+    		            lastMeasuredAt: lastMeasuredAt,
+    		            rect: rect,
+    		            displayName: displayName,
+    		        });
+    		    });
+    		    if (redrawTimeoutID !== null) {
+    		        clearTimeout(redrawTimeoutID);
+    		        redrawTimeoutID = null;
+    		    }
+    		    if (drawAnimationFrameID === null) {
+    		        drawAnimationFrameID = requestAnimationFrame(prepareToDraw);
+    		    }
+    		}
+    		function prepareToDraw() {
+    		    drawAnimationFrameID = null;
+    		    redrawTimeoutID = null;
+    		    var now = getCurrentTime();
+    		    var earliestExpiration = Number.MAX_VALUE;
+    		    // Remove any items that have already expired.
+    		    nodeToData.forEach(function (data, node) {
+    		        if (data.expirationTime < now) {
+    		            nodeToData.delete(node);
+    		        }
+    		        else {
+    		            earliestExpiration = Math.min(earliestExpiration, data.expirationTime);
+    		        }
+    		    });
+    		    draw(nodeToData);
+    		    if (earliestExpiration !== Number.MAX_VALUE) {
+    		        redrawTimeoutID = setTimeout(prepareToDraw, earliestExpiration - now);
+    		    }
+    		}
+    		function measureNode(node) {
+    		    if (!node || typeof node.getBoundingClientRect !== "function") {
+    		        return null;
+    		    }
+    		    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    		    // @ts-ignore
+    		    var currentWindow = window.__REACT_DEVTOOLS_TARGET_WINDOW__ || window;
+    		    return getNestedBoundingClientRect(node, currentWindow);
+    		}
+    		var Highlight = /** @class */ (function () {
+    		    function Highlight(agent) {
+    		        this.agent = agent;
+    		        this.pendingUpdates = new Set();
+    		        this.agent = agent;
+    		    }
+    		    Highlight.prototype.addPending = function (fiber, type) {
+    		        if (type === "update") {
+    		            this.pendingUpdates.add(fiber);
+    		        }
+    		    };
+    		    Highlight.prototype.flushPending = function () {
+    		        traceUpdates(this.pendingUpdates);
+    		        this.pendingUpdates.clear();
+    		    };
+    		    Highlight.prototype.cancelPending = function () {
+    		        nodeToData.clear();
+    		        if (drawAnimationFrameID !== null) {
+    		            cancelAnimationFrame(drawAnimationFrameID);
+    		            drawAnimationFrameID = null;
+    		        }
+    		        if (redrawTimeoutID !== null) {
+    		            clearTimeout(redrawTimeoutID);
+    		            redrawTimeoutID = null;
+    		        }
+    		        destroy();
+    		    };
+    		    return Highlight;
     		}());
 
     		// TODO use 'eventListener' instead of 'patchFunction'
@@ -3596,7 +3699,7 @@
     		            _this.notifyError();
     		            _this.notifyErrorStatus();
     		        }, 200);
-    		        this.update = new HighLight(this);
+    		        this.update = new Highlight(this);
     		    }
     		    DevToolCore.prototype.getDispatch = function () {
     		        return Array.from(this._dispatch);
@@ -3629,6 +3732,8 @@
     		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        var debounceNotifyDomHover = debounce(function () {
     		            _this.notifyDomHover();
+    		            _this.disableBrowserHover();
+    		            _this.notifyConfig();
     		        }, 100);
     		        var onMouseEnter = debounce(function (e) {
     		            var _a, _b, _c, _d;
@@ -3715,6 +3820,13 @@
     		            _this.notifyWarnStatus();
     		            _this.notifyErrorStatus();
     		        }, 200);
+    		        var onTrace = function () {
+    		            if (!_this.hasEnable)
+    		                return;
+    		            if (!_this._enableUpdate)
+    		                return;
+    		            _this.update.flushPending();
+    		        };
     		        var onChange = function (list) {
     		            if (!_this.hasEnable)
     		                return;
@@ -3813,27 +3925,28 @@
     		            if (!id)
     		                return;
     		            if (_this.hasEnable && _this._enableUpdate) {
-    		                _this.update.highLight(fiber, "warn");
+    		                _this.update.addPending(fiber, "warn");
     		            }
     		            _this.notifyHighlight(id, "performance");
     		        };
     		        var onDOMUpdate = function (fiber) {
     		            if (_this.hasEnable && _this._enableUpdate) {
-    		                _this.update.highLight(fiber, "update");
+    		                _this.update.addPending(fiber, "update");
     		            }
     		        };
     		        var onDOMAppend = function (fiber) {
     		            if (_this.hasEnable && _this._enableUpdate) {
-    		                _this.update.highLight(fiber, "append");
+    		                _this.update.addPending(fiber, "append");
     		            }
     		        };
     		        var onDOMSetRef = function (fiber) {
     		            if (_this.hasEnable && _this._enableUpdate) {
-    		                _this.update.highLight(fiber, "setRef");
+    		                _this.update.addPending(fiber, "setRef");
     		            }
     		        };
     		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
     		            dispatch.onAfterCommit(onLoad);
+    		            dispatch.onAfterUpdate(onTrace);
     		            // dispatch.onAfterUpdate(onLoad);
     		            (_a = dispatch.onAfterUnmount) === null || _a === void 0 ? void 0 : _a.call(dispatch, onUnmount);
     		            (_b = dispatch.onFiberState) === null || _b === void 0 ? void 0 : _b.call(dispatch, onFiberState);
@@ -4234,13 +4347,11 @@
     		    };
     		    return DevToolCore;
     		}());
-    		var color = color$1;
 
     		exports.DevToolCore = DevToolCore;
     		exports.DevToolSource = DevToolSource;
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
-    		exports.color = color;
     		exports.debounce = debounce;
     		exports.generateTreeMap = generateTreeMap;
     		exports.getComponentFiberByDom = getComponentFiberByDom;

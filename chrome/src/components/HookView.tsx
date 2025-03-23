@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
-import { useUISize } from "@/hooks/useUISize";
 
 import { NodeValue } from "./NodeValue";
 
@@ -64,8 +63,6 @@ export const HookView = () => {
 
   const nodeList = useDetailNode((s) => s.nodes);
 
-  const size = useUISize.useShallowStableSelector((s) => s.state);
-
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
   const id = currentSelectDetail?.i;
@@ -74,22 +71,24 @@ export const HookView = () => {
 
   const hasHook = hookList.length > 0;
 
-  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
-
   if (hasHook) {
     return (
-      <div className="p-2">
-        <div className="flex items-center justify-between">
-          <span>hooks</span>
-        </div>
-        <Spacer y={1} />
-        <div className={`w-full ${sizeClass} tree-wrapper`}>
-          {hookList.map((item, index) => (
-            <HookViewTree item={item as HOOKTree} key={id + "-" + index} />
-          ))}
+      <>
+        <div className="node-hooks p-2 pb-0">
+          <div className="flex items-center justify-between">
+            <span>hooks</span>
+          </div>
+          <Spacer y={1} />
+          <div className={`w-full font-code font-sm`}>
+            {hookList.map((item, index) => (
+              <div className="tree-wrapper" key={id + "-" + index}>
+                <HookViewTree item={item as HOOKTree} />
+              </div>
+            ))}
+          </div>
         </div>
         <Divider />
-      </div>
+      </>
     );
   } else {
     return null;

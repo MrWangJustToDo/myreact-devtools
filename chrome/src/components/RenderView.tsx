@@ -7,7 +7,6 @@ import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
-import { useUISize } from "@/hooks/useUISize";
 import { checkHasInclude } from "@/utils/node";
 
 import { TreeItem } from "./TreeItem";
@@ -19,17 +18,11 @@ export const RenderView = () => {
 
   const nodeList = useDetailNode((s) => s.nodes);
 
-  const size = useUISize.useShallowStableSelector((s) => s.state);
-
-  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
-
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
   const t = currentSelectDetail?.["_t"];
 
   let renderTree = currentSelectDetail?.["_t"];
-
-  // const [isScrolling, setIsScrolling] = useState(false);
 
   const filterType = useFilterNode((s) => s.filter);
 
@@ -63,7 +56,7 @@ export const RenderView = () => {
     if (!node) return null;
 
     return (
-      <div className={`${sizeClass} ml-2 `} key={node.i}>
+      <div className={`ml-2`} key={node.i}>
         <TreeItem node={node} withCollapse={false} />
       </div>
     );
@@ -71,17 +64,19 @@ export const RenderView = () => {
 
   if (t?.length) {
     return (
-      <div className="p-2">
-        <div>renders</div>
-        <Spacer y={1} />
-        <div className="w-full">
-          {data.map((_, index) => render(index))}
-          {mode && <div className={`${sizeClass} ml-2  px-[2px]`}>{mode}</div>}
-          <div className={`${sizeClass} ml-2  px-[2px]`}>{last || "@my-react"}</div>
-          {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
+      <>
+        <div className="node-renders p-2 pb-0">
+          <div>renders</div>
+          <Spacer y={1} />
+          <div className="w-full font-code font-sm">
+            {data.map((_, index) => render(index))}
+            {mode && <div className={`ml-2 px-[2px]`}>{mode}</div>}
+            <div className={`ml-2 px-[2px]`}>{last || "@my-react"}</div>
+            {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
+          </div>
         </div>
         <Divider />
-      </div>
+      </>
     );
   } else {
     return null;

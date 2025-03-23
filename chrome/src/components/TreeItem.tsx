@@ -18,7 +18,7 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
 
   if (tag?.length) {
     return (
-      <div className=" gap-x-[2px] flex items-center">
+      <div className="gap-x-[2px] flex items-center">
         {tag.map((tag) => (
           <Chip
             key={tag}
@@ -43,7 +43,7 @@ const RenderKey = memo(({ node }: { node: PlainNode }) => {
   const finalKey = useNodeName(useCallback((s) => s.map?.[node.k!], [node.k]));
 
   return (
-    <div data-key className="flex items-center gap-x-[1px] text-[12px]">
+    <div data-key className="flex items-center gap-x-[1px] text-[11px]">
       <div className=" text-[#40af2c]">key</div>
       <div className=" text-gray-400">=</div>
       <div className="flex">
@@ -112,8 +112,6 @@ export const TreeItem = ({
     <Play fill="currentColor" className={`origin-center ${!currentIsClose ? "rotate-90" : ""}`} width="0.7em" height="0.7em" />
   ) : null;
 
-  // const StateIcon = hasChild ? !currentIsClose ? <TriangleDownIcon width={16} height={16} /> : <TriangleRightIcon width={16} height={16} /> : null;
-
   const deep = current._d || 0;
 
   return (
@@ -136,7 +134,7 @@ export const TreeItem = ({
         }
       }}
       className={
-        "w-full h-full node-item cursor-pointer transition-transform-background rounded-sm select-none " +
+        "node-item w-full h-full cursor-pointer transition-transform-background rounded-sm select-none " +
         (className || "") +
         `${withSelect ? (hasSelect ? " node-item-select-hover" : " node-item-hover") : ""}` +
         `${hasSelect ? " node-item-select" : ""}` +
@@ -156,7 +154,7 @@ export const TreeItem = ({
           <div data-content className="flex items-center w-fit">
             {withCollapse && (
               <span
-                className={" text-gray-400 w-[1em]" + (hasChild ? " hover:text-gray-700" : "")}
+                className={"text-gray-400 w-[1em]" + (hasChild ? " hover:text-gray-700" : "")}
                 onClick={(e) => {
                   e.stopPropagation();
                   setClose(node.i);

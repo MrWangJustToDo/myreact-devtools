@@ -6,7 +6,6 @@ import { useAppTree } from "@/hooks/useAppTree";
 // import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useDomSize } from "@/hooks/useSize";
-import { UISize, useUISize } from "@/hooks/useUISize";
 
 import { TreeItem } from "./TreeItem";
 import { TreeViewSetting } from "./TreeViewSetting";
@@ -56,14 +55,12 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
   dataRef.current = data;
 
-  const size = useUISize.useShallowStableSelector((s) => s.state);
-
   const render = (index: number, _: unknown) => {
     const node = data[index];
 
     if (!node) return null;
 
-    return <TreeItem node={node} className={size === UISize.sm ? "text-[12px]" : size === UISize.md ? "text-[13.5px]" : "text-[15px]"} />;
+    return <TreeItem node={node} />;
   };
 
   useEffect(() => {
@@ -89,7 +86,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     return () => onMount();
   }, [onMount]);
 
-  return <Virtuoso ref={ref} increaseViewportBy={500} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
+  return <Virtuoso className="font-code font-sm" ref={ref} increaseViewportBy={500} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
 });
 
 TreeViewImpl.displayName = "TreeViewImpl";

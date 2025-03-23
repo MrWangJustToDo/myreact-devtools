@@ -6,22 +6,17 @@ import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
-import { useUISize } from "@/hooks/useUISize";
 
 import { NodeValue } from "./NodeValue";
 
 const Trigger = ({ select }: { select: string }) => {
   const trigger = useDetailNodeExt((s) => s.triggerStatus);
 
-  const size = useUISize.useShallowStableSelector((s) => s.state);
-
   const triggerCount = useTriggerNode.useShallowSelector((s) => s.state?.[select]);
-
-  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
   const render = useCallbackRef((index: number, item: NodeValueType) => {
     return (
-      <div className={`${sizeClass}  tree-wrapper`} key={index}>
+      <div className={`tree-wrapper`} key={index}>
         <NodeValue name={index.toString()} item={item} />
       </div>
     );
@@ -32,29 +27,27 @@ const Trigger = ({ select }: { select: string }) => {
   const hasTrigger = trigger?.length > 0;
 
   return hasTrigger ? (
-    <div className="p-2">
-      <div className="flex items-center justify-between">
-        <span>trigger</span>
+    <>
+      <div className="node-trigger p-2 pb-0">
+        <div className="flex items-center justify-between">
+          <span>trigger</span>
+        </div>
+        <Spacer y={1} />
+        <div className="w-full font-code font-sm">{trigger?.map((w, index) => render(startCount + index, w))}</div>
       </div>
-      <Spacer y={1} />
-      <div className="w-full">{trigger?.map((w, index) => render(startCount + index, w))}</div>
       <Divider />
-    </div>
+    </>
   ) : null;
 };
 
 const Warn = ({ select }: { select: string }) => {
   const warn = useDetailNodeExt((s) => s.warnStatus);
 
-  const size = useUISize.useShallowStableSelector((s) => s.state);
-
   const warnCount = useHighlightNode.useShallowSelector((s) => s.warn[select]);
-
-  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
   const render = useCallbackRef((index: number, item: NodeValueType) => {
     return (
-      <div className={`${sizeClass}  tree-wrapper`} key={index}>
+      <div className={`tree-wrapper`} key={index}>
         <NodeValue name={index.toString()} item={item} />
       </div>
     );
@@ -65,29 +58,27 @@ const Warn = ({ select }: { select: string }) => {
   const hasWarn = warn?.length > 0;
 
   return hasWarn ? (
-    <div className="p-2">
-      <div className="flex items-center justify-between">
-        <span>warn</span>
+    <>
+      <div className="node-warn p-2 pb-0">
+        <div className="flex items-center justify-between">
+          <span>warn</span>
+        </div>
+        <Spacer y={1} />
+        <div className="w-full font-code font-sm">{warn?.map((w, index) => render(startCount + index, w))}</div>
       </div>
-      <Spacer y={1} />
-      <div className="w-full">{warn?.map((w, index) => render(startCount + index, w))}</div>
       <Divider />
-    </div>
+    </>
   ) : null;
 };
 
 const Error = ({ select }: { select: string }) => {
   const error = useDetailNodeExt((s) => s.errorStatus);
 
-  const size = useUISize.useShallowStableSelector((s) => s.state);
-
   const errorCount = useHighlightNode.useShallowSelector((s) => s.error[select]);
-
-  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
 
   const render = useCallbackRef((index: number, item: NodeValueType) => {
     return (
-      <div className={`${sizeClass}  tree-wrapper`} key={index}>
+      <div className={`tree-wrapper`} key={index}>
         <NodeValue name={index.toString()} item={item} />
       </div>
     );
@@ -98,14 +89,16 @@ const Error = ({ select }: { select: string }) => {
   const hasError = error?.length > 0;
 
   return hasError ? (
-    <div className="p-2">
-      <div className="flex items-center justify-between">
-        <span>error</span>
+    <>
+      <div className="node-error p-2 pb-0">
+        <div className="flex items-center justify-between">
+          <span>error</span>
+        </div>
+        <Spacer y={1} />
+        <div className="w-full font-code font-sm">{error?.map((w, index) => render(startCount + index, w))}</div>
       </div>
-      <Spacer y={1} />
-      <div className="w-full">{error?.map((w, index) => render(startCount + index, w))}</div>
       <Divider />
-    </div>
+    </>
   ) : null;
 };
 

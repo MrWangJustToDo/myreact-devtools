@@ -15,11 +15,10 @@ import {
   RadioGroup,
   Radio,
   Divider,
-  Chip,
   Code,
 } from "@heroui/react";
-import { color, getTypeName, typeKeys } from "@my-react-devtool/core";
-import { CircleCheck, CircleX, Moon, Settings, Sun } from "lucide-react";
+import { getTypeName, typeKeys } from "@my-react-devtool/core";
+import { CircleCheck, CircleX, LetterText, ListFilter, Moon, Settings, Settings2, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { memo } from "react";
 
@@ -82,14 +81,17 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
       <Modal isOpen={isOpen} backdrop="blur" size="2xl" onClose={onClose} onOpenChange={onOpenChange} placement="top">
         <ModalContent>
           <ModalHeader>
-            <h3 className="text-[1em]">
+            <h3 className="font-lg">
               Setting - <Code>@my-react/devtool</Code>
             </h3>
           </ModalHeader>
-          <ModalBody className="text-[14px]">
+          <ModalBody>
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-col gap-y-2">
-                <p className="whitespace-nowrap text-[14px] text-foreground-500">Filter Node: </p>
+                <p className="whitespace-nowrap flex items-center text-foreground-500">
+                  <ListFilter className="w-[1.2em] mr-2" />
+                  Filter Node:
+                </p>
                 <div className="flex items-center">
                   <Select
                     selectionMode="multiple"
@@ -108,7 +110,10 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               </div>
               <Divider />
               <div className="flex flex-col gap-y-2">
-                <p className="whitespace-nowrap text-[14px] text-foreground-500">UI Size: </p>
+                <p className="whitespace-nowrap flex items-center text-foreground-500">
+                  <LetterText className="w-[1.2em] mr-2" />
+                  UI Size:
+                </p>
                 <RadioGroup value={size} onValueChange={(l) => setUISize(l as UISize)} orientation="horizontal" classNames={{ wrapper: "gap-x-6" }}>
                   <Radio value={UISize.sm}>Small Size</Radio>
                   <Radio value={UISize.md}>Medium Size</Radio>
@@ -117,17 +122,12 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               </div>
               <Divider />
               <div className="flex flex-col gap-y-2">
-                <p className="whitespace-nowrap text-[14px] text-foreground-500">Config: </p>
+                <p className="whitespace-nowrap flex items-center  text-foreground-500">
+                  <Settings2 className="w-[1.2em] mr-2" />
+                  Config:
+                </p>
                 <Checkbox isSelected={configState.enableUpdate} radius="full" onValueChange={setEnableUpdate} color="primary">
-                  <div className="flex items-center">
-                    Highlight Update
-                    <div className="ml-4 gap-x-2 flex">
-                      <Chip style={{ backgroundColor: color.update, mixBlendMode: "difference" }}>update</Chip>
-                      <Chip style={{ backgroundColor: color.append, mixBlendMode: "difference" }}>append</Chip>
-                      <Chip style={{ backgroundColor: color.setRef, mixBlendMode: "difference" }}>setRef</Chip>
-                      <Chip style={{ backgroundColor: color.warn, mixBlendMode: "difference" }}>warn</Chip>
-                    </div>
-                  </div>
+                  Highlight Update
                 </Checkbox>
                 <Checkbox isSelected={configState.enableHover} radius="full" onValueChange={setEnableHover} color="secondary">
                   Hover Overlay

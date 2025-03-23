@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  font-size: 13px;
-  color: #333;
-}
-
 svg {
   color: inherit;
 }

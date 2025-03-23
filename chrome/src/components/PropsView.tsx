@@ -3,7 +3,6 @@ import { Divider, Spacer } from "@heroui/react";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
-import { useUISize } from "@/hooks/useUISize";
 
 import { NodeValue } from "./NodeValue";
 
@@ -11,8 +10,6 @@ export const PropsView = () => {
   const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
-
-  const size = useUISize.useShallowStableSelector((s) => s.state);
 
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
@@ -22,12 +19,10 @@ export const PropsView = () => {
 
   const hasProps = propsKeys.length > 0;
 
-  const sizeClass = size === "sm" ? "text-[11px]" : size === "md" ? "text-[12px]" : "text-[13px]";
-
   const render = useCallbackRef((index: number) => {
     const key = propsKeys[index];
     return (
-      <div className={`${sizeClass}  tree-wrapper`} key={id + "-" + index}>
+      <div className={`tree-wrapper`} key={id + "-" + index}>
         <NodeValue name={key} type="props" editable item={currentSelectDetail?.p?.v?.[key]} />
       </div>
     );
@@ -35,14 +30,16 @@ export const PropsView = () => {
 
   if (hasProps) {
     return (
-      <div className="p-2">
-        <div className="flex items-center justify-between">
-          <span>props</span>
+      <>
+        <div className="node-props p-2 pb-0">
+          <div className="flex items-center justify-between">
+            <span>props</span>
+          </div>
+          <Spacer y={1} />
+          <div className="w-full font-code font-sm">{propsKeys.map((key, index) => render(index))}</div>
         </div>
-        <Spacer y={1} />
-        <div className="w-full">{propsKeys.map((key, index) => render(index))}</div>
         <Divider />
-      </div>
+      </>
     );
   } else {
     return null;
