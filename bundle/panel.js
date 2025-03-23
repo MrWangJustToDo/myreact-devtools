@@ -2178,6 +2178,15 @@
     		        r = r.parent;
     		    }
     		};
+    		var getComponentFiberByFiber = function (fiber) {
+    		    var r = fiber;
+    		    while (r) {
+    		        if (reactShared.include(r.type, exports.NODE_TYPE.__class__) || reactShared.include(r.type, exports.NODE_TYPE.__function__)) {
+    		            return r;
+    		        }
+    		        r = r.parent;
+    		    }
+    		};
     		var getElementNodesFromFiber = function (fiber) {
     		    var nodes = [];
     		    var fibers = fiber ? [fiber] : [];
@@ -3149,7 +3158,6 @@
     		    };
     		}
 
-    		// https://github.com/facebook/react/blob/main/packages/react-devtools-shared/src/backend/views/Highlighter/Overlay.js
     		/* eslint-disable @typescript-eslint/ban-ts-comment */
     		var assign = Object.assign;
     		// Note that the Overlay components are not affected by the active Theme,
@@ -3327,6 +3335,9 @@
     		            height: this.tipBoundsWindow.innerHeight,
     		            width: this.tipBoundsWindow.innerWidth,
     		        });
+    		    };
+    		    Overlay.prototype.inspectFiber = function (fiber) {
+    		        this.inspect(fiber, getElementNodesFromFiber(fiber));
     		    };
     		    return Overlay;
     		}());
@@ -3513,9 +3524,7 @@
     		//   ['Memo', '🧠'],
     		// ]);
     		// Some environments (e.g. React Native / Hermes) don't support the performance API yet.
-    		var getCurrentTime = 
-    		// $FlowFixMe[method-unbinding]
-    		typeof performance === "object" && typeof performance.now === "function" ? function () { return performance.now(); } : function () { return Date.now(); };
+    		var getCurrentTime = typeof performance === "object" && typeof performance.now === "function" ? function () { return performance.now(); } : function () { return Date.now(); };
     		var nodeToData = new Map();
     		var drawAnimationFrameID = null;
     		var redrawTimeoutID = null;
@@ -3532,7 +3541,8 @@
     		            lastMeasuredAt = now;
     		            rect = measureNode(node);
     		        }
-    		        var displayName = getFiberName(fiber);
+    		        var comFiber = getComponentFiberByFiber(fiber);
+    		        var displayName = getFiberName((comFiber || fiber));
     		        nodeToData.set(node, {
     		            count: data != null ? data.count + 1 : 1,
     		            expirationTime: data != null ? Math.min(now + MAX_DISPLAY_DURATION, data.expirationTime + DISPLAY_DURATION) : now + DISPLAY_DURATION,
@@ -3746,7 +3756,7 @@
     		                if (fiber) {
     		                    (_d = (_c = _this.select) === null || _c === void 0 ? void 0 : _c.remove) === null || _d === void 0 ? void 0 : _d.call(_c);
     		                    _this.select = new Overlay(_this);
-    		                    _this.select.inspect(fiber, getElementNodesFromFiber(fiber));
+    		                    _this.select.inspectFiber(fiber);
     		                    var id = getPlainNodeIdByFiber(fiber);
     		                    _this._tempDomHoverId = id;
     		                    // debounceNotifyDomHover();
@@ -4047,7 +4057,7 @@
     		        if (this._hoverId) {
     		            var fiber = getFiberNodeById(this._hoverId);
     		            if (fiber) {
-    		                this.select.inspect(fiber, getElementNodesFromFiber(fiber));
+    		                this.select.inspectFiber(fiber);
     		            }
     		        }
     		        else {
@@ -4355,6 +4365,7 @@
     		exports.debounce = debounce;
     		exports.generateTreeMap = generateTreeMap;
     		exports.getComponentFiberByDom = getComponentFiberByDom;
+    		exports.getComponentFiberByFiber = getComponentFiberByFiber;
     		exports.getContextName = getContextName;
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getElementName = getElementName;
