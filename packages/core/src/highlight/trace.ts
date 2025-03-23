@@ -1,3 +1,4 @@
+import { getComponentFiberByFiber } from "../tree";
 import { getFiberName } from "../utils";
 
 import { destroy as destroyCanvas, draw } from "./canvas";
@@ -24,9 +25,7 @@ const REMEASUREMENT_AFTER_DURATION = 250;
 // ]);
 
 // Some environments (e.g. React Native / Hermes) don't support the performance API yet.
-const getCurrentTime =
-  // $FlowFixMe[method-unbinding]
-  typeof performance === "object" && typeof performance.now === "function" ? () => performance.now() : () => Date.now();
+const getCurrentTime = typeof performance === "object" && typeof performance.now === "function" ? () => performance.now() : () => Date.now();
 
 export type Data = {
   count: number;
@@ -59,8 +58,10 @@ function traceUpdates(fibers: Set<MyReactFiberNode>): void {
       rect = measureNode(node);
     }
 
-    const displayName = getFiberName(fiber as MyReactFiberNodeDev);
+    const comFiber = getComponentFiberByFiber(fiber);
 
+    const displayName = getFiberName((comFiber || fiber) as MyReactFiberNodeDev);
+    
     nodeToData.set(node, {
       count: data != null ? data.count + 1 : 1,
       expirationTime: data != null ? Math.min(now + MAX_DISPLAY_DURATION, data.expirationTime + DISPLAY_DURATION) : now + DISPLAY_DURATION,

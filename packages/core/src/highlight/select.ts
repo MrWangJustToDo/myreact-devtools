@@ -1,6 +1,5 @@
-// https://github.com/facebook/react/blob/main/packages/react-devtools-shared/src/backend/views/Highlighter/Overlay.js
-
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { getElementNodesFromFiber } from "../tree";
 import { getFiberName } from "../utils";
 
 import { getElementDimensions, getNestedBoundingClientRect } from "./utils";
@@ -8,7 +7,7 @@ import { getElementDimensions, getNestedBoundingClientRect } from "./utils";
 import type { Rect } from "./utils";
 import type { DevToolCore } from "../instance";
 import type { MyReactElement } from "@my-react/react";
-import type { MyReactFiberNodeDev } from "@my-react/react-reconciler";
+import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 
 type Box = { top: number; left: number; width: number; height: number };
 
@@ -216,7 +215,7 @@ export class Overlay {
     const owner = typedEle?._owner;
 
     const ownerName = owner ? getFiberName(owner as MyReactFiberNodeDev) : null;
-    
+
     if (ownerName) {
       name += " (in " + ownerName + ")";
     }
@@ -239,6 +238,10 @@ export class Overlay {
         width: this.tipBoundsWindow.innerWidth,
       }
     );
+  }
+
+  inspectFiber(fiber: MyReactFiberNode) {
+    this.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
   }
 }
 

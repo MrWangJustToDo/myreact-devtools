@@ -21,7 +21,7 @@ import {
 import { debounce, setPlatform, throttle } from "./utils";
 
 import type { Tree } from "./tree";
-import type { CustomRenderPlatform, MyReactFiberNode, MyReactFiberNodeDev, UpdateState } from "@my-react/react-reconciler";
+import type { CustomRenderPlatform, MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
 export type DevToolMessageType = {
@@ -166,7 +166,7 @@ export class DevToolCore {
 
           this.select = new Overlay(this);
 
-          this.select.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
+          this.select.inspectFiber(fiber);
 
           const id = getPlainNodeIdByFiber(fiber);
 
@@ -586,7 +586,7 @@ export class DevToolCore {
       const fiber = getFiberNodeById(this._hoverId);
 
       if (fiber) {
-        this.select.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
+        this.select.inspectFiber(fiber);
       }
     } else {
       this.select?.remove?.();
