@@ -3430,7 +3430,9 @@
     		            positionGroups.set(key, []);
     		        (_b = positionGroups.get(key)) === null || _b === void 0 ? void 0 : _b.push({ rect: rect, color: color, displayName: displayName, count: count });
     		    });
-    		    return Array.from(positionGroups.values()).sort(function (groupA, groupB) {
+    		    return Array.from(positionGroups.values())
+    		        .reverse()
+    		        .sort(function (groupA, groupB) {
     		        var maxCountA = Math.max.apply(Math, groupA.map(function (item) { return item.count; }));
     		        var maxCountB = Math.max.apply(Math, groupB.map(function (item) { return item.count; }));
     		        return maxCountA - maxCountB;
