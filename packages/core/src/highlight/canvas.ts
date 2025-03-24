@@ -50,11 +50,13 @@ export function groupAndSortNodes(nodeToData: Map<HTMLElement, Data>): Array<Arr
     positionGroups.get(key)?.push({ rect, color, displayName, count });
   });
 
-  return Array.from(positionGroups.values()).sort((groupA, groupB) => {
-    const maxCountA = Math.max(...groupA.map((item) => item.count));
-    const maxCountB = Math.max(...groupB.map((item) => item.count));
-    return maxCountA - maxCountB;
-  });
+  return Array.from(positionGroups.values())
+    .reverse()
+    .sort((groupA, groupB) => {
+      const maxCountA = Math.max(...groupA.map((item) => item.count));
+      const maxCountB = Math.max(...groupB.map((item) => item.count));
+      return maxCountA - maxCountB;
+    });
 }
 
 function drawGroupBorders(context: CanvasRenderingContext2D, group: Array<GroupItem>) {
@@ -143,7 +145,7 @@ export function destroy(): void {
 
 function initialize(): void {
   canvas = window.document.createElement("canvas");
-  
+
   canvas.style.cssText = `
     xx-background-color: red;
     xx-opacity: 0.5;
