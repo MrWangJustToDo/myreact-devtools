@@ -4422,14 +4422,36 @@
     chrome.runtime.onMessage.addListener(function (message, sender) {
         var _a;
         if (((_a = sender.tab) === null || _a === void 0 ? void 0 : _a.id) && message.type === coreExports.MessageHookType.mount) {
-            chrome.action.setPopup({ tabId: sender.tab.id, popup: chrome.runtime.getURL("enablePopup.html") });
-            chrome.action.setIcon({
-                tabId: sender.tab.id,
-                path: {
-                    48: chrome.runtime.getURL("icons/48-s.png"),
-                    128: chrome.runtime.getURL("icons/128-s.png"),
-                },
-            });
+            if (message.data === "develop") {
+                chrome.action.setPopup({ tabId: sender.tab.id, popup: chrome.runtime.getURL("enablePopupDev.html") });
+                chrome.action.setIcon({
+                    tabId: sender.tab.id,
+                    path: {
+                        48: chrome.runtime.getURL("icons/48-s-d.png"),
+                        128: chrome.runtime.getURL("icons/128-s-d.png"),
+                    },
+                });
+            }
+            else if (message.data === "product") {
+                chrome.action.setPopup({ tabId: sender.tab.id, popup: chrome.runtime.getURL("enablePopupPro.html") });
+                chrome.action.setIcon({
+                    tabId: sender.tab.id,
+                    path: {
+                        48: chrome.runtime.getURL("icons/48-s.png"),
+                        128: chrome.runtime.getURL("icons/128-s.png"),
+                    },
+                });
+            }
+            else {
+                chrome.action.setPopup({ tabId: sender.tab.id, popup: chrome.runtime.getURL("enablePopup.html") });
+                chrome.action.setIcon({
+                    tabId: sender.tab.id,
+                    path: {
+                        48: chrome.runtime.getURL("icons/48-s.png"),
+                        128: chrome.runtime.getURL("icons/128-s.png"),
+                    },
+                });
+            }
         }
     });
 

@@ -14,7 +14,7 @@
   "permissions": ["storage", "scripting", "tabs", "activeTab"],
   "web_accessible_resources": [
     {
-      "resources": ["icons/*.png", "bundle/*.js", "disablePopup.html", "devTool.html", "enablePopup.html"],
+      "resources": ["icons/*.png", "bundle/*.js", "disablePopup.html", "devTool.html", "enablePopup.html", "enablePopupDev.html", "enablePopupPro.html"],
       "matches": ["<all_urls>"]
     }
   ],

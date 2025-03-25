@@ -4430,7 +4430,8 @@
         }
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === coreExports.MessageHookType.mount) {
             runWhenHookReady(function () {
-                chrome.runtime.sendMessage({ type: coreExports.MessageHookType.mount, from: sourceFrom.detector });
+                var _a;
+                chrome.runtime.sendMessage({ type: coreExports.MessageHookType.mount, from: sourceFrom.detector, data: (_a = message.data) === null || _a === void 0 ? void 0 : _a.data });
             });
         }
     };
