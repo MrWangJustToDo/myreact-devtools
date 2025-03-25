@@ -49,7 +49,7 @@ const onMessage = (message: MessageEvent<MessageHookDataType>) => {
         console.log("[@my-react-devtool/detector] hook mount");
       }
 
-      chrome.runtime.sendMessage({ type: MessageHookType.mount, from: sourceFrom.detector });
+      chrome.runtime.sendMessage({ type: MessageHookType.mount, from: sourceFrom.detector, data: message.data?.data });
     });
   }
 };

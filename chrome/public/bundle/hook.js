@@ -4718,6 +4718,12 @@
         // current site is render by @my-react
         hookPostMessageWithSource({ type: coreExports.MessageHookType.mount });
     });
+    var onceDev = reactSharedExports.once(function () {
+        hookPostMessageWithSource({ type: coreExports.MessageHookType.mount, data: "develop" });
+    });
+    var oncePro = reactSharedExports.once(function () {
+        hookPostMessageWithSource({ type: coreExports.MessageHookType.mount, data: "product" });
+    });
     var onceOrigin = reactSharedExports.once(function () {
         try {
             var origin_1 = window.location.origin;
@@ -4732,7 +4738,16 @@
     var globalHook = function (dispatch, platform) {
         set.add(dispatch);
         core.addDispatch(dispatch, platform);
-        runWhenDetectorReady(onceMount);
+        var typedDispatch = dispatch;
+        if (typedDispatch.mode === 'development') {
+            runWhenDetectorReady(onceDev);
+        }
+        else if (typedDispatch.mode === 'production') {
+            runWhenDetectorReady(oncePro);
+        }
+        else {
+            runWhenDetectorReady(onceMount);
+        }
         runWhenDetectorReady(onceOrigin);
     };
     window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;

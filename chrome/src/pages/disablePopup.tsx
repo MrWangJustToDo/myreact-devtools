@@ -7,7 +7,7 @@ export default function Page() {
         <span className="mr-1">
           <CircleX className="h-[1.2em]" />
         </span>
-        <p className="text-red-400 text-nowrap">This website not build with @my-react</p>
+        <p className="text-red-400 text-nowrap">This website not build on @my-react</p>
       </div>
     </main>
   );

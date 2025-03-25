@@ -82,6 +82,14 @@ const onceMount = once(() => {
   hookPostMessageWithSource({ type: MessageHookType.mount });
 });
 
+const onceDev = once(() => {
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: "develop" });
+});
+
+const oncePro = once(() => {
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: "product" });
+});
+
 const onceOrigin = once(() => {
   try {
     const origin = window.location.origin;
@@ -101,7 +109,15 @@ const globalHook = (dispatch: CustomRenderDispatch, platform?: CustomRenderPlatf
 
   core.addDispatch(dispatch, platform);
 
-  runWhenDetectorReady(onceMount);
+  const typedDispatch = dispatch as CustomRenderDispatch & { mode: string };
+
+  if (typedDispatch.mode === 'development') {
+    runWhenDetectorReady(onceDev);
+  } else if (typedDispatch.mode === 'production') {
+    runWhenDetectorReady(oncePro);
+  } else {
+    runWhenDetectorReady(onceMount);
+  }
 
   runWhenDetectorReady(onceOrigin);
 };
