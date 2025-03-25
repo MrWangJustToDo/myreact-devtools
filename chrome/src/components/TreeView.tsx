@@ -86,7 +86,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     return () => onMount();
   }, [onMount]);
 
-  return <Virtuoso className="font-code font-sm" ref={ref} increaseViewportBy={500} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
+  return <Virtuoso className="font-code font-sm overflow-x-hidden" ref={ref} increaseViewportBy={500} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
 });
 
 TreeViewImpl.displayName = "TreeViewImpl";
