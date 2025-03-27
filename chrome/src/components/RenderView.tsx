@@ -13,6 +13,8 @@ import { TreeItem } from "./TreeItem";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
+const { scrollIntoView } = useSelectNode.getActions();
+
 export const RenderView = () => {
   const select = useSelectNode((s) => s.select);
 
@@ -56,7 +58,7 @@ export const RenderView = () => {
     if (!node) return null;
 
     return (
-      <div className={`ml-2`} key={node.i}>
+      <div className={`ml-2`} key={node.i} onClick={scrollIntoView}>
         <TreeItem node={node} withCollapse={false} />
       </div>
     );

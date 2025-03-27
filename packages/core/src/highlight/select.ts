@@ -239,10 +239,6 @@ export class Overlay {
       }
     );
   }
-
-  inspectFiber(fiber: MyReactFiberNode) {
-    this.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
-  }
 }
 
 function findTipPos(dims: Box, bounds: Box, tipSize: { height: number; width: number }) {
@@ -300,3 +296,23 @@ const overlayStyles = {
   margin: "rgba(255, 155, 0, 0.3)",
   border: "rgba(255, 200, 50, 0.3)",
 };
+
+export class Select {
+  overlay: Overlay;
+
+  constructor(public readonly agent: DevToolCore) {
+    this.agent = agent;
+  }
+
+  inspect(fiber: MyReactFiberNode) {
+    this.overlay?.remove?.();
+
+    this.overlay = new Overlay(this.agent);
+
+    this.overlay.inspect(fiber as MyReactFiberNodeDev, getElementNodesFromFiber(fiber));
+  }
+
+  remove() {
+    this.overlay?.remove?.();
+  }
+}

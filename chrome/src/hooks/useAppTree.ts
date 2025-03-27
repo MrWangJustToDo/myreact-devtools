@@ -1,6 +1,7 @@
 import { type PlainNode, type Tree } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
 
+import { isServer } from "@/utils/isServer";
 import { flattenNode } from "@/utils/node";
 
 import { useFilterNode } from "./useFilterNode";
@@ -75,3 +76,7 @@ export const useAppTree = createState(
     // withNamespace: "useAppTree",
   }
 );
+
+if (!isServer) {
+  window.useAppTree = useAppTree;
+}

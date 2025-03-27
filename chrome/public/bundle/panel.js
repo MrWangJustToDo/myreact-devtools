@@ -3336,9 +3336,6 @@
     		            width: this.tipBoundsWindow.innerWidth,
     		        });
     		    };
-    		    Overlay.prototype.inspectFiber = function (fiber) {
-    		        this.inspect(fiber, getElementNodesFromFiber(fiber));
-    		    };
     		    return Overlay;
     		}());
     		function findTipPos(dims, bounds, tipSize) {
@@ -3395,6 +3392,23 @@
     		    margin: "rgba(255, 155, 0, 0.3)",
     		    border: "rgba(255, 200, 50, 0.3)",
     		};
+    		var Select = /** @class */ (function () {
+    		    function Select(agent) {
+    		        this.agent = agent;
+    		        this.agent = agent;
+    		    }
+    		    Select.prototype.inspect = function (fiber) {
+    		        var _a, _b;
+    		        (_b = (_a = this.overlay) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		        this.overlay = new Overlay(this.agent);
+    		        this.overlay.inspect(fiber, getElementNodesFromFiber(fiber));
+    		    };
+    		    Select.prototype.remove = function () {
+    		        var _a, _b;
+    		        (_b = (_a = this.overlay) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		    };
+    		    return Select;
+    		}());
 
     		// Note these colors are in sync with DevTools Profiler chart colors.
     		var COLORS = ["#37afa9", "#63b19e", "#80b393", "#97b488", "#abb67d", "#beb771", "#cfb965", "#dfba57", "#efbb49", "#febc38"];
@@ -3520,11 +3534,6 @@
     		var MAX_DISPLAY_DURATION = 3000;
     		// How long should a rect be considered valid for?
     		var REMEASUREMENT_AFTER_DURATION = 250;
-    		// Markers for different types of HOCs
-    		// const HOC_MARKERS = new Map([
-    		//   ['Forget', '✨'],
-    		//   ['Memo', '🧠'],
-    		// ]);
     		// Some environments (e.g. React Native / Hermes) don't support the performance API yet.
     		var getCurrentTime = typeof performance === "object" && typeof performance.now === "function" ? function () { return performance.now(); } : function () { return Date.now(); };
     		var nodeToData = new Map();
@@ -3595,6 +3604,13 @@
     		        this.pendingUpdates = new Set();
     		        this.agent = agent;
     		    }
+    		    Object.defineProperty(Highlight.prototype, "canvas", {
+    		        get: function () {
+    		            return canvas;
+    		        },
+    		        enumerable: false,
+    		        configurable: true
+    		    });
     		    Highlight.prototype.addPending = function (fiber, type) {
     		        if (type === "update") {
     		            this.pendingUpdates.add(fiber);
@@ -3712,6 +3728,7 @@
     		            _this.notifyErrorStatus();
     		        }, 200);
     		        this.update = new Highlight(this);
+    		        this.select = new Select(this);
     		    }
     		    DevToolCore.prototype.getDispatch = function () {
     		        return Array.from(this._dispatch);
@@ -3732,7 +3749,6 @@
     		    };
     		    DevToolCore.prototype.enableBrowserHover = function () {
     		        var _this = this;
-    		        var _a, _b;
     		        if (!this.hasEnable)
     		            return;
     		        if (this._enableHoverOnBrowser)
@@ -3741,24 +3757,22 @@
     		            return;
     		        }
     		        this._enableHoverOnBrowser = true;
-    		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		        this.select.remove();
     		        var debounceNotifyDomHover = debounce(function () {
     		            _this.notifyDomHover();
     		            _this.disableBrowserHover();
     		            _this.notifyConfig();
     		        }, 100);
     		        var onMouseEnter = debounce(function (e) {
-    		            var _a, _b, _c, _d;
     		            var target = e.target;
-    		            (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		            _this.select.remove();
     		            if (!_this.hasEnable)
     		                return;
     		            if (target.nodeType === Node.ELEMENT_NODE) {
     		                var fiber = getComponentFiberByDom(target);
     		                if (fiber) {
-    		                    (_d = (_c = _this.select) === null || _c === void 0 ? void 0 : _c.remove) === null || _d === void 0 ? void 0 : _d.call(_c);
-    		                    _this.select = new Overlay(_this);
-    		                    _this.select.inspectFiber(fiber);
+    		                    _this.select.remove();
+    		                    _this.select.inspect(fiber);
     		                    var id = getPlainNodeIdByFiber(fiber);
     		                    _this._tempDomHoverId = id;
     		                    // debounceNotifyDomHover();
@@ -3778,9 +3792,8 @@
     		        document.addEventListener("mousedown", onClick, true);
     		        document.addEventListener("pointerdown", onClick, true);
     		        cb = function () {
-    		            var _a, _b;
     		            _this._enableHoverOnBrowser = false;
-    		            (_b = (_a = _this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
+    		            _this.select.remove();
     		            document.removeEventListener("mouseenter", onMouseEnter, true);
     		            document.removeEventListener("click", onClick, true);
     		            document.removeEventListener("mousedown", onClick, true);
@@ -3794,6 +3807,9 @@
     		    };
     		    DevToolCore.prototype.setUpdateStatus = function (d) {
     		        this._enableUpdate = d;
+    		        if (!this._enableUpdate) {
+    		            this.update.cancelPending();
+    		        }
     		    };
     		    DevToolCore.prototype.setRetriggerStatus = function (d) {
     		        this._enableRetrigger = d;
@@ -4051,20 +4067,17 @@
     		        this._source = source;
     		    };
     		    DevToolCore.prototype.showHover = function () {
-    		        var _a, _b, _c, _d;
     		        if (!this._enableHover)
     		            return;
-    		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
-    		        this.select = new Overlay(this);
+    		        this.select.remove();
     		        if (this._hoverId) {
     		            var fiber = getFiberNodeById(this._hoverId);
     		            if (fiber) {
-    		                this.select.inspectFiber(fiber);
+    		                this.select.inspect(fiber);
     		            }
     		        }
     		        else {
-    		            (_d = (_c = this.select) === null || _c === void 0 ? void 0 : _c.remove) === null || _d === void 0 ? void 0 : _d.call(_c);
-    		            this.select = null;
+    		            this.select.remove();
     		        }
     		    };
     		    DevToolCore.prototype.inspectDom = function () {
@@ -4334,11 +4347,10 @@
     		        this._enabled = true;
     		    };
     		    DevToolCore.prototype.disconnect = function () {
-    		        var _a, _b;
     		        if (!this._enabled)
     		            return;
-    		        (_b = (_a = this.select) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
-    		        this.select = null;
+    		        this.select.remove();
+    		        this.update.cancelPending();
     		        this._enabled = false;
     		    };
     		    DevToolCore.prototype.clear = function () {

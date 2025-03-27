@@ -1,7 +1,7 @@
 import { getComponentFiberByFiber } from "../tree";
 import { getFiberName } from "../utils";
 
-import { destroy as destroyCanvas, draw } from "./canvas";
+import { canvas, destroy as destroyCanvas, draw } from "./canvas";
 import { getNestedBoundingClientRect } from "./utils";
 
 import type { DevToolCore } from "../instance";
@@ -17,12 +17,6 @@ const MAX_DISPLAY_DURATION = 3000;
 
 // How long should a rect be considered valid for?
 const REMEASUREMENT_AFTER_DURATION = 250;
-
-// Markers for different types of HOCs
-// const HOC_MARKERS = new Map([
-//   ['Forget', '✨'],
-//   ['Memo', '🧠'],
-// ]);
 
 // Some environments (e.g. React Native / Hermes) don't support the performance API yet.
 const getCurrentTime = typeof performance === "object" && typeof performance.now === "function" ? () => performance.now() : () => Date.now();
@@ -61,7 +55,7 @@ function traceUpdates(fibers: Set<MyReactFiberNode>): void {
     const comFiber = getComponentFiberByFiber(fiber);
 
     const displayName = getFiberName((comFiber || fiber) as MyReactFiberNodeDev);
-    
+
     nodeToData.set(node, {
       count: data != null ? data.count + 1 : 1,
       expirationTime: data != null ? Math.min(now + MAX_DISPLAY_DURATION, data.expirationTime + DISPLAY_DURATION) : now + DISPLAY_DURATION,
@@ -121,6 +115,10 @@ export class Highlight {
 
   constructor(public readonly agent: DevToolCore) {
     this.agent = agent;
+  }
+
+  get canvas(): HTMLCanvasElement | null {
+    return canvas;
   }
 
   addPending(fiber: MyReactFiberNode, type: "update" | "append" | "setRef" | "warn"): void {

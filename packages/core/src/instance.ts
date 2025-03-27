@@ -4,7 +4,7 @@ import { isNormalEquals } from "@my-react/react-shared";
 
 import { getNode, getNodeFromId } from "./data";
 import { DevToolMessageEnum, HMRStatus } from "./event";
-import { Highlight, Overlay } from "./highlight";
+import { Highlight, Select } from "./highlight";
 import { type DispatcherType } from "./hook";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
@@ -95,12 +95,14 @@ export class DevToolCore {
 
   version = __VERSION__;
 
-  select: Overlay;
+  select: Select;
 
   update: Highlight;
 
   constructor() {
     this.update = new Highlight(this);
+
+    this.select = new Select(this);
   }
 
   getDispatch() {
@@ -143,7 +145,7 @@ export class DevToolCore {
 
     this._enableHoverOnBrowser = true;
 
-    this.select?.remove?.();
+    this.select.remove();
 
     const debounceNotifyDomHover = debounce(() => {
       this.notifyDomHover();
@@ -154,7 +156,7 @@ export class DevToolCore {
     const onMouseEnter = debounce((e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
-      this.select?.remove?.();
+      this.select.remove();
 
       if (!this.hasEnable) return;
 
@@ -162,11 +164,9 @@ export class DevToolCore {
         const fiber = getComponentFiberByDom(target);
 
         if (fiber) {
-          this.select?.remove?.();
+          this.select.remove();
 
-          this.select = new Overlay(this);
-
-          this.select.inspectFiber(fiber);
+          this.select.inspect(fiber);
 
           const id = getPlainNodeIdByFiber(fiber);
 
@@ -200,7 +200,7 @@ export class DevToolCore {
     cb = () => {
       this._enableHoverOnBrowser = false;
 
-      this.select?.remove?.();
+      this.select.remove();
 
       document.removeEventListener("mouseenter", onMouseEnter, true);
 
@@ -224,6 +224,10 @@ export class DevToolCore {
     }
 
     this._enableUpdate = d;
+
+    if (!this._enableUpdate) {
+      this.update.cancelPending();
+    }
   }
 
   setRetriggerStatus(d: boolean) {
@@ -578,20 +582,16 @@ export class DevToolCore {
   showHover() {
     if (!this._enableHover) return;
 
-    this.select?.remove?.();
-
-    this.select = new Overlay(this);
+    this.select.remove();
 
     if (this._hoverId) {
       const fiber = getFiberNodeById(this._hoverId);
 
       if (fiber) {
-        this.select.inspectFiber(fiber);
+        this.select.inspect(fiber);
       }
     } else {
-      this.select?.remove?.();
-
-      this.select = null;
+      this.select.remove();
     }
   }
 
@@ -988,9 +988,9 @@ export class DevToolCore {
   disconnect() {
     if (!this._enabled) return;
 
-    this.select?.remove?.();
+    this.select.remove();
 
-    this.select = null;
+    this.update.cancelPending();
 
     if (__DEV__) {
       console.log("[@my-react-devtool/core] disconnect");

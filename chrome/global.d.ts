@@ -2,6 +2,7 @@ import { useConnect } from "@/hooks/useConnect";
 import { io } from "socket.io-client";
 import type { DevToolMessageType } from "@my-react-devtool/core";
 import type { CustomRenderDispatch, CustomRenderPlatform, initHMR } from "@my-react/react-reconciler";
+import { useAppTree } from "@/hooks/useAppTree";
 
 declare global {
   const __DEV__: boolean;
@@ -14,6 +15,8 @@ declare global {
     "__@my-react/dispatch__": CustomRenderDispatch[];
 
     useConnect: typeof useConnect;
+
+    useAppTree: typeof useAppTree;
 
     io: typeof io;
 

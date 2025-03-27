@@ -4,7 +4,7 @@ import type { Rect } from "./utils";
 // Note these colors are in sync with DevTools Profiler chart colors.
 const COLORS = ["#37afa9", "#63b19e", "#80b393", "#97b488", "#abb67d", "#beb771", "#cfb965", "#dfba57", "#efbb49", "#febc38"];
 
-let canvas: HTMLCanvasElement | null = null;
+export let canvas: HTMLCanvasElement | null = null;
 
 function drawWeb(nodeToData: Map<HTMLElement, Data>) {
   if (canvas === null) {
@@ -38,9 +38,7 @@ type GroupItem = {
   count: number;
 };
 
-export type { GroupItem };
-
-export function groupAndSortNodes(nodeToData: Map<HTMLElement, Data>): Array<Array<GroupItem>> {
+function groupAndSortNodes(nodeToData: Map<HTMLElement, Data>): Array<Array<GroupItem>> {
   const positionGroups: Map<string, Array<GroupItem>> = new Map();
 
   iterateNodes(nodeToData, ({ rect, color, displayName, count }) => {
