@@ -1964,11 +1964,12 @@
     		    if (parent) {
     		        parent.c = parent.c || [];
     		        parent.c.push(current);
-    		        current._d = parent._d + 1;
+    		        current.d = parent.d + 1;
     		    }
     		    else {
-    		        current._d = 0;
+    		        current.d = 0;
     		    }
+    		    current._d = current.d;
     		    shallowAssignFiber(current, fiber);
     		    if (!exist) {
     		        treeMap.set(fiber, current);
@@ -1996,8 +1997,9 @@
     		    if (parent) {
     		        parent.c = parent.c || [];
     		        parent.c.push(current);
-    		        current._d = parent._d + 1;
+    		        current.d = parent.d + 1;
     		    }
+    		    current._d = current.d;
     		    shallowAssignFiber(current, fiber);
     		    if (!exist) {
     		        treeMap.set(fiber, current);
