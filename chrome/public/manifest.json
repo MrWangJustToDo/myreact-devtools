@@ -26,6 +26,14 @@
   "action": {
     "default_popup": "disablePopup.html"
   },
+  "sandbox": {
+    "pages": [
+      "disablePopup.html",
+      "enablePopup.html",
+      "enablePopupDev.html",
+      "enablePopupPro.html"
+    ]
+  },
   "content_scripts": [
     {
       "matches": ["https://*/*", "http://*/*"],

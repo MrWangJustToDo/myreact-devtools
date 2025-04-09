@@ -26,7 +26,8 @@ export const useSelectNode = createState(
         s.selectList = flattenNode(
           plainNode,
           () => false,
-          () => false
+          () => false,
+          false
         ).reduce<Record<string, boolean>>((p, c) => {
           p[c.i] = true;
           return p;

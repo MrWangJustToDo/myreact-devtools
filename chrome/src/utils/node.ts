@@ -1,24 +1,47 @@
 import type { PlainNode } from "@my-react-devtool/core";
 
+const getParentIsNotHide = (node: PlainNode, isHide: (node: PlainNode) => boolean) => {
+  let parent = node.r;
+  while (parent) {
+    if (!isHide(parent)) {
+      return parent;
+    }
+    parent = parent.r;
+  }
+  return null;
+};
+
 export const checkHasInclude = (node: PlainNode, typeArray: number[]) => {
   return typeArray.some((i) => node?.t & i);
 };
 
-export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => boolean, isHide: (node: PlainNode) => boolean) => {
+export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => boolean, isHide: (node: PlainNode) => boolean, withDeepReWrite = true) => {
   const list: PlainNode[] = [];
   const stack = [node];
   while (stack.length) {
     const currentNode = stack.pop();
+
     if (!currentNode) continue;
-    if (!isHide(currentNode)) {
-      list.push(currentNode);
-    }
+
+    const currentIsHide = isHide(currentNode);
+
+    if (!currentIsHide) list.push(currentNode);
+
+    const _d = currentIsHide && withDeepReWrite ? getParentIsNotHide(currentNode, isHide)?._d || 0 : currentNode._d;
+
     if (currentNode.c && !isCollapsed(currentNode)) {
       for (let i = currentNode.c.length - 1; i >= 0; i--) {
-        stack.push(currentNode.c[i]);
+        const childNode = currentNode.c[i];
+
+        childNode.r = currentNode;
+
+        if (withDeepReWrite) childNode._d = _d! + 1;
+
+        stack.push(childNode);
       }
     }
   }
+
   return list;
 };
 

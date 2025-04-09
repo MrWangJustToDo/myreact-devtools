@@ -45,6 +45,9 @@ export class PlainNode {
   c: PlainNode[];
   // children: PlainNode[];
 
+  r: PlainNode | null;
+  // parent: PlainNode | null;
+
   d?: number;
   // deep?: number;
 
