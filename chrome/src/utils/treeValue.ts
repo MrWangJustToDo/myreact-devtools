@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
+import { escapeHtml } from "./escapeHtml";
+
 import type { HOOKTree } from "@my-react-devtool/core";
 
 function isIterable(obj: any) {
@@ -8,11 +10,14 @@ function isIterable(obj: any) {
 const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   const val = item?.v;
   const type = item?.t;
-  if (type === "Element" || type === "Date" || type === "Boolean" || type === "Error" || type === "Number" || type === "Symbol") {
-    return val;
+  if (type === "Element") {
+    return `<span class='text-teal-600'>${escapeHtml(val || "")}</span>`;
+  }
+  if (type === "Date" || type === "Boolean" || type === "Error" || type === "Number" || type === "Symbol") {
+    return escapeHtml(val);
   }
   if (item?.n) {
-    return item.n;
+    return escapeHtml(item.n);
   }
   if (item?.l === false) {
     if (item.t === "Array" || item.t === "Set") {
@@ -32,17 +37,17 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   } else if (type === "Undefined") {
     return "undef";
   } else if (typeof val === "object") {
-    return Object.keys(val as {}).length > 0 ? "{…}" : "{}";
+    return escapeHtml(Object.keys(val as {}).length > 0 ? "{…}" : "{}");
   } else if (type === "Function") {
-    return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
+    return escapeHtml(`${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`);
   } else if (typeof val === "string") {
     if (type === "String") {
-      return `"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`;
+      return escapeHtml(`"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`);
     } else {
-      return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
+      return escapeHtml(`${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`);
     }
   } else {
-    return val;
+    return escapeHtml(val);
   }
 };
 

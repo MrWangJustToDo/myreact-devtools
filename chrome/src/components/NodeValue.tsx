@@ -124,7 +124,9 @@ export const NodeValue = ({
 
     const isReadError = item.t === "ReadError";
 
-    const element = <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""}`}>{textContent}</span>;
+    const isElement = item.t === "Element";
+
+    const element = <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""} ${isElement ? "text-teal-600" : ""}`}>{textContent}</span>;
 
     const currentIsEditable = editable && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
 
@@ -152,6 +154,13 @@ export const NodeValue = ({
       </div>
     );
   } else {
+    const preview = data ? (
+      <span className="hook-value-placeholder line-clamp-1 break-all" dangerouslySetInnerHTML={{ __html: text || "" }} />
+    ) : (
+      <span className="hook-value-placeholder line-clamp-1 break-all">
+        <Ellipsis className="inline-block" />
+      </span>
+    );
     return (
       <>
         <div data-id={id} data-chunk={isChunk} className="hook-value-view">
@@ -168,7 +177,7 @@ export const NodeValue = ({
                 {name}
               </span>
               <span className="flex-shrink-0 pr-1">:</span>
-              <span className="hook-value-placeholder line-clamp-1 break-all">{data ? text : <Ellipsis className="inline-block" />}</span>
+              {preview}
             </div>
           </div>
           {(hasOpenRef.current || expand) && (

@@ -26,6 +26,7 @@ import {
 
 import { getNode } from "./data";
 import { inspectHooksOfFiber, type HooksTree } from "./hook";
+import { disableLogs, reenableLogs } from "./log";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
@@ -466,12 +467,17 @@ const getHookNormal = (fiber: MyReactFiberNodeDev) => {
   return final;
 };
 
+// disable all log
 const getHookStack = (fiber: MyReactFiberNodeDev) => {
   const final: HOOKTree[] = [];
 
   if (!fiber.hookList) return final;
 
+  disableLogs();
+  
   const hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
+
+  reenableLogs();
 
   return parseHooksTreeToHOOKTree(hookTree, 0);
 };
