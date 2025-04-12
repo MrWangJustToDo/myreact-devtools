@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { escapeHtml } from "./escapeHtml";
+import { createElement, Fragment, isValidElement } from "react";
 
 import type { HOOKTree } from "@my-react-devtool/core";
+import type { ReactNode } from "react";
 
 function isIterable(obj: any) {
   return obj !== null && typeof obj === "object" && !Array.isArray(obj) && typeof obj[window.Symbol.iterator] === "function";
@@ -11,13 +12,13 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   const val = item?.v;
   const type = item?.t;
   if (type === "Element") {
-    return `<span class='text-teal-600'>${escapeHtml(val || "")}</span>`;
+    return createElement('span', { className: "text-teal-600" }, val);
   }
   if (type === "Date" || type === "Boolean" || type === "Error" || type === "Number" || type === "Symbol") {
-    return escapeHtml(val);
+    return val;
   }
   if (item?.n) {
-    return escapeHtml(item.n);
+    return item.n;
   }
   if (item?.l === false) {
     if (item.t === "Array" || item.t === "Set") {
@@ -37,39 +38,67 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   } else if (type === "Undefined") {
     return "undef";
   } else if (typeof val === "object") {
-    return escapeHtml(Object.keys(val as {}).length > 0 ? "{…}" : "{}");
+    return Object.keys(val as {}).length > 0 ? "{…}" : "{}";
   } else if (type === "Function") {
-    return escapeHtml(`${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`);
+    return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
   } else if (typeof val === "string") {
     if (type === "String") {
-      return escapeHtml(`"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`);
+      return `"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`;
     } else {
-      return escapeHtml(`${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`);
+      return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
     }
   } else {
-    return escapeHtml(val);
+    return val;
   }
 };
 
 export function getText(type: string, data: any) {
+  let onlyStr = true;
   if (type === "Object") {
+    const eleArr: ReactNode[] = [];
     const keys = Object.keys(data as {});
 
-    const str = keys
-      ?.slice(0, 3)
-      ?.map((key) => `${key}: ${getShortTextFromHookValue(data[key])}`)
-      ?.concat(keys.length > 3 ? ["…"] : [])
-      ?.join(", ");
+    keys?.slice(0, 3)?.forEach((key) => {
+      const val = getShortTextFromHookValue(data[key]);
+      if (isValidElement(val)) {
+        onlyStr = false;
+        eleArr.push(createElement(Fragment, { key: key }, `${key}: `, val));
+      } else {
+        eleArr.push(`${key}: ${val}`);
+      }
+    });
 
-    return `{ ${str} }`;
+    if (keys.length > 3) {
+      eleArr.push("…");
+    }
+
+    if (onlyStr) {
+      return eleArr.join(", ");
+      // return `{ ${eleArr.join(', ')} }`
+    } else {
+      return eleArr;
+    }
   } else if (type === "Array") {
-    const str = data
-      ?.slice(0, 4)
-      ?.map((val: any) => getShortTextFromHookValue(val))
-      ?.concat(data.length > 4 ? ["…"] : [])
-      ?.join(", ");
+    const eleArr: ReactNode[] = [];
 
-    return `[${str as string}]`;
+    data?.slice(0, 4)?.forEach((val: any) => {
+      const text = getShortTextFromHookValue(val);
+      if (isValidElement(text)) {
+        onlyStr = false;
+      }
+      eleArr.push(text);
+    });
+    
+    if (data.length > 4) {
+      eleArr.push("…");
+    }
+
+    if (onlyStr) {
+      return eleArr.join(", ");
+      // return `[ ${eleArr.join(', ')} ]`
+    } else {
+      return eleArr;
+    }
   } else {
     return type;
   }

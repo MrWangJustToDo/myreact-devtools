@@ -1,6 +1,6 @@
 import { Spinner } from "@heroui/react";
 import { Ellipsis, Play } from "lucide-react";
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect, Fragment } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useContextMenu } from "@/hooks/useContextMenu";
@@ -58,13 +58,57 @@ export const NodeValue = ({
     if (t === "Array" || t === "Set" || t === "Map") {
       const re = getText("Array", data ?? []);
       if (t === "Set" || t === "Map") {
-        return `${t}(${re})`;
+        if (Array.isArray(re)) {
+          return (
+            <>
+              {t}
+              {"(["}
+              {re.map((i, index) => (
+                <Fragment key={index}>
+                  {i}
+                  {index < re.length - 1 ? ", " : ""}
+                </Fragment>
+              ))}
+              {"])"}
+            </>
+          );
+        }
+        return `${t}([${re}])`;
       } else {
-        return re;
+        if (Array.isArray(re)) {
+          return (
+            <>
+              {"["}
+              {re.map((i, index) => (
+                <Fragment key={index}>
+                  {i}
+                  {index < re.length - 1 ? ", " : ""}
+                </Fragment>
+              ))}
+              {"]"}
+            </>
+          );
+        }
+        return `[${re}]`;
       }
     }
     if (t === "Iterable" || t === "Object") {
-      return getText("Object", data ?? {});
+      const re = getText("Object", data ?? {});
+      if (Array.isArray(re)) {
+        return (
+          <>
+            {"{"}
+            {re.map((i, index) => (
+              <Fragment key={index}>
+                {i}
+                {index < re.length - 1 ? ", " : ""}
+              </Fragment>
+            ))}
+            {"}"}
+          </>
+        );
+      }
+      return `{${re}}`;
     }
   }, [t, n, data]);
 
@@ -154,13 +198,6 @@ export const NodeValue = ({
       </div>
     );
   } else {
-    const preview = data ? (
-      <span className="hook-value-placeholder line-clamp-1 break-all" dangerouslySetInnerHTML={{ __html: text || "" }} />
-    ) : (
-      <span className="hook-value-placeholder line-clamp-1 break-all">
-        <Ellipsis className="inline-block" />
-      </span>
-    );
     return (
       <>
         <div data-id={id} data-chunk={isChunk} className="hook-value-view">
@@ -177,7 +214,9 @@ export const NodeValue = ({
                 {name}
               </span>
               <span className="flex-shrink-0 pr-1">:</span>
-              {preview}
+              <span className="hook-value-placeholder line-clamp-1 break-all">
+                {data ? text : <Ellipsis className="inline-block font-sm" width="1em" height="1em" />}
+              </span>
             </div>
           </div>
           {(hasOpenRef.current || expand) && (
