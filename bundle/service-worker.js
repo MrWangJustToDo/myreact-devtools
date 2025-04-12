@@ -1903,6 +1903,85 @@
     		    }
     		}
 
+    		/**
+    		 * Copyright (c) Meta Platforms, Inc. and affiliates.
+    		 *
+    		 * This source code is licensed under the MIT license found in the
+    		 * LICENSE file in the root directory of this source tree.
+    		 *
+    		 * @flow
+    		 */
+    		// This is a DevTools fork of shared/ConsolePatchingDev.
+    		// The shared console patching code is DEV-only.
+    		// We can't use it since DevTools only ships production builds.
+    		// Helpers to patch console.logs to avoid logging during side-effect free
+    		// replaying on render function. This currently only patches the object
+    		// lazily which won't cover if the log function was extracted eagerly.
+    		// We could also eagerly patch the method.
+    		var disabledDepth = 0;
+    		var prevLog;
+    		var prevInfo;
+    		var prevWarn;
+    		var prevError;
+    		var prevGroup;
+    		var prevGroupCollapsed;
+    		var prevGroupEnd;
+    		function disabledLog() { }
+    		disabledLog.__reactDisabledLog = true;
+    		function disableLogs() {
+    		    if (disabledDepth === 0) {
+    		        prevLog = console.log;
+    		        prevInfo = console.info;
+    		        prevWarn = console.warn;
+    		        prevError = console.error;
+    		        prevGroup = console.group;
+    		        prevGroupCollapsed = console.groupCollapsed;
+    		        prevGroupEnd = console.groupEnd;
+    		        // https://github.com/facebook/react/issues/19099
+    		        var props = {
+    		            configurable: true,
+    		            enumerable: true,
+    		            value: disabledLog,
+    		            writable: true,
+    		        };
+    		        // $FlowFixMe[cannot-write] Flow thinks console is immutable.
+    		        Object.defineProperties(console, {
+    		            info: props,
+    		            log: props,
+    		            warn: props,
+    		            error: props,
+    		            group: props,
+    		            groupCollapsed: props,
+    		            groupEnd: props,
+    		        });
+    		    }
+    		    disabledDepth++;
+    		}
+    		function reenableLogs() {
+    		    disabledDepth--;
+    		    if (disabledDepth === 0) {
+    		        var props = {
+    		            configurable: true,
+    		            enumerable: true,
+    		            writable: true,
+    		        };
+    		        // $FlowFixMe[cannot-write] Flow thinks console is immutable.
+    		        Object.defineProperties(console, {
+    		            log: __assign(__assign({}, props), { value: prevLog }),
+    		            info: __assign(__assign({}, props), { value: prevInfo }),
+    		            warn: __assign(__assign({}, props), { value: prevWarn }),
+    		            error: __assign(__assign({}, props), { value: prevError }),
+    		            group: __assign(__assign({}, props), { value: prevGroup }),
+    		            groupCollapsed: __assign(__assign({}, props), { value: prevGroupCollapsed }),
+    		            groupEnd: __assign(__assign({}, props), { value: prevGroupEnd }),
+    		        });
+    		    }
+    		    if (disabledDepth < 0) {
+    		        console.error('disabledDepth fell below zero. ' +
+    		            'This is a bug in React. Please file an issue.');
+    		    }
+    		}
+
     		var id$1 = 0;
     		// PlainNode is a simplified version of FiberNode just for show the structure
     		var PlainNode = /** @class */ (function () {
@@ -2663,11 +2742,14 @@
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.toArray()) === null || _a === void 0 ? void 0 : _a.forEach(processStack);
     		    return final;
     		};
+    		// disable all log
     		var getHookStack = function (fiber) {
     		    var final = [];
     		    if (!fiber.hookList)
     		        return final;
+    		    disableLogs();
     		    var hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
+    		    reenableLogs();
     		    return parseHooksTreeToHOOKTree(hookTree, 0);
     		};
     		var getHook = function (fiber) {
