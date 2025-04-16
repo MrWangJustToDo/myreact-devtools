@@ -3883,6 +3883,7 @@
     		            _this._needUnmount = true;
     		            _this.delDispatch(dispatch);
     		        };
+    		        var notifyTriggerWithThrottle = throttle(function () { return _this.notifyTrigger(); }, 100);
     		        var onFiberTrigger = function (fiber, state) {
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
@@ -3896,7 +3897,7 @@
     		            _this._trigger[id].push(state);
     		            if (!_this.hasEnable)
     		                return;
-    		            _this.notifyTrigger();
+    		            notifyTriggerWithThrottle();
     		        };
     		        var onFiberUpdate = function (fiber) {
     		            var id = getPlainNodeIdByFiber(fiber);

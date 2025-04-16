@@ -1,6 +1,7 @@
 import { Divider, Spacer } from "@heroui/react";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
+import { useConfig } from "@/hooks/useConfig";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 
@@ -10,6 +11,8 @@ export const PropsView = () => {
   const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
+
+  const enableEdit = useConfig(s => s.state.enableEdit);
 
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
@@ -23,7 +26,7 @@ export const PropsView = () => {
     const key = propsKeys[index];
     return (
       <div className={`tree-wrapper`} key={id + "-" + index}>
-        <NodeValue name={key} type="props" editable item={currentSelectDetail?.p?.v?.[key]} />
+        <NodeValue name={key} type="props" editable={enableEdit} item={currentSelectDetail?.p?.v?.[key]} />
       </div>
     );
   });

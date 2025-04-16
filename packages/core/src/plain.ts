@@ -33,8 +33,10 @@ export type HOOKTree = {
 // PlainNode is a simplified version of FiberNode just for show the structure
 export class PlainNode {
   p: NodeValue;
+  // props: fiber props;
 
   s: NodeValue;
+  // state: fiber state
 
   k: MyReactElement["key"];
   // key: MyReactElement["key"];
@@ -47,6 +49,9 @@ export class PlainNode {
 
   r: PlainNode | null;
   // parent: PlainNode | null;
+
+  l: PlainNode | null;
+  // siblings: PlainNode[];
 
   d?: number;
   // deep?: number;

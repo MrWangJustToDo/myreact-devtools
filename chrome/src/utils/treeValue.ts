@@ -40,7 +40,8 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   } else if (typeof val === "object") {
     return Object.keys(val as {}).length > 0 ? "{…}" : "{}";
   } else if (type === "Function") {
-    return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
+    return createElement('span', { className: "text-teal-600" }, `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`);
+    // return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
   } else if (typeof val === "string") {
     if (type === "String") {
       return `"${val.substr(0, 10) + (val.length > 10 ? "…" : "")}"`;

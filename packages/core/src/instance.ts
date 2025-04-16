@@ -315,6 +315,8 @@ export class DevToolCore {
       this.delDispatch(dispatch);
     };
 
+    const notifyTriggerWithThrottle = throttle(() => this.notifyTrigger(), 100);
+
     const onFiberTrigger = (fiber: MyReactFiberNode, state: UpdateState) => {
       const id = getPlainNodeIdByFiber(fiber);
 
@@ -332,7 +334,7 @@ export class DevToolCore {
 
       if (!this.hasEnable) return;
 
-      this.notifyTrigger();
+      notifyTriggerWithThrottle();
     };
 
     const onFiberUpdate = (fiber: MyReactFiberNode) => {

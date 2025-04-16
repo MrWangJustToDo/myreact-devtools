@@ -29,15 +29,31 @@ export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => b
 
     const _d = currentIsHide && withDeepReWrite ? getParentIsNotHide(currentNode, isHide)?._d || 0 : currentNode._d;
 
+    let pre: PlainNode | null = null;
+
     if (currentNode.c && !isCollapsed(currentNode)) {
       for (let i = currentNode.c.length - 1; i >= 0; i--) {
         const childNode = currentNode.c[i];
 
-        childNode.r = currentNode;
-
         if (withDeepReWrite) childNode._d = _d! + 1;
 
         stack.push(childNode);
+      }
+      for (let i = 0; i < currentNode.c.length; i++) {
+        const childNode = currentNode.c[i];
+
+        // link parent
+        childNode.r = currentNode;
+        // link siblings
+        if (pre && !currentIsHide) {
+          if (!currentIsHide && !isHide(childNode)) {
+            pre.l = childNode;
+          } else {
+            pre.l = null;
+          }
+        }
+
+        pre = childNode;
       }
     }
   }

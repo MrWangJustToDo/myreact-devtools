@@ -1,7 +1,10 @@
 import { createState } from "reactivity-store";
 
-export const useConfig = createState(() => ({ state: { enableHover: false, enableUpdate: false, enableHoverOnBrowser: false, enableRetrigger: false } }), {
+export const useConfig = createState(() => ({ state: { enableEdit: false, enableHover: false, enableUpdate: false, enableHoverOnBrowser: false, enableRetrigger: false } }), {
   withActions: (s) => ({
+    setEnableEdit(enableEdit: boolean) {
+      s.state.enableEdit = enableEdit;
+    },
     setEnableHover(enableHover: boolean) {
       s.state.enableHover = enableHover;
     },

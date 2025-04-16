@@ -1,7 +1,7 @@
 import { Chip, Spacer, Tooltip } from "@heroui/react";
 import { getFiberTag } from "@my-react-devtool/core";
 import { Play } from "lucide-react";
-import { memo, useCallback, useMemo } from "react";
+import { Children, memo, useCallback, useMemo } from "react";
 
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
@@ -10,6 +10,7 @@ import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import type { PlainNode } from "@my-react-devtool/core";
+import type { ReactNode} from "react";
 
 const { setSelect, setClose, setHover } = useSelectNode.getActions();
 
@@ -59,12 +60,42 @@ const RenderKey = memo(({ node }: { node: PlainNode }) => {
 
 RenderKey.displayName = "RenderKey";
 
+const RenderIndent = memo(({ node }: { node: PlainNode }) => {
+  const ele: ReactNode[] = [];
+  let p = node.r;
+
+  while (p && p._d && p._d >= 0) {
+    const n = p.l;
+
+    if (n) {
+      ele.unshift(
+        <div
+          key={n.i}
+          data-indent={p.i}
+          data-indent-next={n.i}
+          className={`absolute top-[50%] hidden z-[1] h-[110%] translate-y-[-50%] border-l border-gray-400`}
+          style={{
+            left: `calc(calc(var(--indentation-size) * ${p._d ?? 0}) + 6px)`,
+          }}
+        />
+      );
+    }
+
+    p = p.r;
+  }
+
+  return <>{Children.map(ele, (v) => v)}</>;
+});
+
+RenderIndent.displayName = "RenderIndent";
+
 export const TreeItem = ({
   node,
   className,
   withKey = true,
   withTag = true,
   withHMR = true,
+  withIndent = true,
   withSelect = true,
   withTrigger = true,
   withCollapse = true,
@@ -75,6 +106,7 @@ export const TreeItem = ({
   withCollapse?: boolean;
   withTrigger?: boolean;
   withSelect?: boolean;
+  withIndent?: boolean;
   withHMR?: boolean;
   withTag?: boolean;
   withKey?: boolean;
@@ -143,6 +175,7 @@ export const TreeItem = ({
     >
       <div className="flex items-center h-full w-full px-[2px] relative">
         {currentIsSelect && <div className="absolute top-0 left-[1px] h-full border-l-2 border-blue-400 rounded-sm pointer-events-none" />}
+        {withIndent && <RenderIndent node={current} />}
         <div
           className="flex-grow"
           style={{

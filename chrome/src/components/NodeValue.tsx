@@ -170,7 +170,11 @@ export const NodeValue = ({
 
     const isElement = item.t === "Element";
 
-    const element = <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""} ${isElement ? "text-teal-600" : ""}`}>{textContent}</span>;
+    const isFunction = item.t === "Function";
+
+    const element = (
+      <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""} ${isElement || isFunction ? "text-teal-600" : ""}`}>{textContent}</span>
+    );
 
     const currentIsEditable = editable && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
 

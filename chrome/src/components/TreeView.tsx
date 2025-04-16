@@ -8,6 +8,7 @@ import { useSelectNode } from "@/hooks/useSelectNode";
 import { useDomSize } from "@/hooks/useSize";
 
 import { TreeItem } from "./TreeItem";
+import { TreeViewHover } from "./TreeViewHover";
 import { TreeViewSetting } from "./TreeViewSetting";
 
 import type { VirtuosoHandle } from "react-virtuoso";
@@ -117,6 +118,7 @@ export const TreeView = memo(() => {
   return (
     <div className="tree-view h-full p-1">
       <div className="group h-full transform-gpu" ref={ref} style={{ opacity: 0 }}>
+        <TreeViewHover />
         {nodes.length > 0 && <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />}
         <TreeViewSetting handle={r} />
       </div>

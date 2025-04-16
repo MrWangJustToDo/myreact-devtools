@@ -2,6 +2,7 @@ import { Chip, Divider, Spacer } from "@heroui/react";
 import { Play } from "lucide-react";
 import { useState } from "react";
 
+import { useConfig } from "@/hooks/useConfig";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 
@@ -9,7 +10,7 @@ import { NodeValue } from "./NodeValue";
 
 import type { HOOKTree } from "@my-react-devtool/core";
 
-const HookViewTree = ({ item }: { item: HOOKTree }) => {
+const HookViewTree = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boolean }) => {
   const [expand, setExpand] = useState(false);
 
   const currentIsExpand = item.h;
@@ -21,7 +22,7 @@ const HookViewTree = ({ item }: { item: HOOKTree }) => {
       <NodeValue
         name={item.n}
         item={item.v}
-        editable={item.e}
+        editable={item.e && enableEdit}
         hookIndex={item.i}
         type="hook"
         prefix={
@@ -63,6 +64,8 @@ export const HookView = () => {
 
   const nodeList = useDetailNode((s) => s.nodes);
 
+  const enableEdit = useConfig((s) => s.state.enableEdit);
+
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
   const id = currentSelectDetail?.i;
@@ -82,7 +85,7 @@ export const HookView = () => {
           <div className={`w-full font-code font-sm`}>
             {hookList.map((item, index) => (
               <div className="tree-wrapper" key={id + "-" + index}>
-                <HookViewTree item={item as HOOKTree} />
+                <HookViewTree item={item as HOOKTree} enableEdit={enableEdit} />
               </div>
             ))}
           </div>
