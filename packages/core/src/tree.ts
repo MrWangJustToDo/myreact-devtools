@@ -79,6 +79,8 @@ export const assignFiber = (plain: PlainNode, fiber: MyReactFiberNode) => {
 export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): { current: PlainNode; directory: Record<string, string> } | null => {
   if (!fiber) return null;
 
+  if (include(fiber.state, STATE_TYPE.__unmount__)) return null;
+
   const exist = treeMap.get(fiber);
 
   const current = exist || new PlainNode();
@@ -124,6 +126,8 @@ export const loopChangedTree = (
   parent?: PlainNode
 ): { current: PlainNode; directory: Record<string, string> } | null => {
   if (!fiber) return null;
+
+  if (include(fiber.state, STATE_TYPE.__unmount__)) return null;
 
   set.add(fiber);
 
@@ -313,7 +317,7 @@ export const getComponentFiberByFiber = (fiber: MyReactFiberNode) => {
 
     r = r.parent;
   }
-}
+};
 
 export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
   const nodes: HTMLElement[] = [];

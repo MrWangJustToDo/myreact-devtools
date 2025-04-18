@@ -2039,6 +2039,8 @@
     		var loopTree = function (fiber, parent) {
     		    if (!fiber)
     		        return null;
+    		    if (fiber.state & reactShared.STATE_TYPE.__unmount__)
+    		        return null;
     		    var exist = treeMap.get(fiber);
     		    var current = exist || new PlainNode();
     		    current.c = null;
@@ -2067,6 +2069,8 @@
     		};
     		var loopChangedTree = function (fiber, set, parent) {
     		    if (!fiber)
+    		        return null;
+    		    if (fiber.state & reactShared.STATE_TYPE.__unmount__)
     		        return null;
     		    set.add(fiber);
     		    var exist = treeMap.get(fiber);
