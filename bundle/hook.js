@@ -666,6 +666,104 @@
 
     var reactSharedExports = requireReactShared();
 
+    var event$1 = {};
+
+    var hasRequiredEvent$1;
+
+    function requireEvent$1 () {
+    	if (hasRequiredEvent$1) return event$1;
+    	hasRequiredEvent$1 = 1;
+    	(function (exports) {
+
+    		exports.MessageHookType = void 0;
+    		(function (MessageHookType) {
+    		    MessageHookType["init"] = "hook-init";
+    		    MessageHookType["mount"] = "hook-mount";
+    		    MessageHookType["render"] = "hook-render";
+    		    MessageHookType["origin"] = "hook-origin";
+    		})(exports.MessageHookType || (exports.MessageHookType = {}));
+    		exports.MessageDetectorType = void 0;
+    		(function (MessageDetectorType) {
+    		    MessageDetectorType["init"] = "detector-init";
+    		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessagePanelType = void 0;
+    		(function (MessagePanelType) {
+    		    MessagePanelType["show"] = "panel-show";
+    		    MessagePanelType["hide"] = "panel-hide";
+    		    MessagePanelType["varStore"] = "panel-var-store";
+    		    MessagePanelType["varSource"] = "panel-var-source";
+    		    MessagePanelType["enableHover"] = "panel-enable-hover";
+    		    MessagePanelType["enableUpdate"] = "panel-enable-update";
+    		    MessagePanelType["enableRetrigger"] = "panel-enable-retrigger";
+    		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
+    		    MessagePanelType["nodeHover"] = "panel-hover";
+    		    MessagePanelType["nodeSelect"] = "panel-select";
+    		    MessagePanelType["nodeStore"] = "panel-store";
+    		    MessagePanelType["nodeEditor"] = "panel-editor";
+    		    MessagePanelType["nodeTrigger"] = "panel-trigger";
+    		    MessagePanelType["nodeInspect"] = "panel-inspect";
+    		    MessagePanelType["chunks"] = "panel-chunks";
+    		    MessagePanelType["clear"] = "panel-clear";
+    		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
+    		exports.MessageWorkerType = void 0;
+    		(function (MessageWorkerType) {
+    		    MessageWorkerType["init"] = "worker-init";
+    		    MessageWorkerType["close"] = "worker-close";
+    		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
+    		exports.DevToolMessageEnum = void 0;
+    		(function (DevToolMessageEnum) {
+    		    // 初始化，判断是否用@my-react进行页面渲染
+    		    DevToolMessageEnum["init"] = "init";
+    		    DevToolMessageEnum["dir"] = "dir";
+    		    DevToolMessageEnum["config"] = "config";
+    		    // tree ready
+    		    DevToolMessageEnum["ready"] = "ready";
+    		    // tree update
+    		    DevToolMessageEnum["update"] = "update";
+    		    DevToolMessageEnum["changed"] = "changed";
+    		    DevToolMessageEnum["highlight"] = "highlight";
+    		    DevToolMessageEnum["trigger"] = "trigger";
+    		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
+    		    DevToolMessageEnum["hmr"] = "hmr";
+    		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
+    		    DevToolMessageEnum["source"] = "source";
+    		    DevToolMessageEnum["detail"] = "detail";
+    		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["select-sync"] = "select-sync";
+    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
+    		    DevToolMessageEnum["message"] = "message";
+    		    DevToolMessageEnum["warn"] = "warn";
+    		    DevToolMessageEnum["warnStatus"] = "warnStatus";
+    		    DevToolMessageEnum["error"] = "error";
+    		    DevToolMessageEnum["errorStatus"] = "errorStatus";
+    		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["dom-hover"] = "dom-hover";
+    		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
+    		exports.HMRStatus = void 0;
+    		(function (HMRStatus) {
+    		    HMRStatus[HMRStatus["none"] = 0] = "none";
+    		    HMRStatus[HMRStatus["refresh"] = 1] = "refresh";
+    		    HMRStatus[HMRStatus["remount"] = 2] = "remount";
+    		})(exports.HMRStatus || (exports.HMRStatus = {}));
+    		var DevToolSource = "@my-react/devtool";
+
+    		exports.DevToolSource = DevToolSource; 
+    	} (event$1));
+    	return event$1;
+    }
+
+    var event;
+    var hasRequiredEvent;
+
+    function requireEvent () {
+    	if (hasRequiredEvent) return event;
+    	hasRequiredEvent = 1;
+    	event = requireEvent$1();
+    	return event;
+    }
+
+    var eventExports = requireEvent();
+
     var core$1 = {exports: {}};
 
     var index_production = {};
@@ -3418,12 +3516,16 @@
     		    }
     		    Select.prototype.inspect = function (fiber) {
     		        var _a, _b;
+    		        if (typeof window === "undefined")
+    		            return;
     		        (_b = (_a = this.overlay) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		        this.overlay = new Overlay(this.agent);
     		        this.overlay.inspect(fiber, getElementNodesFromFiber(fiber));
     		    };
     		    Select.prototype.remove = function () {
     		        var _a, _b;
+    		        if (typeof window === "undefined")
+    		            return;
     		        (_b = (_a = this.overlay) === null || _a === void 0 ? void 0 : _a.remove) === null || _b === void 0 ? void 0 : _b.call(_a);
     		    };
     		    return Select;
@@ -3631,15 +3733,21 @@
     		        configurable: true
     		    });
     		    Highlight.prototype.addPending = function (fiber, type) {
+    		        if (typeof window === "undefined")
+    		            return;
     		        if (type === "update") {
     		            this.pendingUpdates.add(fiber);
     		        }
     		    };
     		    Highlight.prototype.flushPending = function () {
+    		        if (typeof window === "undefined")
+    		            return;
     		        traceUpdates(this.pendingUpdates);
     		        this.pendingUpdates.clear();
     		    };
     		    Highlight.prototype.cancelPending = function () {
+    		        if (typeof window === "undefined")
+    		            return;
     		        nodeToData.clear();
     		        if (drawAnimationFrameID !== null) {
     		            cancelAnimationFrame(drawAnimationFrameID);
@@ -3653,6 +3761,123 @@
     		    };
     		    return Highlight;
     		}());
+
+    		// browser platform inspect
+    		var inspectSource = function (core) {
+    		    if (!core.hasEnable)
+    		        return;
+    		    if (typeof globalThis["inspect"] !== "function") {
+    		        core.notifyMessage("current platform not support inspect", "warning");
+    		        return;
+    		    }
+    		    if (typeof core._source === "function" && typeof globalThis["inspect"] === "function") {
+    		        var s = core._source;
+    		        core._source = null;
+    		        globalThis["inspect"](s);
+    		        return;
+    		    }
+    		    if (core._source && typeof HTMLElement !== "undefined" && core._source instanceof HTMLElement && typeof globalThis["inspect"] === "function") {
+    		        var s = core._source;
+    		        core._source = null;
+    		        globalThis["inspect"](s);
+    		        window["$$$$0"] = s;
+    		        return;
+    		    }
+    		    core.notifyMessage("can not view source for current item", "warning");
+    		};
+    		var inspectCom = function (core) {
+    		    if (!core.hasEnable)
+    		        return;
+    		    var id = core._selectId;
+    		    if (!id)
+    		        return;
+    		    if (typeof globalThis["inspect"] !== "function") {
+    		        core.notifyMessage("current platform not support inspect", "warning");
+    		        return;
+    		    }
+    		    var fiber = getFiberNodeById(id);
+    		    if (fiber) {
+    		        var elementType = fiber.elementType;
+    		        if (typeof globalThis["inspect"] === "function" && elementType) {
+    		            globalThis["inspect"](elementType);
+    		            return;
+    		        }
+    		    }
+    		    core.notifyMessage("current id: ".concat(id, " of fiber can not inspect"), "warning");
+    		};
+    		var inspectDom = function (core) {
+    		    if (!core.hasEnable)
+    		        return;
+    		    var dom = core._selectDom;
+    		    if (typeof globalThis["inspect"] !== "function") {
+    		        core.notifyMessage("current platform not support inspect", "warning");
+    		        return;
+    		    }
+    		    if (typeof globalThis["inspect"] === "function" && dom) {
+    		        globalThis["inspect"](dom);
+    		        window["$$$$0"] = dom;
+    		        return;
+    		    }
+    		    core.notifyMessage("current id: ".concat(core._selectId, " of fiber not contain dom node"), "warning");
+    		};
+    		var cb = function () { };
+    		var enableBrowserHover = function (core) {
+    		    if (!core.hasEnable)
+    		        return;
+    		    if (core._enableHoverOnBrowser)
+    		        return;
+    		    if (typeof document === "undefined") {
+    		        return;
+    		    }
+    		    core._enableHoverOnBrowser = true;
+    		    core.select.remove();
+    		    var debounceNotifyDomHover = debounce(function () {
+    		        core.notifyDomHover();
+    		        core.disableBrowserHover();
+    		        core.notifyConfig();
+    		    }, 100);
+    		    var onMouseEnter = debounce(function (e) {
+    		        var target = e.target;
+    		        core.select.remove();
+    		        if (!core.hasEnable)
+    		            return;
+    		        if (target.nodeType === Node.ELEMENT_NODE) {
+    		            var fiber = getComponentFiberByDom(target);
+    		            if (fiber) {
+    		                core.select.remove();
+    		                core.select.inspect(fiber);
+    		                var id = getPlainNodeIdByFiber(fiber);
+    		                core._tempDomHoverId = id;
+    		                // debounceNotifyDomHover();
+    		            }
+    		        }
+    		    }, 16);
+    		    var onClick = function (e) {
+    		        if (!core.hasEnable)
+    		            return;
+    		        core._domHoverId = core._tempDomHoverId;
+    		        debounceNotifyDomHover();
+    		        e.stopPropagation();
+    		        e.preventDefault();
+    		    };
+    		    document.addEventListener("mouseenter", onMouseEnter, true);
+    		    document.addEventListener("click", onClick, true);
+    		    document.addEventListener("mousedown", onClick, true);
+    		    document.addEventListener("pointerdown", onClick, true);
+    		    cb = function () {
+    		        core._enableHoverOnBrowser = false;
+    		        core.select.remove();
+    		        document.removeEventListener("mouseenter", onMouseEnter, true);
+    		        document.removeEventListener("click", onClick, true);
+    		        document.removeEventListener("mousedown", onClick, true);
+    		        document.removeEventListener("pointerdown", onClick, true);
+    		    };
+    		};
+    		var disableBrowserHover = function (core) {
+    		    if (!core._enableHoverOnBrowser)
+    		        return;
+    		    cb();
+    		};
 
     		// TODO use 'eventListener' instead of 'patchFunction'
     		function overridePatchToFiberUnmount(dispatch, runtime) {
@@ -3688,7 +3913,6 @@
     		    Object.defineProperty(dispatch, "__dev_devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
 
-    		var cb = function () { };
     		var map = new Map();
     		var DevToolCore = /** @class */ (function () {
     		    function DevToolCore() {
@@ -3767,62 +3991,10 @@
     		        cb === null || cb === void 0 ? void 0 : cb(d);
     		    };
     		    DevToolCore.prototype.enableBrowserHover = function () {
-    		        var _this = this;
-    		        if (!this.hasEnable)
-    		            return;
-    		        if (this._enableHoverOnBrowser)
-    		            return;
-    		        if (typeof document === "undefined") {
-    		            return;
-    		        }
-    		        this._enableHoverOnBrowser = true;
-    		        this.select.remove();
-    		        var debounceNotifyDomHover = debounce(function () {
-    		            _this.notifyDomHover();
-    		            _this.disableBrowserHover();
-    		            _this.notifyConfig();
-    		        }, 100);
-    		        var onMouseEnter = debounce(function (e) {
-    		            var target = e.target;
-    		            _this.select.remove();
-    		            if (!_this.hasEnable)
-    		                return;
-    		            if (target.nodeType === Node.ELEMENT_NODE) {
-    		                var fiber = getComponentFiberByDom(target);
-    		                if (fiber) {
-    		                    _this.select.remove();
-    		                    _this.select.inspect(fiber);
-    		                    var id = getPlainNodeIdByFiber(fiber);
-    		                    _this._tempDomHoverId = id;
-    		                    // debounceNotifyDomHover();
-    		                }
-    		            }
-    		        }, 16);
-    		        var onClick = function (e) {
-    		            if (!_this.hasEnable)
-    		                return;
-    		            _this._domHoverId = _this._tempDomHoverId;
-    		            debounceNotifyDomHover();
-    		            e.stopPropagation();
-    		            e.preventDefault();
-    		        };
-    		        document.addEventListener("mouseenter", onMouseEnter, true);
-    		        document.addEventListener("click", onClick, true);
-    		        document.addEventListener("mousedown", onClick, true);
-    		        document.addEventListener("pointerdown", onClick, true);
-    		        cb = function () {
-    		            _this._enableHoverOnBrowser = false;
-    		            _this.select.remove();
-    		            document.removeEventListener("mouseenter", onMouseEnter, true);
-    		            document.removeEventListener("click", onClick, true);
-    		            document.removeEventListener("mousedown", onClick, true);
-    		            document.removeEventListener("pointerdown", onClick, true);
-    		        };
+    		        enableBrowserHover(this);
     		    };
     		    DevToolCore.prototype.disableBrowserHover = function () {
-    		        if (!this._enableHoverOnBrowser)
-    		            return;
-    		        cb();
+    		        disableBrowserHover(this);
     		    };
     		    DevToolCore.prototype.setUpdateStatus = function (d) {
     		        this._enableUpdate = d;
@@ -4101,49 +4273,13 @@
     		        }
     		    };
     		    DevToolCore.prototype.inspectDom = function () {
-    		        if (!this.hasEnable)
-    		            return;
-    		        var dom = this._selectDom;
-    		        if (typeof globalThis["inspect"] === "function" && dom) {
-    		            globalThis["inspect"](dom);
-    		            window["$$$$0"] = dom;
-    		            return;
-    		        }
-    		        this.notifyMessage("current id: ".concat(this._selectId, " of fiber not contain dom node"), "warning");
+    		        inspectDom(this);
     		    };
     		    DevToolCore.prototype.inspectCom = function () {
-    		        if (!this.hasEnable)
-    		            return;
-    		        var id = this._selectId;
-    		        if (!id)
-    		            return;
-    		        var fiber = getFiberNodeById(id);
-    		        if (fiber) {
-    		            var elementType = fiber.elementType;
-    		            if (typeof globalThis["inspect"] === "function" && elementType) {
-    		                globalThis["inspect"](elementType);
-    		                return;
-    		            }
-    		        }
-    		        this.notifyMessage("current id: ".concat(id, " of fiber can not inspect"), "warning");
+    		        inspectCom(this);
     		    };
     		    DevToolCore.prototype.inspectSource = function () {
-    		        if (!this.hasEnable)
-    		            return;
-    		        if (typeof this._source === "function" && typeof globalThis["inspect"] === "function") {
-    		            var s = this._source;
-    		            this._source = null;
-    		            globalThis["inspect"](s);
-    		            return;
-    		        }
-    		        if (this._source && this._source instanceof HTMLElement && typeof globalThis["inspect"] === "function") {
-    		            var s = this._source;
-    		            this._source = null;
-    		            globalThis["inspect"](s);
-    		            window["$$$$0"] = s;
-    		            return;
-    		        }
-    		        this.notifyMessage("can not view source for current item", "warning");
+    		        inspectSource(this);
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
     		        if (!this.hasEnable)
@@ -4524,6 +4660,7 @@
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
 
+    /* eslint-disable @typescript-eslint/no-require-imports */
     var varId = 0;
     var getValidGlobalVarName = function () {
         var varName = "$my-react-var-".concat(varId++);
@@ -4533,17 +4670,44 @@
         return varName;
     };
     var loadScript = function (url) {
-        return new Promise(function (resolve, reject) {
-            if (typeof document === "undefined") {
-                reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
-                return;
-            }
-            var script = document.createElement("script");
-            script.src = url;
-            script.onload = function () { return resolve(); };
-            script.onerror = reject;
-            document.body.appendChild(script);
-        });
+        if (typeof window !== "undefined") {
+            return new Promise(function (resolve, reject) {
+                if (typeof document === "undefined") {
+                    reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
+                    return;
+                }
+                var script = document.createElement("script");
+                script.src = url;
+                script.onload = function () { return resolve(); };
+                script.onerror = reject;
+                document.body.appendChild(script);
+            });
+        }
+        else if (typeof process !== "undefined" && typeof require === "function") {
+            return new Promise(function (resolve, reject) {
+                var http = require("http");
+                var vm = require("vm");
+                http
+                    .get(url, function (res) {
+                    var data = "";
+                    res.on("data", function (chunk) {
+                        data += chunk;
+                    });
+                    res.on("end", function () {
+                        try {
+                            vm.runInThisContext(data);
+                            resolve();
+                        }
+                        catch (error) {
+                            reject(error);
+                        }
+                    });
+                })
+                    .on("error", function (error) {
+                    reject(error);
+                });
+            });
+        }
     };
     var loadIframe = function (url, token) {
         return new Promise(function (resolve, reject) {
@@ -4590,7 +4754,7 @@
         return __generator(this, function (_f) {
             switch (_f.label) {
                 case 0:
-                    if (typeof document === "undefined")
+                    if (typeof document === "undefined" || typeof window === "undefined")
                         return [2 /*return*/];
                     if (!(typeof window.__MY_REACT_DEVTOOL_RUNTIME__ !== "function")) return [3 /*break*/, 2];
                     return [4 /*yield*/, loadScript("".concat(origin, "/bundle/hook.js"))];
@@ -4616,7 +4780,7 @@
                     }
                     window.addEventListener("message", function (e) {
                         var _a;
-                        if (e.source === window && e.data && e.data.source === coreExports.DevToolSource && e.data.from === sourceFrom.hook) {
+                        if (e.source === window && e.data && e.data.source === eventExports.DevToolSource && e.data.from === sourceFrom.hook) {
                             (_a = bridgeWindow === null || bridgeWindow === void 0 ? void 0 : bridgeWindow.postMessage) === null || _a === void 0 ? void 0 : _a.call(bridgeWindow, e.data, "*");
                         }
                     });
@@ -4727,6 +4891,49 @@
         }
     };
 
+    // support debug more platform
+    var connectSocket$1 = null;
+    var initNODE_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
+        var socket, unSubscribe;
+        var _a, _b, _c;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0:
+                    if (typeof process !== "object")
+                        return [2 /*return*/];
+                    if (!!globalThis.io) return [3 /*break*/, 2];
+                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
+                case 1:
+                    _d.sent();
+                    _d.label = 2;
+                case 2:
+                    (_a = globalThis["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(globalThis, d); });
+                    (_c = (_b = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
+                    socket = globalThis.io(url);
+                    connectSocket$1 = socket;
+                    unSubscribe = function () { };
+                    socket.on("connect", function () {
+                        unSubscribe = core.subscribe(function (message) {
+                            socket.emit("render", message);
+                        });
+                    });
+                    socket.on("disconnect", function () {
+                        unSubscribe();
+                        core.disconnect();
+                    });
+                    socket.on("action", function (data) {
+                        onMessageFromPanelOrWorkerOrDetector(data);
+                    });
+                    return [2 /*return*/];
+            }
+        });
+    }); };
+    initNODE_DEV.close = function () {
+        var _a;
+        (_a = connectSocket$1 === null || connectSocket$1 === void 0 ? void 0 : connectSocket$1.close) === null || _a === void 0 ? void 0 : _a.call(connectSocket$1);
+        connectSocket$1 = null;
+    };
+
     var connectSocket = null;
     var initWEB_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
         var socket, unSubscribe;
@@ -4773,14 +4980,16 @@
 
     var generatePostMessageWithSource = function (from) {
         return function (message) {
-            window.postMessage(__assign(__assign({ from: from }, message), { source: coreExports.DevToolSource }), "*");
+            if (typeof window === 'undefined')
+                return;
+            window.postMessage(__assign(__assign({ from: from }, message), { source: eventExports.DevToolSource }), "*");
         };
     };
 
     var _a;
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
     core.subscribe(function (message) {
-        hookPostMessageWithSource({ type: coreExports.MessageHookType.render, data: message });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.render, data: message });
     });
     var set = new Set();
     var detectorReady = false;
@@ -4801,36 +5010,40 @@
     };
     var onMessage = function (message) {
         var _a, _b, _c, _d, _f;
+        if (typeof window === "undefined")
+            return;
         // allow iframe dev
         // allow bridge dev
         if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.from) !== sourceFrom.bridge)
             return;
-        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.source) !== coreExports.DevToolSource)
+        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.source) !== eventExports.DevToolSource)
             return;
         if (((_d = message.data) === null || _d === void 0 ? void 0 : _d.from) === sourceFrom.hook)
             return;
-        if (!detectorReady && ((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === coreExports.MessageDetectorType.init) {
+        if (!detectorReady && ((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === eventExports.MessageDetectorType.init) {
             detectorReady = true;
         }
         onMessageFromPanelOrWorkerOrDetector(message.data);
     };
-    window.addEventListener("message", onMessage);
+    if (typeof window !== "undefined") {
+        window.addEventListener("message", onMessage);
+    }
     var onceMount = reactSharedExports.once(function () {
         // current site is render by @my-react
-        hookPostMessageWithSource({ type: coreExports.MessageHookType.mount });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount });
     });
     var onceDev = reactSharedExports.once(function () {
-        hookPostMessageWithSource({ type: coreExports.MessageHookType.mount, data: "develop" });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: "develop" });
     });
     var oncePro = reactSharedExports.once(function () {
-        hookPostMessageWithSource({ type: coreExports.MessageHookType.mount, data: "product" });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: "product" });
     });
     var onceOrigin = reactSharedExports.once(function () {
         try {
             var origin_1 = window.location.origin;
             core._origin = origin_1;
             if (origin_1) {
-                hookPostMessageWithSource({ type: coreExports.MessageHookType.origin, data: origin_1 });
+                hookPostMessageWithSource({ type: eventExports.MessageHookType.origin, data: origin_1 });
             }
         }
         catch (_a) {
@@ -4840,10 +5053,10 @@
         set.add(dispatch);
         core.addDispatch(dispatch, platform);
         var typedDispatch = dispatch;
-        if (typedDispatch.mode === 'development') {
+        if (typedDispatch.mode === "development") {
             runWhenDetectorReady(onceDev);
         }
-        else if (typedDispatch.mode === 'production') {
+        else if (typedDispatch.mode === "production") {
             runWhenDetectorReady(oncePro);
         }
         else {
@@ -4851,15 +5064,21 @@
         }
         runWhenDetectorReady(onceOrigin);
     };
-    window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
-    window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-    window["__@my-react/react-devtool-inject__"] = globalHook;
-    // support local dev
-    window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
-    // support iframe dev
-    window["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
-    (_a = window["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(window);
-    hookPostMessageWithSource({ type: coreExports.MessageHookType.init });
-    globalHook.init = function () { return hookPostMessageWithSource({ type: coreExports.MessageHookType.init }); };
+    globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
+    globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+    globalThis["__@my-react/react-devtool-inject__"] = globalHook;
+    if (typeof window !== "undefined") {
+        // support web dev
+        globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
+        // support iframe dev
+        globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+    }
+    else if (typeof process !== "undefined" && typeof require === "function") {
+        // support node dev
+        globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
+    }
+    (_a = globalThis["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(globalThis);
+    hookPostMessageWithSource({ type: eventExports.MessageHookType.init });
+    globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init }); };
 
 })();
