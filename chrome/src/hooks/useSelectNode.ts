@@ -21,7 +21,7 @@ export const useSelectNode = createState(
   {
     withActions: (s) => {
       const updateSelectList = debounce(() => {
-        const plainNode = useAppTree.getReadonlyState().list.find((i) => i.i === s.select) as PlainNode;
+        const plainNode = useAppTree.getReactiveState().list.find((i) => i.i === s.select) as PlainNode;
         if (!plainNode) return;
         s.selectList = flattenNode(
           plainNode,
