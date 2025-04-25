@@ -137,7 +137,9 @@ if (typeof window !== "undefined") {
   globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
   // support iframe dev
   globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
-} else if (typeof process !== "undefined" && typeof require === "function") {
+}
+
+if (typeof process !== "undefined") {
   // support node dev
   globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
 }

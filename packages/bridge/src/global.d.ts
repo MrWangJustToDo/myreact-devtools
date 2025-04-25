@@ -37,6 +37,10 @@ declare global {
 
     io: typeof io;
   }
+
+  interface globalThis {
+    io: typeof io;
+  }
 }
 
 export {};

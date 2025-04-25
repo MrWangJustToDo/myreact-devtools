@@ -4683,30 +4683,8 @@
                 document.body.appendChild(script);
             });
         }
-        else if (typeof process !== "undefined" && typeof require === "function") {
-            return new Promise(function (resolve, reject) {
-                var http = require("http");
-                var vm = require("vm");
-                http
-                    .get(url, function (res) {
-                    var data = "";
-                    res.on("data", function (chunk) {
-                        data += chunk;
-                    });
-                    res.on("end", function () {
-                        try {
-                            vm.runInThisContext(data);
-                            resolve();
-                        }
-                        catch (error) {
-                            reject(error);
-                        }
-                    });
-                })
-                    .on("error", function (error) {
-                    reject(error);
-                });
-            });
+        else {
+            return Promise.reject(new Error("[@my-react-devtool/hook] current environment not support"));
         }
     };
     var loadIframe = function (url, token) {
@@ -4897,35 +4875,32 @@
         var socket, unSubscribe;
         var _a, _b, _c;
         return __generator(this, function (_d) {
-            switch (_d.label) {
-                case 0:
-                    if (typeof process !== "object")
-                        return [2 /*return*/];
-                    if (!!globalThis.io) return [3 /*break*/, 2];
-                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
-                case 1:
-                    _d.sent();
-                    _d.label = 2;
-                case 2:
-                    (_a = globalThis["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(globalThis, d); });
-                    (_c = (_b = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
-                    socket = globalThis.io(url);
-                    connectSocket$1 = socket;
-                    unSubscribe = function () { };
-                    socket.on("connect", function () {
-                        unSubscribe = core.subscribe(function (message) {
-                            socket.emit("render", message);
-                        });
-                    });
-                    socket.on("disconnect", function () {
-                        unSubscribe();
-                        core.disconnect();
-                    });
-                    socket.on("action", function (data) {
-                        onMessageFromPanelOrWorkerOrDetector(data);
-                    });
-                    return [2 /*return*/];
-            }
+            if (typeof process !== "object" || typeof globalThis.io !== "function")
+                return [2 /*return*/];
+            (_a = globalThis["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(globalThis, d); });
+            (_c = (_b = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
+            socket = globalThis.io(url, {
+                reconnection: true, // 是否自动重新连接
+                reconnectionAttempts: Infinity, // 重新连接尝试次数
+                reconnectionDelay: 1000, // 初始重新连接延迟(ms)
+                reconnectionDelayMax: 5000, // 最大重新连接延迟(ms)
+                timeout: 8000, // 连接超时时间(ms)
+            });
+            connectSocket$1 = socket;
+            unSubscribe = function () { };
+            socket.on("connect", function () {
+                unSubscribe = core.subscribe(function (message) {
+                    socket.emit("render", message);
+                });
+            });
+            socket.on("disconnect", function () {
+                unSubscribe();
+                core.disconnect();
+            });
+            socket.on("action", function (data) {
+                onMessageFromPanelOrWorkerOrDetector(data);
+            });
+            return [2 /*return*/, socket];
         });
     }); };
     initNODE_DEV.close = function () {
@@ -5073,7 +5048,7 @@
         // support iframe dev
         globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
     }
-    else if (typeof process !== "undefined" && typeof require === "function") {
+    if (typeof process !== "undefined") {
         // support node dev
         globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
     }

@@ -30,30 +30,8 @@ export const loadScript = (url: string) => {
 
       document.body.appendChild(script);
     });
-  } else if (typeof process !== "undefined" && typeof require === "function") {
-    return new Promise<void>((resolve, reject) => {
-      const http = require("http");
-      const vm = require("vm");
-
-      http
-        .get(url, (res: any) => {
-          let data = "";
-          res.on("data", (chunk: any) => {
-            data += chunk;
-          });
-          res.on("end", () => {
-            try {
-              vm.runInThisContext(data);
-              resolve();
-            } catch (error) {
-              reject(error);
-            }
-          });
-        })
-        .on("error", (error: Error) => {
-          reject(error);
-        });
-    });
+  } else {
+    return Promise.reject(new Error("[@my-react-devtool/hook] current environment not support"));
   }
 };
 
