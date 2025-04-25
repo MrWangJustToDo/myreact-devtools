@@ -6,6 +6,7 @@ import { getNode, getNodeFromId } from "./data";
 import { DevToolMessageEnum, HMRStatus } from "./event";
 import { Highlight, Select } from "./highlight";
 import { type DispatcherType } from "./hook";
+import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource } from "./inspect";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
   generateTreeMap,
@@ -32,8 +33,6 @@ export type DevToolMessageType = {
 export type DevToolRenderPlatform = CustomRenderPlatform & {
   dispatcher: { current: DispatcherType };
 };
-
-let cb = () => {};
 
 const map = new Map();
 
@@ -132,90 +131,11 @@ export class DevToolCore {
   }
 
   enableBrowserHover() {
-    if (!this.hasEnable) return;
-
-    if (this._enableHoverOnBrowser) return;
-
-    if (typeof document === "undefined") {
-      if (__DEV__) {
-        console.warn("[@my-react-devtool/core] current env not support");
-      }
-      return;
-    }
-
-    this._enableHoverOnBrowser = true;
-
-    this.select.remove();
-
-    const debounceNotifyDomHover = debounce(() => {
-      this.notifyDomHover();
-      this.disableBrowserHover();
-      this.notifyConfig();
-    }, 100);
-
-    const onMouseEnter = debounce((e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-
-      this.select.remove();
-
-      if (!this.hasEnable) return;
-
-      if (target.nodeType === Node.ELEMENT_NODE) {
-        const fiber = getComponentFiberByDom(target);
-
-        if (fiber) {
-          this.select.remove();
-
-          this.select.inspect(fiber);
-
-          const id = getPlainNodeIdByFiber(fiber);
-
-          this._tempDomHoverId = id;
-
-          // debounceNotifyDomHover();
-        }
-      }
-    }, 16);
-
-    const onClick = (e: MouseEvent) => {
-      if (!this.hasEnable) return;
-
-      this._domHoverId = this._tempDomHoverId;
-
-      debounceNotifyDomHover();
-
-      e.stopPropagation();
-
-      e.preventDefault();
-    };
-
-    document.addEventListener("mouseenter", onMouseEnter, true);
-
-    document.addEventListener("click", onClick, true);
-
-    document.addEventListener("mousedown", onClick, true);
-
-    document.addEventListener("pointerdown", onClick, true);
-
-    cb = () => {
-      this._enableHoverOnBrowser = false;
-
-      this.select.remove();
-
-      document.removeEventListener("mouseenter", onMouseEnter, true);
-
-      document.removeEventListener("click", onClick, true);
-
-      document.removeEventListener("mousedown", onClick, true);
-
-      document.removeEventListener("pointerdown", onClick, true);
-    };
+    enableBrowserHover(this);
   }
 
   disableBrowserHover() {
-    if (!this._enableHoverOnBrowser) return;
-
-    cb();
+    disableBrowserHover(this);
   }
 
   setUpdateStatus(d: boolean) {
@@ -598,69 +518,15 @@ export class DevToolCore {
   }
 
   inspectDom() {
-    if (!this.hasEnable) return;
-
-    const dom = this._selectDom;
-
-    if (typeof globalThis["inspect"] === "function" && dom) {
-      globalThis["inspect"](dom);
-
-      window["$$$$0"] = dom;
-
-      return;
-    }
-
-    this.notifyMessage(`current id: ${this._selectId} of fiber not contain dom node`, "warning");
+    inspectDom(this);
   }
 
   inspectCom() {
-    if (!this.hasEnable) return;
-
-    const id = this._selectId;
-
-    if (!id) return;
-
-    const fiber = getFiberNodeById(id);
-
-    if (fiber) {
-      const elementType = fiber.elementType;
-
-      if (typeof globalThis["inspect"] === "function" && elementType) {
-        globalThis["inspect"](elementType);
-
-        return;
-      }
-    }
-
-    this.notifyMessage(`current id: ${id} of fiber can not inspect`, "warning");
+    inspectCom(this);
   }
 
   inspectSource() {
-    if (!this.hasEnable) return;
-
-    if (typeof this._source === "function" && typeof globalThis["inspect"] === "function") {
-      const s = this._source;
-
-      this._source = null;
-
-      globalThis["inspect"](s);
-
-      return;
-    }
-
-    if (this._source && this._source instanceof HTMLElement && typeof globalThis["inspect"] === "function") {
-      const s = this._source;
-
-      this._source = null;
-
-      globalThis["inspect"](s);
-
-      window["$$$$0"] = s;
-
-      return;
-    }
-
-    this.notifyMessage(`can not view source for current item`, "warning");
+    inspectSource(this);
   }
 
   notifyDir() {

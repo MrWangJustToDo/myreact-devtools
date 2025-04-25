@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 let varId = 0;
 
 export const getValidGlobalVarName = () => {
@@ -11,23 +12,49 @@ export const getValidGlobalVarName = () => {
 };
 
 export const loadScript = (url: string) => {
-  return new Promise<void>((resolve, reject) => {
-    if (typeof document === "undefined") {
-      reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
+  if (typeof window !== "undefined") {
+    return new Promise<void>((resolve, reject) => {
+      if (typeof document === "undefined") {
+        reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
 
-      return;
-    }
+        return;
+      }
 
-    const script = document.createElement("script");
+      const script = document.createElement("script");
 
-    script.src = url;
+      script.src = url;
 
-    script.onload = () => resolve();
+      script.onload = () => resolve();
 
-    script.onerror = reject;
+      script.onerror = reject;
 
-    document.body.appendChild(script);
-  });
+      document.body.appendChild(script);
+    });
+  } else if (typeof process !== "undefined" && typeof require === "function") {
+    return new Promise<void>((resolve, reject) => {
+      const http = require("http");
+      const vm = require("vm");
+
+      http
+        .get(url, (res: any) => {
+          let data = "";
+          res.on("data", (chunk: any) => {
+            data += chunk;
+          });
+          res.on("end", () => {
+            try {
+              vm.runInThisContext(data);
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          });
+        })
+        .on("error", (error: Error) => {
+          reject(error);
+        });
+    });
+  }
 };
 
 export const loadIframe = (url: string, token: string) => {

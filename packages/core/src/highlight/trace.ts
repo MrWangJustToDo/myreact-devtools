@@ -122,17 +122,24 @@ export class Highlight {
   }
 
   addPending(fiber: MyReactFiberNode, type: "update" | "append" | "setRef" | "warn"): void {
+    if (typeof window === "undefined") return;
+
     if (type === "update") {
       this.pendingUpdates.add(fiber);
     }
   }
 
   flushPending(): void {
+    if (typeof window === "undefined") return;
+
     traceUpdates(this.pendingUpdates);
+
     this.pendingUpdates.clear();
   }
 
   cancelPending(): void {
+    if (typeof window === "undefined") return;
+    
     nodeToData.clear();
 
     if (drawAnimationFrameID !== null) {

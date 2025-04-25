@@ -305,6 +305,8 @@ export class Select {
   }
 
   inspect(fiber: MyReactFiberNode) {
+    if (typeof window === "undefined") return;
+
     this.overlay?.remove?.();
 
     this.overlay = new Overlay(this.agent);
@@ -313,6 +315,8 @@ export class Select {
   }
 
   remove() {
+    if (typeof window === "undefined") return;
+    
     this.overlay?.remove?.();
   }
 }

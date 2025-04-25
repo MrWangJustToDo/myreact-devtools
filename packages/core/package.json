@@ -8,6 +8,8 @@
   "types": "index.d.ts",
   "files": [
     "dist",
+    "event.js",
+    "event.d.ts",
     "index.js",
     "index.d.ts"
   ],
@@ -17,20 +19,33 @@
   },
   "exports": {
     ".": "./index.js",
+    "./event": "./event.js",
     "./package.json": "./package.json"
   },
-  "buildOptions": {
-    "input": "./src/index.ts",
-    "output": [
-      {
-        "dir": "./dist",
-        "entryFileNames": "cjs/index.js",
-        "format": "cjs",
-        "type": true,
-        "multiple": true
-      }
-    ]
-  },
+  "buildOptions": [
+    {
+      "input": "./src/index.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "cjs/index.js",
+          "format": "cjs",
+          "type": true,
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "input": "./src/event.ts",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "cjs/event.js",
+          "format": "cjs"
+        }
+      ]
+    }
+  ],
   "devDependencies": {
     "@my-react/react": "^0.3.8",
     "@my-react/react-reconciler": "^0.3.8",

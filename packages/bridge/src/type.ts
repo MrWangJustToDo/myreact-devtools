@@ -1,4 +1,4 @@
-import { MessageDetectorType, MessageHookType, MessagePanelType, MessageWorkerType } from "@my-react-devtool/core";
+import { MessageDetectorType, MessageHookType, MessagePanelType, MessageWorkerType } from "@my-react-devtool/core/event";
 
 export { MessageDetectorType, MessageHookType, MessagePanelType, MessageWorkerType };
 

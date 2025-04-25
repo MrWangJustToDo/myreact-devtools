@@ -1,4 +1,4 @@
-import { DevToolSource } from "@my-react-devtool/core";
+import { DevToolSource } from "@my-react-devtool/core/event";
 
 import { core } from "./core";
 import { loadIframe, loadScript } from "./tool";
@@ -7,7 +7,7 @@ import { sourceFrom } from "./type";
 let close = () => {};
 
 export const initIFRAME_DEV = async (origin: string, token?: string) => {
-  if (typeof document === "undefined") return;
+  if (typeof document === "undefined" || typeof window === "undefined") return;
 
   if (typeof window.__MY_REACT_DEVTOOL_RUNTIME__ !== "function") {
     await loadScript(`${origin}/bundle/hook.js`);

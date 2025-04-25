@@ -59,7 +59,7 @@ export const onRender = (data: DevToolMessageType) => {
         addNode(node);
       }
 
-      chrome.devtools?.inspectedWindow?.eval?.(`(() => {
+      chrome?.devtools?.inspectedWindow?.eval?.(`(() => {
         if (window['$$$$0'] !== $0) {
           window.__MY_REACT_DEVTOOL_INTERNAL__?.setSelectDom?.($0);
           window.__MY_REACT_DEVTOOL_INTERNAL__?.notifySelectSync?.();

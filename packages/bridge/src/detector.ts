@@ -1,4 +1,4 @@
-import { DevToolSource } from "@my-react-devtool/core";
+import { DevToolSource } from "@my-react-devtool/core/event";
 
 import { MessageDetectorType, MessageHookType, sourceFrom } from "./type";
 import { generatePostMessageWithSource } from "./window";
@@ -54,4 +54,6 @@ const onMessage = (message: MessageEvent<MessageHookDataType>) => {
   }
 };
 
-window.addEventListener("message", onMessage);
+if (typeof window !== "undefined") {
+  window.addEventListener("message", onMessage);
+}

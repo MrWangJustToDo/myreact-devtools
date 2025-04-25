@@ -1,9 +1,10 @@
 import { once } from "@my-react/react-shared";
-import { DevToolSource } from "@my-react-devtool/core";
+import { DevToolSource } from "@my-react-devtool/core/event";
 
 import { core } from "./core";
 import { initIFRAME_DEV } from "./iframe-dev";
 import { onMessageFromPanelOrWorkerOrDetector } from "./message";
+import { initNODE_DEV } from "./node-dev";
 import { MessageHookType, MessageDetectorType, MessagePanelType, sourceFrom } from "./type";
 import { initWEB_DEV } from "./web-dev";
 import { generatePostMessageWithSource } from "./window";
@@ -52,6 +53,7 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
 };
 
 const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorDataType | MessageWorkerDataType>) => {
+  if (typeof window === "undefined") return;
   // allow iframe dev
   // allow bridge dev
   if (message.source !== window && message.data?.from !== sourceFrom.iframe && message.data?.from !== sourceFrom.bridge) return;
@@ -75,7 +77,9 @@ const onMessage = (message: MessageEvent<MessagePanelDataType | MessageDetectorD
   onMessageFromPanelOrWorkerOrDetector(message.data);
 };
 
-window.addEventListener("message", onMessage);
+if (typeof window !== "undefined") {
+  window.addEventListener("message", onMessage);
+}
 
 const onceMount = once(() => {
   // current site is render by @my-react
@@ -111,9 +115,9 @@ const globalHook = (dispatch: CustomRenderDispatch, platform?: CustomRenderPlatf
 
   const typedDispatch = dispatch as CustomRenderDispatch & { mode: string };
 
-  if (typedDispatch.mode === 'development') {
+  if (typedDispatch.mode === "development") {
     runWhenDetectorReady(onceDev);
-  } else if (typedDispatch.mode === 'production') {
+  } else if (typedDispatch.mode === "production") {
     runWhenDetectorReady(oncePro);
   } else {
     runWhenDetectorReady(onceMount);
@@ -122,18 +126,23 @@ const globalHook = (dispatch: CustomRenderDispatch, platform?: CustomRenderPlatf
   runWhenDetectorReady(onceOrigin);
 };
 
-window["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
+globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
 
-window["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
 
-window["__@my-react/react-devtool-inject__"] = globalHook;
+globalThis["__@my-react/react-devtool-inject__"] = globalHook;
 
-// support local dev
-window["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
-// support iframe dev
-window["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+if (typeof window !== "undefined") {
+  // support web dev
+  globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
+  // support iframe dev
+  globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+} else if (typeof process !== "undefined" && typeof require === "function") {
+  // support node dev
+  globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
+}
 
-window["__@my-react/react-devtool-inject-pending__"]?.();
+globalThis["__@my-react/react-devtool-inject-pending__"]?.();
 
 hookPostMessageWithSource({ type: MessageHookType.init });
 
