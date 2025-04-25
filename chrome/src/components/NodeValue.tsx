@@ -181,7 +181,7 @@ export const NodeValue = ({
     return (
       <div data-id={id} data-chunk={isChunk} className="hook-value-view">
         <div className="flex w-full my-0.5 items-center">
-          <span className="text-transparent w-[1.5em] h-[1.5em] inline-block">{StateIcon}</span>
+          <span className="text-transparent w-[1.5em] h-[1.5em] inline-block shrink-0">{StateIcon}</span>
           {prefix}
           <div className={`w-full relative flex pr-2`}>
             <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
@@ -207,7 +207,7 @@ export const NodeValue = ({
         <div data-id={id} data-chunk={isChunk} className="hook-value-view">
           <div className="flex w-full my-0.5 items-center">
             <span
-              className={"text-gray-400 w-[1.5em] h-[1.5em] cursor-pointer inline-flex justify-center items-center hover:text-gray-700"}
+              className={"text-gray-400 w-[1.5em] h-[1.5em] cursor-pointer inline-flex justify-center items-center hover:text-gray-700 shrink-0"}
               onClick={() => setExpand(!expand)}
             >
               {StateIcon}
