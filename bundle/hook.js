@@ -2009,7 +2009,6 @@
     		 * This source code is licensed under the MIT license found in the
     		 * LICENSE file in the root directory of this source tree.
     		 *
-    		 * @flow
     		 */
     		// This is a DevTools fork of shared/ConsolePatchingDev.
     		// The shared console patching code is DEV-only.
@@ -2799,7 +2798,8 @@
     		        var typedCurrent = current;
     		        var dispatch = typedCurrent.renderDispatch;
     		        if (dispatch && dispatch.renderMode) {
-    		            tree.push("@my-react ".concat(dispatch.renderMode));
+    		            var packageName = (dispatch === null || dispatch === void 0 ? void 0 : dispatch.renderPackage) || "@my-react";
+    		            tree.push("".concat(packageName, " ").concat(dispatch.renderMode));
     		        }
     		        if (dispatch && dispatch.version) {
     		            tree.push("@my-react ".concat(dispatch.version));
