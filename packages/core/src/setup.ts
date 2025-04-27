@@ -10,6 +10,7 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
   onDOMAppend?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMSetRef?: (cb: (f: MyReactFiberNode) => void) => void;
   version?: string;
+  renderPackage?: string;
 }
 
 // TODO use 'eventListener' instead of 'patchFunction'

@@ -413,7 +413,8 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
     const dispatch = typedCurrent.renderDispatch;
 
     if (dispatch && dispatch.renderMode) {
-      tree.push(`@my-react ${dispatch.renderMode}`);
+      const packageName = dispatch?.renderPackage || "@my-react";
+      tree.push(`${packageName} ${dispatch.renderMode}`);
     }
 
     if (dispatch && dispatch.version) {
@@ -474,7 +475,7 @@ const getHookStack = (fiber: MyReactFiberNodeDev) => {
   if (!fiber.hookList) return final;
 
   disableLogs();
-  
+
   const hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
 
   reenableLogs();
