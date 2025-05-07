@@ -1,6 +1,5 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { type MyReactFiberNode, type MyReactFiberNodeDev, type MyReactHookNode, type MyReactHookNodeDev } from "@my-react/react-reconciler";
 import {
   Consumer,
   Context,
@@ -25,12 +24,12 @@ import {
 } from "@my-react/react-shared";
 
 import { getNode } from "./data";
-import { inspectHooksOfFiber, type HooksTree } from "./hook";
+import { inspectHooksOfFiber } from "./hook";
 import { disableLogs, reenableLogs } from "./log";
 import { getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
-import type { DevToolRenderPlatform } from "./instance";
+import type { DispatcherType, HooksTree } from "./hook";
 import type { HOOKTree, PlainNode } from "./plain";
 import type { DevToolRenderDispatch } from "./setup";
 import type {
@@ -45,14 +44,16 @@ import type {
   lazy,
   memo,
 } from "@my-react/react";
+import type {
+  MyReactFiberNode,
+  MyReactHookNode,
+  MyReactFiberNodeDev,
+  MyReactFiberRoot,
+  MyReactHookNodeDev,
+  CustomRenderDispatch,
+} from "@my-react/react-reconciler";
 
 export const typeKeys: number[] = [];
-
-let platform: DevToolRenderPlatform | null = null;
-
-export const setPlatform = (p: DevToolRenderPlatform) => {
-  platform = p;
-};
 
 // SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
 const reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
@@ -443,6 +444,23 @@ const parseHooksTreeToHOOKTree = (node: HooksTree, d: number): HOOKTree[] => {
   });
 };
 
+const getDispatch = (fiber: MyReactFiberNode) => {
+  let dispatch: DevToolRenderDispatch | undefined;
+
+  while (fiber) {
+    const typedFiber = fiber as unknown as MyReactFiberRoot;
+
+    if (typedFiber.renderDispatch) {
+      dispatch = typedFiber.renderDispatch;
+
+      break;
+    }
+    fiber = fiber.parent;
+  }
+
+  return dispatch;
+};
+
 const getHookNormal = (fiber: MyReactFiberNodeDev) => {
   const final: HOOKTree[] = [];
 
@@ -469,14 +487,14 @@ const getHookNormal = (fiber: MyReactFiberNodeDev) => {
 };
 
 // disable all log
-const getHookStack = (fiber: MyReactFiberNodeDev) => {
+const getHookStack = (fiber: MyReactFiberNodeDev, dispatch: CustomRenderDispatch) => {
   const final: HOOKTree[] = [];
 
   if (!fiber.hookList) return final;
 
   disableLogs();
 
-  const hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
+  const hookTree = inspectHooksOfFiber(fiber, dispatch.dispatcher as { current: DispatcherType });
 
   reenableLogs();
 
@@ -484,9 +502,10 @@ const getHookStack = (fiber: MyReactFiberNodeDev) => {
 };
 
 export const getHook = (fiber: MyReactFiberNodeDev) => {
-  if (platform && platform.dispatcher) {
+  const dispatch = getDispatch(fiber);
+  if (dispatch && dispatch.dispatcher) {
     try {
-      return getHookStack(fiber);
+      return getHookStack(fiber, dispatch);
     } catch (e) {
       console.error(e);
       return getHookNormal(fiber);

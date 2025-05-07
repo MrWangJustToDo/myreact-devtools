@@ -32,7 +32,7 @@ function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch, runtime: D
 }
 
 function overridePatchToFiberInit(dispatch: DevToolRenderDispatch, runtime: DevToolCore) {
-  if (typeof dispatch.onFiberInitial === 'function') {
+  if (typeof dispatch.onFiberInitial === "function") {
     dispatch.onFiberInitial((f) => initPlainNode(f, runtime));
   } else {
     if (__DEV__) {

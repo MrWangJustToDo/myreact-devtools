@@ -5,7 +5,6 @@ import { isNormalEquals } from "@my-react/react-shared";
 import { getNode, getNodeFromId } from "./data";
 import { DevToolMessageEnum, HMRStatus } from "./event";
 import { Highlight, Select } from "./highlight";
-import { type DispatcherType } from "./hook";
 import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource } from "./inspect";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
@@ -19,7 +18,7 @@ import {
   getElementNodesFromFiber,
   updateFiberNode,
 } from "./tree";
-import { debounce, setPlatform, throttle } from "./utils";
+import { debounce, throttle } from "./utils";
 
 import type { Tree } from "./tree";
 import type { CustomRenderPlatform, MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
@@ -30,9 +29,7 @@ export type DevToolMessageType = {
   data: any;
 };
 
-export type DevToolRenderPlatform = CustomRenderPlatform & {
-  dispatcher: { current: DispatcherType };
-};
+export type DevToolRenderPlatform = CustomRenderPlatform;
 
 const map = new Map();
 
@@ -177,8 +174,6 @@ export class DevToolCore {
 
     if (platform) {
       this._platform = platform as DevToolRenderPlatform;
-
-      setPlatform(this._platform);
     }
 
     this.patchDispatch(dispatch);

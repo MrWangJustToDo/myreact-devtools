@@ -2451,10 +2451,6 @@
     		};
 
     		var typeKeys = [];
-    		var platform = null;
-    		var setPlatform = function (p) {
-    		    platform = p;
-    		};
     		// SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
     		var reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
     		Object.keys(exports.NODE_TYPE).forEach(function (key) {
@@ -2825,6 +2821,18 @@
     		        };
     		    });
     		};
+    		var getDispatch = function (fiber) {
+    		    var dispatch;
+    		    while (fiber) {
+    		        var typedFiber = fiber;
+    		        if (typedFiber.renderDispatch) {
+    		            dispatch = typedFiber.renderDispatch;
+    		            break;
+    		        }
+    		        fiber = fiber.parent;
+    		    }
+    		    return dispatch;
+    		};
     		var getHookNormal = function (fiber) {
     		    var _a;
     		    var final = [];
@@ -2847,19 +2855,20 @@
     		    return final;
     		};
     		// disable all log
-    		var getHookStack = function (fiber) {
+    		var getHookStack = function (fiber, dispatch) {
     		    var final = [];
     		    if (!fiber.hookList)
     		        return final;
     		    disableLogs();
-    		    var hookTree = inspectHooksOfFiber(fiber, platform.dispatcher);
+    		    var hookTree = inspectHooksOfFiber(fiber, dispatch.dispatcher);
     		    reenableLogs();
     		    return parseHooksTreeToHOOKTree(hookTree, 0);
     		};
     		var getHook = function (fiber) {
-    		    if (platform && platform.dispatcher) {
+    		    var dispatch = getDispatch(fiber);
+    		    if (dispatch && dispatch.dispatcher) {
     		        try {
-    		            return getHookStack(fiber);
+    		            return getHookStack(fiber, dispatch);
     		        }
     		        catch (e) {
     		            console.error(e);
@@ -3893,7 +3902,7 @@
     		    }
     		}
     		function overridePatchToFiberInit(dispatch, runtime) {
-    		    if (typeof dispatch.onFiberInitial === 'function') {
+    		    if (typeof dispatch.onFiberInitial === "function") {
     		        dispatch.onFiberInitial(function (f) { return initPlainNode(f); });
     		    }
     		    else {
@@ -4019,7 +4028,6 @@
     		        }
     		        if (platform) {
     		            this._platform = platform;
-    		            setPlatform(this._platform);
     		        }
     		        this.patchDispatch(dispatch);
     		    };
@@ -4563,7 +4571,6 @@
     		exports.isValidElement = isValidElement;
     		exports.loopChangedTree = loopChangedTree;
     		exports.loopTree = loopTree;
-    		exports.setPlatform = setPlatform;
     		exports.shallowAssignFiber = shallowAssignFiber;
     		exports.throttle = throttle;
     		exports.typeKeys = typeKeys;
