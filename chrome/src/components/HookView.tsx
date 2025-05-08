@@ -52,7 +52,9 @@ const HookViewTree = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boole
             </div>
             {item.n === "Anonymous" ? null : ":"}
           </div>
-          <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>{item.c?.map((i, index) => <HookViewTree key={i.n + "-" + index} item={i} />)}</div>
+          <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>
+            {item.c?.map((i, index) => <HookViewTree key={i.n + "-" + index} item={i} enableEdit={enableEdit} />)}
+          </div>
         </div>
       </>
     );
