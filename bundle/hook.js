@@ -5048,21 +5048,23 @@
         }
         runWhenDetectorReady(onceOrigin);
     };
-    globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
-    globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-    globalThis["__@my-react/react-devtool-inject__"] = globalHook;
-    if (typeof window !== "undefined") {
-        // support web dev
-        globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
-        // support iframe dev
-        globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+    if (!globalThis["__MY_REACT_DEVTOOL_INTERNAL__"]) {
+        globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
+        globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+        globalThis["__@my-react/react-devtool-inject__"] = globalHook;
+        if (typeof window !== "undefined") {
+            // support web dev
+            globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
+            // support iframe dev
+            globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+        }
+        if (typeof process !== "undefined") {
+            // support node dev
+            globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
+        }
+        (_a = globalThis["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(globalThis);
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.init });
+        globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init }); };
     }
-    if (typeof process !== "undefined") {
-        // support node dev
-        globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
-    }
-    (_a = globalThis["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(globalThis);
-    hookPostMessageWithSource({ type: eventExports.MessageHookType.init });
-    globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init }); };
 
 })();
