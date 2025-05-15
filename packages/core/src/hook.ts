@@ -159,7 +159,9 @@ function use<T>(usable: any): T {
   if (usable !== null && typeof usable === "object") {
     if (typeof usable.then === "function") {
       const thenable = usable;
-      switch (thenable.state) {
+      // new version of @my-react change the `state` to `status`
+      const field = thenable.state || thenable.status;
+      switch (field) {
         case "fulfilled": {
           const fulfilledValue: T = thenable.value;
           hookLog.push({

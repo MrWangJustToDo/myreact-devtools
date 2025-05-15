@@ -66,8 +66,8 @@ Object.keys(NODE_TYPE).forEach((key) => {
 
 export const getTypeName = (type: number) => {
   switch (type) {
-    case NODE_TYPE.__keepLive__:
-      return "KeepAlive";
+    case NODE_TYPE.__internal__:
+      return "KEEP——Internal (not used)";
     case NODE_TYPE.__memo__:
       return "Memo";
     case NODE_TYPE.__forwardRef__:
@@ -195,7 +195,7 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   if (fiber.type & NODE_TYPE.__profiler__) return `Profiler`;
   if (fiber.type & NODE_TYPE.__suspense__) return `Suspense`;
   if (fiber.type & NODE_TYPE.__comment__) return `Comment`;
-  if (fiber.type & NODE_TYPE.__keepLive__) return `KeepAlive`;
+  if (fiber.type & NODE_TYPE.__internal__) return `KEEP——Internal`;
   if (fiber.type & NODE_TYPE.__fragment__) return `Fragment`;
   if (fiber.type & NODE_TYPE.__text__) return `text`;
   if (typeof fiber.elementType === "string") return `${fiber.elementType}`;
@@ -288,7 +288,7 @@ export const getMockFiberFromElement = (element: MyReactElement): MyReactFiberNo
   } else if (typeof elementType === "symbol") {
     switch (elementType) {
       case KeepLive:
-        nodeType = merge(nodeType, NODE_TYPE.__keepLive__);
+        nodeType = merge(nodeType, NODE_TYPE.__internal__);
         break;
       case Fragment:
         nodeType = merge(nodeType, NODE_TYPE.__fragment__);

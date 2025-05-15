@@ -1201,7 +1201,7 @@
     		    NODE_TYPE[NODE_TYPE["__strict__"] = 4096] = "__strict__";
     		    NODE_TYPE[NODE_TYPE["__suspense__"] = 8192] = "__suspense__";
     		    NODE_TYPE[NODE_TYPE["__fragment__"] = 16384] = "__fragment__";
-    		    NODE_TYPE[NODE_TYPE["__keepLive__"] = 32768] = "__keepLive__";
+    		    NODE_TYPE[NODE_TYPE["__internal__"] = 32768] = "__internal__";
     		    NODE_TYPE[NODE_TYPE["__scope__"] = 65536] = "__scope__";
     		    NODE_TYPE[NODE_TYPE["__comment__"] = 131072] = "__comment__";
     		    NODE_TYPE[NODE_TYPE["__profiler__"] = 262144] = "__profiler__";
@@ -1333,7 +1333,9 @@
     		    if (usable !== null && typeof usable === "object") {
     		        if (typeof usable.then === "function") {
     		            var thenable = usable;
-    		            switch (thenable.state) {
+    		            // new version of @my-react change the `state` to `status`
+    		            var field = thenable.state || thenable.status;
+    		            switch (field) {
     		                case "fulfilled": {
     		                    var fulfilledValue = thenable.value;
     		                    hookLog.push({
@@ -2460,8 +2462,8 @@
     		});
     		var getTypeName = function (type) {
     		    switch (type) {
-    		        case exports.NODE_TYPE.__keepLive__:
-    		            return "KeepAlive";
+    		        case exports.NODE_TYPE.__internal__:
+    		            return "KEEP——Internal (not used)";
     		        case exports.NODE_TYPE.__memo__:
     		            return "Memo";
     		        case exports.NODE_TYPE.__forwardRef__:
@@ -2589,8 +2591,8 @@
     		        return "Suspense";
     		    if (fiber.type & exports.NODE_TYPE.__comment__)
     		        return "Comment";
-    		    if (fiber.type & exports.NODE_TYPE.__keepLive__)
-    		        return "KeepAlive";
+    		    if (fiber.type & exports.NODE_TYPE.__internal__)
+    		        return "KEEP\u2014\u2014Internal";
     		    if (fiber.type & exports.NODE_TYPE.__fragment__)
     		        return "Fragment";
     		    if (fiber.type & exports.NODE_TYPE.__text__)
@@ -2683,7 +2685,7 @@
     		    else if (typeof elementType === "symbol") {
     		        switch (elementType) {
     		            case reactShared.KeepLive:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__keepLive__);
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__internal__);
     		                break;
     		            case reactShared.Fragment:
     		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__fragment__);
