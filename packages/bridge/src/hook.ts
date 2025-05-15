@@ -126,26 +126,32 @@ const globalHook = (dispatch: CustomRenderDispatch, platform?: CustomRenderPlatf
   runWhenDetectorReady(onceOrigin);
 };
 
-globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
+if (!globalThis["__MY_REACT_DEVTOOL_INTERNAL__"]) {
+  globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
 
-globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+  globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
 
-globalThis["__@my-react/react-devtool-inject__"] = globalHook;
+  globalThis["__@my-react/react-devtool-inject__"] = globalHook;
 
-if (typeof window !== "undefined") {
-  // support web dev
-  globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
-  // support iframe dev
-  globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+  if (typeof window !== "undefined") {
+    // support web dev
+    globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
+    // support iframe dev
+    globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+  }
+
+  if (typeof process !== "undefined") {
+    // support node dev
+    globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
+  }
+
+  globalThis["__@my-react/react-devtool-inject-pending__"]?.();
+
+  hookPostMessageWithSource({ type: MessageHookType.init });
+
+  globalHook.init = () => hookPostMessageWithSource({ type: MessageHookType.init });
+} else {
+  if (__DEV__) {
+    console.warn("[@my-react-devtool/hook] current file should only be loaded once");
+  }
 }
-
-if (typeof process !== "undefined") {
-  // support node dev
-  globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
-}
-
-globalThis["__@my-react/react-devtool-inject-pending__"]?.();
-
-hookPostMessageWithSource({ type: MessageHookType.init });
-
-globalHook.init = () => hookPostMessageWithSource({ type: MessageHookType.init });

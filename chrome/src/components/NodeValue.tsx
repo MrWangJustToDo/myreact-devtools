@@ -14,6 +14,7 @@ import type { ReactNode } from "react";
 
 const { open: contextOpen, setId, setType } = useContextMenu.getActions();
 
+// core component to view any typeof data
 export const NodeValue = ({
   name,
   item,

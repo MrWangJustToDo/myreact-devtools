@@ -50,9 +50,6 @@ export class PlainNode {
   r: PlainNode | null;
   // parent: PlainNode | null;
 
-  l: PlainNode | null;
-  // siblings: PlainNode[];
-
   d?: number;
   // deep?: number;
 

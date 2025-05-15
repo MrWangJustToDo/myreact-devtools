@@ -59,7 +59,7 @@ export const RenderView = () => {
 
     return (
       <div className={`ml-2`} key={node.i} onClick={scrollIntoView}>
-        <TreeItem node={node} withCollapse={false} withIndent={false} />
+        <TreeItem node={node} withCollapse={false} />
       </div>
     );
   });
