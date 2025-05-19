@@ -18,4 +18,5 @@ export const useFilterNode = createState(() => ({ filter: defaultDisableType }),
   }),
   withDeepSelector: false,
   withNamespace: "useFilterNode",
+  withPersist: "useFilterNode",
 });

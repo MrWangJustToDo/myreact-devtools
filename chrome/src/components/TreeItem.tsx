@@ -48,7 +48,7 @@ const RenderKey = memo(({ node }: { node: PlainNode }) => {
       <div className=" text-gray-400">=</div>
       <div className="flex">
         {'"'}
-        <Tooltip content={finalKey} delay={800} showArrow color="foreground">
+        <Tooltip content={<div className="max-w-[300px] max-h-[400px] overflow-y-auto whitespace-pre-wrap break-words">{finalKey}</div>} delay={800} showArrow color="foreground">
           <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
         </Tooltip>
         {'"'}
