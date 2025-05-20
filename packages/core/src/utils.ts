@@ -6,7 +6,7 @@ import {
   ForwardRef,
   Fragment,
   HOOK_TYPE,
-  KeepLive,
+  Root,
   Lazy,
   Memo,
   Element,
@@ -287,7 +287,7 @@ export const getMockFiberFromElement = (element: MyReactElement): MyReactFiberNo
     }
   } else if (typeof elementType === "symbol") {
     switch (elementType) {
-      case KeepLive:
+      case Root:
         nodeType = merge(nodeType, NODE_TYPE.__internal__);
         break;
       case Fragment:

@@ -89,8 +89,7 @@
     		var Lazy = Symbol.for("react.lazy");
     		var Suspense = Symbol.for("react.suspense");
     		var Strict = Symbol.for("react.strict_mode");
-    		// TODO
-    		var KeepLive = Symbol.for("react.keep_live");
+    		var Root = Symbol.for("react.root");
     		var Scope = Symbol.for("react.scope");
     		var ScopeLazy = Symbol.for("react.scope_lazy");
     		var ScopeSuspense = Symbol.for("react.scope_suspense");
@@ -223,7 +222,6 @@
     		    STATE_TYPE[STATE_TYPE["__hmr__"] = 1024] = "__hmr__";
     		    STATE_TYPE[STATE_TYPE["__retrigger__"] = 2048] = "__retrigger__";
     		    STATE_TYPE[STATE_TYPE["__reschedule__"] = 4096] = "__reschedule__";
-    		    STATE_TYPE[STATE_TYPE["__promise__"] = 8192] = "__promise__";
     		})(exports.STATE_TYPE || (exports.STATE_TYPE = {}));
 
     		exports.PATCH_TYPE = void 0;
@@ -615,7 +613,6 @@
     		exports.Element = Element;
     		exports.ForwardRef = ForwardRef;
     		exports.Fragment = Fragment;
-    		exports.KeepLive = KeepLive;
     		exports.Lazy = Lazy;
     		exports.ListTree = ListTree;
     		exports.ListTreeNode = ListTreeNode;
@@ -624,6 +621,7 @@
     		exports.Portal = Portal;
     		exports.Profiler = Profiler;
     		exports.Provider = Provider;
+    		exports.Root = Root;
     		exports.Scope = Scope;
     		exports.ScopeLazy = ScopeLazy;
     		exports.ScopeSuspense = ScopeSuspense;
@@ -2684,7 +2682,7 @@
     		    }
     		    else if (typeof elementType === "symbol") {
     		        switch (elementType) {
-    		            case reactShared.KeepLive:
+    		            case reactShared.Root:
     		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__internal__);
     		                break;
     		            case reactShared.Fragment:
