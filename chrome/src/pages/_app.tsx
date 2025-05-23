@@ -1,6 +1,6 @@
 import { Code, HeroUIProvider, Snippet, Spacer, Spinner, Tooltip, Button, ToastProvider } from "@heroui/react";
 import { CircleCheck, CircleX } from "lucide-react";
-import { Fira_Code } from "next/font/google";
+// import { Fira_Code } from "next/font/google";
 import { useRouter } from "next/router";
 import { ThemeProvider } from "next-themes";
 
@@ -16,12 +16,12 @@ import type { AppProps } from "next/app";
 import "@/styles/globals.css";
 import "allotment/dist/style.css";
 
-const roboto = Fira_Code({
-  weight: "400",
-  subsets: ["greek-ext", "cyrillic-ext", "latin-ext"],
-  display: "swap",
-  variable: "--root-font--",
-});
+// const roboto = Fira_Code({
+//   weight: "400",
+//   subsets: ["greek-ext", "cyrillic-ext", "latin-ext"],
+//   display: "swap",
+//   variable: "--root-font--",
+// });
 
 const getWebTitle = (name?: string, url?: string) => {
   if (name && url) {
@@ -139,8 +139,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
     <HeroUIProvider>
       <style jsx global>{`
         .font-code {
-          font-family: ${roboto.style.fontFamily} !important;
-          --root-font--: ${roboto.style.fontFamily};
+          font-family: ${'Maple Mono'} !important;
+          --root-font--: ${'Maple Mono'} ;
         }
       `}</style>
       <FontSize />

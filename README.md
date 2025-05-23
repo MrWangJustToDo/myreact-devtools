@@ -1,7 +1,9 @@
 ## Wip
 
-![screen shout](1.png)
+DevTools for @my-react project, currently in beta.
 
-![screen shout](2.png)
+![screen shout](light.png)
 
-![screen shout](3.png)
+![screen shout](dark.png)
+
+![screen shout](setting.png)
