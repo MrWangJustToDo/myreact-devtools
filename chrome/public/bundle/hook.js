@@ -2795,13 +2795,13 @@
     		        var dispatch = typedCurrent.renderDispatch;
     		        if (dispatch && dispatch.renderMode) {
     		            var packageName = (dispatch === null || dispatch === void 0 ? void 0 : dispatch.renderPackage) || "@my-react";
-    		            tree.push("".concat(packageName, " ").concat(dispatch.renderMode));
+    		            tree.push("$$ ".concat(packageName, " ").concat(dispatch.renderMode));
     		        }
     		        if (dispatch && dispatch.version) {
-    		            tree.push("@my-react ".concat(dispatch.version));
+    		            tree.push("$$ @my-react ".concat(dispatch.version));
     		        }
     		        else {
-    		            tree.push("@my-react legacy");
+    		            tree.push("$$ @my-react legacy");
     		        }
     		    }
     		    return tree;
