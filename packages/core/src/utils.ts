@@ -415,13 +415,13 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
 
     if (dispatch && dispatch.renderMode) {
       const packageName = dispatch?.renderPackage || "@my-react";
-      tree.push(`${packageName} ${dispatch.renderMode}`);
+      tree.push(`$$ ${packageName} ${dispatch.renderMode}`);
     }
 
     if (dispatch && dispatch.version) {
-      tree.push(`@my-react ${dispatch.version}`);
+      tree.push(`$$ @my-react ${dispatch.version}`);
     } else {
-      tree.push(`@my-react legacy`);
+      tree.push(`$$ @my-react legacy`);
     }
   }
 

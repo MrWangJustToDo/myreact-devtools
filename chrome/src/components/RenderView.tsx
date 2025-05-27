@@ -32,18 +32,20 @@ export const RenderView = () => {
 
   const allTreeNode = useAppTree((s) => s.list);
 
-  let last = renderTree?.[renderTree?.length - 1];
+  let pkg = renderTree?.[renderTree?.length - 1];
 
-  if (last?.startsWith("@my-react")) {
+  if (pkg?.startsWith("$$ ")) {
     renderTree = renderTree?.slice(0, -1);
+    pkg = pkg.slice(3);
   } else {
-    last = undefined;
+    pkg = undefined;
   }
 
   let mode = renderTree?.[renderTree?.length - 1];
 
-  if (mode?.startsWith("@my-react")) {
+  if (mode?.startsWith("$$ ")) {
     renderTree = renderTree?.slice(0, -1);
+    mode = mode.slice(3);
   } else {
     mode = undefined;
   }
@@ -73,7 +75,7 @@ export const RenderView = () => {
           <div className="w-full font-code font-sm">
             {data.map((_, index) => render(index))}
             {mode && <div className={`ml-2 px-[2px]`}>{mode}</div>}
-            <div className={`ml-2 px-[2px]`}>{last || "@my-react"}</div>
+            <div className={`ml-2 px-[2px]`}>{pkg || "@my-react"}</div>
             {/* <Virtuoso overscan={20} isScrolling={setIsScrolling} context={{ isScrolling }} totalCount={data?.length} itemContent={render} /> */}
           </div>
         </div>

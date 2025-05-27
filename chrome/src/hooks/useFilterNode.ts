@@ -18,5 +18,9 @@ export const useFilterNode = createState(() => ({ filter: defaultDisableType }),
   }),
   withDeepSelector: false,
   withNamespace: "useFilterNode",
-  withPersist: "useFilterNode",
+  withPersist: {
+    key: "useFilterNode_v1",
+    stringify: (state) => JSON.stringify(Array.from(state.filter)),
+    parse: (state) => ({ filter: new Set(JSON.parse(state)) }),
+  },
 });
