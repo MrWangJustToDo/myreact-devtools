@@ -10,7 +10,7 @@ import { initWEB_DEV } from "./web-dev";
 import { generatePostMessageWithSource } from "./window";
 
 import type { MessageDetectorDataType, MessagePanelDataType, MessageWorkerDataType } from "./type";
-import type { CustomRenderDispatch, CustomRenderPlatform } from "@my-react/react-reconciler";
+import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
 const hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
 
@@ -108,16 +108,14 @@ const onceOrigin = once(() => {
   }
 });
 
-const globalHook = (dispatch: CustomRenderDispatch, platform?: CustomRenderPlatform) => {
+const globalHook = (dispatch: CustomRenderDispatch) => {
   set.add(dispatch);
 
-  core.addDispatch(dispatch, platform);
+  core.addDispatch(dispatch);
 
-  const typedDispatch = dispatch as CustomRenderDispatch & { mode: string };
-
-  if (typedDispatch.mode === "development") {
+  if (dispatch.mode === "development") {
     runWhenDetectorReady(onceDev);
-  } else if (typedDispatch.mode === "production") {
+  } else if (dispatch.mode === "production") {
     runWhenDetectorReady(oncePro);
   } else {
     runWhenDetectorReady(onceMount);

@@ -21,15 +21,13 @@ import {
 import { debounce, throttle } from "./utils";
 
 import type { Tree } from "./tree";
-import type { CustomRenderPlatform, MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
+import type { MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
 export type DevToolMessageType = {
   type: DevToolMessageEnum;
   data: any;
 };
-
-export type DevToolRenderPlatform = CustomRenderPlatform;
 
 const map = new Map();
 
@@ -42,8 +40,6 @@ export class DevToolCore {
   _origin = "";
 
   _map: Map<DevToolRenderDispatch, Tree> = new Map();
-
-  _platform: DevToolRenderPlatform;
 
   // 字符串字典
   _dir = {};
@@ -159,7 +155,7 @@ export class DevToolCore {
     this.notifyTriggerStatus();
   }
 
-  addDispatch(dispatch: DevToolRenderDispatch, platform?: CustomRenderPlatform) {
+  addDispatch(dispatch: DevToolRenderDispatch) {
     if (dispatch) this._detector = true;
 
     if (this.hasDispatch(dispatch)) return;
@@ -167,14 +163,6 @@ export class DevToolCore {
     setupDispatch(dispatch, this);
 
     this._dispatch.add(dispatch);
-
-    if (platform && this._platform && platform !== this._platform) {
-      console.warn("[@my-react-devtool/core] you have multiple platform connect, please check");
-    }
-
-    if (platform) {
-      this._platform = platform as DevToolRenderPlatform;
-    }
 
     this.patchDispatch(dispatch);
   }
@@ -884,8 +872,6 @@ export class DevToolCore {
     this._trigger = {};
 
     this._warn = {};
-
-    this._platform = null;
 
     this._enableHoverOnBrowser = false;
 

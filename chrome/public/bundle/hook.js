@@ -197,13 +197,14 @@
 
     		exports.UpdateQueueType = void 0;
     		(function (UpdateQueueType) {
-    		    UpdateQueueType[UpdateQueueType["hook"] = 2] = "hook";
     		    UpdateQueueType[UpdateQueueType["component"] = 1] = "component";
-    		    UpdateQueueType[UpdateQueueType["lazy"] = 3] = "lazy";
-    		    UpdateQueueType[UpdateQueueType["context"] = 4] = "context";
-    		    UpdateQueueType[UpdateQueueType["promise"] = 5] = "promise";
-    		    UpdateQueueType[UpdateQueueType["hmr"] = 6] = "hmr";
-    		    UpdateQueueType[UpdateQueueType["trigger"] = 7] = "trigger";
+    		    UpdateQueueType[UpdateQueueType["hook"] = 2] = "hook";
+    		    UpdateQueueType[UpdateQueueType["context"] = 3] = "context";
+    		    UpdateQueueType[UpdateQueueType["hmr"] = 4] = "hmr";
+    		    UpdateQueueType[UpdateQueueType["trigger"] = 5] = "trigger";
+    		    UpdateQueueType[UpdateQueueType["suspense"] = 6] = "suspense";
+    		    UpdateQueueType[UpdateQueueType["lazy"] = 7] = "lazy";
+    		    UpdateQueueType[UpdateQueueType["promise"] = 8] = "promise";
     		})(exports.UpdateQueueType || (exports.UpdateQueueType = {}));
 
     		exports.STATE_TYPE = void 0;
@@ -211,17 +212,15 @@
     		    STATE_TYPE[STATE_TYPE["__initial__"] = 0] = "__initial__";
     		    STATE_TYPE[STATE_TYPE["__create__"] = 1] = "__create__";
     		    STATE_TYPE[STATE_TYPE["__stable__"] = 2] = "__stable__";
-    		    STATE_TYPE[STATE_TYPE["__skippedConcurrent__"] = 4] = "__skippedConcurrent__";
-    		    STATE_TYPE[STATE_TYPE["__skippedSync__"] = 8] = "__skippedSync__";
-    		    STATE_TYPE[STATE_TYPE["__inherit__"] = 16] = "__inherit__";
-    		    STATE_TYPE[STATE_TYPE["__triggerConcurrent__"] = 32] = "__triggerConcurrent__";
-    		    STATE_TYPE[STATE_TYPE["__triggerConcurrentForce__"] = 64] = "__triggerConcurrentForce__";
-    		    STATE_TYPE[STATE_TYPE["__triggerSync__"] = 128] = "__triggerSync__";
-    		    STATE_TYPE[STATE_TYPE["__triggerSyncForce__"] = 256] = "__triggerSyncForce__";
-    		    STATE_TYPE[STATE_TYPE["__unmount__"] = 512] = "__unmount__";
-    		    STATE_TYPE[STATE_TYPE["__hmr__"] = 1024] = "__hmr__";
-    		    STATE_TYPE[STATE_TYPE["__retrigger__"] = 2048] = "__retrigger__";
-    		    STATE_TYPE[STATE_TYPE["__reschedule__"] = 4096] = "__reschedule__";
+    		    STATE_TYPE[STATE_TYPE["__inherit__"] = 4] = "__inherit__";
+    		    STATE_TYPE[STATE_TYPE["__triggerConcurrent__"] = 8] = "__triggerConcurrent__";
+    		    STATE_TYPE[STATE_TYPE["__triggerConcurrentForce__"] = 16] = "__triggerConcurrentForce__";
+    		    STATE_TYPE[STATE_TYPE["__triggerSync__"] = 32] = "__triggerSync__";
+    		    STATE_TYPE[STATE_TYPE["__triggerSyncForce__"] = 64] = "__triggerSyncForce__";
+    		    STATE_TYPE[STATE_TYPE["__unmount__"] = 128] = "__unmount__";
+    		    STATE_TYPE[STATE_TYPE["__hmr__"] = 256] = "__hmr__";
+    		    STATE_TYPE[STATE_TYPE["__retrigger__"] = 512] = "__retrigger__";
+    		    STATE_TYPE[STATE_TYPE["__reschedule__"] = 1024] = "__reschedule__";
     		})(exports.STATE_TYPE || (exports.STATE_TYPE = {}));
 
     		exports.PATCH_TYPE = void 0;
@@ -4016,19 +4015,13 @@
     		        this.notifyTrigger();
     		        this.notifyTriggerStatus();
     		    };
-    		    DevToolCore.prototype.addDispatch = function (dispatch, platform) {
+    		    DevToolCore.prototype.addDispatch = function (dispatch) {
     		        if (dispatch)
     		            this._detector = true;
     		        if (this.hasDispatch(dispatch))
     		            return;
     		        setupDispatch(dispatch, this);
     		        this._dispatch.add(dispatch);
-    		        if (platform && this._platform && platform !== this._platform) {
-    		            console.warn("[@my-react-devtool/core] you have multiple platform connect, please check");
-    		        }
-    		        if (platform) {
-    		            this._platform = platform;
-    		        }
     		        this.patchDispatch(dispatch);
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
@@ -4529,7 +4522,6 @@
     		        this._state = {};
     		        this._trigger = {};
     		        this._warn = {};
-    		        this._platform = null;
     		        this._enableHoverOnBrowser = false;
     		        this.disableBrowserHover();
     		    };
@@ -5031,14 +5023,13 @@
         catch (_a) {
         }
     });
-    var globalHook = function (dispatch, platform) {
+    var globalHook = function (dispatch) {
         set.add(dispatch);
-        core.addDispatch(dispatch, platform);
-        var typedDispatch = dispatch;
-        if (typedDispatch.mode === "development") {
+        core.addDispatch(dispatch);
+        if (dispatch.mode === "development") {
             runWhenDetectorReady(onceDev);
         }
-        else if (typedDispatch.mode === "production") {
+        else if (dispatch.mode === "production") {
             runWhenDetectorReady(oncePro);
         }
         else {
