@@ -52,6 +52,10 @@ const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndent
 const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; data: PlainNode[]; onMount: (s?: VirtuosoHandle) => void }) => {
   const ref = useRef<VirtuosoHandle>(null);
 
+  const [index, setIndex] = useState(0);
+
+  const mountRef = useRef(false);
+
   const dataRef = useRef(data);
 
   dataRef.current = data;
@@ -65,21 +69,31 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
   };
 
   useEffect(() => {
-    const cb = useSelectNode.subscribe(
-      (s) => s.scroll,
-      () => {
-        const select = useSelectNode.getReadonlyState().select;
+    const scrollToCurrent = () => {
+      const select = useSelectNode.getReadonlyState().select;
 
-        const index = dataRef.current?.findIndex((item) => item.i === select);
+      if (select === null || select === undefined) return;
 
-        if (index !== -1) {
+      const index = dataRef.current?.findIndex((item) => item.i === select);
+
+      if (index !== -1) {
+        if (!mountRef.current) {
+          mountRef.current = true;
+          setIndex(index);
+        } else {
           ref.current?.scrollIntoView({ index, align: "center", done: onScroll });
         }
       }
-    );
+    };
+
+    const cb = useSelectNode.subscribe((s) => s.scroll, scrollToCurrent);
+
+    if (data.length) {
+      scrollToCurrent();
+    }
 
     return cb;
-  }, [onScroll]);
+  }, [onScroll, data.length]);
 
   useEffect(() => {
     onMount(ref.current as VirtuosoHandle);
@@ -87,7 +101,18 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     return () => onMount();
   }, [onMount]);
 
-  return <Virtuoso className="font-code font-sm overflow-x-hidden" ref={ref} increaseViewportBy={300} onScroll={onScroll} totalCount={data.length} itemContent={render} />;
+  return (
+    <Virtuoso
+      className="font-code font-sm overflow-x-hidden"
+      ref={ref}
+      increaseViewportBy={300}
+      onScroll={onScroll}
+      key={index}
+      initialTopMostItemIndex={{ index, align: "center" }}
+      totalCount={data.length}
+      itemContent={render}
+    />
+  );
 });
 
 TreeViewImpl.displayName = "TreeViewImpl";
