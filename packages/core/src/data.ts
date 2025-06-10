@@ -17,6 +17,8 @@ const KnownType = {
   Null: true,
   Undefined: true,
   Function: true,
+  AsyncFunction: true,
+  GeneratorFunction: true,
   Symbol: true,
   Promise: true,
   RegExp: true,

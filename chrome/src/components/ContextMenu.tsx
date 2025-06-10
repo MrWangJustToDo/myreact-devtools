@@ -42,7 +42,7 @@ export const ContextMenu = memo(() => {
                 <Package className="mr-2 w-[1em]" />
                 <span className="flex-grow">Store as global variable</span>
               </div>
-              {(type === "Function" || type === "Element") && (
+              {(type === "Function" || type === "AsyncFunction" || type === "GeneratorFunction" || type === "Element") && (
                 <div
                   className="context-menu-item px-2 cursor-pointer select-none flex justify-center items-center node-item-hover"
                   onClick={async () => {
@@ -51,7 +51,7 @@ export const ContextMenu = memo(() => {
                     contextMenuClose();
                   }}
                 >
-                  {type === "Function" && (
+                  {(type === "Function" || type === "AsyncFunction" || type === "GeneratorFunction") && (
                     <>
                       <Bug className="mr-2 w-[1em]" />
                       <span className="flex-grow">Inspect Function source</span>

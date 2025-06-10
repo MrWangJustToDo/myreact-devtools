@@ -171,7 +171,7 @@ export const NodeValue = ({
 
     const isElement = item.t === "Element";
 
-    const isFunction = item.t === "Function";
+    const isFunction = item.t === "Function" || item.t === 'AsyncFunction' || item.t === 'GeneratorFunction';
 
     const element = (
       <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""} ${isElement || isFunction ? "text-teal-600" : ""}`}>{textContent}</span>
