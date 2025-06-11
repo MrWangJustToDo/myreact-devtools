@@ -99,7 +99,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
     onMount(ref.current as VirtuosoHandle);
 
     return () => onMount();
-  }, [onMount]);
+  }, [onMount, index]);
 
   return (
     <Virtuoso

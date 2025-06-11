@@ -63,9 +63,9 @@ export const TreeViewSearch = memo(({ handle }: { handle?: VirtuosoHandle }) => 
 
   useEffect(() => {
     if (itemIndex !== undefined) {
-      handle?.scrollToIndex({ index: itemIndex });
-
       setSelect(id, true);
+      
+      handle?.scrollToIndex({ index: itemIndex, align: "center" });
     }
   }, [itemIndex, handle, id]);
 
