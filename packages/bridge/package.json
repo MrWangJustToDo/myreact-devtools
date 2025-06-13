@@ -95,7 +95,7 @@
     "@my-react/react-reconciler": "^0.3.11",
     "@my-react/react-shared": "^0.3.11",
     "@types/node": "^22.8.4",
-    "reactivity-store": "^0.3.9",
+    "reactivity-store": "^0.3.10",
     "socket.io-client": "^4.8.1"
   }
 }
