@@ -29,7 +29,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-virtuoso": "^4.12.5",
-    "reactivity-store": "^0.3.10",
+    "reactivity-store": "^0.3.11",
     "shiki": "^1.29.2"
   },
   "devDependencies": {
