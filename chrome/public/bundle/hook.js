@@ -170,7 +170,7 @@
     		        this.arr.length = 0;
     		    };
     		    UniqueArray.prototype.getAll = function () {
-    		        return this.arr;
+    		        return Array.from(this.arr);
     		    };
     		    return UniqueArray;
     		}());
@@ -221,6 +221,7 @@
     		    STATE_TYPE[STATE_TYPE["__hmr__"] = 256] = "__hmr__";
     		    STATE_TYPE[STATE_TYPE["__retrigger__"] = 512] = "__retrigger__";
     		    STATE_TYPE[STATE_TYPE["__reschedule__"] = 1024] = "__reschedule__";
+    		    STATE_TYPE[STATE_TYPE["__recreate__"] = 2048] = "__recreate__";
     		})(exports.STATE_TYPE || (exports.STATE_TYPE = {}));
 
     		exports.PATCH_TYPE = void 0;
