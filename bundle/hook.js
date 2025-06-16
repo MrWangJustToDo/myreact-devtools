@@ -3684,6 +3684,10 @@
     		        }
     		        var comFiber = getComponentFiberByFiber(fiber);
     		        var displayName = getFiberName((comFiber || fiber));
+    		        var plainNode = getPlainNodeByFiber(comFiber || fiber);
+    		        if (plainNode && plainNode.m) {
+    		            displayName += "✨";
+    		        }
     		        nodeToData.set(node, {
     		            count: data != null ? data.count + 1 : 1,
     		            expirationTime: data != null ? Math.min(now + MAX_DISPLAY_DURATION, data.expirationTime + DISPLAY_DURATION) : now + DISPLAY_DURATION,
