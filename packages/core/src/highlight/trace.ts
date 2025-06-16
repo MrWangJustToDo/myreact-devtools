@@ -1,4 +1,4 @@
-import { getComponentFiberByFiber } from "../tree";
+import { getComponentFiberByFiber, getPlainNodeByFiber } from "../tree";
 import { getFiberName } from "../utils";
 
 import { canvas, destroy as destroyCanvas, draw } from "./canvas";
@@ -54,7 +54,13 @@ function traceUpdates(fibers: Set<MyReactFiberNode>): void {
 
     const comFiber = getComponentFiberByFiber(fiber);
 
-    const displayName = getFiberName((comFiber || fiber) as MyReactFiberNodeDev);
+    let displayName = getFiberName((comFiber || fiber) as MyReactFiberNodeDev);
+
+    const plainNode = getPlainNodeByFiber(comFiber || fiber);
+
+    if (plainNode && plainNode.m) {
+      displayName += "✨";
+    }
 
     nodeToData.set(node, {
       count: data != null ? data.count + 1 : 1,
@@ -139,7 +145,7 @@ export class Highlight {
 
   cancelPending(): void {
     if (typeof window === "undefined") return;
-    
+
     nodeToData.clear();
 
     if (drawAnimationFrameID !== null) {

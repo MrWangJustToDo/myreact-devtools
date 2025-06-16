@@ -1,3 +1,5 @@
+import { DevToolMessageEnum } from "@my-react-devtool/core";
+
 import { MessageHookType, MessageWorkerType, PortName, sourceFrom } from "./type";
 import { generatePostMessageWithSource } from "./window";
 
@@ -15,7 +17,11 @@ const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {
   if (message.source !== window) return;
 
   if (message.data?.type === MessageHookType.mount || message.data?.type === MessageHookType.render || message.data?.type === MessageHookType.init) {
-    port.postMessage(message.data);
+    try {
+      port.postMessage(message.data);
+    } catch (error) {
+      port.postMessage({ type: DevToolMessageEnum.message, data: { type: "error", message: `Failed to send message to panel. ${(error as Error).message}` } });
+    }
   }
 };
 
