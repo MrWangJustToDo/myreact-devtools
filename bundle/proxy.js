@@ -1991,6 +1991,7 @@
     		    return PlainNode;
     		}());
 
+    		/* eslint-disable max-lines */
     		var treeMap = new Map();
     		var detailMap = new Map();
     		var fiberStore = new Map();
@@ -2179,8 +2180,22 @@
     		        return created;
     		    }
     		};
-    		var getComponentFiberByDom = function (dom) {
+    		var getFiberByDom = function (dom) {
     		    var fiber = domToFiber.get(dom);
+    		    if (!fiber) {
+    		        if (dom.parentElement) {
+    		            return getFiberByDom(dom.parentElement);
+    		        }
+    		        else {
+    		            return null;
+    		        }
+    		    }
+    		    else {
+    		        return fiber;
+    		    }
+    		};
+    		var getComponentFiberByDom = function (dom) {
+    		    var fiber = getFiberByDom(dom);
     		    if (!fiber)
     		        return;
     		    var r = fiber;
@@ -4445,6 +4460,7 @@
     		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getElementName = getElementName;
     		exports.getElementNodesFromFiber = getElementNodesFromFiber;
+    		exports.getFiberByDom = getFiberByDom;
     		exports.getFiberName = getFiberName;
     		exports.getFiberNodeById = getFiberNodeById;
     		exports.getFiberTag = getFiberTag;
