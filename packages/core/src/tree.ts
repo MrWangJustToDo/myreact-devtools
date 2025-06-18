@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { include, STATE_TYPE, type ListTree } from "@my-react/react-shared";
 
 import { getValueById } from "./data";
@@ -291,8 +292,22 @@ export const getDetailNodeByFiber = (fiber: MyReactFiberNode) => {
   }
 };
 
-export const getComponentFiberByDom = (dom: HTMLElement) => {
+export const getFiberByDom = (dom: HTMLElement) => {
   const fiber = domToFiber.get(dom);
+
+  if (!fiber) {
+    if(dom.parentElement) {
+      return getFiberByDom(dom.parentElement as HTMLElement);
+    } else {
+      return null;
+    }
+  } else {
+    return fiber;
+  }
+}
+
+export const getComponentFiberByDom = (dom: HTMLElement) => {
+  const fiber = getFiberByDom(dom);
 
   if (!fiber) return;
 

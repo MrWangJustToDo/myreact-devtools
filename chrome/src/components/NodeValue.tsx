@@ -127,13 +127,13 @@ export const NodeValue = ({
     if (expand && cData) {
       if (Array.isArray(cData)) {
         cData.forEach((i) => {
-          if (i.e && i.i && !i.l && !useChunk.getReadonlyState().data?.[i.i]?.loaded) {
+          if (i && i.e && i.i && !i.l && !useChunk.getReadonlyState().data?.[i.i]?.loaded) {
             useChunk.getActions().setLoading(i.i);
           }
         });
       } else {
         Object.values(cData).forEach((i: any) => {
-          if (i.e && i.i && !i.l && !useChunk.getReadonlyState().data?.[i.i]?.loaded) {
+          if (i && i.e && i.i && !i.l && !useChunk.getReadonlyState().data?.[i.i]?.loaded) {
             useChunk.getActions().setLoading(i.i);
           }
         });
@@ -171,7 +171,7 @@ export const NodeValue = ({
 
     const isElement = item.t === "Element";
 
-    const isFunction = item.t === "Function" || item.t === 'AsyncFunction' || item.t === 'GeneratorFunction';
+    const isFunction = item.t === "Function" || item.t === "AsyncFunction" || item.t === "GeneratorFunction";
 
     const element = (
       <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""} ${isElement || isFunction ? "text-teal-600" : ""}`}>{textContent}</span>
