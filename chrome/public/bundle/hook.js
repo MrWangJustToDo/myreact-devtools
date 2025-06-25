@@ -1230,6 +1230,7 @@
     		            Dispatcher.useLayoutEffect(function () { });
     		            Dispatcher.useInsertionEffect(function () { });
     		            Dispatcher.useEffect(function () { });
+    		            Dispatcher.useOptimistic(null, function (s, a) { return s; });
     		            Dispatcher.useImperativeHandle(undefined, function () { return null; });
     		            Dispatcher.useDebugValue(null, function () { });
     		            Dispatcher.useCallback(function () { });
@@ -1560,7 +1561,7 @@
     		    if (hook && hook.type !== reactShared.HOOK_TYPE.useTransition) {
     		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
     		    }
-    		    var isPending = hook ? hook.result[0] : false;
+    		    var isPending = hook ? (Array.isArray(hook.result) ? hook.result[0] : hook.result.value) : false;
     		    hookLog.push({
     		        displayName: null,
     		        primitive: "Transition",
@@ -1615,6 +1616,24 @@
     		    });
     		    return [value, function () { }];
     		}
+    		function useOptimistic(passthrough, reducer) {
+    		    var _a;
+    		    var hook = nextHook();
+    		    // TODO update
+    		    // @ts-ignore
+    		    if (hook && hook.type !== 16) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
+    		    var state = hook ? (_a = hook.result) === null || _a === void 0 ? void 0 : _a.value : passthrough;
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "Optimistic",
+    		        stackError: new Error(),
+    		        value: state,
+    		        dispatcherHookName: "Optimistic",
+    		    });
+    		    return [state, function (action) { }];
+    		}
     		var Dispatcher = {
     		    readContext: readContext,
     		    use: use,
@@ -1634,6 +1653,7 @@
     		    useSyncExternalStore: useSyncExternalStore,
     		    useId: useId,
     		    useSignal: useSignal,
+    		    useOptimistic: useOptimistic,
     		};
     		// create a proxy to throw a custom error
     		// in case future versions of React adds more hooks

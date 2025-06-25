@@ -43,6 +43,7 @@ function getPrimitiveStackCache(): Map<string, Array<any>> {
       Dispatcher.useLayoutEffect(() => {});
       Dispatcher.useInsertionEffect(() => {});
       Dispatcher.useEffect(() => {});
+      Dispatcher.useOptimistic(null, (s: any, a: any) => s);
       Dispatcher.useImperativeHandle(undefined, () => null);
       Dispatcher.useDebugValue(null, () => {});
       Dispatcher.useCallback(() => {});
@@ -444,7 +445,7 @@ function useTransition(): [boolean, (callback: () => void, options?: any) => voi
     throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
   }
 
-  const isPending = hook ? hook.result[0] : false;
+  const isPending = hook ? (Array.isArray(hook.result) ? hook.result[0] : hook.result.value) : false;
 
   hookLog.push({
     displayName: null,
@@ -517,6 +518,27 @@ function useSignal<T>(initial: T | (() => T)) {
   return [value, () => {}];
 }
 
+function useOptimistic<S, A>(passthrough: S, reducer?: (S, A) => S): [S, (A) => void] {
+  const hook = nextHook();
+
+  // TODO update
+  // @ts-ignore
+  if (hook && hook.type !== 16) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
+  const state = hook ? hook.result?.value : passthrough;
+
+  hookLog.push({
+    displayName: null,
+    primitive: "Optimistic",
+    stackError: new Error(),
+    value: state,
+    dispatcherHookName: "Optimistic",
+  });
+  return [state, (action: A) => {}];
+}
+
 const Dispatcher = {
   readContext,
 
@@ -537,6 +559,7 @@ const Dispatcher = {
   useSyncExternalStore,
   useId,
   useSignal,
+  useOptimistic,
 };
 
 export type DispatcherType = typeof Dispatcher & { proxy: typeof Dispatcher | null };
