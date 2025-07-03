@@ -36,6 +36,10 @@ export const useWebDev = () => {
 
         listenBackendReady();
 
+        io.emit("init", {
+          name: "@my-react/devtool",
+        });
+
         unSubscribe = onListener((data) => io.emit("action", data));
       });
 

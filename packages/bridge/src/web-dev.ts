@@ -6,6 +6,7 @@ import type { Socket } from "socket.io-client";
 
 let connectSocket: Socket | null = null;
 
+// 浏览器环境下连接开发工具
 export const initWEB_DEV = async (url: string) => {
   if (typeof window === "undefined") return;
 
@@ -30,6 +31,14 @@ export const initWEB_DEV = async (url: string) => {
       console.log("[@my-react-devtool/hook] socket connected");
     }
 
+    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
+
+    socket.emit("init", {
+      name: "web-app-engine",
+      url: window.location.href,
+      title: window.document.title,
+    });
+
     unSubscribe = core.subscribe((message) => {
       socket.emit("render", message);
     });
@@ -48,8 +57,6 @@ export const initWEB_DEV = async (url: string) => {
   socket.on("action", (data) => {
     onMessageFromPanelOrWorkerOrDetector(data);
   });
-
-  socket.emit("web-dev", { name: window.document.title, url: window.location.href });
 };
 
 initWEB_DEV.close = () => {

@@ -4911,36 +4911,39 @@
 
     // support debug more platform
     var connectSocket$1 = null;
+    // Node.js 环境下连接开发工具
     var initNODE_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-        var socket, unSubscribe;
+        var connectSocket, unSubscribe;
         var _a, _b, _c;
         return __generator(this, function (_d) {
             if (typeof process !== "object" || typeof globalThis.io !== "function")
                 return [2 /*return*/];
             (_a = globalThis["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(globalThis, d); });
             (_c = (_b = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
-            socket = globalThis.io(url, {
+            connectSocket = globalThis.io(url, {
                 reconnection: true, // 是否自动重新连接
                 reconnectionAttempts: Infinity, // 重新连接尝试次数
                 reconnectionDelay: 1000, // 初始重新连接延迟(ms)
                 reconnectionDelayMax: 5000, // 最大重新连接延迟(ms)
                 timeout: 8000, // 连接超时时间(ms)
             });
-            connectSocket$1 = socket;
             unSubscribe = function () { };
-            socket.on("connect", function () {
+            connectSocket.on("connect", function () {
+                connectSocket.emit("init", {
+                    name: "node-app-engine",
+                });
                 unSubscribe = core.subscribe(function (message) {
-                    socket.emit("render", message);
+                    connectSocket.emit("render", message);
                 });
             });
-            socket.on("disconnect", function () {
+            connectSocket.on("disconnect", function () {
                 unSubscribe();
                 core.disconnect();
             });
-            socket.on("action", function (data) {
+            connectSocket.on("action", function (data) {
                 onMessageFromPanelOrWorkerOrDetector(data);
             });
-            return [2 /*return*/, socket];
+            return [2 /*return*/, connectSocket];
         });
     }); };
     initNODE_DEV.close = function () {
@@ -4950,6 +4953,7 @@
     };
 
     var connectSocket = null;
+    // 浏览器环境下连接开发工具
     var initWEB_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
         var socket, unSubscribe;
         var _a, _b, _c;
@@ -4971,6 +4975,12 @@
                     connectSocket = socket;
                     unSubscribe = function () { };
                     socket.on("connect", function () {
+                        socket.emit("web-dev", { name: window.document.title, url: window.location.href });
+                        socket.emit("init", {
+                            name: "web-app-engine",
+                            url: window.location.href,
+                            title: window.document.title,
+                        });
                         unSubscribe = core.subscribe(function (message) {
                             socket.emit("render", message);
                         });
@@ -4982,7 +4992,6 @@
                     socket.on("action", function (data) {
                         onMessageFromPanelOrWorkerOrDetector(data);
                     });
-                    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
                     return [2 /*return*/];
             }
         });

@@ -23,6 +23,10 @@ const processSocket = (item) => {
   item.on("disconnect", () => {
     socketSet.delete(item);
 
+    if (item.name) {
+      console.log("socket:", item.name, " disconnected");
+    }
+
     console.log("disconnect a socket, total:", socketSet.size);
 
     socketSet.forEach((i) => i.emit("refresh"));
@@ -34,6 +38,12 @@ const processSocket = (item) => {
         socket.emit("render", data);
       }
     });
+  });
+
+  item.on("init", (data) => {
+    item.name = data.name;
+
+    console.log("socket:", data.name, " connected");
   });
 
   item.on("action", (data) => {
