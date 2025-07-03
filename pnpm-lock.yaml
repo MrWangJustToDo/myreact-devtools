@@ -9,14 +9,14 @@ importers:
   .:
     devDependencies:
       '@my-react/react':
-        specifier: ^0.3.13
-        version: 0.3.13
+        specifier: ^0.3.14
+        version: 0.3.14
       '@my-react/react-dom':
-        specifier: ^0.3.13
-        version: 0.3.13(@my-react/react@0.3.13)
+        specifier: ^0.3.14
+        version: 0.3.14(@my-react/react@0.3.14)
       '@my-react/react-reconciler':
-        specifier: ^0.3.13
-        version: 0.3.13(@my-react/react@0.3.13)
+        specifier: ^0.3.14
+        version: 0.3.14(@my-react/react@0.3.14)
       '@types/node':
         specifier: ^22.8.4
         version: 22.13.1
@@ -48,14 +48,14 @@ importers:
         specifier: workspace:*
         version: link:../packages/core
       '@my-react/react':
-        specifier: ^0.3.13
-        version: 0.3.13
+        specifier: ^0.3.14
+        version: 0.3.14
       '@my-react/react-dom':
-        specifier: ^0.3.13
-        version: 0.3.13(@my-react/react@0.3.13)
+        specifier: ^0.3.14
+        version: 0.3.14(@my-react/react@0.3.14)
       '@my-react/react-reconciler':
-        specifier: ^0.3.13
-        version: 0.3.13(@my-react/react@0.3.13)
+        specifier: ^0.3.14
+        version: 0.3.14(@my-react/react@0.3.14)
       allotment:
         specifier: ^1.20.2
         version: 1.20.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -88,11 +88,11 @@ importers:
         version: 1.29.2
     devDependencies:
       '@my-react/react-refresh':
-        specifier: ^0.3.13
-        version: 0.3.13(@my-react/react@0.3.13)
+        specifier: ^0.3.14
+        version: 0.3.14(@my-react/react@0.3.14)
       '@my-react/react-refresh-tools':
-        specifier: ^0.0.22
-        version: 0.0.22(@my-react/react-refresh@0.3.13(@my-react/react@0.3.13))
+        specifier: ^0.0.23
+        version: 0.0.23(@my-react/react-refresh@0.3.14(@my-react/react@0.3.14))
       '@types/chrome':
         specifier: ^0.0.304
         version: 0.0.304
@@ -161,14 +161,14 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@my-react/react':
-        specifier: ^0.3.13
-        version: 0.3.13
+        specifier: ^0.3.14
+        version: 0.3.14
       '@my-react/react-reconciler':
-        specifier: ^0.3.13
-        version: 0.3.13(@my-react/react@0.3.13)
+        specifier: ^0.3.14
+        version: 0.3.14(@my-react/react@0.3.14)
       '@my-react/react-shared':
-        specifier: ^0.3.13
-        version: 0.3.13
+        specifier: ^0.3.14
+        version: 0.3.14
       '@types/node':
         specifier: ^22.8.4
         version: 22.13.1
@@ -189,14 +189,14 @@ importers:
         version: 4.17.21
     devDependencies:
       '@my-react/react':
-        specifier: ^0.3.13
-        version: 0.3.13
+        specifier: ^0.3.14
+        version: 0.3.14
       '@my-react/react-reconciler':
-        specifier: ^0.3.13
-        version: 0.3.13(@my-react/react@0.3.13)
+        specifier: ^0.3.14
+        version: 0.3.14(@my-react/react@0.3.14)
       '@my-react/react-shared':
-        specifier: ^0.3.13
-        version: 0.3.13
+        specifier: ^0.3.14
+        version: 0.3.14
       '@types/lodash':
         specifier: ^4.17.15
         version: 4.17.15
@@ -878,40 +878,40 @@ packages:
   '@keyv/serialize@1.0.2':
     resolution: {integrity: sha512-+E/LyaAeuABniD/RvUezWVXKpeuvwLEA9//nE9952zBaOdBd2mQ3pPoM8cUe2X6IcMByfuSLzmYqnYshG60+HQ==}
 
-  '@my-react/react-dom@0.3.13':
-    resolution: {integrity: sha512-dLZSDcvH20uEEyCPutLa1OdZL7pyR5NC/Ym0oTpFPpP9Qo4qAY7TT3Ik4TK7EGxy7gKJfv7mBpMFLD77SQUMJA==}
+  '@my-react/react-dom@0.3.14':
+    resolution: {integrity: sha512-tI6btTzM10cXkrzq8kUdVr5jVA0w8kZiPUqUiHzZT6Vu4gFgdM/h5Z4V0LOED4TKWgTiV/1NWFnjYa7HXaVYRw==}
     peerDependencies:
-      '@my-react/react': '>=0.3.13'
+      '@my-react/react': '>=0.3.14'
 
-  '@my-react/react-jsx@0.3.13':
-    resolution: {integrity: sha512-t+C6TpULMa140toW6DVNfxQxMlHUJ8tchRKxCTyqbNrpDfcBt+7xA/gT/2WUVW1tgDLhUA4jLURTN7Q6gRrWUQ==}
+  '@my-react/react-jsx@0.3.14':
+    resolution: {integrity: sha512-23Di7wD4xTAGhSh4OuVbvBa2dWwtnizsihd3iKvLZ/hGtcRLFc4sQXzqrSMbX2Q17/A7arT782eMu5SpwH+w6A==}
     peerDependencies:
-      '@my-react/react': '>=0.3.13'
+      '@my-react/react': '>=0.3.14'
 
-  '@my-react/react-reconciler@0.3.13':
-    resolution: {integrity: sha512-9LMrRT92wnm6lOrFWfEZnDIVQ6Kw9yyW+apNdGAm1ydemqU/aQ8eROuJpoj7AZNIpkIejyebeafbsC0pveqvAA==}
+  '@my-react/react-reconciler@0.3.14':
+    resolution: {integrity: sha512-R5bDwpmQrXysMHOqZARZe/4oX7Xb8/hvLtWkCcCeaup9sekVvZrzlMZ1WsHJoezJxioSHuDqfwucm+FYId4hzg==}
     peerDependencies:
-      '@my-react/react': '>=0.3.13'
+      '@my-react/react': '>=0.3.14'
 
-  '@my-react/react-refresh-tools@0.0.22':
-    resolution: {integrity: sha512-O/1IAa8M/DIlpIHsaB/q9P7skaJjo8ug8vpNjUgCCWMwqIs0nb/tOqxkz8aP5z5pWbRcdvNeZeloAwy5wA4wwg==}
+  '@my-react/react-refresh-tools@0.0.23':
+    resolution: {integrity: sha512-7+Bx7RCTcq/rZpILHX6cLYHsNScFCbnjN8LrnjnEoF4DZFYMkdgNopvqKng/E7IWUEuQ+8jm7FX3o1xoOcO9ow==}
     peerDependencies:
-      '@my-react/react-refresh': '>=0.3.13'
+      '@my-react/react-refresh': '>=0.3.14'
       webpack: ^4 || ^5
     peerDependenciesMeta:
       webpack:
         optional: true
 
-  '@my-react/react-refresh@0.3.13':
-    resolution: {integrity: sha512-ntagAwXiRIXqMHj+cAX1MR2wSwXmr1PI6xPAifLYcKp/xBWw/bYzwB19/JC43Vv97tYYs1J8xM5mTWQ9wc0JQw==}
+  '@my-react/react-refresh@0.3.14':
+    resolution: {integrity: sha512-VikgOVzO4qjgus9TSTps2ImCGZ8/X7SY5gX4RfPU1HL1usDuJSvRlAfXaPH6JRRXzh3NgDp8Ps+kalFYYN8NDw==}
     peerDependencies:
-      '@my-react/react': '>=0.3.13'
+      '@my-react/react': '>=0.3.14'
 
-  '@my-react/react-shared@0.3.13':
-    resolution: {integrity: sha512-rilTELmfRirYFm7ywNGvg4TOLoTx3TmsyzDEidUyOBlb/sQ8yAjyuydG5hQppalIbbtxW/9fII/fWYeE0OOIuw==}
+  '@my-react/react-shared@0.3.14':
+    resolution: {integrity: sha512-oHCyuk7E5QbYGCXD51smBYEHDqqXLQkUaTg8fcFWrPrYuYw2ltQn2VhfX4fsYEYAZB51v3MBTUDu03CI4SqK7A==}
 
-  '@my-react/react@0.3.13':
-    resolution: {integrity: sha512-E2pTdtIwIsO8R1C2Z8yQ2fFga17bQ9MwFFKPZjWhca17fKR9g80iHwmYMflRaVQ0wmogocrWXNT04o8FnGDAOQ==}
+  '@my-react/react@0.3.14':
+    resolution: {integrity: sha512-rGNB9I3X13KmDjjm9rqFjlRUM12OEkZQ872NRc3dN/xhlPwkoIJMWeyDeMRwsGQ68kaZglZaKpnjnQ37Ru59Qw==}
 
   '@next/env@14.2.28':
     resolution: {integrity: sha512-PAmWhJfJQlP+kxZwCjrVd9QnR5x0R3u0mTXTiZDgSd4h5LdXmjxCCWbN9kq6hkZBOax8Rm3xDW5HagWyJuT37g==}
@@ -5609,31 +5609,31 @@ snapshots:
     dependencies:
       buffer: 6.0.3
 
-  '@my-react/react-dom@0.3.13(@my-react/react@0.3.13)':
+  '@my-react/react-dom@0.3.14(@my-react/react@0.3.14)':
     dependencies:
-      '@my-react/react': 0.3.13
+      '@my-react/react': 0.3.14
 
-  '@my-react/react-jsx@0.3.13(@my-react/react@0.3.13)':
+  '@my-react/react-jsx@0.3.14(@my-react/react@0.3.14)':
     dependencies:
-      '@my-react/react': 0.3.13
+      '@my-react/react': 0.3.14
 
-  '@my-react/react-reconciler@0.3.13(@my-react/react@0.3.13)':
+  '@my-react/react-reconciler@0.3.14(@my-react/react@0.3.14)':
     dependencies:
-      '@my-react/react': 0.3.13
+      '@my-react/react': 0.3.14
 
-  '@my-react/react-refresh-tools@0.0.22(@my-react/react-refresh@0.3.13(@my-react/react@0.3.13))':
+  '@my-react/react-refresh-tools@0.0.23(@my-react/react-refresh@0.3.14(@my-react/react@0.3.14))':
     dependencies:
-      '@my-react/react-refresh': 0.3.13(@my-react/react@0.3.13)
+      '@my-react/react-refresh': 0.3.14(@my-react/react@0.3.14)
 
-  '@my-react/react-refresh@0.3.13(@my-react/react@0.3.13)':
+  '@my-react/react-refresh@0.3.14(@my-react/react@0.3.14)':
     dependencies:
-      '@my-react/react': 0.3.13
+      '@my-react/react': 0.3.14
 
-  '@my-react/react-shared@0.3.13': {}
+  '@my-react/react-shared@0.3.14': {}
 
-  '@my-react/react@0.3.13':
+  '@my-react/react@0.3.14':
     dependencies:
-      '@my-react/react-jsx': 0.3.13(@my-react/react@0.3.13)
+      '@my-react/react-jsx': 0.3.14(@my-react/react@0.3.14)
 
   '@next/env@14.2.28': {}
 

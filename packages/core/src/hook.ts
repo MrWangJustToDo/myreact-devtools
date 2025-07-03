@@ -521,9 +521,7 @@ function useSignal<T>(initial: T | (() => T)) {
 function useOptimistic<S, A>(passthrough: S, reducer?: (S, A) => S): [S, (A) => void] {
   const hook = nextHook();
 
-  // TODO update
-  // @ts-ignore
-  if (hook && hook.type !== 16) {
+  if (hook && hook.type !== HOOK_TYPE.useOptimistic) {
     throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
   }
 
