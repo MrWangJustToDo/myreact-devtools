@@ -59,7 +59,7 @@ export function getText(type: string, data: any) {
     const eleArr: ReactNode[] = [];
     const keys = Object.keys(data as {});
 
-    keys?.slice(0, 3)?.forEach?.((key) => {
+    keys?.slice?.(0, 3)?.forEach?.((key) => {
       const val = getShortTextFromHookValue(data[key]);
       if (isValidElement(val)) {
         onlyStr = false;
@@ -82,7 +82,7 @@ export function getText(type: string, data: any) {
   } else if (type === "Array") {
     const eleArr: ReactNode[] = [];
 
-    data?.slice(0, 4)?.forEach?.((val: any) => {
+    data?.slice?.(0, 4)?.forEach?.((val: any) => {
       const text = getShortTextFromHookValue(val);
       if (isValidElement(text)) {
         onlyStr = false;
