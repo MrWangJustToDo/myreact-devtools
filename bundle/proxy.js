@@ -197,6 +197,7 @@
     		    HOOK_TYPE[HOOK_TYPE["useInsertionEffect"] = 13] = "useInsertionEffect";
     		    HOOK_TYPE[HOOK_TYPE["useImperativeHandle"] = 14] = "useImperativeHandle";
     		    HOOK_TYPE[HOOK_TYPE["useSyncExternalStore"] = 15] = "useSyncExternalStore";
+    		    HOOK_TYPE[HOOK_TYPE["useOptimistic"] = 16] = "useOptimistic";
     		})(exports.HOOK_TYPE || (exports.HOOK_TYPE = {}));
 
     		exports.UpdateQueueType = void 0;
@@ -1519,9 +1520,7 @@
     		function useOptimistic(passthrough, reducer) {
     		    var _a;
     		    var hook = nextHook();
-    		    // TODO update
-    		    // @ts-ignore
-    		    if (hook && hook.type !== 16) {
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useOptimistic) {
     		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
     		    }
     		    var state = hook ? (_a = hook.result) === null || _a === void 0 ? void 0 : _a.value : passthrough;
