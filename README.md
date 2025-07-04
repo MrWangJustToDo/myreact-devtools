@@ -8,6 +8,11 @@ DevTools for @my-react project, currently in beta.
 
 ![screen shout](setting.png)
 
+## Debug gemini-cli 
+
+
+![Debug gemini-cli](demo.gif)
+
 ## Build & Install
 
 ```shell
