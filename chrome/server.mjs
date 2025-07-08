@@ -63,7 +63,7 @@ app
 
     const server = createServer(serve);
 
-    const io = new Server(server, { cors: { origin: "*" } });
+    const io = new Server(server, { cors: { origin: "*" }, maxHttpBufferSize: 1e8 });
 
     serve.use(cors());
 
