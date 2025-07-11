@@ -431,6 +431,8 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
 const parseHooksTreeToHOOKTree = (node: HooksTree, d: number): HOOKTree[] => {
   return node.map<HOOKTree>((item) => {
     const { id, name, value, subHooks, isStateEditable } = item;
+    const isHook = !subHooks || subHooks.length === 0;
+    const children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1) : undefined;
     return {
       k: id?.toString(),
       e: isStateEditable,
@@ -438,8 +440,10 @@ const parseHooksTreeToHOOKTree = (node: HooksTree, d: number): HOOKTree[] => {
       n: name || "Anonymous",
       v: getNode(value),
       d,
-      h: !subHooks.length ? true : false,
-      c: subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1) : undefined,
+      h: isHook,
+      c: children,
+      // all the hooks key
+      keys: isHook ? [id] : children.map((c) => c.keys).flat(),
     };
   });
 };
@@ -478,6 +482,7 @@ const getHookNormal = (fiber: MyReactFiberNodeDev) => {
       v: getNode(isEffect ? hook.value : hook.result),
       d: 0,
       h: true,
+      keys: [index],
     });
   };
 

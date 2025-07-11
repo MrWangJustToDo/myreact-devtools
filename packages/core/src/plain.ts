@@ -28,6 +28,8 @@ export type HOOKTree = {
   // used for stack
   // children
   c?: HOOKTree[];
+  // all hook keys
+  keys: Array<string | number>;
 };
 
 // PlainNode is a simplified version of FiberNode just for show the structure
@@ -53,7 +55,7 @@ export class PlainNode {
   d?: number;
   // deep?: number;
 
-  t: NODE_TYPE
+  t: NODE_TYPE;
   // type: NODE_TYPE;
 
   i: string;

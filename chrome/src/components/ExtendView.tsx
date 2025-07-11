@@ -1,23 +1,33 @@
-import { Spacer, Divider } from "@heroui/react";
+import { Spacer, Divider, Button } from "@heroui/react";
 import { type NodeValue as NodeValueType } from "@my-react-devtool/core";
+import { SquareSplitHorizontalIcon, SquareSplitVerticalIcon } from "lucide-react";
+import { useEffect } from "react";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
+import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
 import { NodeValue } from "./NodeValue";
 
-const Trigger = ({ select }: { select: string }) => {
+const { setKeys: setHoverKeys, clear } = useTriggerHover.getActions();
+
+const Trigger = ({ select, mode = "vertical" }: { select: string; mode?: "horizontal" | "vertical" }) => {
   const trigger = useDetailNodeExt((s) => s.triggerStatus);
+
+  const { layout, setLayout } = useTriggerLayout();
 
   const triggerCount = useTriggerNode.useShallowSelector((s) => s.state?.[select]);
 
   const render = useCallbackRef((index: number, item: NodeValueType) => {
+    const { _keysToLinkHook, ...itemToDisplay } = item;
+
     return (
-      <div className={`tree-wrapper`} key={index}>
-        <NodeValue name={index.toString()} item={item} />
+      // SEE DevToolCore/instance.ts notifyTriggerStatus:574
+      <div className="tree-wrapper cursor-pointer" key={index} onMouseEnter={() => setHoverKeys(_keysToLinkHook || [])} onMouseLeave={() => setHoverKeys([])}>
+        <NodeValue name={index.toString()} item={itemToDisplay} />
       </div>
     );
   });
@@ -26,16 +36,23 @@ const Trigger = ({ select }: { select: string }) => {
 
   const hasTrigger = trigger?.length > 0;
 
+  useEffect(() => clear, []);
+
+  if (layout !== mode) return null;
+
   return hasTrigger ? (
     <>
       <div className="node-trigger p-2 pb-0">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center ">
           <span>trigger</span>
+          <Button size="sm" isIconOnly className="ml-4" variant="flat" onPress={() => setLayout(layout === "horizontal" ? "vertical" : "horizontal")}>
+            {layout === "horizontal" ? <SquareSplitVerticalIcon className="w-[1.1em]" /> : <SquareSplitHorizontalIcon className="w-[1.1em]" />}
+          </Button>
         </div>
         <Spacer y={1} />
         <div className="w-full font-code font-sm">{trigger?.map((w, index) => render(startCount + index, w))}</div>
       </div>
-      <Divider />
+      {mode === "vertical" && <Divider />}
     </>
   ) : null;
 };
@@ -116,4 +133,12 @@ export const ExtendView = () => {
       <Error select={select} />
     </>
   );
+};
+
+export const TriggerView = ({ mode }: { mode?: "horizontal" | "vertical" }) => {
+  const select = useSelectNode((s) => s.select);
+
+  if (!select) return null;
+
+  return <Trigger select={select} mode={mode} />;
 };

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable max-lines */
-import { isNormalEquals } from "@my-react/react-shared";
+import { isNormalEquals, UpdateQueueType } from "@my-react/react-shared";
 
 import { getNode, getNodeFromId } from "./data";
 import { DevToolMessageEnum, HMRStatus } from "./event";
@@ -27,6 +27,10 @@ import type { ListTree } from "@my-react/react-shared";
 export type DevToolMessageType = {
   type: DevToolMessageEnum;
   data: any;
+};
+
+type UpdateStateWithKeys = UpdateState & {
+  _keysToLinkHook?: Array<number | string>;
 };
 
 const map = new Map();
@@ -62,9 +66,9 @@ export class DevToolCore {
 
   _domHoverId = "";
 
-  _trigger = {};
+  _trigger: Record<string | number, Array<Partial<UpdateStateWithKeys>>> = {};
 
-  _state = {};
+  _state: Record<string | number, number> = {};
 
   _source = null;
 
@@ -220,7 +224,7 @@ export class DevToolCore {
 
     const notifyTriggerWithThrottle = throttle(() => this.notifyTrigger(), 100);
 
-    const onFiberTrigger = (fiber: MyReactFiberNode, state: UpdateState) => {
+    const onFiberTrigger = (fiber: MyReactFiberNode, state: UpdateStateWithKeys) => {
       const id = getPlainNodeIdByFiber(fiber);
 
       if (!id) return;
@@ -231,6 +235,17 @@ export class DevToolCore {
       if (this._trigger[id].length > 10) {
         const index = this._trigger[id].length - 11;
         this._trigger[id][index] = { isRetrigger: this._trigger[id][index].isRetrigger };
+      }
+
+      if (state.needUpdate && state.nodes) {
+        // filter all hook update queue
+        const nodes = state.nodes?.filter?.((node) => node.type === UpdateQueueType.hook);
+        // get all the keys from the nodes;
+        const allHooksArray = fiber.hookList?.toArray?.() || [];
+
+        const keys = nodes?.map?.((node) => allHooksArray?.findIndex?.((_node) => node?.trigger === _node))?.filter((i) => i !== -1) || [];
+        // link the keys to the state
+        state._keysToLinkHook = keys;
       }
 
       this._trigger[id].push(state);
@@ -551,9 +566,20 @@ export class DevToolCore {
 
     if (!status) return;
 
-    const finalStatus = status.filter((i: { isRetrigger?: boolean }) => (i.isRetrigger ? this._enableRetrigger : true)).slice(-10);
+    const finalStatus = status.filter((i) => (i.isRetrigger ? this._enableRetrigger : true)).slice(-10);
 
-    this._notify({ type: DevToolMessageEnum.triggerStatus, data: finalStatus.map((i: any) => getNode(i)) });
+    this._notify({
+      type: DevToolMessageEnum.triggerStatus,
+      data: finalStatus.map((i) => {
+        const node = getNode(i);
+
+        if (i._keysToLinkHook && i._keysToLinkHook.length > 0) {
+          node._keysToLinkHook = i._keysToLinkHook;
+        }
+
+        return node;
+      }),
+    });
   }
 
   notifyHighlight(id: string, type: "performance") {

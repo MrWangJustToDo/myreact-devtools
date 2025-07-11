@@ -40,6 +40,9 @@ export type NodeValue = {
   l?: boolean;
   // name
   n?: string;
+  
+  // extend props;
+  [p: string]: any;
 };
 
 const isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";

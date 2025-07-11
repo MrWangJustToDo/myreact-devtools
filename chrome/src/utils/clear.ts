@@ -8,6 +8,7 @@ import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
+import { useTriggerHover } from "@/hooks/useTriggerState";
 
 import { isServer } from "./isServer";
 
@@ -20,6 +21,7 @@ export const onClear = () => {
   useHMRNode?.getActions?.()?.clear?.();
   useContextMenu?.getActions?.()?.clear?.();
   useTriggerNode?.getActions?.()?.clear?.();
+  useTriggerHover?.getActions?.()?.clear?.();
   useHighlightNode?.getActions?.()?.clear?.();
   useDetailNodeExt?.getActions?.()?.clear?.();
 };
