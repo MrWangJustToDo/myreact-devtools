@@ -9,6 +9,22 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
   onDOMUpdate?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMAppend?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMSetRef?: (cb: (f: MyReactFiberNode) => void) => void;
+
+  // old version api
+  onBeforeCommit: (cb: () => void) => () => boolean;
+  onAfterCommit: (cb: () => void) => () => boolean;
+  onBeforeUpdate: (cb: () => void) => () => boolean;
+  onAfterUpdate: (cb: () => void) => () => boolean;
+  onBeforeUnmount: (cb: () => void) => () => boolean;
+  onAfterUnmount: (cb: () => void) => () => boolean;
+
+  // new version api
+  onBeforeCommitMount?: (cb: () => void) => () => void;
+  onAfterCommitMount?: (cb: () => void) => () => void;
+  onBeforeCommitUpdate?: (cb: () => void) => () => void;
+  onAfterCommitUpdate?: (cb: () => void) => () => void;
+  onBeforeCommitUnmount?: (cb: () => void) => () => void;
+  onAfterCommitUnmount?: (cb: () => void) => () => void;
 }
 
 // TODO use 'eventListener' instead of 'patchFunction'

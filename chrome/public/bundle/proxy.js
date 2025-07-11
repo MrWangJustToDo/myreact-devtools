@@ -4119,11 +4119,17 @@
     		                _this.update.addPending(fiber, "setRef");
     		            }
     		        };
-    		        if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
-    		            dispatch.onAfterCommit(onLoad);
-    		            dispatch.onAfterUpdate(onTrace);
-    		            // dispatch.onAfterUpdate(onLoad);
-    		            (_a = dispatch.onAfterUnmount) === null || _a === void 0 ? void 0 : _a.call(dispatch, onUnmount);
+    		        if (typeof dispatch.onFiberTrigger === "function") {
+    		            if (typeof dispatch.onAfterCommitMount === "function") {
+    		                dispatch.onAfterCommitMount(onLoad);
+    		                dispatch.onAfterCommitUpdate(onTrace);
+    		                dispatch.onAfterCommitUnmount(onUnmount);
+    		            }
+    		            else {
+    		                dispatch.onAfterCommit(onLoad);
+    		                dispatch.onAfterUpdate(onTrace);
+    		                (_a = dispatch.onAfterUnmount) === null || _a === void 0 ? void 0 : _a.call(dispatch, onUnmount);
+    		            }
     		            (_b = dispatch.onFiberState) === null || _b === void 0 ? void 0 : _b.call(dispatch, onFiberState);
     		            (_c = dispatch.onFiberTrigger) === null || _c === void 0 ? void 0 : _c.call(dispatch, onFiberTrigger);
     		            (_d = dispatch.onPerformanceWarn) === null || _d === void 0 ? void 0 : _d.call(dispatch, onPerformanceWarn);

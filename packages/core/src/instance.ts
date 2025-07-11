@@ -363,14 +363,20 @@ export class DevToolCore {
       }
     };
 
-    if (typeof dispatch.onAfterCommit === "function" && typeof dispatch.onAfterUpdate === "function") {
-      dispatch.onAfterCommit(onLoad);
+    if (typeof dispatch.onFiberTrigger === "function") {
+      if (typeof dispatch.onAfterCommitMount === "function") {
+        dispatch.onAfterCommitMount(onLoad);
 
-      dispatch.onAfterUpdate(onTrace);
+        dispatch.onAfterCommitUpdate(onTrace);
 
-      // dispatch.onAfterUpdate(onLoad);
+        dispatch.onAfterCommitUnmount(onUnmount);
+      } else {
+        dispatch.onAfterCommit(onLoad);
 
-      dispatch.onAfterUnmount?.(onUnmount);
+        dispatch.onAfterUpdate(onTrace);
+
+        dispatch.onAfterUnmount?.(onUnmount);
+      }
 
       dispatch.onFiberState?.(onFiberState);
 
