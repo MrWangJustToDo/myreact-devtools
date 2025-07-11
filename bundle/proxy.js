@@ -2743,6 +2743,8 @@
     		var parseHooksTreeToHOOKTree = function (node, d) {
     		    return node.map(function (item) {
     		        var id = item.id, name = item.name, value = item.value, subHooks = item.subHooks, isStateEditable = item.isStateEditable;
+    		        var isHook = !subHooks || subHooks.length === 0;
+    		        var children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1) : undefined;
     		        return {
     		            k: id === null || id === void 0 ? void 0 : id.toString(),
     		            e: isStateEditable,
@@ -2750,8 +2752,10 @@
     		            n: name || "Anonymous",
     		            v: getNode(value),
     		            d: d,
-    		            h: !subHooks.length ? true : false,
-    		            c: subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1) : undefined,
+    		            h: isHook,
+    		            c: children,
+    		            // all the hooks key
+    		            keys: isHook ? [id] : children.map(function (c) { return c.keys; }).flat(),
     		        };
     		    });
     		};
@@ -2783,6 +2787,7 @@
     		            v: getNode(isEffect ? hook.value : hook.result),
     		            d: 0,
     		            h: true,
+    		            keys: [index],
     		        });
     		    };
     		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.toArray()) === null || _a === void 0 ? void 0 : _a.forEach(processStack);
@@ -4003,6 +4008,7 @@
     		        };
     		        var notifyTriggerWithThrottle = throttle(function () { return _this.notifyTrigger(); }, 100);
     		        var onFiberTrigger = function (fiber, state) {
+    		            var _a, _b, _c, _d, _e, _f;
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
@@ -4011,6 +4017,15 @@
     		            if (_this._trigger[id].length > 10) {
     		                var index = _this._trigger[id].length - 11;
     		                _this._trigger[id][index] = { isRetrigger: _this._trigger[id][index].isRetrigger };
+    		            }
+    		            if (state.needUpdate && state.nodes) {
+    		                // filter all hook update queue
+    		                var nodes = (_b = (_a = state.nodes) === null || _a === void 0 ? void 0 : _a.filter) === null || _b === void 0 ? void 0 : _b.call(_a, function (node) { return node.type === reactShared.UpdateQueueType.hook; });
+    		                // get all the keys from the nodes;
+    		                var allHooksArray_1 = ((_d = (_c = fiber.hookList) === null || _c === void 0 ? void 0 : _c.toArray) === null || _d === void 0 ? void 0 : _d.call(_c)) || [];
+    		                var keys = ((_f = (_e = nodes === null || nodes === void 0 ? void 0 : nodes.map) === null || _e === void 0 ? void 0 : _e.call(nodes, function (node) { var _a; return (_a = allHooksArray_1 === null || allHooksArray_1 === void 0 ? void 0 : allHooksArray_1.findIndex) === null || _a === void 0 ? void 0 : _a.call(allHooksArray_1, function (_node) { return (node === null || node === void 0 ? void 0 : node.trigger) === _node; }); })) === null || _f === void 0 ? void 0 : _f.filter(function (i) { return i !== -1; })) || [];
+    		                // link the keys to the state
+    		                state._keysToLinkHook = keys;
     		            }
     		            _this._trigger[id].push(state);
     		            if (!_this.hasEnable)
@@ -4254,7 +4269,16 @@
     		        if (!status)
     		            return;
     		        var finalStatus = status.filter(function (i) { return (i.isRetrigger ? _this._enableRetrigger : true); }).slice(-10);
-    		        this._notify({ type: exports.DevToolMessageEnum.triggerStatus, data: finalStatus.map(function (i) { return getNode(i); }) });
+    		        this._notify({
+    		            type: exports.DevToolMessageEnum.triggerStatus,
+    		            data: finalStatus.map(function (i) {
+    		                var node = getNode(i);
+    		                if (i._keysToLinkHook && i._keysToLinkHook.length > 0) {
+    		                    node._keysToLinkHook = i._keysToLinkHook;
+    		                }
+    		                return node;
+    		            }),
+    		        });
     		    };
     		    DevToolCore.prototype.notifyHighlight = function (id, type) {
     		        if (!this.hasEnable)
