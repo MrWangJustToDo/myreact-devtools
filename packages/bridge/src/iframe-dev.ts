@@ -32,7 +32,7 @@ export const initIFRAME_DEV = async (origin: string, token?: string) => {
   }
 
   if (!token) {
-    const viewWindow = window.open(`${bridgeView}?token=${bridgeToken}`, "_blank");
+    const viewWindow = window.open(`${bridgeView}?token=${bridgeToken}`, 'devtool-view', 'width=800,height=600');
 
     close = () => viewWindow.close();
   }
