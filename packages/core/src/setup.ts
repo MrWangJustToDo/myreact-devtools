@@ -11,20 +11,20 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
   onDOMSetRef?: (cb: (f: MyReactFiberNode) => void) => void;
 
   // old version api
-  onBeforeCommit: (cb: () => void) => () => boolean;
-  onAfterCommit: (cb: () => void) => () => boolean;
-  onBeforeUpdate: (cb: () => void) => () => boolean;
-  onAfterUpdate: (cb: () => void) => () => boolean;
-  onBeforeUnmount: (cb: () => void) => () => boolean;
-  onAfterUnmount: (cb: () => void) => () => boolean;
+  onBeforeCommit?: (cb: () => void) => () => boolean;
+  onAfterCommit?: (cb: () => void) => () => boolean;
+  onBeforeUpdate?: (cb: () => void) => () => boolean;
+  onAfterUpdate?: (cb: () => void) => () => boolean;
+  onBeforeUnmount?: (cb: () => void) => () => boolean;
+  onAfterUnmount?: (cb: () => void) => () => boolean;
 
   // new version api
-  onBeforeCommitMount?: (cb: () => void) => () => void;
-  onAfterCommitMount?: (cb: () => void) => () => void;
-  onBeforeCommitUpdate?: (cb: () => void) => () => void;
-  onAfterCommitUpdate?: (cb: () => void) => () => void;
-  onBeforeCommitUnmount?: (cb: () => void) => () => void;
-  onAfterCommitUnmount?: (cb: () => void) => () => void;
+  onBeforeCommitMount: (cb: () => void) => () => boolean;
+  onAfterCommitMount: (cb: () => void) => () => boolean;
+  onBeforeCommitUpdate: (cb: () => void) => () => boolean;
+  onAfterCommitUpdate: (cb: () => void) => () => boolean;
+  onBeforeCommitUnmount: (cb: () => void) => () => boolean;
+  onAfterCommitUnmount: (cb: () => void) => () => boolean;
 }
 
 // TODO use 'eventListener' instead of 'patchFunction'
