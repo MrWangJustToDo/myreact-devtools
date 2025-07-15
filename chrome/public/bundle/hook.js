@@ -4822,7 +4822,7 @@
                         return [2 /*return*/];
                     }
                     if (!token) {
-                        viewWindow_1 = window.open("".concat(bridgeView, "?token=").concat(bridgeToken), "_blank");
+                        viewWindow_1 = window.open("".concat(bridgeView, "?token=").concat(bridgeToken), 'devtool-view', 'width=800,height=600');
                         close = function () { return viewWindow_1.close(); };
                     }
                     window.addEventListener("message", function (e) {
