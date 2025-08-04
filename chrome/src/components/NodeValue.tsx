@@ -111,6 +111,7 @@ export const NodeValue = ({
       }
       return `{${re}}`;
     }
+    return `[object ${t}]`;
   }, [t, n, data]);
 
   useEffect(() => {

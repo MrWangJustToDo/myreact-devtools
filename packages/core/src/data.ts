@@ -1,5 +1,7 @@
 import { getElementName, isValidElement } from "./utils";
 
+import type { PromiseWithState } from "@my-react/react-reconciler";
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const KnownType = {
   Object: true,
@@ -25,6 +27,7 @@ const KnownType = {
   Element: true,
   ReadError: true,
   ReactElement: true,
+  Module: true,
 };
 
 export type NodeValue = {
@@ -40,7 +43,7 @@ export type NodeValue = {
   l?: boolean;
   // name
   n?: string;
-  
+
   // extend props;
   [p: string]: any;
 };
@@ -89,7 +92,8 @@ const isObject = (value: NodeValue["t"]) => {
     value === "Map" ||
     // value === "Promise" ||
     value === "Set" ||
-    value === "ReactElement"
+    value === "ReactElement" ||
+    value === "Module"
   );
 };
 
@@ -176,6 +180,17 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
         }, {}),
         e: true,
       };
+    } else {
+      return {
+        i: currentId,
+        t: type,
+        n,
+        v: Object.keys(value).reduce((acc, key) => {
+          acc[key] = getNode(value[key], deep - 1);
+          return acc;
+        }, {}),
+        e: true,
+      };
     }
   }
 };
@@ -184,7 +199,11 @@ export const getNode = (value: any, deep = 3): NodeValue => {
   try {
     const type = getType(value);
 
-    const expandable = isObject(type);
+    let expandable = isObject(type);
+
+    if (type === 'Promise' && ((value as PromiseWithState<any>)._value || (value as PromiseWithState<any>)._reason)) {
+      expandable = true;
+    }
 
     if (expandable) {
       // full deep to load
