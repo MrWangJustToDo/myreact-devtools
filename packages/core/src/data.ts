@@ -190,6 +190,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
           return acc;
         }, {}),
         e: true,
+        _t: "Object",
       };
     }
   }
@@ -201,7 +202,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
 
     let expandable = isObject(type);
 
-    if (type === 'Promise' && ((value as PromiseWithState<any>)._value || (value as PromiseWithState<any>)._reason)) {
+    if (type === "Promise" && ((value as PromiseWithState<any>).status === "fulfilled" || (value as PromiseWithState<any>).status === "rejected")) {
       expandable = true;
     }
 

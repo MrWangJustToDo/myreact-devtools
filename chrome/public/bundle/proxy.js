@@ -2986,6 +2986,7 @@
     		                    return acc;
     		                }, {}),
     		                e: true,
+    		                _t: "Object",
     		            };
     		        }
     		    }
@@ -2995,7 +2996,7 @@
     		    try {
     		        var type = getType(value);
     		        var expandable = isObject(type);
-    		        if (type === 'Promise' && (value._value || value._reason)) {
+    		        if (type === "Promise" && (value.status === "fulfilled" || value.status === "rejected")) {
     		            expandable = true;
     		        }
     		        if (expandable) {

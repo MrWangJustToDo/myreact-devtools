@@ -52,67 +52,77 @@ export const NodeValue = ({
 
   const t = chunkData?.t ?? item?.t;
 
+  const _t = chunkData?._t ?? item?._t;
+
   const text = useMemo(() => {
-    if (n) {
-      return n;
-    }
-    if (t === "Array" || t === "Set" || t === "Map") {
-      const re = getText("Array", data ?? []);
-      if (t === "Set" || t === "Map") {
+    const finalType = _t || t;
+    const getTextElement = () => {
+      if (n) {
+        return n;
+      }
+      if (finalType === "Array" || finalType === "Set" || finalType === "Map") {
+        const re = getText("Array", data ?? []);
+        if (finalType === "Set" || finalType === "Map") {
+          if (Array.isArray(re)) {
+            return (
+              <>
+                {finalType}
+                {"(["}
+                {re.map((i, index) => (
+                  <Fragment key={index}>
+                    {i}
+                    {index < re.length - 1 ? ", " : ""}
+                  </Fragment>
+                ))}
+                {"])"}
+              </>
+            );
+          }
+          return `${finalType}([${re}])`;
+        } else {
+          if (Array.isArray(re)) {
+            return (
+              <>
+                {"["}
+                {re.map((i, index) => (
+                  <Fragment key={index}>
+                    {i}
+                    {index < re.length - 1 ? ", " : ""}
+                  </Fragment>
+                ))}
+                {"]"}
+              </>
+            );
+          }
+          return `[${re}]`;
+        }
+      }
+      if (finalType === "Iterable" || finalType === "Object") {
+        const re = getText("Object", data ?? {});
         if (Array.isArray(re)) {
           return (
             <>
-              {t}
-              {"(["}
+              {"{"}
               {re.map((i, index) => (
                 <Fragment key={index}>
                   {i}
                   {index < re.length - 1 ? ", " : ""}
                 </Fragment>
               ))}
-              {"])"}
+              {"}"}
             </>
           );
         }
-        return `${t}([${re}])`;
-      } else {
-        if (Array.isArray(re)) {
-          return (
-            <>
-              {"["}
-              {re.map((i, index) => (
-                <Fragment key={index}>
-                  {i}
-                  {index < re.length - 1 ? ", " : ""}
-                </Fragment>
-              ))}
-              {"]"}
-            </>
-          );
-        }
-        return `[${re}]`;
+        return `{${re}}`;
       }
+    };
+
+    if (t === "Promise" || t === "Module") {
+      return <>[object {t} {getTextElement()}]</>;
     }
-    if (t === "Iterable" || t === "Object") {
-      const re = getText("Object", data ?? {});
-      if (Array.isArray(re)) {
-        return (
-          <>
-            {"{"}
-            {re.map((i, index) => (
-              <Fragment key={index}>
-                {i}
-                {index < re.length - 1 ? ", " : ""}
-              </Fragment>
-            ))}
-            {"}"}
-          </>
-        );
-      }
-      return `{${re}}`;
-    }
-    return `[object ${t}]`;
-  }, [t, n, data]);
+
+    return getTextElement();
+  }, [t, n, data, _t]);
 
   useEffect(() => {
     if (expand && item?.l === false && item.i && (!chunkData || chunkData.i !== item.i)) {
@@ -185,13 +195,13 @@ export const NodeValue = ({
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block shrink-0">{StateIcon}</span>
           {prefix}
-          <div className={`w-full relative flex pr-2`}>
+          <div className={`w-full relative flex pr-2 line-clamp-1 break-all`}>
             <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
               {name}
             </span>
             <span className="flex-shrink-0 pr-1">:</span>
             {currentIsEditable ? (
-              <span className="hook-value-placeholder line-clamp-1 break-all relative">
+              <span className="hook-value-placeholder relative line-clamp-1 break-all">
                 <NodeValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
                   {element}
                 </NodeValueChange>
@@ -215,7 +225,7 @@ export const NodeValue = ({
               {StateIcon}
             </span>
             {prefix}
-            <div className="max-w-full flex">
+            <div className="max-w-full flex line-clamp-1 break-all">
               <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
                 {name}
               </span>
