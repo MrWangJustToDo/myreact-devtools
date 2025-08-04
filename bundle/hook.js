@@ -2985,7 +2985,8 @@
     		        value === "Map" ||
     		        // value === "Promise" ||
     		        value === "Set" ||
-    		        value === "ReactElement");
+    		        value === "ReactElement" ||
+    		        value === "Module");
     		};
     		var getTargetNode = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }
@@ -3075,6 +3076,18 @@
     		                e: true,
     		            };
     		        }
+    		        else {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                n: n,
+    		                v: Object.keys(value).reduce(function (acc, key) {
+    		                    acc[key] = getNode(value[key], deep - 1);
+    		                    return acc;
+    		                }, {}),
+    		                e: true,
+    		            };
+    		        }
     		    }
     		};
     		var getNode = function (value, deep) {
@@ -3082,6 +3095,9 @@
     		    try {
     		        var type = getType(value);
     		        var expandable = isObject(type);
+    		        if (type === 'Promise' && (value._value || value._reason)) {
+    		            expandable = true;
+    		        }
     		        if (expandable) {
     		            // full deep to load
     		            return getTargetNode(value, type, deep);
