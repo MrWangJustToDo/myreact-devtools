@@ -2987,7 +2987,9 @@
     		        value !== "Symbol" &&
     		        value !== "RegExp" &&
     		        value !== "Promise" &&
-    		        value !== "Element");
+    		        value !== "Element" &&
+    		        value !== "WeakMap" &&
+    		        value !== "WeakSet");
     		};
     		var getTargetNode = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }

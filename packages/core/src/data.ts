@@ -94,7 +94,9 @@ const isObject = (value: NodeValue["t"]) => {
     value !== "Symbol" &&
     value !== "RegExp" &&
     value !== "Promise" &&
-    value !== "Element"
+    value !== "Element" && 
+    value !== "WeakMap" &&
+    value !== "WeakSet"
   );
 };
 
