@@ -83,17 +83,18 @@ const getType = (value: any): NodeValue["t"] => {
 
 const isObject = (value: NodeValue["t"]) => {
   return (
-    value === "Object" ||
-    // value === "Error" ||
-    // value === "WeakMap" ||
-    // value === "WeakSet" ||
-    value === "Array" ||
-    value === "Iterable" ||
-    value === "Map" ||
-    // value === "Promise" ||
-    value === "Set" ||
-    value === "ReactElement" ||
-    value === "Module"
+    value !== "String" &&
+    value !== "Number" &&
+    value !== "Boolean" &&
+    value !== "Null" &&
+    value !== "Undefined" &&
+    value !== "Function" &&
+    value !== "AsyncFunction" &&
+    value !== "GeneratorFunction" &&
+    value !== "Symbol" &&
+    value !== "RegExp" &&
+    value !== "Promise" &&
+    value !== "Element"
   );
 };
 
@@ -185,7 +186,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
         i: currentId,
         t: type,
         n,
-        v: Object.keys(value).reduce((acc, key) => {
+        v: getAllKeys(value).reduce((acc, key) => {
           acc[key] = getNode(value[key], deep - 1);
           return acc;
         }, {}),
@@ -194,6 +195,18 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     }
   }
+};
+
+const getAllKeys = (data: any): string[] => {
+  if (!data) return [];
+
+  const keys: string[] = [];
+
+  for (const key in data) {
+    keys.push(key);
+  }
+
+  return keys;
 };
 
 export const getNode = (value: any, deep = 3): NodeValue => {

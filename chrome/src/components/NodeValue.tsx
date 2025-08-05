@@ -117,7 +117,7 @@ export const NodeValue = ({
       }
     };
 
-    if (t === "Promise" || t === "Module") {
+    if (finalType !== t ) {
       return <>[object {t} {getTextElement()}]</>;
     }
 

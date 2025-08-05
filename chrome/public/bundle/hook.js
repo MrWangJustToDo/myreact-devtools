@@ -2976,17 +2976,18 @@
     		    return type;
     		};
     		var isObject = function (value) {
-    		    return (value === "Object" ||
-    		        // value === "Error" ||
-    		        // value === "WeakMap" ||
-    		        // value === "WeakSet" ||
-    		        value === "Array" ||
-    		        value === "Iterable" ||
-    		        value === "Map" ||
-    		        // value === "Promise" ||
-    		        value === "Set" ||
-    		        value === "ReactElement" ||
-    		        value === "Module");
+    		    return (value !== "String" &&
+    		        value !== "Number" &&
+    		        value !== "Boolean" &&
+    		        value !== "Null" &&
+    		        value !== "Undefined" &&
+    		        value !== "Function" &&
+    		        value !== "AsyncFunction" &&
+    		        value !== "GeneratorFunction" &&
+    		        value !== "Symbol" &&
+    		        value !== "RegExp" &&
+    		        value !== "Promise" &&
+    		        value !== "Element");
     		};
     		var getTargetNode = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }
@@ -3081,7 +3082,7 @@
     		                i: currentId,
     		                t: type,
     		                n: n,
-    		                v: Object.keys(value).reduce(function (acc, key) {
+    		                v: getAllKeys(value).reduce(function (acc, key) {
     		                    acc[key] = getNode(value[key], deep - 1);
     		                    return acc;
     		                }, {}),
@@ -3090,6 +3091,15 @@
     		            };
     		        }
     		    }
+    		};
+    		var getAllKeys = function (data) {
+    		    if (!data)
+    		        return [];
+    		    var keys = [];
+    		    for (var key in data) {
+    		        keys.push(key);
+    		    }
+    		    return keys;
     		};
     		var getNode = function (value, deep) {
     		    if (deep === void 0) { deep = 3; }
