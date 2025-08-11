@@ -73,7 +73,7 @@ const HookViewTree = ({ item, enableEdit, hoverKeys }: { item: HOOKTree; enableE
   }
 };
 
-const InterNalHookView = ({ mode = "vertical" }: { mode?: "horizontal" | "vertical" }) => {
+const InternalHookView = ({ mode = "vertical" }: { mode?: "horizontal" | "vertical" }) => {
   const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
@@ -142,7 +142,7 @@ export const HookView = () => {
       <div ref={ref}>
         <Allotment>
           <AutoHeight onHeightChange={onAutoUpdateHeight} onAttachRef={onCreateRef}>
-            <InterNalHookView mode="horizontal" />
+            <InternalHookView mode="horizontal" />
           </AutoHeight>
           <AutoHeight onHeightChange={onAutoUpdateHeight} onAttachRef={onCreateRef}>
             <TriggerView mode="horizontal" />
@@ -152,6 +152,6 @@ export const HookView = () => {
       </div>
     );
   } else {
-    return <InterNalHookView />;
+    return <InternalHookView />;
   }
 };
