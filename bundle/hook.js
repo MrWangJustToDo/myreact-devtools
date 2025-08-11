@@ -1166,6 +1166,18 @@
     		    return __assign.apply(this, arguments);
     		};
 
+    		function __rest(s, e) {
+    		    var t = {};
+    		    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+    		        t[p] = s[p];
+    		    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+    		        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+    		            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+    		                t[p[i]] = s[p[i]];
+    		        }
+    		    return t;
+    		}
+
     		function __spreadArray(to, from, pack) {
     		    if (arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
     		        if (ar || !(i in from)) {
@@ -4407,9 +4419,10 @@
     		        this._notify({
     		            type: exports.DevToolMessageEnum.triggerStatus,
     		            data: finalStatus.map(function (i) {
-    		                var node = getNode(i);
-    		                if (i._keysToLinkHook && i._keysToLinkHook.length > 0) {
-    		                    node._keysToLinkHook = i._keysToLinkHook;
+    		                var _keysToLinkHook = i._keysToLinkHook, res = __rest(i, ["_keysToLinkHook"]);
+    		                var node = getNode(res);
+    		                if (_keysToLinkHook && _keysToLinkHook.length > 0) {
+    		                    node._keysToLinkHook = _keysToLinkHook;
     		                }
     		                return node;
     		            }),
