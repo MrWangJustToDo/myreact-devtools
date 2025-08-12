@@ -283,7 +283,7 @@ function useRef<T>(initialValue: T): { current: T } {
     displayName: null,
     primitive: "Ref",
     stackError: new Error(),
-    value: ref,
+    value: ref.current,
     dispatcherHookName: "Ref",
   });
 

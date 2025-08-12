@@ -577,8 +577,9 @@ export class DevToolCore {
     this._notify({
       type: DevToolMessageEnum.triggerStatus,
       data: finalStatus.map((i) => {
-        const { _keysToLinkHook, ...res } = i;
-        const node = getNode(res);
+        const _keysToLinkHook = i._keysToLinkHook;
+        delete i._keysToLinkHook;
+        const node = getNode(i);
 
         if (_keysToLinkHook && _keysToLinkHook.length > 0) {
           node._keysToLinkHook = _keysToLinkHook;
