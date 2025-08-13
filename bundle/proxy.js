@@ -2017,6 +2017,7 @@
     		var domToFiber = new WeakMap();
     		var plainStore = new Map();
     		var directory = {};
+    		var linkStateToHookIndex = new WeakMap();
     		var count = 0;
     		var shallowAssignFiber = function (plain, fiber) {
     		    var hasKey = fiber.key !== null && fiber.key !== undefined;
@@ -2382,6 +2383,24 @@
     		    catch (e) {
     		        return e.message;
     		    }
+    		};
+    		var tryLinkStateToHookIndex = function (fiber, state) {
+    		    var _a, _b, _c, _e, _f, _g;
+    		    if (state.needUpdate && state.nodes) {
+    		        // filter all hook update queue
+    		        var nodes = (_b = (_a = state.nodes) === null || _a === void 0 ? void 0 : _a.filter) === null || _b === void 0 ? void 0 : _b.call(_a, function (node) { return node.type === reactShared.UpdateQueueType.hook; });
+    		        // get all the keys from the nodes;
+    		        var allHooksArray_1 = ((_e = (_c = fiber.hookList) === null || _c === void 0 ? void 0 : _c.toArray) === null || _e === void 0 ? void 0 : _e.call(_c)) || [];
+    		        var keys = ((_g = (_f = nodes === null || nodes === void 0 ? void 0 : nodes.map) === null || _f === void 0 ? void 0 : _f.call(nodes, function (node) { var _a; return (_a = allHooksArray_1 === null || allHooksArray_1 === void 0 ? void 0 : allHooksArray_1.findIndex) === null || _a === void 0 ? void 0 : _a.call(allHooksArray_1, function (_node) { return (node === null || node === void 0 ? void 0 : node.trigger) === _node; }); })) === null || _g === void 0 ? void 0 : _g.filter(function (i) { return i !== -1; })) || [];
+    		        // link the keys to the state
+    		        linkStateToHookIndex.set(state, keys);
+    		    }
+    		};
+    		var getHookIndexFromState = function (state) {
+    		    return linkStateToHookIndex.get(state);
+    		};
+    		var deleteLinkState = function (state) {
+    		    linkStateToHookIndex.delete(state);
     		};
 
     		var typeKeys = [];
@@ -3894,7 +3913,6 @@
     		    Object.defineProperty(dispatch, "__dev_devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
 
-    		var map = new Map();
     		var DevToolCore = /** @class */ (function () {
     		    function DevToolCore() {
     		        var _this = this;
@@ -3903,6 +3921,7 @@
     		        this._detector = false;
     		        this._origin = "";
     		        this._map = new Map();
+    		        this._timeMap = new Map();
     		        // 字符串字典
     		        this._dir = {};
     		        this._hmr = {};
@@ -4037,7 +4056,6 @@
     		        };
     		        var notifyTriggerWithThrottle = throttle(function () { return _this.notifyTrigger(); }, 100);
     		        var onFiberTrigger = function (fiber, state) {
-    		            var _a, _b, _c, _d, _e, _f;
     		            var id = getPlainNodeIdByFiber(fiber);
     		            if (!id)
     		                return;
@@ -4045,17 +4063,12 @@
     		            // 长数据过滤
     		            if (_this._trigger[id].length > 10) {
     		                var index = _this._trigger[id].length - 11;
+    		                if (_this._trigger[id][index]) {
+    		                    deleteLinkState(_this._trigger[id][index]);
+    		                }
     		                _this._trigger[id][index] = { isRetrigger: _this._trigger[id][index].isRetrigger };
     		            }
-    		            if (state.needUpdate && state.nodes) {
-    		                // filter all hook update queue
-    		                var nodes = (_b = (_a = state.nodes) === null || _a === void 0 ? void 0 : _a.filter) === null || _b === void 0 ? void 0 : _b.call(_a, function (node) { return node.type === reactShared.UpdateQueueType.hook; });
-    		                // get all the keys from the nodes;
-    		                var allHooksArray_1 = ((_d = (_c = fiber.hookList) === null || _c === void 0 ? void 0 : _c.toArray) === null || _d === void 0 ? void 0 : _d.call(_c)) || [];
-    		                var keys = ((_f = (_e = nodes === null || nodes === void 0 ? void 0 : nodes.map) === null || _e === void 0 ? void 0 : _e.call(nodes, function (node) { var _a; return (_a = allHooksArray_1 === null || allHooksArray_1 === void 0 ? void 0 : allHooksArray_1.findIndex) === null || _a === void 0 ? void 0 : _a.call(allHooksArray_1, function (_node) { return (node === null || node === void 0 ? void 0 : node.trigger) === _node; }); })) === null || _f === void 0 ? void 0 : _f.filter(function (i) { return i !== -1; })) || [];
-    		                // link the keys to the state
-    		                state._keysToLinkHook = keys;
-    		            }
+    		            tryLinkStateToHookIndex(fiber, state);
     		            _this._trigger[id].push(state);
     		            if (!_this.hasEnable)
     		                return;
@@ -4307,8 +4320,7 @@
     		        this._notify({
     		            type: exports.DevToolMessageEnum.triggerStatus,
     		            data: finalStatus.map(function (i) {
-    		                var _keysToLinkHook = i._keysToLinkHook;
-    		                delete i._keysToLinkHook;
+    		                var _keysToLinkHook = getHookIndexFromState(i);
     		                var node = getNode(i);
     		                if (_keysToLinkHook && _keysToLinkHook.length > 0) {
     		                    node._keysToLinkHook = _keysToLinkHook;
@@ -4483,15 +4495,15 @@
     		        if (this._dispatch.has(dispatch)) {
     		            var now = Date.now();
     		            if (force) {
-    		                map.set(dispatch, now);
+    		                this._timeMap.set(dispatch, now);
     		                var tree = this.getTree(dispatch);
     		                this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
     		            }
     		            else {
-    		                var last = map.get(dispatch);
+    		                var last = this._timeMap.get(dispatch);
     		                if (last && now - last < 200)
     		                    return;
-    		                map.set(dispatch, now);
+    		                this._timeMap.set(dispatch, now);
     		                var tree = this.getTree(dispatch);
     		                this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
     		            }
@@ -4533,6 +4545,7 @@
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
     		exports.debounce = debounce;
+    		exports.deleteLinkState = deleteLinkState;
     		exports.generateTreeMap = generateTreeMap;
     		exports.getComponentFiberByDom = getComponentFiberByDom;
     		exports.getComponentFiberByFiber = getComponentFiberByFiber;
@@ -4546,6 +4559,7 @@
     		exports.getFiberTag = getFiberTag;
     		exports.getFiberType = getFiberType;
     		exports.getHook = getHook;
+    		exports.getHookIndexFromState = getHookIndexFromState;
     		exports.getHookName = getHookName;
     		exports.getMockFiberFromElement = getMockFiberFromElement;
     		exports.getNode = getNode;
@@ -4566,6 +4580,7 @@
     		exports.loopTree = loopTree;
     		exports.shallowAssignFiber = shallowAssignFiber;
     		exports.throttle = throttle;
+    		exports.tryLinkStateToHookIndex = tryLinkStateToHookIndex;
     		exports.typeKeys = typeKeys;
     		exports.unmountPlainNode = unmountPlainNode;
     		exports.updateFiberNode = updateFiberNode; 
