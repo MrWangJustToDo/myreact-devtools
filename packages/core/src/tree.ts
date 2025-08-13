@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { include, STATE_TYPE, type ListTree } from "@my-react/react-shared";
+import { include, STATE_TYPE, UpdateQueueType, type ListTree } from "@my-react/react-shared";
 
 import { getValueById } from "./data";
 import { PlainNode } from "./plain";
@@ -8,7 +8,7 @@ import { getFiberName, getFiberType, getHook, getProps, getSource, getState, get
 
 import type { DevToolCore } from "./instance";
 import type { Action, MyReactComponent, Reducer } from "@my-react/react";
-import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode, MyReactFiberContainer } from "@my-react/react-reconciler";
+import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode, MyReactFiberContainer, UpdateState } from "@my-react/react-reconciler";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
 
@@ -21,6 +21,8 @@ const domToFiber = new WeakMap<HTMLElement, MyReactFiberNode>();
 const plainStore = new Map<string, PlainNode>();
 
 const directory: Record<string, string> = {};
+
+const linkStateToHookIndex = new WeakMap<UpdateState, Array<number | string>>();
 
 let count = 0;
 
@@ -296,7 +298,7 @@ export const getFiberByDom = (dom: HTMLElement) => {
   const fiber = domToFiber.get(dom);
 
   if (!fiber) {
-    if(dom.parentElement) {
+    if (dom.parentElement) {
       return getFiberByDom(dom.parentElement as HTMLElement);
     } else {
       return null;
@@ -304,7 +306,7 @@ export const getFiberByDom = (dom: HTMLElement) => {
   } else {
     return fiber;
   }
-}
+};
 
 export const getComponentFiberByDom = (dom: HTMLElement) => {
   const fiber = getFiberByDom(dom);
@@ -578,3 +580,24 @@ export const updateFiberNode = (
     return e.message;
   }
 };
+
+export const tryLinkStateToHookIndex = (fiber: MyReactFiberNode, state: UpdateState) => {
+  if (state.needUpdate && state.nodes) {
+    // filter all hook update queue
+    const nodes = state.nodes?.filter?.((node) => node.type === UpdateQueueType.hook);
+    // get all the keys from the nodes;
+    const allHooksArray = fiber.hookList?.toArray?.() || [];
+
+    const keys = nodes?.map?.((node) => allHooksArray?.findIndex?.((_node) => node?.trigger === _node))?.filter((i) => i !== -1) || [];
+    // link the keys to the state
+    linkStateToHookIndex.set(state, keys);
+  }
+};
+
+export const getHookIndexFromState = (state: UpdateState) => {
+  return linkStateToHookIndex.get(state);
+};
+
+export const deleteLinkState = (state: UpdateState) => {
+  linkStateToHookIndex.delete(state);
+}

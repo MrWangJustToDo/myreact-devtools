@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable max-lines */
-import { isNormalEquals, UpdateQueueType } from "@my-react/react-shared";
+import { isNormalEquals } from "@my-react/react-shared";
 
 import { getNode, getNodeFromId } from "./data";
 import { DevToolMessageEnum, HMRStatus } from "./event";
@@ -17,6 +17,9 @@ import {
   getComponentFiberByDom,
   getElementNodesFromFiber,
   updateFiberNode,
+  tryLinkStateToHookIndex,
+  deleteLinkState,
+  getHookIndexFromState,
 } from "./tree";
 import { debounce, throttle } from "./utils";
 
@@ -29,12 +32,6 @@ export type DevToolMessageType = {
   data: any;
 };
 
-type UpdateStateWithKeys = UpdateState & {
-  _keysToLinkHook?: Array<number | string>;
-};
-
-const map = new Map();
-
 export class DevToolCore {
   _dispatch: Set<DevToolRenderDispatch> = new Set();
 
@@ -44,6 +41,8 @@ export class DevToolCore {
   _origin = "";
 
   _map: Map<DevToolRenderDispatch, Tree> = new Map();
+
+  _timeMap: Map<DevToolRenderDispatch, number> = new Map();
 
   // 字符串字典
   _dir = {};
@@ -66,7 +65,7 @@ export class DevToolCore {
 
   _domHoverId = "";
 
-  _trigger: Record<string | number, Array<Partial<UpdateStateWithKeys>>> = {};
+  _trigger: Record<string | number, Array<Partial<UpdateState>>> = {};
 
   _state: Record<string | number, number> = {};
 
@@ -224,7 +223,7 @@ export class DevToolCore {
 
     const notifyTriggerWithThrottle = throttle(() => this.notifyTrigger(), 100);
 
-    const onFiberTrigger = (fiber: MyReactFiberNode, state: UpdateStateWithKeys) => {
+    const onFiberTrigger = (fiber: MyReactFiberNode, state: UpdateState) => {
       const id = getPlainNodeIdByFiber(fiber);
 
       if (!id) return;
@@ -234,19 +233,13 @@ export class DevToolCore {
       // 长数据过滤
       if (this._trigger[id].length > 10) {
         const index = this._trigger[id].length - 11;
+        if (this._trigger[id][index]) {
+          deleteLinkState(this._trigger[id][index] as UpdateState);
+        }
         this._trigger[id][index] = { isRetrigger: this._trigger[id][index].isRetrigger };
       }
 
-      if (state.needUpdate && state.nodes) {
-        // filter all hook update queue
-        const nodes = state.nodes?.filter?.((node) => node.type === UpdateQueueType.hook);
-        // get all the keys from the nodes;
-        const allHooksArray = fiber.hookList?.toArray?.() || [];
-
-        const keys = nodes?.map?.((node) => allHooksArray?.findIndex?.((_node) => node?.trigger === _node))?.filter((i) => i !== -1) || [];
-        // link the keys to the state
-        state._keysToLinkHook = keys;
-      }
+      tryLinkStateToHookIndex(fiber, state);
 
       this._trigger[id].push(state);
 
@@ -577,8 +570,8 @@ export class DevToolCore {
     this._notify({
       type: DevToolMessageEnum.triggerStatus,
       data: finalStatus.map((i) => {
-        const _keysToLinkHook = i._keysToLinkHook;
-        delete i._keysToLinkHook;
+        const _keysToLinkHook = getHookIndexFromState(i as UpdateState);
+        
         const node = getNode(i);
 
         if (_keysToLinkHook && _keysToLinkHook.length > 0) {
@@ -803,17 +796,17 @@ export class DevToolCore {
       const now = Date.now();
 
       if (force) {
-        map.set(dispatch, now);
+        this._timeMap.set(dispatch, now);
 
         const tree = this.getTree(dispatch);
 
         this._notify({ type: DevToolMessageEnum.ready, data: tree });
       } else {
-        const last = map.get(dispatch);
+        const last = this._timeMap.get(dispatch);
 
         if (last && now - last < 200) return;
 
-        map.set(dispatch, now);
+        this._timeMap.set(dispatch, now);
 
         const tree = this.getTree(dispatch);
 
