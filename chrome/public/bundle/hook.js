@@ -2860,7 +2860,6 @@
     		    return tree;
     		};
     		var parseHooksTreeToHOOKTree = function (node, d, p) {
-    		    // let index = 0;
     		    var _p = p || { index: 0 };
     		    return node.map(function (item) {
     		        var id = item.id, name = item.name, value = item.value, subHooks = item.subHooks, isStateEditable = item.isStateEditable;

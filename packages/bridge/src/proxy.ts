@@ -1,4 +1,4 @@
-import { DevToolMessageEnum } from "@my-react-devtool/core";
+import { DevToolMessageEnum } from "@my-react-devtool/core/event";
 
 import { MessageHookType, MessageWorkerType, PortName, sourceFrom } from "./type";
 import { generatePostMessageWithSource } from "./window";
