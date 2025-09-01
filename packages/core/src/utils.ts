@@ -428,15 +428,16 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
   return tree;
 };
 
-const parseHooksTreeToHOOKTree = (node: HooksTree, d: number): HOOKTree[] => {
+const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, p?: { index: number }): HOOKTree[] => {
+  const _p = p || { index: 0 };
   return node.map<HOOKTree>((item) => {
     const { id, name, value, subHooks, isStateEditable } = item;
     const isHook = !subHooks || subHooks.length === 0;
-    const children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1) : undefined;
+    const children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, _p) : undefined;
     return {
       k: id?.toString(),
       e: isStateEditable,
-      i: id,
+      i: isHook ? _p.index++ : undefined,
       n: name || "Anonymous",
       v: getNode(value),
       d,

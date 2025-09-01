@@ -8,9 +8,10 @@ import ErrorStackParser from "error-stack-parser";
 
 import { NODE_TYPE } from "./type";
 
-import type { createContext, MixinMyReactFunctionComponent, RenderPlatform } from "@my-react/react";
+import type { createContext, MixinMyReactFunctionComponent } from "@my-react/react";
 import type { MyReactFiberNode, MyReactHookNode } from "@my-react/react-reconciler";
 import type { ListTreeNode } from "@my-react/react-shared";
+import type { StackFrame as ParsedStackFrame } from "error-stack-parser";
 
 type HookLogEntry = {
   displayName: string | null;
@@ -614,7 +615,7 @@ export type HooksTree = Array<HooksNode>;
 
 let mostLikelyAncestorIndex = 0;
 
-function findSharedIndex(hookStack: any, rootStack: any, rootIndex: number) {
+function findSharedIndex(hookStack: ParsedStackFrame[], rootStack: ParsedStackFrame[], rootIndex: number) {
   const source = rootStack[rootIndex].source;
   hookSearch: for (let i = 0; i < hookStack.length; i++) {
     if (hookStack[i].source === source) {
@@ -631,7 +632,7 @@ function findSharedIndex(hookStack: any, rootStack: any, rootIndex: number) {
   return -1;
 }
 
-function findCommonAncestorIndex(rootStack: any, hookStack: any) {
+function findCommonAncestorIndex(rootStack: ParsedStackFrame[], hookStack: ParsedStackFrame[]) {
   let rootIndex = findSharedIndex(hookStack, rootStack, mostLikelyAncestorIndex);
   if (rootIndex !== -1) {
     return rootIndex;
@@ -648,7 +649,7 @@ function findCommonAncestorIndex(rootStack: any, hookStack: any) {
   return -1;
 }
 
-function isReactWrapper(functionName: any, wrapperName: string) {
+function isReactWrapper(functionName: void | string, wrapperName: string) {
   const hookName = parseHookName(functionName);
   if (wrapperName === "HostTransitionStatus") {
     return hookName === wrapperName || hookName === "FormStatus";
@@ -657,7 +658,7 @@ function isReactWrapper(functionName: any, wrapperName: string) {
   return hookName === wrapperName;
 }
 
-function findPrimitiveIndex(hookStack: any, hook: HookLogEntry) {
+function findPrimitiveIndex(hookStack: ParsedStackFrame[], hook: HookLogEntry) {
   const stackCache = getPrimitiveStackCache();
   const primitiveStack = stackCache.get(hook.primitive);
   if (primitiveStack === undefined) {
@@ -682,7 +683,7 @@ function findPrimitiveIndex(hookStack: any, hook: HookLogEntry) {
   return -1;
 }
 
-function parseTrimmedStack(rootStack: any, hook: HookLogEntry) {
+function parseTrimmedStack(rootStack: ParsedStackFrame[], hook: HookLogEntry) {
   // Get the stack trace between the primitive hook function and
   // the root function call. I.e. the stack frames of custom hooks.
   const hookStack = ErrorStackParser.parse(hook.stackError);
@@ -735,7 +736,7 @@ function parseHookName(functionName: void | string): string {
   return functionName.slice(startIndex);
 }
 
-function buildTree(rootStack: any, readHookLog: Array<HookLogEntry>): HooksTree {
+function buildTree(rootStack: ParsedStackFrame[], readHookLog: Array<HookLogEntry>): HooksTree {
   const rootChildren: Array<HooksNode> = [];
   let prevStack = null;
   let levelChildren = rootChildren;
@@ -929,7 +930,7 @@ function inspectHooks<Props>(renderFunction: (p: Props) => any, props: Props, cu
     currentDispatcher.current.proxy = null;
   }
 
-  const rootStack = ErrorStackParser.parse(ancestorStackError);
+  const rootStack = ancestorStackError === undefined ? [] : ErrorStackParser.parse(ancestorStackError);
 
   return buildTree(rootStack, readHookLog);
 }
@@ -959,7 +960,7 @@ function inspectHooksOfForwardRef<Props, Ref>(
 
     currentDispatcher.current.proxy = null;
   }
-  const rootStack = ErrorStackParser.parse(ancestorStackError);
+  const rootStack = ancestorStackError === undefined ? [] : ErrorStackParser.parse(ancestorStackError);
 
   return buildTree(rootStack, readHookLog);
 }

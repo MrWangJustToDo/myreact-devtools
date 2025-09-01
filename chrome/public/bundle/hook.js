@@ -1974,7 +1974,7 @@
     		        hookLog = [];
     		        currentDispatcher.current.proxy = null;
     		    }
-    		    var rootStack = ErrorStackParser.parse(ancestorStackError);
+    		    var rootStack = ancestorStackError === undefined ? [] : ErrorStackParser.parse(ancestorStackError);
     		    return buildTree(rootStack, readHookLog);
     		}
     		function inspectHooksOfForwardRef(renderFunction, props, ref, currentDispatcher) {
@@ -1993,7 +1993,7 @@
     		        hookLog = [];
     		        currentDispatcher.current.proxy = null;
     		    }
-    		    var rootStack = ErrorStackParser.parse(ancestorStackError);
+    		    var rootStack = ancestorStackError === undefined ? [] : ErrorStackParser.parse(ancestorStackError);
     		    return buildTree(rootStack, readHookLog);
     		}
     		function inspectHooksOfFiber(fiber, dispatch) {
@@ -2859,15 +2859,17 @@
     		    }
     		    return tree;
     		};
-    		var parseHooksTreeToHOOKTree = function (node, d) {
+    		var parseHooksTreeToHOOKTree = function (node, d, p) {
+    		    // let index = 0;
+    		    var _p = p || { index: 0 };
     		    return node.map(function (item) {
     		        var id = item.id, name = item.name, value = item.value, subHooks = item.subHooks, isStateEditable = item.isStateEditable;
     		        var isHook = !subHooks || subHooks.length === 0;
-    		        var children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1) : undefined;
+    		        var children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, _p) : undefined;
     		        return {
     		            k: id === null || id === void 0 ? void 0 : id.toString(),
     		            e: isStateEditable,
-    		            i: id,
+    		            i: isHook ? _p.index++ : undefined,
     		            n: name || "Anonymous",
     		            v: getNode(value),
     		            d: d,
