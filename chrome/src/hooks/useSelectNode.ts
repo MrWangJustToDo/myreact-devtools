@@ -50,6 +50,13 @@ export const useSelectNode = createState(
           s.selectList = {};
           updateSelectList();
         },
+        clearSelectIfNeed: (node: string) => {
+          if (node === s.select) {
+            s.select = null;
+            s.selectList = {};
+            updateSelectList();
+          }
+        },
         storeFiber: () => {
           if (s.select) {
             s.store++;

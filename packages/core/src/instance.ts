@@ -726,10 +726,10 @@ export class DevToolCore {
     }
   }
 
-  notifyUnSelect() {
+  notifyUnmountNode(id: number | string) {
     if (!this.hasEnable) return;
 
-    this._notify({ type: DevToolMessageEnum["select-unmount"], data: null });
+    this._notify({ type: DevToolMessageEnum["unmount-node"], data: id });
   }
 
   notifyDomHover() {

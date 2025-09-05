@@ -81,9 +81,13 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
-  if (data.type === DevToolMessageEnum["select-unmount"]) {
+  if (data.type === DevToolMessageEnum['unmount-node']) {
     safeAction(() => {
-      useSelectNode.getActions().clearSelect?.();
+      const node = data.data as number | string;
+
+      useSelectNode.getActions().clearSelectIfNeed?.(node.toString());
+
+      useHighlightNode.getActions().deleteHighlight?.(node.toString());
     });
   }
 

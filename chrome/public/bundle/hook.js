@@ -728,8 +728,8 @@
     		    DevToolMessageEnum["source"] = "source";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["unmount-node"] = "unmount-node";
     		    DevToolMessageEnum["select-sync"] = "select-sync";
-    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
     		    DevToolMessageEnum["message"] = "message";
     		    DevToolMessageEnum["warn"] = "warn";
     		    DevToolMessageEnum["warnStatus"] = "warnStatus";
@@ -2227,9 +2227,7 @@
     		        return;
     		    var plain = treeMap.get(_fiber);
     		    if (plain) {
-    		        if (plain.i === _runtime._selectId) {
-    		            _runtime.notifyUnSelect();
-    		        }
+    		        _runtime.notifyUnmountNode(plain.i);
     		        fiberStore.delete(plain.i);
     		        plainStore.delete(plain.i);
     		        delete _runtime._hmr[plain.i];
@@ -3252,8 +3250,8 @@
     		    DevToolMessageEnum["source"] = "source";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["unmount-node"] = "unmount-node";
     		    DevToolMessageEnum["select-sync"] = "select-sync";
-    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
     		    DevToolMessageEnum["message"] = "message";
     		    DevToolMessageEnum["warn"] = "warn";
     		    DevToolMessageEnum["warnStatus"] = "warnStatus";
@@ -4546,10 +4544,10 @@
     		            this._notify({ type: exports.DevToolMessageEnum["select-sync"], data: this._selectId });
     		        }
     		    };
-    		    DevToolCore.prototype.notifyUnSelect = function () {
+    		    DevToolCore.prototype.notifyUnmountNode = function (id) {
     		        if (!this.hasEnable)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum["select-unmount"], data: null });
+    		        this._notify({ type: exports.DevToolMessageEnum["unmount-node"], data: id });
     		    };
     		    DevToolCore.prototype.notifyDomHover = function () {
     		        if (!this.hasEnable)

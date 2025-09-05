@@ -20,6 +20,12 @@ export const useHighlightNode = createState(
           s.warn = state;
         },
 
+        deleteHighlight: (id: string) => {
+          delete s.state[id];
+          delete s.warn[id];
+          delete s.error[id];
+        },
+
         clear: () => {
           s.state = {};
           s.warn = {};
