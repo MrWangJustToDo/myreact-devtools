@@ -64,8 +64,8 @@
     		    DevToolMessageEnum["source"] = "source";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
+    		    DevToolMessageEnum["unmount-node"] = "unmount-node";
     		    DevToolMessageEnum["select-sync"] = "select-sync";
-    		    DevToolMessageEnum["select-unmount"] = "select-unmount";
     		    DevToolMessageEnum["message"] = "message";
     		    DevToolMessageEnum["warn"] = "warn";
     		    DevToolMessageEnum["warnStatus"] = "warnStatus";
