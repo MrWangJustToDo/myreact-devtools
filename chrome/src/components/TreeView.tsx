@@ -4,6 +4,7 @@ import { Virtuoso } from "react-virtuoso";
 
 import { useAppTree } from "@/hooks/useAppTree";
 // import { useCallbackRef } from "@/hooks/useCallbackRef";
+import { useKeyboardSelect } from "@/hooks/useKeyboardSelect";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useDomSize } from "@/hooks/useSize";
 
@@ -135,6 +136,8 @@ export const TreeView = memo(() => {
   const lastIndentSizeRef = useRef(12);
 
   const lastContainerWidthRef = useRef(width);
+
+  useKeyboardSelect();
 
   const onScroll = useCallback(() => {
     if (ref.current) {

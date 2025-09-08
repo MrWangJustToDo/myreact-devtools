@@ -59,7 +59,7 @@ const HookViewTree = ({ item, enableEdit, hoverKeys }: { item: HOOKTree; enableE
             >
               {StateIcon}
             </span>
-            <div className="max-w-full line-clamp-1 cursor-pointer opacity-40" onClick={() => setExpand(!expand)}>
+            <div className={`max-w-full line-clamp-1 cursor-pointer ${item.n === 'Anonymous' ? 'opacity-20' : 'opacity-40'}`} onClick={() => setExpand(!expand)}>
               {item.n}
             </div>
             {item.n === "Anonymous" ? null : ":"}
