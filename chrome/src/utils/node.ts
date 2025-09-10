@@ -27,7 +27,7 @@ export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => b
 
     if (!currentIsHide) list.push(currentNode);
 
-    const _d = currentIsHide && withDeepReWrite ? getParentIsNotHide(currentNode, isHide)?._d || -1 : currentNode._d;
+    const _d = currentIsHide && withDeepReWrite ? getParentIsNotHide(currentNode, isHide)?._d ?? -1 : currentNode._d;
 
     // let pre: PlainNode | null = null;
 
