@@ -223,6 +223,7 @@
     		    STATE_TYPE[STATE_TYPE["__retrigger__"] = 512] = "__retrigger__";
     		    STATE_TYPE[STATE_TYPE["__reschedule__"] = 1024] = "__reschedule__";
     		    STATE_TYPE[STATE_TYPE["__recreate__"] = 2048] = "__recreate__";
+    		    STATE_TYPE[STATE_TYPE["__suspense__"] = 4096] = "__suspense__";
     		})(exports.STATE_TYPE || (exports.STATE_TYPE = {}));
 
     		exports.PATCH_TYPE = void 0;
