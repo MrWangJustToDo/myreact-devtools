@@ -95,6 +95,7 @@
     		var ScopeSuspense = Symbol.for("react.scope_suspense");
     		var Comment = Symbol.for("react.comment");
     		var Offscreen = Symbol.for("react.offscreen");
+    		var Activity = Symbol.for("react.activity");
     		var Profiler = Symbol.for("react.profiler");
 
     		function isObject(target) {
@@ -194,6 +195,7 @@
     		    HOOK_TYPE[HOOK_TYPE["useImperativeHandle"] = 14] = "useImperativeHandle";
     		    HOOK_TYPE[HOOK_TYPE["useSyncExternalStore"] = 15] = "useSyncExternalStore";
     		    HOOK_TYPE[HOOK_TYPE["useOptimistic"] = 16] = "useOptimistic";
+    		    HOOK_TYPE[HOOK_TYPE["useEffectEvent"] = 17] = "useEffectEvent";
     		})(exports.HOOK_TYPE || (exports.HOOK_TYPE = {}));
 
     		exports.UpdateQueueType = void 0;
@@ -609,6 +611,7 @@
     		    return ListTree;
     		}());
 
+    		exports.Activity = Activity;
     		exports.Comment = Comment;
     		exports.Consumer = Consumer;
     		exports.Context = Context;
@@ -1208,6 +1211,7 @@
     		    NODE_TYPE[NODE_TYPE["__context__"] = 524288] = "__context__";
     		    NODE_TYPE[NODE_TYPE["__scopeLazy__"] = 1048576] = "__scopeLazy__";
     		    NODE_TYPE[NODE_TYPE["__scopeSuspense__"] = 2097152] = "__scopeSuspense__";
+    		    NODE_TYPE[NODE_TYPE["__activity__"] = 4194304] = "__activity__";
     		})(exports.NODE_TYPE || (exports.NODE_TYPE = {}));
 
     		// https://github.com/facebook/react/blob/main/packages/react-debug-tools/src/ReactDebugHooks.js
@@ -1634,6 +1638,21 @@
     		    });
     		    return [state, function (action) { }];
     		}
+    		function useEffectEvent(passthrough) {
+    		    var hook = nextHook();
+    		    if (hook && hook.type !== reactShared.HOOK_TYPE.useEffectEvent) {
+    		        throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+    		    }
+    		    var state = hook ? hook.result : passthrough;
+    		    hookLog.push({
+    		        displayName: null,
+    		        primitive: "EffectEvent",
+    		        stackError: new Error(),
+    		        value: state,
+    		        dispatcherHookName: "EffectEvent",
+    		    });
+    		    return state;
+    		}
     		var Dispatcher = {
     		    readContext: readContext,
     		    use: use,
@@ -1654,6 +1673,7 @@
     		    useId: useId,
     		    useSignal: useSignal,
     		    useOptimistic: useOptimistic,
+    		    useEffectEvent: useEffectEvent,
     		};
     		// create a proxy to throw a custom error
     		// in case future versions of React adds more hooks
@@ -2558,6 +2578,8 @@
     		            return "ScopeLazy";
     		        case exports.NODE_TYPE.__scopeSuspense__:
     		            return "ScopeSuspense";
+    		        case exports.NODE_TYPE.__activity__:
+    		            return "Activity";
     		        default:
     		            return "";
     		    }
@@ -2633,6 +2655,8 @@
     		        return "ScopeLazy";
     		    if (fiber.type & exports.NODE_TYPE.__scopeSuspense__)
     		        return "ScopeSuspense";
+    		    if (fiber.type & exports.NODE_TYPE.__activity__)
+    		        return "Activity";
     		    if (fiber.type & exports.NODE_TYPE.__strict__)
     		        return "Strict";
     		    if (fiber.type & exports.NODE_TYPE.__profiler__)
