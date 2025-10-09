@@ -112,6 +112,8 @@ export const getTypeName = (type: number) => {
       return "ScopeLazy";
     case NODE_TYPE.__scopeSuspense__:
       return "ScopeSuspense";
+    case NODE_TYPE.__activity__:
+      return "Activity";
     default:
       return "";
   }
@@ -191,6 +193,7 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   if (fiber.type & NODE_TYPE.__scope__) return `Scope`;
   if (fiber.type & NODE_TYPE.__scopeLazy__) return `ScopeLazy`;
   if (fiber.type & NODE_TYPE.__scopeSuspense__) return `ScopeSuspense`;
+  if (fiber.type & NODE_TYPE.__activity__) return `Activity`;
   if (fiber.type & NODE_TYPE.__strict__) return `Strict`;
   if (fiber.type & NODE_TYPE.__profiler__) return `Profiler`;
   if (fiber.type & NODE_TYPE.__suspense__) return `Suspense`;

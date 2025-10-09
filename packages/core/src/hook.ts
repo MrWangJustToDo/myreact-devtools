@@ -538,6 +538,26 @@ function useOptimistic<S, A>(passthrough: S, reducer?: (S, A) => S): [S, (A) => 
   return [state, (action: A) => {}];
 }
 
+function useEffectEvent<S>(passthrough: S): S {
+  const hook = nextHook();
+
+  if (hook && hook.type !== HOOK_TYPE.useEffectEvent) {
+    throw new Error("Invalid hook type, look like a bug for @my-react/devtools");
+  }
+
+  const state = hook ? hook.result : passthrough;
+
+  hookLog.push({
+    displayName: null,
+    primitive: "EffectEvent",
+    stackError: new Error(),
+    value: state,
+    dispatcherHookName: "EffectEvent",
+  });
+
+  return state;
+}
+
 const Dispatcher = {
   readContext,
 
@@ -559,6 +579,7 @@ const Dispatcher = {
   useId,
   useSignal,
   useOptimistic,
+  useEffectEvent,
 };
 
 export type DispatcherType = typeof Dispatcher & { proxy: typeof Dispatcher | null };
