@@ -149,4 +149,16 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
   if (data?.type === MessagePanelType.clear) {
     core.clear();
   }
+
+  if (data?.type === MessagePanelType.clearHMR) {
+    core.clearHMR();
+  }
+
+  if (data?.type === MessagePanelType.clearMessage) {
+    core.clearMessage();
+  }
+
+  if (data?.type === MessagePanelType.clearTrigger) {
+    core.clearTrigger();
+  }
 };

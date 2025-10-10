@@ -26,6 +26,9 @@ import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useFilterNode } from "@/hooks/useFilterNode";
+import { useHighlightNode } from "@/hooks/useHighlightNode";
+import { useHMRNode } from "@/hooks/useHMRNode";
+import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { UISize, useUISize } from "@/hooks/useUISize";
 
 import { TreeViewSearch } from "./TreeViewSearch";
@@ -41,6 +44,12 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const { theme, setTheme } = useTheme();
+
+  const { clearHMR } = useHMRNode.getActions();
+
+  const { clearTrigger } = useTriggerNode.getActions();
+
+  const { clearMessage } = useHighlightNode.getActions();
 
   const { state: configState, setEnableHover, setEnableUpdate, toggleEnableRetrigger, setEnableEdit } = useConfig();
 
@@ -141,6 +150,18 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                 <Checkbox isSelected={configState.enableEdit} radius="full" onValueChange={setEnableEdit} color="success">
                   Edit Update
                 </Checkbox>
+              </div>
+              <Divider />
+              <div className="flex gap-x-2">
+                <Button size="sm" color="default" variant="bordered" onPress={clearHMR}>
+                  Clear All HMR
+                </Button>
+                <Button size="sm" color="default" variant="bordered" onPress={clearTrigger}>
+                  Clear All Trigger
+                </Button>
+                <Button size="sm" color="default" variant="bordered" onPress={clearMessage}>
+                  Clear All Message
+                </Button>
               </div>
             </div>
             <Spacer y={4} />

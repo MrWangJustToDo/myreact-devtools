@@ -707,6 +707,9 @@
     		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["chunks"] = "panel-chunks";
     		    MessagePanelType["clear"] = "panel-clear";
+    		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
+    		    MessagePanelType["clearMessage"] = "panel-clear-message";
+    		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
     		exports.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -3250,6 +3253,9 @@
     		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["chunks"] = "panel-chunks";
     		    MessagePanelType["clear"] = "panel-clear";
+    		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
+    		    MessagePanelType["clearMessage"] = "panel-clear-message";
+    		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
     		exports.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -4661,6 +4667,24 @@
     		        this._enableHoverOnBrowser = false;
     		        this.disableBrowserHover();
     		    };
+    		    DevToolCore.prototype.clearHMR = function () {
+    		        this._hmr = {};
+    		        this.notifyHMR();
+    		        this.notifyHMRStatus();
+    		    };
+    		    DevToolCore.prototype.clearMessage = function () {
+    		        this._warn = {};
+    		        this._error = {};
+    		        this.notifyWarn();
+    		        this.notifyError();
+    		        this.notifyWarnStatus();
+    		        this.notifyErrorStatus();
+    		    };
+    		    DevToolCore.prototype.clearTrigger = function () {
+    		        this._trigger = {};
+    		        this.notifyTrigger();
+    		        this.notifyTriggerStatus();
+    		    };
     		    return DevToolCore;
     		}());
 
@@ -5005,6 +5029,15 @@
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clear) {
             core.clear();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clearHMR) {
+            core.clearHMR();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clearMessage) {
+            core.clearMessage();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clearTrigger) {
+            core.clearTrigger();
         }
     };
 

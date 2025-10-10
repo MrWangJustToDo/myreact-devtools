@@ -26,6 +26,9 @@ export enum MessagePanelType {
   nodeInspect = "panel-inspect",
   chunks = "panel-chunks",
   clear = "panel-clear",
+  clearHMR = "panel-clear-hmr",
+  clearMessage = "panel-clear-message",
+  clearTrigger = "panel-clear-trigger",
 }
 
 export enum MessageWorkerType {

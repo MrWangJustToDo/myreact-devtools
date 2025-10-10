@@ -6,7 +6,10 @@ import { useConfig } from "@/hooks/useConfig";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
+import { useHighlightNode } from "@/hooks/useHighlightNode";
+import { useHMRNode } from "@/hooks/useHMRNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
+import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useUpdateState } from "@/hooks/useUpdateState";
 
 import { isServer } from "./isServer";
@@ -208,6 +211,27 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
           postMessage({ type: MessagePanelType.nodeEditor, data: { id, oldVal, newVal, hookIndex, path, rootId, parentId, type } });
         }
       }
+    )
+  );
+
+  unSubscribeArray.push(
+    useTriggerNode.subscribe(
+      (s) => s.count,
+      () => postMessage({ type: MessagePanelType.clearTrigger, data: null })
+    )
+  );
+
+  unSubscribeArray.push(
+    useHMRNode.subscribe(
+      (s) => s.count,
+      () => postMessage({ type: MessagePanelType.clearHMR, data: null })
+    )
+  );
+
+  unSubscribeArray.push(
+    useHighlightNode.subscribe(
+      (s) => s.count,
+      () => postMessage({ type: MessagePanelType.clearMessage, data: null })
     )
   );
 

@@ -1,7 +1,13 @@
 import { createState } from "reactivity-store";
 
 export const useHighlightNode = createState(
-  () => ({ state: {}, warn: {}, error: {} }) as { state: Record<string, string>; warn: Record<string, number>; error: Record<string, number> },
+  () =>
+    ({ state: {}, warn: {}, error: {}, count: 0 }) as {
+      state: Record<string, string>;
+      warn: Record<string, number>;
+      error: Record<string, number>;
+      count: number;
+    },
   {
     withActions: (s) => {
       return {
@@ -26,13 +32,16 @@ export const useHighlightNode = createState(
           delete s.error[id];
         },
 
+        clearMessage: () => {
+          s.count++;
+        },
+
         clear: () => {
           s.state = {};
           s.warn = {};
           s.error = {};
-        }
+        },
       };
     },
   }
 );
-

@@ -39,6 +39,9 @@
     		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["chunks"] = "panel-chunks";
     		    MessagePanelType["clear"] = "panel-clear";
+    		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
+    		    MessagePanelType["clearMessage"] = "panel-clear-message";
+    		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
     		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
     		exports.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {

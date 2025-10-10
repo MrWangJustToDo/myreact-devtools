@@ -571,7 +571,7 @@ export class DevToolCore {
       type: DevToolMessageEnum.triggerStatus,
       data: finalStatus.map((i) => {
         const _keysToLinkHook = getHookIndexFromState(i as UpdateState);
-        
+
         const node = getNode(i);
 
         if (_keysToLinkHook && _keysToLinkHook.length > 0) {
@@ -903,5 +903,35 @@ export class DevToolCore {
     this._enableHoverOnBrowser = false;
 
     this.disableBrowserHover();
+  }
+
+  clearHMR() {
+    this._hmr = {};
+
+    this.notifyHMR();
+
+    this.notifyHMRStatus();
+  }
+
+  clearMessage() {
+    this._warn = {};
+
+    this._error = {};
+
+    this.notifyWarn();
+
+    this.notifyError();
+
+    this.notifyWarnStatus();
+
+    this.notifyErrorStatus();
+  }
+
+  clearTrigger() {
+    this._trigger = {};
+
+    this.notifyTrigger();
+
+    this.notifyTriggerStatus();
   }
 }
