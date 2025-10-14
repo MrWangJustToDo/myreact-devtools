@@ -96,7 +96,7 @@ export const NodeValue = ({
           return `[${re}]`;
         }
       }
-      if (t === "Iterable" || t === "Object" || _t === 'Object') {
+      if (t === "Iterable" || t === "Object" || _t === "Object") {
         const re = getText("Object", data ?? {});
         if (Array.isArray(re)) {
           return (
