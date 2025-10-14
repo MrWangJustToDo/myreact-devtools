@@ -19,12 +19,12 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
   onAfterUnmount?: (cb: () => void) => () => boolean;
 
   // new version api
-  onBeforeCommitMount: (cb: () => void) => () => boolean;
-  onAfterCommitMount: (cb: () => void) => () => boolean;
-  onBeforeCommitUpdate: (cb: () => void) => () => boolean;
-  onAfterCommitUpdate: (cb: () => void) => () => boolean;
-  onBeforeCommitUnmount: (cb: () => void) => () => boolean;
-  onAfterCommitUnmount: (cb: () => void) => () => boolean;
+  onBeforeCommitMount: (cb: (i: CustomRenderDispatch) => void) => () => boolean;
+  onAfterCommitMount: (cb: (i: CustomRenderDispatch) => void) => () => boolean;
+  onBeforeCommitUpdate: (cb: (i: CustomRenderDispatch) => void) => () => boolean;
+  onAfterCommitUpdate: (cb: (i: CustomRenderDispatch) => void) => () => boolean;
+  onBeforeCommitUnmount: (cb: (i: CustomRenderDispatch) => void) => () => boolean;
+  onAfterCommitUnmount: (cb: (i: CustomRenderDispatch) => void) => () => boolean;
 }
 
 // TODO use 'eventListener' instead of 'patchFunction'

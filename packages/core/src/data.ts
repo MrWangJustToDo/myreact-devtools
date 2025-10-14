@@ -1,3 +1,5 @@
+import { isReactive, isReadonly, isRef, isShallow } from "reactivity-store";
+
 import { getElementName, isValidElement } from "./utils";
 
 import type { PromiseWithState } from "@my-react/react-reconciler";
@@ -35,6 +37,8 @@ export type NodeValue = {
   i: number;
   // type
   t: keyof typeof KnownType;
+  // wrapper
+  _t?: "Reactive" | "Readonly" | "Shallow" | "Ref" | "Object";
   // value
   v: any;
   // expandable
@@ -81,6 +85,24 @@ const getType = (value: any): NodeValue["t"] => {
   return type;
 };
 
+const getWrapperType = (value: any): NodeValue["_t"] => {
+  if (isReadonly(value)) {
+    return "Readonly";
+  }
+
+  if (isShallow(value)) {
+    return "Shallow";
+  }
+
+  if (isReactive(value)) {
+    return "Reactive";
+  }
+
+  if (isRef(value)) {
+    return "Ref";
+  }
+};
+
 const isObject = (value: NodeValue["t"]) => {
   return (
     value !== "String" &&
@@ -94,7 +116,7 @@ const isObject = (value: NodeValue["t"]) => {
     value !== "Symbol" &&
     value !== "RegExp" &&
     value !== "Promise" &&
-    value !== "Element" && 
+    value !== "Element" &&
     value !== "WeakMap" &&
     value !== "WeakSet"
   );
@@ -102,6 +124,8 @@ const isObject = (value: NodeValue["t"]) => {
 
 const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue => {
   const existId = valueToIdMap.get(value);
+
+  const wrapperType = getWrapperType(value);
 
   const currentId = existId || id++;
 
@@ -123,6 +147,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
     return {
       i: currentId,
       t: type,
+      _t: wrapperType,
       n,
       v: undefined,
       e: true,
@@ -133,6 +158,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       return {
         i: currentId,
         t: type,
+        _t: wrapperType,
         v: value.map((val: any) => getNode(val, deep - 1)),
         e: true,
       };
@@ -140,6 +166,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       return {
         i: currentId,
         t: type,
+        _t: wrapperType,
         v: Array.from(value).map((val: any) => getNode(val, deep - 1)),
         e: true,
       };
@@ -147,6 +174,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       return {
         i: currentId,
         t: type,
+        _t: wrapperType,
         v: Array.from((value as Map<any, any>).entries()).map(([key, val]) => ({
           t: "Array",
           e: true,
@@ -158,6 +186,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       return {
         i: currentId,
         t: type,
+        _t: wrapperType,
         v: Array.from(value).map((val: any) => getNode(val, deep - 1)),
         e: true,
       };
@@ -165,6 +194,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       return {
         i: currentId,
         t: type,
+        _t: wrapperType,
         n,
         v: Object.keys(value).reduce((acc, key) => {
           acc[key] = getNode(value[key], deep - 1);
@@ -176,6 +206,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       return {
         i: currentId,
         t: type,
+        _t: wrapperType,
         n,
         v: Object.keys(value).reduce((acc, key) => {
           acc[key] = getNode(value[key], deep - 1);
@@ -187,13 +218,13 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       return {
         i: currentId,
         t: type,
+        _t: wrapperType || "Object",
         n,
         v: getAllKeys(value).reduce((acc, key) => {
           acc[key] = getNode(value[key], deep - 1);
           return acc;
         }, {}),
         e: true,
-        _t: "Object",
       };
     }
   }
@@ -225,6 +256,8 @@ export const getNode = (value: any, deep = 3): NodeValue => {
       // full deep to load
       return getTargetNode(value, type, deep);
     } else {
+      const wrapperType = getWrapperType(value);
+
       const existId = valueToIdMap.get(value);
 
       const currentId = existId || id++;
@@ -237,6 +270,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
         return {
           i: currentId,
           t: type,
+          _t: wrapperType,
           v: `<${value.tagName.toLowerCase()} />`,
           e: expandable,
         };
@@ -245,6 +279,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
         return {
           i: currentId,
           t: type,
+          _t: wrapperType,
           v: value.message,
           e: expandable,
         };
@@ -253,6 +288,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
         return {
           i: currentId,
           t: type,
+          _t: wrapperType,
           v: Object.prototype.toString.call(value),
           e: expandable,
         };
@@ -260,6 +296,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
         return {
           i: currentId,
           t: type,
+          _t: wrapperType,
           v: String(value),
           e: expandable,
         };

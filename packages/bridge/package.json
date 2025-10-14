@@ -91,11 +91,11 @@
   },
   "devDependencies": {
     "@my-react-devtool/core": "workspace:*",
-    "@my-react/react": "^0.3.19",
-    "@my-react/react-reconciler": "^0.3.19",
-    "@my-react/react-shared": "^0.3.19",
-    "@types/node": "^22.8.4",
-    "reactivity-store": "^0.3.11",
+    "@my-react/react": "^0.3.20",
+    "@my-react/react-reconciler": "^0.3.20",
+    "@my-react/react-shared": "^0.3.20",
+    "@types/node": "^22.18.10",
+    "reactivity-store": "^0.3.12",
     "socket.io-client": "^4.8.1"
   }
 }

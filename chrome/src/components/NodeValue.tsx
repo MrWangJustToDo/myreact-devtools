@@ -55,18 +55,17 @@ export const NodeValue = ({
   const _t = chunkData?._t ?? item?._t;
 
   const text = useMemo(() => {
-    const finalType = _t || t;
     const getTextElement = () => {
       if (n) {
         return n;
       }
-      if (finalType === "Array" || finalType === "Set" || finalType === "Map") {
+      if (t === "Array" || t === "Set" || t === "Map") {
         const re = getText("Array", data ?? []);
-        if (finalType === "Set" || finalType === "Map") {
+        if (t === "Set" || t === "Map") {
           if (Array.isArray(re)) {
             return (
               <>
-                {finalType}
+                {t}
                 {"(["}
                 {re.map((i, index) => (
                   <Fragment key={index}>
@@ -78,7 +77,7 @@ export const NodeValue = ({
               </>
             );
           }
-          return `${finalType}([${re}])`;
+          return `${t}([${re}])`;
         } else {
           if (Array.isArray(re)) {
             return (
@@ -97,7 +96,7 @@ export const NodeValue = ({
           return `[${re}]`;
         }
       }
-      if (finalType === "Iterable" || finalType === "Object") {
+      if (t === "Iterable" || t === "Object" || _t === 'Object') {
         const re = getText("Object", data ?? {});
         if (Array.isArray(re)) {
           return (
@@ -117,8 +116,22 @@ export const NodeValue = ({
       }
     };
 
-    if (finalType !== t ) {
-      return <>[object {t} {getTextElement()}]</>;
+    if (_t && !n) {
+      // original object
+      if (_t === "Object") {
+        return (
+          <>
+            [object {t} {getTextElement()}]
+          </>
+        );
+      } else {
+        // reactivity-store data
+        return (
+          <>
+            {_t} {getTextElement()}
+          </>
+        );
+      }
     }
 
     return getTextElement();
@@ -188,7 +201,7 @@ export const NodeValue = ({
       <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""} ${isElement || isFunction ? "text-teal-600" : ""}`}>{textContent}</span>
     );
 
-    const currentIsEditable = editable && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
+    const currentIsEditable = editable && item._t !== "Readonly" && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
 
     return (
       <div data-id={id} data-chunk={isChunk} className="hook-value-view">
@@ -247,7 +260,7 @@ export const NodeValue = ({
                         item={i}
                         type={type}
                         rootItem={rootItem || item}
-                        editable={editable && typeof n !== "string"}
+                        editable={editable && _t !== "Readonly" && typeof n !== "string"}
                         chunkId={isChunk ? id : chunkId}
                         parentItem={item}
                         hookIndex={hookIndex}
@@ -267,7 +280,7 @@ export const NodeValue = ({
                           type={type}
                           rootItem={rootItem || item}
                           parentItem={item}
-                          editable={editable && typeof n !== "string"}
+                          editable={editable && _t !== "Readonly" && typeof n !== "string"}
                           chunkId={isChunk ? id : chunkId}
                           hookIndex={hookIndex}
                         />
