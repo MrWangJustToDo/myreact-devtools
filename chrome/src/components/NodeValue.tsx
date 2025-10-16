@@ -1,4 +1,4 @@
-import { Spinner } from "@heroui/react";
+import { Spinner, Tooltip } from "@heroui/react";
 import { Ellipsis, Play } from "lucide-react";
 import { useState, useRef, useMemo, useEffect, Fragment } from "react";
 
@@ -12,7 +12,7 @@ import { NodeValueChange } from "./NodeValueChange";
 import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
 import type { ReactNode } from "react";
 
-const { open: contextOpen, setId, setType } = useContextMenu.getActions();
+const { open: contextOpen, setId, setType, setSource, clear } = useContextMenu.getActions();
 
 // core component to view any typeof data
 export const NodeValue = ({
@@ -128,7 +128,10 @@ export const NodeValue = ({
         // reactivity-store data
         return (
           <>
-            {_t} {getTextElement()}
+            <Tooltip content="reactivity-store, see https://github.com/MrWangJustToDo/reactivity-store" showArrow>
+              <span className="pr-1">{_t}</span>
+            </Tooltip>
+            {getTextElement()}
           </>
         );
       }
@@ -198,7 +201,7 @@ export const NodeValue = ({
     const isFunction = item.t === "Function" || item.t === "AsyncFunction" || item.t === "GeneratorFunction";
 
     const element = (
-      <span className={`hook-${item.t} ${isReadError ? "text-red-300" : ""} ${isElement || isFunction ? "text-teal-600" : ""}`}>{textContent}</span>
+      <span className={`hook-${item.t} pl-1 ${isReadError ? "text-red-300" : ""} ${isElement || isFunction ? "text-teal-600" : ""}`}>{textContent}</span>
     );
 
     const currentIsEditable = editable && item._t !== "Readonly" && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
@@ -212,7 +215,7 @@ export const NodeValue = ({
             <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
               {name}
             </span>
-            <span className="flex-shrink-0 pr-1">:</span>
+            <span className="flex-shrink-0">:</span>
             {currentIsEditable ? (
               <span className="hook-value-placeholder relative line-clamp-1 break-all">
                 <NodeValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
@@ -220,7 +223,22 @@ export const NodeValue = ({
                 </NodeValueChange>
               </span>
             ) : (
-              <span className="hook-value-placeholder line-clamp-1 break-all">{element}</span>
+              <span
+                className={
+                  "hook-value-placeholder flex-grow line-clamp-1 break-all" +
+                  (isFunction || isElement ? " cursor-pointer node-item-hover rounded-[2px] overflow-hidden" : "")
+                }
+                onClick={async () => {
+                  if (isFunction || isElement) {
+                    setId(id);
+                    setSource();
+                    await new Promise((r) => setTimeout(r, 100));
+                    clear();
+                  }
+                }}
+              >
+                {element}
+              </span>
             )}
           </div>
         </div>
