@@ -1,5 +1,5 @@
-import { Spinner, Tooltip } from "@heroui/react";
-import { Ellipsis, Play } from "lucide-react";
+import { Spinner } from "@heroui/react";
+import { Ellipsis, MinusCircleIcon, Play, PlusCircleIcon } from "lucide-react";
 import { useState, useRef, useMemo, useEffect, Fragment } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
@@ -128,9 +128,14 @@ export const NodeValue = ({
         // reactivity-store data
         return (
           <>
-            <Tooltip content="reactivity-store, see https://github.com/MrWangJustToDo/reactivity-store" showArrow>
-              <span className="pr-1">{_t}</span>
-            </Tooltip>
+            <span className="pr-1" title="reactivity-store, see https://github.com/MrWangJustToDo/reactivity-store">
+              {_t === "Readonly" ? (
+                <MinusCircleIcon className="text-red-400 inline" width="1em" height="1em" />
+              ) : (
+                <PlusCircleIcon className="text-green-400 inline" width="1em" height="1em" />
+              )}{" "}
+              {_t}
+            </span>
             {getTextElement()}
           </>
         );
