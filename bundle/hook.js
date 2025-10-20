@@ -761,18 +761,19 @@
 			    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
 			    DevToolMessageEnum["hmr"] = "hmr";
 			    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
+			    DevToolMessageEnum["hmrInternal"] = "hmrInternal";
 			    DevToolMessageEnum["source"] = "source";
 			    DevToolMessageEnum["detail"] = "detail";
 			    DevToolMessageEnum["unmount"] = "unmount";
-			    DevToolMessageEnum["unmount-node"] = "unmount-node";
-			    DevToolMessageEnum["select-sync"] = "select-sync";
+			    DevToolMessageEnum["unmountNode"] = "unmount-node";
+			    DevToolMessageEnum["selectSync"] = "select-sync";
 			    DevToolMessageEnum["message"] = "message";
 			    DevToolMessageEnum["warn"] = "warn";
 			    DevToolMessageEnum["warnStatus"] = "warnStatus";
 			    DevToolMessageEnum["error"] = "error";
 			    DevToolMessageEnum["errorStatus"] = "errorStatus";
 			    DevToolMessageEnum["chunks"] = "chunks";
-			    DevToolMessageEnum["dom-hover"] = "dom-hover";
+			    DevToolMessageEnum["domHover"] = "dom-hover";
 			})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
 			exports.HMRStatus = void 0;
 			(function (HMRStatus) {
@@ -5490,6 +5491,15 @@
 			var getFiberNodeById = function (id) {
 			    return fiberStore.get(id);
 			};
+			var getDispatchFromFiber = function (fiber) {
+			    if (!fiber)
+			        return;
+			    var typedFiber = fiber;
+			    if (typedFiber.renderDispatch) {
+			        return typedFiber.renderDispatch;
+			    }
+			    return getDispatchFromFiber(fiber.parent);
+			};
 			var editorReducer = function (state, action) {
 			    return typeof action === "function" ? action(state) : action;
 			};
@@ -6417,18 +6427,19 @@
 			    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
 			    DevToolMessageEnum["hmr"] = "hmr";
 			    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
+			    DevToolMessageEnum["hmrInternal"] = "hmrInternal";
 			    DevToolMessageEnum["source"] = "source";
 			    DevToolMessageEnum["detail"] = "detail";
 			    DevToolMessageEnum["unmount"] = "unmount";
-			    DevToolMessageEnum["unmount-node"] = "unmount-node";
-			    DevToolMessageEnum["select-sync"] = "select-sync";
+			    DevToolMessageEnum["unmountNode"] = "unmount-node";
+			    DevToolMessageEnum["selectSync"] = "select-sync";
 			    DevToolMessageEnum["message"] = "message";
 			    DevToolMessageEnum["warn"] = "warn";
 			    DevToolMessageEnum["warnStatus"] = "warnStatus";
 			    DevToolMessageEnum["error"] = "error";
 			    DevToolMessageEnum["errorStatus"] = "errorStatus";
 			    DevToolMessageEnum["chunks"] = "chunks";
-			    DevToolMessageEnum["dom-hover"] = "dom-hover";
+			    DevToolMessageEnum["domHover"] = "dom-hover";
 			})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
 			exports.HMRStatus = void 0;
 			(function (HMRStatus) {
@@ -7031,6 +7042,24 @@
 			    return Highlight;
 			}());
 
+			var getHMRState = function (dispatch) {
+			    return dispatch === null || dispatch === void 0 ? void 0 : dispatch["$$hasRefreshInject"];
+			};
+			var getHMRInternal = function (dispatch, type) {
+			    var _a, _b;
+			    return (_b = (_a = dispatch === null || dispatch === void 0 ? void 0 : dispatch.__dev_refresh_runtime__) === null || _a === void 0 ? void 0 : _a.getSignatureByType) === null || _b === void 0 ? void 0 : _b.call(_a, type);
+			};
+			var getHMRInternalFromId = function (id) {
+			    var fiber = getFiberNodeById(id.toString());
+			    var dispatch = getDispatchFromFiber(fiber);
+			    var hmrEnabled = getHMRState(dispatch);
+			    if (!hmrEnabled)
+			        return;
+			    if (dispatch && fiber && reactShared.include(fiber.type, reactShared.merge(exports.NODE_TYPE.__function__, exports.NODE_TYPE.__class__))) {
+			        return getHMRInternal(dispatch, fiber.elementType);
+			    }
+			};
+
 			// browser platform inspect
 			var inspectSource = function (core) {
 			    if (!core.hasEnable)
@@ -7234,6 +7263,7 @@
 			            _this.notifyTriggerStatus();
 			            _this.notifyHMR();
 			            _this.notifyHMRStatus();
+			            _this.notifyHMRExtend();
 			            _this.notifyWarn();
 			            _this.notifyWarnStatus();
 			            _this.notifyError();
@@ -7297,6 +7327,7 @@
 			            _this.notifyDispatch(dispatch);
 			            _this.notifySelect();
 			            _this.notifyHMRStatus();
+			            _this.notifyHMRExtend();
 			            _this.notifyTriggerStatus();
 			            _this.notifyWarnStatus();
 			            _this.notifyErrorStatus();
@@ -7352,6 +7383,7 @@
 			            if (id === _this._selectId) {
 			                _this.notifySelect();
 			                _this.notifyHMRStatus();
+			                _this.notifyHMRExtend();
 			                _this.notifyTriggerStatus();
 			                _this.notifyWarnStatus();
 			                _this.notifyErrorStatus();
@@ -7679,6 +7711,15 @@
 			            return;
 			        this._notify({ type: exports.DevToolMessageEnum.hmrStatus, data: status });
 			    };
+			    DevToolCore.prototype.notifyHMRExtend = function () {
+			        if (!this.hasEnable)
+			            return;
+			        var id = this._selectId;
+			        if (!id)
+			            return;
+			        var extend = getHMRInternalFromId(id);
+			        this._notify({ type: exports.DevToolMessageEnum.hmrInternal, data: extend ? getNode(extend) : null });
+			    };
 			    DevToolCore.prototype.notifyConfig = function () {
 			        if (!this.hasEnable)
 			            return;
@@ -7711,18 +7752,18 @@
 			            return;
 			        if (this._hasSelectChange) {
 			            this._hasSelectChange = false;
-			            this._notify({ type: exports.DevToolMessageEnum["select-sync"], data: this._selectId });
+			            this._notify({ type: exports.DevToolMessageEnum.selectSync, data: this._selectId });
 			        }
 			    };
 			    DevToolCore.prototype.notifyUnmountNode = function (id) {
 			        if (!this.hasEnable)
 			            return;
-			        this._notify({ type: exports.DevToolMessageEnum["unmount-node"], data: id });
+			        this._notify({ type: exports.DevToolMessageEnum.unmountNode, data: id });
 			    };
 			    DevToolCore.prototype.notifyDomHover = function () {
 			        if (!this.hasEnable)
 			            return;
-			        this._notify({ type: exports.DevToolMessageEnum["dom-hover"], data: this._domHoverId });
+			        this._notify({ type: exports.DevToolMessageEnum.domHover, data: this._domHoverId });
 			    };
 			    DevToolCore.prototype.notifySource = function () {
 			        if (!this.hasEnable)
@@ -7838,6 +7879,7 @@
 			exports.getComponentFiberByFiber = getComponentFiberByFiber;
 			exports.getContextName = getContextName;
 			exports.getDetailNodeByFiber = getDetailNodeByFiber;
+			exports.getDispatchFromFiber = getDispatchFromFiber;
 			exports.getElementName = getElementName;
 			exports.getElementNodesFromFiber = getElementNodesFromFiber;
 			exports.getFiberByDom = getFiberByDom;
@@ -8088,6 +8130,7 @@
 	        core.setSelect(data.data);
 	        core.notifySelect();
 	        core.notifyHMRStatus();
+	        core.notifyHMRExtend();
 	        core.notifyTriggerStatus();
 	        core.notifyWarnStatus();
 	        core.notifyErrorStatus();
