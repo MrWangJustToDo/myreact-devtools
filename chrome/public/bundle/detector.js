@@ -64,18 +64,19 @@
     		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
     		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
+    		    DevToolMessageEnum["hmrInternal"] = "hmrInternal";
     		    DevToolMessageEnum["source"] = "source";
     		    DevToolMessageEnum["detail"] = "detail";
     		    DevToolMessageEnum["unmount"] = "unmount";
-    		    DevToolMessageEnum["unmount-node"] = "unmount-node";
-    		    DevToolMessageEnum["select-sync"] = "select-sync";
+    		    DevToolMessageEnum["unmountNode"] = "unmount-node";
+    		    DevToolMessageEnum["selectSync"] = "select-sync";
     		    DevToolMessageEnum["message"] = "message";
     		    DevToolMessageEnum["warn"] = "warn";
     		    DevToolMessageEnum["warnStatus"] = "warnStatus";
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["errorStatus"] = "errorStatus";
     		    DevToolMessageEnum["chunks"] = "chunks";
-    		    DevToolMessageEnum["dom-hover"] = "dom-hover";
+    		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
     		exports.HMRStatus = void 0;
     		(function (HMRStatus) {

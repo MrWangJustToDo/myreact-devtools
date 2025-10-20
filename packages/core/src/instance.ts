@@ -5,6 +5,7 @@ import { isNormalEquals } from "@my-react/react-shared";
 import { getNode, getNodeFromId } from "./data";
 import { DevToolMessageEnum, HMRStatus } from "./event";
 import { Highlight, Select } from "./highlight";
+import { getHMRInternalFromId } from "./hmr";
 import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource } from "./inspect";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
@@ -45,13 +46,13 @@ export class DevToolCore {
   _timeMap: Map<DevToolRenderDispatch, number> = new Map();
 
   // 字符串字典
-  _dir = {};
+  _dir: Record<string | number, string> = {};
 
-  _hmr = {};
+  _hmr: Record<string | number, HMRStatus[]> = {};
 
-  _error = {};
+  _error: Record<string | number, any> = {};
 
-  _warn = {};
+  _warn: Record<string | number, any> = {};
 
   _hoverId = "";
 
@@ -184,6 +185,8 @@ export class DevToolCore {
 
       this.notifyHMRStatus();
 
+      this.notifyHMRExtend();
+
       this.notifyTriggerStatus();
 
       this.notifyWarnStatus();
@@ -259,6 +262,8 @@ export class DevToolCore {
         this.notifySelect();
 
         this.notifyHMRStatus();
+
+        this.notifyHMRExtend();
 
         this.notifyTriggerStatus();
 
@@ -682,6 +687,18 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.hmrStatus, data: status });
   }
 
+  notifyHMRExtend() {
+    if (!this.hasEnable) return;
+
+    const id = this._selectId;
+
+    if (!id) return;
+
+    const extend = getHMRInternalFromId(id);
+
+    this._notify({ type: DevToolMessageEnum.hmrInternal, data: extend ? getNode(extend) : null });
+  }
+
   notifyConfig() {
     if (!this.hasEnable) return;
 
@@ -722,20 +739,20 @@ export class DevToolCore {
     if (this._hasSelectChange) {
       this._hasSelectChange = false;
 
-      this._notify({ type: DevToolMessageEnum["select-sync"], data: this._selectId });
+      this._notify({ type: DevToolMessageEnum.selectSync, data: this._selectId });
     }
   }
 
   notifyUnmountNode(id: number | string) {
     if (!this.hasEnable) return;
 
-    this._notify({ type: DevToolMessageEnum["unmount-node"], data: id });
+    this._notify({ type: DevToolMessageEnum.unmountNode, data: id });
   }
 
   notifyDomHover() {
     if (!this.hasEnable) return;
 
-    this._notify({ type: DevToolMessageEnum["dom-hover"], data: this._domHoverId });
+    this._notify({ type: DevToolMessageEnum.domHover, data: this._domHoverId });
   }
 
   notifySource() {
@@ -842,6 +859,8 @@ export class DevToolCore {
     this.notifyHMR();
 
     this.notifyHMRStatus();
+
+    this.notifyHMRExtend();
 
     this.notifyWarn();
 

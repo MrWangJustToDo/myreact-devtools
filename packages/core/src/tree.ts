@@ -8,7 +8,7 @@ import { getFiberName, getFiberType, getHook, getProps, getSource, getState, get
 
 import type { DevToolCore } from "./instance";
 import type { Action, MyReactComponent, Reducer } from "@my-react/react";
-import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode, MyReactFiberContainer, UpdateState } from "@my-react/react-reconciler";
+import type { MyReactFiberNodeDev, CustomRenderDispatch, MyReactFiberNode, MyReactFiberContainer, UpdateState, MyReactFiberRoot } from "@my-react/react-reconciler";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
 
@@ -358,6 +358,18 @@ export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
 
 export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
+};
+
+export const getDispatchFromFiber = (fiber?: MyReactFiberNode) => {
+  if (!fiber) return;
+
+  const typedFiber = fiber as MyReactFiberRoot;
+
+  if (typedFiber.renderDispatch) {
+    return typedFiber.renderDispatch;
+  }
+
+  return getDispatchFromFiber(fiber.parent);
 };
 
 const editorReducer: Reducer = (state?: unknown, action?: Action) => {

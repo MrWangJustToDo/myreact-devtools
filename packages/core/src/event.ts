@@ -51,11 +51,12 @@ export enum DevToolMessageEnum {
   triggerStatus = "triggerStatus",
   hmr = "hmr",
   hmrStatus = "hmrStatus",
+  hmrInternal = "hmrInternal",
   source = "source",
   detail = "detail",
   unmount = "unmount",
-  ["unmount-node"] = "unmount-node",
-  ["select-sync"] = "select-sync",
+  unmountNode = "unmount-node",
+  selectSync = "select-sync",
 
   message = "message",
 
@@ -66,7 +67,7 @@ export enum DevToolMessageEnum {
 
   chunks = "chunks",
 
-  ["dom-hover"] = "dom-hover",
+  domHover = "dom-hover",
 }
 
 export enum HMRStatus {

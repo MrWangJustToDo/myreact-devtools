@@ -25,6 +25,8 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
 
     core.notifyHMRStatus();
 
+    core.notifyHMRExtend();
+
     core.notifyTriggerStatus();
 
     core.notifyWarnStatus();

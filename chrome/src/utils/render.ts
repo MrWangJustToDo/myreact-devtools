@@ -81,7 +81,7 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
-  if (data.type === DevToolMessageEnum['unmount-node']) {
+  if (data.type === DevToolMessageEnum.unmountNode) {
     safeAction(() => {
       const node = data.data as number | string;
 
@@ -91,7 +91,7 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
-  if (data.type === DevToolMessageEnum["select-sync"]) {
+  if (data.type === DevToolMessageEnum.selectSync) {
     safeAction(() => {
       useSelectNode.getActions().setSelect(data.data as string);
       useSelectNode.getActions().scrollIntoView();
@@ -115,6 +115,16 @@ export const onRender = (data: DevToolMessageType) => {
       const { updateHMRStatus } = useDetailNodeExt.getActions();
 
       updateHMRStatus(nodes);
+    });
+  }
+
+  if (data.type === DevToolMessageEnum.hmrInternal) {
+    const node = data.data as NodeValue;
+
+    safeAction(() => {
+      const { updateHMRInternal } = useDetailNodeExt.getActions();
+
+      updateHMRInternal(node);
     });
   }
 
@@ -234,7 +244,7 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
-  if (data.type === DevToolMessageEnum["dom-hover"]) {
+  if (data.type === DevToolMessageEnum.domHover) {
     const id = data.data as string;
 
     safeAction(() => {

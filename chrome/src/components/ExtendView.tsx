@@ -57,6 +57,27 @@ const Trigger = ({ select, mode = "vertical" }: { select: string; mode?: "horizo
   ) : null;
 };
 
+const HMR = ({ select: _select }: { select: string }) => {
+  const hmrInternal = useDetailNodeExt((s) => s.hmrInternal);
+
+  if (!hmrInternal) return null;
+
+  return (
+    <>
+      <div className="node-hmr p-2 pb-0">
+        <div className="flex items-center justify-between">
+          <span>hmr internal</span>
+        </div>
+        <Spacer y={1} />
+        <div className="w-full font-code font-sm">
+          <NodeValue name="signature" item={hmrInternal} />
+        </div>
+      </div>
+      <Divider />
+    </>
+  );
+};
+
 const Warn = ({ select }: { select: string }) => {
   const warn = useDetailNodeExt((s) => s.warnStatus);
 
@@ -129,6 +150,7 @@ export const ExtendView = () => {
   return (
     <>
       <Trigger select={select} />
+      <HMR select={select} />
       <Warn select={select} />
       <Error select={select} />
     </>
