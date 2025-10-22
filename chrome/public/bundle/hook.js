@@ -8415,7 +8415,16 @@
 	        // support node dev
 	        globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
 	    }
-	    (_a = globalThis["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(globalThis);
+	    if (typeof globalThis["__@my-react/react-devtool-inject-pending__"] === "function") {
+	        (_a = globalThis["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(globalThis);
+	    }
+	    else {
+	        if (Array.isArray(globalThis["__@my-react/dispatch__"])) {
+	            globalThis["__@my-react/dispatch__"].forEach(function (dispatch) {
+	                globalHook(dispatch);
+	            });
+	        }
+	    }
 	    hookPostMessageWithSource({ type: eventExports.MessageHookType.init });
 	    globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init }); };
 	}

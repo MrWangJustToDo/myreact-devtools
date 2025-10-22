@@ -143,7 +143,15 @@ if (!globalThis["__MY_REACT_DEVTOOL_INTERNAL__"]) {
     globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
   }
 
-  globalThis["__@my-react/react-devtool-inject-pending__"]?.();
+  if (typeof globalThis["__@my-react/react-devtool-inject-pending__"] === "function") {
+    globalThis["__@my-react/react-devtool-inject-pending__"]?.();
+  } else {
+    if (Array.isArray(globalThis["__@my-react/dispatch__"])) {
+      globalThis["__@my-react/dispatch__"].forEach((dispatch: CustomRenderDispatch) => {
+        globalHook(dispatch);
+      });
+    }
+  }
 
   hookPostMessageWithSource({ type: MessageHookType.init });
 
