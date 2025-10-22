@@ -5999,7 +5999,12 @@
 			            tree.push("$$ ".concat(packageName, " ").concat(dispatch.renderMode));
 			        }
 			        if (dispatch && dispatch.version) {
-			            tree.push("$$ @my-react ".concat(dispatch.version));
+			            if (dispatch.dispatcher) {
+			                tree.push("$$ @my-react ".concat(dispatch.version));
+			            }
+			            else {
+			                tree.push("$$ @my-react legacy ".concat(dispatch.version));
+			            }
 			        }
 			        else {
 			            tree.push("$$ @my-react legacy");
@@ -6027,18 +6032,6 @@
 			        };
 			    });
 			};
-			var getDispatch = function (fiber) {
-			    var dispatch;
-			    while (fiber) {
-			        var typedFiber = fiber;
-			        if (typedFiber.renderDispatch) {
-			            dispatch = typedFiber.renderDispatch;
-			            break;
-			        }
-			        fiber = fiber.parent;
-			    }
-			    return dispatch;
-			};
 			var getHookNormal = function (fiber) {
 			    var _a;
 			    var final = [];
@@ -6046,13 +6039,15 @@
 			        return final;
 			    var hookList = fiber.hookList;
 			    var processStack = function (hook, index) {
+			        var _a;
 			        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
+			        var isRef = hook.type === reactShared.HOOK_TYPE.useRef;
 			        var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
 			        final.push({
 			            k: index.toString(),
 			            i: index,
 			            n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-			            v: getNode(isEffect ? hook.value : hook.result),
+			            v: getNode(isEffect ? hook.value : isRef ? (_a = hook.result) === null || _a === void 0 ? void 0 : _a.current : hook.result),
 			            d: 0,
 			            h: true,
 			            keys: [index],
@@ -6072,7 +6067,7 @@
 			    return parseHooksTreeToHOOKTree(hookTree, 0);
 			};
 			var getHook = function (fiber) {
-			    var dispatch = getDispatch(fiber);
+			    var dispatch = getDispatchFromFiber(fiber);
 			    if (dispatch && dispatch.dispatcher) {
 			        try {
 			            return getHookStack(fiber, dispatch);

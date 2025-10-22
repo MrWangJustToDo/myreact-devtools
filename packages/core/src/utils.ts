@@ -26,7 +26,7 @@ import {
 import { getNode } from "./data";
 import { inspectHooksOfFiber } from "./hook";
 import { disableLogs, reenableLogs } from "./log";
-import { getPlainNodeByFiber } from "./tree";
+import { getDispatchFromFiber, getPlainNodeByFiber } from "./tree";
 import { NODE_TYPE } from "./type";
 
 import type { DispatcherType, HooksTree } from "./hook";
@@ -44,14 +44,7 @@ import type {
   lazy,
   memo,
 } from "@my-react/react";
-import type {
-  MyReactFiberNode,
-  MyReactHookNode,
-  MyReactFiberNodeDev,
-  MyReactFiberRoot,
-  MyReactHookNodeDev,
-  CustomRenderDispatch,
-} from "@my-react/react-reconciler";
+import type { MyReactFiberNode, MyReactHookNode, MyReactFiberNodeDev, MyReactHookNodeDev, CustomRenderDispatch } from "@my-react/react-reconciler";
 
 export const typeKeys: number[] = [];
 
@@ -422,7 +415,11 @@ export const getTree = (fiber: MyReactFiberNodeDev) => {
     }
 
     if (dispatch && dispatch.version) {
-      tree.push(`$$ @my-react ${dispatch.version}`);
+      if (dispatch.dispatcher) {
+        tree.push(`$$ @my-react ${dispatch.version}`);
+      } else {
+        tree.push(`$$ @my-react legacy ${dispatch.version}`);
+      }
     } else {
       tree.push(`$$ @my-react legacy`);
     }
@@ -452,23 +449,6 @@ const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, p?: { index: numbe
   });
 };
 
-const getDispatch = (fiber: MyReactFiberNode) => {
-  let dispatch: DevToolRenderDispatch | undefined;
-
-  while (fiber) {
-    const typedFiber = fiber as unknown as MyReactFiberRoot;
-
-    if (typedFiber.renderDispatch) {
-      dispatch = typedFiber.renderDispatch;
-
-      break;
-    }
-    fiber = fiber.parent;
-  }
-
-  return dispatch;
-};
-
 const getHookNormal = (fiber: MyReactFiberNodeDev) => {
   const final: HOOKTree[] = [];
 
@@ -478,12 +458,13 @@ const getHookNormal = (fiber: MyReactFiberNodeDev) => {
 
   const processStack = (hook: MyReactHookNodeDev, index: number) => {
     const isEffect = hook.type === HOOK_TYPE.useEffect || hook.type === HOOK_TYPE.useLayoutEffect || hook.type === HOOK_TYPE.useInsertionEffect;
+    const isRef = hook.type === HOOK_TYPE.useRef;
     const isContext = hook.type === HOOK_TYPE.useContext;
     final.push({
       k: index.toString(),
       i: index,
       n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-      v: getNode(isEffect ? hook.value : hook.result),
+      v: getNode(isEffect ? hook.value : isRef ? hook.result?.current : hook.result),
       d: 0,
       h: true,
       keys: [index],
@@ -511,7 +492,7 @@ const getHookStack = (fiber: MyReactFiberNodeDev, dispatch: CustomRenderDispatch
 };
 
 export const getHook = (fiber: MyReactFiberNodeDev) => {
-  const dispatch = getDispatch(fiber);
+  const dispatch = getDispatchFromFiber(fiber);
   if (dispatch && dispatch.dispatcher) {
     try {
       return getHookStack(fiber, dispatch);
