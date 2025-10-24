@@ -8251,6 +8251,7 @@
 	        connectSocket.on("connect", function () {
 	            connectSocket.emit("init", {
 	                name: "node-app-engine",
+	                type: "client",
 	            });
 	            unSubscribe = core.subscribe(function (message) {
 	                connectSocket.emit("render", message);
@@ -8262,6 +8263,10 @@
 	        });
 	        connectSocket.on("action", function (data) {
 	            onMessageFromPanelOrWorkerOrDetector(data);
+	        });
+	        connectSocket.on("duplicate", function () {
+	            console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
+	            connectSocket === null || connectSocket === void 0 ? void 0 : connectSocket.disconnect();
 	        });
 	        return [2 /*return*/, connectSocket];
 	    });
@@ -8276,21 +8281,29 @@
 	// 浏览器环境下连接开发工具
 	var initWEB_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
 	    var socket, unSubscribe;
-	    var _a, _b, _c;
-	    return __generator(this, function (_d) {
-	        switch (_d.label) {
+	    var _b, _c, _d;
+	    return __generator(this, function (_e) {
+	        switch (_e.label) {
 	            case 0:
 	                if (typeof window === "undefined")
 	                    return [2 /*return*/];
 	                console.log("[@my-react-devtool/hook] start a web ui devtool");
-	                if (!!window.io) return [3 /*break*/, 2];
-	                return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
+	                if (!(!window.io || !globalThis["io"])) return [3 /*break*/, 4];
+	                _e.label = 1;
 	            case 1:
-	                _d.sent();
-	                _d.label = 2;
+	                _e.trys.push([1, 3, , 4]);
+	                return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
 	            case 2:
-	                (_a = window["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
-	                (_c = (_b = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
+	                _e.sent();
+	                return [3 /*break*/, 4];
+	            case 3:
+	                _e.sent();
+	                console.error("[@my-react-devtool/hook] load socket.io-client failed, please add socket.io-client manually");
+	                return [3 /*break*/, 4];
+	            case 4:
+	                window.io = window.io || globalThis["io"];
+	                (_b = window["__@my-react/dispatch__"]) === null || _b === void 0 ? void 0 : _b.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
+	                (_d = (_c = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _c === void 0 ? void 0 : _c.init) === null || _d === void 0 ? void 0 : _d.call(_c);
 	                socket = window.io(url);
 	                connectSocket = socket;
 	                unSubscribe = function () { };
@@ -8298,6 +8311,7 @@
 	                    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
 	                    socket.emit("init", {
 	                        name: "web-app-engine",
+	                        type: "client",
 	                        url: window.location.href,
 	                        title: window.document.title,
 	                    });
@@ -8311,6 +8325,10 @@
 	                });
 	                socket.on("action", function (data) {
 	                    onMessageFromPanelOrWorkerOrDetector(data);
+	                });
+	                socket.on("duplicate", function () {
+	                    console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
+	                    socket === null || socket === void 0 ? void 0 : socket.disconnect();
 	                });
 	                return [2 /*return*/];
 	        }
