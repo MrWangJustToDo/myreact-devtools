@@ -1,6 +1,4 @@
-import { isReactive, isReadonly, isRef, isShallow } from "reactivity-store";
-
-import { getElementName, isValidElement } from "./utils";
+import { getElementName, isReactive, isReadonly, isRef, isShallow, isValidElement } from "./utils";
 
 import type { PromiseWithState } from "@my-react/react-reconciler";
 
