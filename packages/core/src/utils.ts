@@ -153,6 +153,16 @@ export const getFiberType = (fiber: MyReactFiberNode) => {
   return { t, hasCompiler };
 };
 
+const getNameFromRawType = (rawType: MixinMyReactObjectComponent) => {
+  if (typeof rawType === "object") {
+    return rawType.displayName || getNameFromRawType(rawType.render);
+  }
+
+  if (typeof rawType === "function") {
+    return rawType.displayName || rawType.name || "Anonymous";
+  }
+};
+
 // SEE @my-react/react-reconciler
 export const getFiberName = (fiber: MyReactFiberNodeDev) => {
   const typedFiber = fiber as MyReactFiberNodeDev;
@@ -199,9 +209,12 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
     const typedElementType = fiber.elementType as MixinMyReactClassComponent | MixinMyReactFunctionComponent;
     let name = typedElementType.displayName || typedElementType.name || "Anonymous";
     const element = typedFiber._debugElement as MyReactElement;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const rawType = typedFiber.elementRawType as MyReactElement["type"];
     // may be a Suspense element
-    const type = element?.type as MixinMyReactObjectComponent;
-    name = type?.displayName || name;
+    const type = (element?.type || rawType) as MixinMyReactObjectComponent;
+    name = getNameFromRawType(type) || name;
     return `${name}`;
   }
   return `unknown`;
