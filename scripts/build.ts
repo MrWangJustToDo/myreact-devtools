@@ -4,7 +4,7 @@ import { rollupBuild } from "project-tool/rollup";
 
 const externalCorePackage = (id: string) => !id.includes("tslib") && id.includes("node_modules");
 
-const copyFile = async (type: "hook" | "proxy" | "service-worker" | "panel" | "detector") => {
+const copyFile = async (type: "hook" | "proxy" | "service-worker" | "panel" | "detector" | "hook-socket-dev") => {
   const path = resolve(process.cwd(), `packages/bridge/dist/iife/${type}.production.js`);
   const dest = resolve(process.cwd(), `chrome/public/bundle/${type}.js`);
   const content = await readFile(path, "utf-8");
@@ -27,6 +27,7 @@ const start = async () => {
   copyFile("proxy");
   copyFile("service-worker");
   copyFile("panel");
+  copyFile("hook-socket-dev");
 };
 
 start();
