@@ -5741,6 +5741,14 @@
 			    });
 			    return { t: t, hasCompiler: hasCompiler };
 			};
+			var getNameFromRawType = function (rawType) {
+			    if (typeof rawType === "object") {
+			        return rawType.displayName || getNameFromRawType(rawType.render);
+			    }
+			    if (typeof rawType === "function") {
+			        return rawType.displayName || rawType.name || "Anonymous";
+			    }
+			};
 			// SEE @my-react/react-reconciler
 			var getFiberName = function (fiber) {
 			    var typedFiber = fiber;
@@ -5802,9 +5810,12 @@
 			        var typedElementType = fiber.elementType;
 			        var name_5 = typedElementType.displayName || typedElementType.name || "Anonymous";
 			        var element = typedFiber._debugElement;
+			        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			        // @ts-ignore
+			        var rawType = typedFiber.elementRawType;
 			        // may be a Suspense element
-			        var type = element === null || element === void 0 ? void 0 : element.type;
-			        name_5 = (type === null || type === void 0 ? void 0 : type.displayName) || name_5;
+			        var type = ((element === null || element === void 0 ? void 0 : element.type) || rawType);
+			        name_5 = getNameFromRawType(type) || name_5;
 			        return "".concat(name_5);
 			    }
 			    return "unknown";
