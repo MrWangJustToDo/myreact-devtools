@@ -12,9 +12,15 @@ export const initWEB_DEV = async (url: string) => {
 
   console.log("[@my-react-devtool/hook] start a web ui devtool");
 
-  if (!window.io) {
-    await loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js");
+  if (!window.io || !globalThis["io"]) {
+    try {
+      await loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js");
+    } catch {
+      console.error("[@my-react-devtool/hook] load socket.io-client failed, please add socket.io-client manually");
+    }
   }
+
+  window.io = window.io || globalThis["io"];
 
   window["__@my-react/dispatch__"]?.forEach((d) => window.__MY_REACT_DEVTOOL_RUNTIME__?.(d));
 
@@ -35,6 +41,7 @@ export const initWEB_DEV = async (url: string) => {
 
     socket.emit("init", {
       name: "web-app-engine",
+      type: "client",
       url: window.location.href,
       title: window.document.title,
     });
@@ -56,6 +63,12 @@ export const initWEB_DEV = async (url: string) => {
 
   socket.on("action", (data) => {
     onMessageFromPanelOrWorkerOrDetector(data);
+  });
+
+  socket.on("duplicate", () => {
+    console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
+
+    socket?.disconnect();
   });
 };
 

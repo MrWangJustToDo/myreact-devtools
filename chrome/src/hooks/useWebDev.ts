@@ -38,6 +38,7 @@ export const useWebDev = () => {
 
         io.emit("init", {
           name: "@my-react/devtool",
+          type: "server",
         });
 
         unSubscribe = onListener((data) => io.emit("action", data));
@@ -76,6 +77,12 @@ export const useWebDev = () => {
 
         useConnect.getActions().setWebDev(data.name || "", data.url || "");
       });
+
+      io.on("duplicate", () => {
+        console.warn("[Dev mode] duplicate server detected, disconnecting...");
+
+        io.disconnect();
+      })
 
       return () => {
         io.disconnect();

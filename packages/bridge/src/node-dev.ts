@@ -36,6 +36,7 @@ export const initNODE_DEV = async (url: string) => {
 
     connectSocket.emit("init", {
       name: "node-app-engine",
+      type: "client",
     });
 
     unSubscribe = core.subscribe((message) => {
@@ -55,6 +56,12 @@ export const initNODE_DEV = async (url: string) => {
 
   connectSocket.on("action", (data) => {
     onMessageFromPanelOrWorkerOrDetector(data);
+  });
+
+  connectSocket.on("duplicate", () => {
+    console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
+
+    connectSocket?.disconnect();
   });
 
   return connectSocket;

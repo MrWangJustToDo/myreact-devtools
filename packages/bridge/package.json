@@ -34,6 +34,19 @@
       ]
     },
     {
+      "input": "./src/hook-socket-dev.ts",
+      "pkgName": "hook-socket-dev",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "iife/hook-socket-dev.js",
+          "format": "iife",
+          "type": true,
+          "multiple": true
+        }
+      ]
+    },
+    {
       "input": "./src/detector.ts",
       "pkgName": "detector",
       "output": [

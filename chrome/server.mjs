@@ -14,6 +14,9 @@ const handle = app.getRequestHandler();
  */
 let socketSet = new Set();
 
+let hasClient = false;
+let hasServer = false;
+
 // support local dev
 /**
  *
@@ -22,6 +25,14 @@ let socketSet = new Set();
 const processSocket = (item) => {
   item.on("disconnect", () => {
     socketSet.delete(item);
+
+    if (item.type === "client") {
+      hasClient = false;
+    }
+
+    if (item.type === "server") {
+      hasServer = false;
+    }
 
     if (item.name) {
       console.log("socket:", item.name, " disconnected");
@@ -42,6 +53,14 @@ const processSocket = (item) => {
 
   item.on("init", (data) => {
     item.name = data.name;
+
+    if (item.type === "client") {
+      hasClient = true;
+    }
+
+    if (item.type === "server") {
+      hasServer = true;
+    }
 
     console.log("socket:", data.name, " connected");
   });
@@ -73,6 +92,20 @@ app
     });
 
     io.on("connection", (socket) => {
+      if (socket.type === "client" && hasClient) {
+        socket.emit("duplicate");
+
+        socket.disconnect();
+        return;
+      }
+
+      if (socket.type === "server" && hasServer) {
+        socket.emit("duplicate");
+
+        socket.disconnect();
+        return;
+      }
+
       socketSet.add(socket);
 
       console.log("connect a new socket, total:", socketSet.size);
