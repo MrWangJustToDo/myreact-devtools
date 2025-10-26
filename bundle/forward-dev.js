@@ -4937,73 +4937,10 @@
         return __assign.apply(this, arguments);
     };
 
-    function __awaiter(thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    }
-
-    function __generator(thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-        function verb(n) { return function (v) { return step([n, v]); }; }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (g && (g = 0, op[0] && (_ = 0)), _) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [op[0] & 2, t.value];
-                switch (op[0]) {
-                    case 0: case 1: t = op; break;
-                    case 4: _.label++; return { value: op[1], done: false };
-                    case 5: _.label++; y = op[1]; op = [0]; continue;
-                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop(); continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    }
-
     typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
         var e = new Error(message);
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
-
-    var PortName;
-    (function (PortName) {
-        PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
-    })(PortName || (PortName = {}));
-    var sourceFrom;
-    (function (sourceFrom) {
-        // message from hook script
-        sourceFrom["hook"] = "hook";
-        // message from proxy script
-        sourceFrom["proxy"] = "proxy";
-        // message from devtool panel
-        sourceFrom["panel"] = "panel";
-        // message from background worker
-        sourceFrom["worker"] = "worker";
-        // message from iframe 
-        sourceFrom["iframe"] = "iframe";
-        // message from socket
-        sourceFrom["socket"] = "socket";
-        // message from detector
-        sourceFrom["detector"] = "detector";
-        // message from another runtime engine
-        sourceFrom["forward"] = "forward";
-    })(sourceFrom || (sourceFrom = {}));
 
     /* eslint-disable @typescript-eslint/no-require-imports */
     var varId = 0;
@@ -5013,45 +4950,6 @@
             varName = "$my-react-var-".concat(varId++);
         }
         return varName;
-    };
-    var loadScript = function (url) {
-        if (typeof window !== "undefined") {
-            return new Promise(function (resolve, reject) {
-                if (typeof document === "undefined") {
-                    reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
-                    return;
-                }
-                var script = document.createElement("script");
-                script.src = url;
-                script.onload = function () { return resolve(); };
-                script.onerror = reject;
-                document.body.appendChild(script);
-            });
-        }
-        else {
-            return Promise.reject(new Error("[@my-react-devtool/hook] current environment not support"));
-        }
-    };
-    var loadIframe = function (url, token) {
-        return new Promise(function (resolve, reject) {
-            if (typeof document === "undefined") {
-                reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
-                return;
-            }
-            var exist = document.getElementById("my-react-devtool-bridge-".concat(token));
-            if (exist) {
-                resolve(exist);
-                return;
-            }
-            var iframe = document.createElement("iframe");
-            iframe.src = url;
-            iframe.classList.add("my-react-devtool-bridge");
-            iframe.id = "my-react-devtool-bridge-".concat(token);
-            iframe.style.display = "none";
-            iframe.onload = function () { return resolve(iframe); };
-            iframe.onerror = reject;
-            document.body.appendChild(iframe);
-        });
     };
     var generatePostMessageWithSource = function (from) {
         return function (message) {
@@ -5071,61 +4969,6 @@
             }
             window.postMessage(__assign(__assign({}, _message), { source: eventExports.DevToolSource }), "*");
         };
-    };
-
-    var close = function () {
-        closeCBArray.forEach(function (cb) { return cb(); });
-        closeCBArray.length = 0;
-    };
-    var closeCBArray = [];
-    // 通过 Iframe 调试 Web 应用
-    var initIFRAME_DEV = function (origin, token) { return __awaiter(void 0, void 0, void 0, function () {
-        var bridgeUrl, bridgeView, bridgeToken, bridgeIframe, bridgeWindow, viewWindow_1, onMessage;
-        var _a, _b, _c, _d, _e;
-        return __generator(this, function (_f) {
-            switch (_f.label) {
-                case 0:
-                    if (typeof document === "undefined" || typeof window === "undefined")
-                        return [2 /*return*/];
-                    if (!(typeof window.__MY_REACT_DEVTOOL_RUNTIME__ !== "function")) return [3 /*break*/, 2];
-                    return [4 /*yield*/, loadScript("".concat(origin, "/bundle/hook.js"))];
-                case 1:
-                    _f.sent();
-                    _f.label = 2;
-                case 2:
-                    bridgeUrl = "".concat(origin, "/bridge");
-                    bridgeView = "".concat(origin, "/devTool");
-                    bridgeToken = token || Math.random().toString(36).slice(2);
-                    (_b = (_a = document.querySelectorAll(".my-react-devtool-bridge")) === null || _a === void 0 ? void 0 : _a.forEach) === null || _b === void 0 ? void 0 : _b.call(_a, function (el) { return el.remove(); });
-                    return [4 /*yield*/, loadIframe("".concat(bridgeUrl, "?token=").concat(bridgeToken), bridgeToken)];
-                case 3:
-                    bridgeIframe = _f.sent();
-                    bridgeWindow = bridgeIframe.contentWindow;
-                    if (!bridgeWindow) {
-                        console.error("[@my-react-devtool/iframe] iframe contentWindow not found");
-                        return [2 /*return*/];
-                    }
-                    if (!token) {
-                        viewWindow_1 = window.open("".concat(bridgeView, "?token=").concat(bridgeToken), "devtool-view", "width=800,height=600");
-                        closeCBArray.push(function () { return viewWindow_1 === null || viewWindow_1 === void 0 ? void 0 : viewWindow_1.close(); });
-                    }
-                    onMessage = function (e) {
-                        var _a;
-                        if (e.source === window && e.data && e.data.source === eventExports.DevToolSource && e.data.from === sourceFrom.hook) {
-                            (_a = bridgeWindow === null || bridgeWindow === void 0 ? void 0 : bridgeWindow.postMessage) === null || _a === void 0 ? void 0 : _a.call(bridgeWindow, e.data, "*");
-                        }
-                    };
-                    window.addEventListener("message", onMessage);
-                    closeCBArray.push(function () { return window.removeEventListener("message", onMessage); });
-                    (_c = window["__@my-react/dispatch__"]) === null || _c === void 0 ? void 0 : _c.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
-                    (_e = (_d = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _d === void 0 ? void 0 : _d.init) === null || _e === void 0 ? void 0 : _e.call(_d);
-                    return [2 /*return*/];
-            }
-        });
-    }); };
-    initIFRAME_DEV.close = function () {
-        close();
-        core.disconnect();
     };
 
     var onMessageFromPanelOrWorkerOrDetector = function (data) {
@@ -5239,121 +5082,36 @@
         }
     };
 
-    // support debug more platform
-    var connectSocket$1 = null;
-    // 通过 Web 端调试 Node.js 应用
-    var initNODE_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-        var connectSocket, unSubscribe;
-        var _a, _b, _c;
-        return __generator(this, function (_d) {
-            if (typeof process !== "object" || typeof globalThis.io !== "function")
-                return [2 /*return*/];
-            (_a = globalThis["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(globalThis, d); });
-            (_c = (_b = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
-            connectSocket = globalThis.io(url, {
-                reconnection: true, // 是否自动重新连接
-                reconnectionAttempts: Infinity, // 重新连接尝试次数
-                reconnectionDelay: 1000, // 初始重新连接延迟(ms)
-                reconnectionDelayMax: 5000, // 最大重新连接延迟(ms)
-                timeout: 8000, // 连接超时时间(ms)
-            });
-            unSubscribe = function () { };
-            connectSocket.on("connect", function () {
-                connectSocket.emit("init", {
-                    name: "node-app-engine",
-                    type: "client",
-                });
-                unSubscribe = core.subscribe(function (message) {
-                    connectSocket.emit("render", message);
-                });
-            });
-            connectSocket.on("disconnect", function () {
-                unSubscribe();
-                core.disconnect();
-            });
-            connectSocket.on("action", function (data) {
-                onMessageFromPanelOrWorkerOrDetector(data);
-            });
-            connectSocket.on("duplicate", function () {
-                console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
-                connectSocket === null || connectSocket === void 0 ? void 0 : connectSocket.disconnect();
-            });
-            return [2 /*return*/, connectSocket];
-        });
-    }); };
-    initNODE_DEV.close = function () {
-        var _a;
-        (_a = connectSocket$1 === null || connectSocket$1 === void 0 ? void 0 : connectSocket$1.close) === null || _a === void 0 ? void 0 : _a.call(connectSocket$1);
-        connectSocket$1 = null;
-    };
+    var PortName;
+    (function (PortName) {
+        PortName["proxy"] = "dev-tool/proxy";
+        PortName["panel"] = "dev-tool/panel";
+    })(PortName || (PortName = {}));
+    var sourceFrom;
+    (function (sourceFrom) {
+        // message from hook script
+        sourceFrom["hook"] = "hook";
+        // message from proxy script
+        sourceFrom["proxy"] = "proxy";
+        // message from devtool panel
+        sourceFrom["panel"] = "panel";
+        // message from background worker
+        sourceFrom["worker"] = "worker";
+        // message from iframe 
+        sourceFrom["iframe"] = "iframe";
+        // message from socket
+        sourceFrom["socket"] = "socket";
+        // message from detector
+        sourceFrom["detector"] = "detector";
+        // message from another runtime engine
+        sourceFrom["forward"] = "forward";
+    })(sourceFrom || (sourceFrom = {}));
 
-    var connectSocket = null;
-    // 通过 Web 端调试 Web 应用
-    var initWEB_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-        var socket, unSubscribe;
-        var _b, _c, _d;
-        return __generator(this, function (_e) {
-            switch (_e.label) {
-                case 0:
-                    if (typeof window === "undefined")
-                        return [2 /*return*/];
-                    console.log("[@my-react-devtool/hook] start a web ui devtool");
-                    if (!(!window.io || !globalThis["io"])) return [3 /*break*/, 4];
-                    _e.label = 1;
-                case 1:
-                    _e.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
-                case 2:
-                    _e.sent();
-                    return [3 /*break*/, 4];
-                case 3:
-                    _e.sent();
-                    console.error("[@my-react-devtool/hook] load socket.io-client failed, please add socket.io-client manually");
-                    return [3 /*break*/, 4];
-                case 4:
-                    window.io = window.io || globalThis["io"];
-                    (_b = window["__@my-react/dispatch__"]) === null || _b === void 0 ? void 0 : _b.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
-                    (_d = (_c = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _c === void 0 ? void 0 : _c.init) === null || _d === void 0 ? void 0 : _d.call(_c);
-                    socket = window.io(url);
-                    connectSocket = socket;
-                    unSubscribe = function () { };
-                    socket.on("connect", function () {
-                        socket.emit("web-dev", { name: window.document.title, url: window.location.href });
-                        socket.emit("init", {
-                            name: "web-app-engine",
-                            type: "client",
-                            url: window.location.href,
-                            title: window.document.title,
-                        });
-                        unSubscribe = core.subscribe(function (message) {
-                            socket.emit("render", message);
-                        });
-                    });
-                    socket.on("disconnect", function () {
-                        unSubscribe();
-                        core.disconnect();
-                    });
-                    socket.on("action", function (data) {
-                        onMessageFromPanelOrWorkerOrDetector(data);
-                    });
-                    socket.on("duplicate", function () {
-                        console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
-                        socket === null || socket === void 0 ? void 0 : socket.disconnect();
-                    });
-                    return [2 /*return*/];
-            }
-        });
-    }); };
-    initWEB_DEV.close = function () {
-        var _a;
-        (_a = connectSocket === null || connectSocket === void 0 ? void 0 : connectSocket.close) === null || _a === void 0 ? void 0 : _a.call(connectSocket);
-        connectSocket = null;
-    };
-
-    var _a;
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
+    var forwardPostMessageWithSource = generatePostMessageWithSource(sourceFrom.forward);
     // default render agentId
     var agentId = core.id;
+    var hasEnable = false;
     core.subscribe(function (message) {
         hookPostMessageWithSource({ type: eventExports.MessageHookType.render, data: message, to: sourceFrom.panel });
     });
@@ -5387,10 +5145,6 @@
         if (!detectorReady && ((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageDetectorType.init) {
             detectorReady = true;
         }
-        if (message.data.from === sourceFrom.forward) {
-            // 通知forward source端，detector已准备好
-            hookPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook, forward: sourceFrom.forward });
-        }
         if (message.data.type === eventExports.MessagePanelType.show) {
             hookPostMessageWithSource({ type: eventExports.MessageProxyType.init, to: sourceFrom.proxy, data: agentId });
             hookPostMessageWithSource({ type: eventExports.MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
@@ -5422,6 +5176,8 @@
         }
     });
     var globalHook = function (dispatch) {
+        if (!hasEnable)
+            return;
         set.add(dispatch);
         core.addDispatch(dispatch);
         if (dispatch.mode === "development") {
@@ -5439,28 +5195,19 @@
         globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
         globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
         globalThis["__@my-react/react-devtool-inject__"] = globalHook;
-        if (typeof window !== "undefined") {
-            // support web dev
-            globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
-            // support iframe dev
-            globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
-        }
-        if (typeof process !== "undefined") {
-            // support node dev
-            globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
-        }
-        if (typeof globalThis["__@my-react/react-devtool-inject-pending__"] === "function") {
-            (_a = globalThis["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(globalThis);
-        }
-        else {
-            if (Array.isArray(globalThis["__@my-react/dispatch__"])) {
-                globalThis["__@my-react/dispatch__"].forEach(function (dispatch) {
-                    globalHook(dispatch);
-                });
-            }
-        }
         hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector });
         globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector }); };
     }
+    var initFORWARD_DEV = function () {
+        hasEnable = true;
+        if (Array.isArray(globalThis["__@my-react/dispatch__"])) {
+            globalThis["__@my-react/dispatch__"].forEach(function (dispatch) {
+                globalHook(dispatch);
+            });
+        }
+        forwardPostMessageWithSource({ to: sourceFrom.hook });
+    };
+
+    globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = initFORWARD_DEV;
 
 })();

@@ -87,11 +87,16 @@
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
     		    MessageHookType["origin"] = "hook-origin";
+    		    MessageHookType["clear"] = "hook-clear";
     		})(exports.MessageHookType || (exports.MessageHookType = {}));
     		exports.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
     		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessageProxyType = void 0;
+    		(function (MessageProxyType) {
+    		    MessageProxyType["init"] = "proxy-init";
+    		})(exports.MessageProxyType || (exports.MessageProxyType = {}));
     		exports.MessagePanelType = void 0;
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
@@ -181,13 +186,22 @@
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
+        // message from hook script
         sourceFrom["hook"] = "hook";
+        // message from proxy script
         sourceFrom["proxy"] = "proxy";
+        // message from devtool panel
         sourceFrom["panel"] = "panel";
+        // message from background worker
         sourceFrom["worker"] = "worker";
+        // message from iframe 
         sourceFrom["iframe"] = "iframe";
-        sourceFrom["bridge"] = "bridge";
+        // message from socket
+        sourceFrom["socket"] = "socket";
+        // message from detector
         sourceFrom["detector"] = "detector";
+        // message from another runtime engine
+        sourceFrom["forward"] = "forward";
     })(sourceFrom || (sourceFrom = {}));
 
     var port = null;
@@ -200,6 +214,7 @@
     var id = null;
     var hasShow = false;
     var getTabId = function () { return chrome.devtools.inspectedWindow.tabId; };
+    var agentIdMap = new Map();
     var runWhenWorkerReady = function (fn, count) {
         clearTimeout(id);
         if (workerReady) {
@@ -232,7 +247,7 @@
     };
     var sendMessage = function (data) {
         runWhenWorkerReady(function () {
-            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++, from: sourceFrom.panel }));
+            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++, from: sourceFrom.panel, to: sourceFrom.hook, agentId: agentIdMap.get(getTabId()) }));
         });
     };
     var onRender = function (data, _window) {
@@ -249,15 +264,33 @@
         var _a = panelWindow.useConnect.getActions(), disconnect = _a.disconnect, setConnectHandler = _a.setConnectHandler;
         setConnectHandler(function () { return initPort(); });
         port = chrome.runtime.connect({ name: getTabId().toString() });
+        // only process message from worker
         var onMessage = function (message) {
+            var _a, _b;
             if (!hasShow)
+                return;
+            if (message.to !== sourceFrom.panel)
                 return;
             workerConnecting = false;
             if (!workerReady && message.type === eventExports.MessageWorkerType.init) {
                 workerReady = true;
                 panelWindow.useConnect.getActions().connect();
             }
+            if ((message === null || message === void 0 ? void 0 : message.type) === eventExports.MessageHookType.clear) {
+                var currentAgentId = agentIdMap.get(getTabId());
+                if (currentAgentId && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.agentId) === currentAgentId)
+                    return;
+                if ((_b = message.data) === null || _b === void 0 ? void 0 : _b.agentId) {
+                    agentIdMap.set(getTabId(), message.data.agentId);
+                }
+                clear === null || clear === void 0 ? void 0 : clear();
+                return;
+            }
             if ((message === null || message === void 0 ? void 0 : message.type) === eventExports.MessageHookType.render) {
+                var currentAgentId = agentIdMap.get(getTabId());
+                console.log("currentAgentId", currentAgentId, message.data.agentId);
+                if (currentAgentId && message.data.agentId !== currentAgentId)
+                    return;
                 onRender(message.data, panelWindow);
             }
         };
