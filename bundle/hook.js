@@ -5375,16 +5375,17 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         if (typeof window === "undefined")
             return;
-        if (message.source !== window)
+        // allow iframe dev
+        if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe)
             return;
-        if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.source) !== eventExports.DevToolSource)
+        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.source) !== eventExports.DevToolSource)
             return;
-        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.to) !== sourceFrom.hook)
+        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.to) !== sourceFrom.hook)
             return;
-        if (!detectorReady && ((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageDetectorType.init) {
+        if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === eventExports.MessageDetectorType.init) {
             detectorReady = true;
         }
         if (message.data.from === sourceFrom.forward) {
