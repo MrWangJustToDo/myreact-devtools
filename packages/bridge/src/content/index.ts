@@ -58,7 +58,8 @@ const runWhenDetectorReady = (fn: () => void, count?: number) => {
 const onMessage = (message: MessageEvent<MessageHookDataType | MessagePanelDataType | MessageDetectorDataType | MessageWorkerDataType>) => {
   if (typeof window === "undefined") return;
 
-  if (message.source !== window) return;
+  // allow iframe dev
+  if (message.source !== window && message.data?.from !== sourceFrom.iframe) return;
 
   if (message.data?.source !== DevToolSource) return;
 
