@@ -14,7 +14,18 @@
   "permissions": ["storage", "scripting", "tabs", "activeTab"],
   "web_accessible_resources": [
     {
-      "resources": ["icons/*.png", "bundle/*.js", "disablePopup.html", "devTool.html", "enablePopup.html", "enablePopupDev.html", "enablePopupPro.html"],
+      "resources": [
+        "icons/*.png",
+        "bundle/*.js",
+        "disablePopup.html",
+        "devTool.html",
+        "enablePopup.html",
+        "enablePopupForward.html",
+        "enablePopupDev.html",
+        "enablePopupDevForward.html",
+        "enablePopupPro.html",
+        "enablePopupProForward.html"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
@@ -30,8 +41,11 @@
     "pages": [
       "disablePopup.html",
       "enablePopup.html",
+      "enablePopupForward.html",
       "enablePopupDev.html",
-      "enablePopupPro.html"
+      "enablePopupDevForward.html",
+      "enablePopupPro.html",
+      "enablePopupProForward.html"
     ]
   },
   "content_scripts": [

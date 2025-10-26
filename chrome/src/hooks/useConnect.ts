@@ -4,10 +4,11 @@ import { isServer } from "@/utils/isServer";
 
 export const useConnect = createState(
   () =>
-    ({ state: false, render: undefined, error: undefined, cb: null }) as {
+    ({ state: false, render: undefined, error: undefined, cb: null, agentID: undefined }) as {
       state: boolean;
       render?: boolean;
       error?: string;
+      agentID?: string;
       cb: (() => void) | null;
       // used for web dev
       name?: string;
@@ -21,6 +22,9 @@ export const useConnect = createState(
       setRender(render?: boolean) {
         s.render = render;
       },
+      setAgentID(id: string) {
+        s.agentID = id;
+      },
       setError(error?: string) {
         s.error = error;
       },
@@ -32,6 +36,7 @@ export const useConnect = createState(
         s.state = false;
         s.url = undefined;
         s.name = undefined;
+        s.agentID = undefined;
       },
       setConnectHandler(cb: () => void) {
         s.cb = cb;

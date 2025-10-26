@@ -1,3 +1,4 @@
+import { sourceFrom } from "@my-react-devtool/bridge/type";
 import { DevToolMessageEnum, MessagePanelType, MessageWorkerType } from "@my-react-devtool/core";
 import { useEffect } from "react";
 
@@ -21,9 +22,9 @@ export const useWebDev = () => {
         if (connect) {
           return;
         } else {
-          io.emit("action", { type: MessageWorkerType.init });
+          io.emit("action", { type: MessageWorkerType.init, from: sourceFrom.socket, to: sourceFrom.hook });
 
-          io.emit("action", { type: MessagePanelType.show });
+          io.emit("action", { type: MessagePanelType.show, from: sourceFrom.socket, to: sourceFrom.hook });
 
           id = setTimeout(listenBackendReady, 1000);
         }
@@ -82,7 +83,7 @@ export const useWebDev = () => {
         console.warn("[Dev mode] duplicate server detected, disconnecting...");
 
         io.disconnect();
-      })
+      });
 
       return () => {
         io.disconnect();

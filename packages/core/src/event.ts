@@ -3,10 +3,15 @@ export enum MessageHookType {
   mount = "hook-mount",
   render = "hook-render",
   origin = "hook-origin",
+  clear = "hook-clear",
 }
 
 export enum MessageDetectorType {
   init = "detector-init",
+}
+
+export enum MessageProxyType {
+  init = "proxy-init",
 }
 
 export enum MessagePanelType {

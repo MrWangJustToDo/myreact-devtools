@@ -1,6 +1,39 @@
 (function () {
     'use strict';
 
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
     var event$1 = {};
 
     var hasRequiredEvent$1;
@@ -16,11 +49,16 @@
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
     		    MessageHookType["origin"] = "hook-origin";
+    		    MessageHookType["clear"] = "hook-clear";
     		})(exports.MessageHookType || (exports.MessageHookType = {}));
     		exports.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
     		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessageProxyType = void 0;
+    		(function (MessageProxyType) {
+    		    MessageProxyType["init"] = "proxy-init";
+    		})(exports.MessageProxyType || (exports.MessageProxyType = {}));
     		exports.MessagePanelType = void 0;
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
@@ -110,81 +148,96 @@
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
+        // message from hook script
         sourceFrom["hook"] = "hook";
+        // message from proxy script
         sourceFrom["proxy"] = "proxy";
+        // message from devtool panel
         sourceFrom["panel"] = "panel";
+        // message from background worker
         sourceFrom["worker"] = "worker";
+        // message from iframe 
         sourceFrom["iframe"] = "iframe";
-        sourceFrom["bridge"] = "bridge";
+        // message from socket
+        sourceFrom["socket"] = "socket";
+        // message from detector
         sourceFrom["detector"] = "detector";
+        // message from another runtime engine
+        sourceFrom["forward"] = "forward";
     })(sourceFrom || (sourceFrom = {}));
-
-    /******************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
-
-
-    var __assign = function() {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-
-    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-    };
 
     var generatePostMessageWithSource = function (from) {
         return function (message) {
-            if (typeof window === 'undefined')
+            if (typeof window === "undefined")
                 return;
-            window.postMessage(__assign(__assign({ from: from }, message), { source: eventExports.DevToolSource }), "*");
+            var _message = __assign({}, message);
+            if (_message.from && _message.forward) {
+                _message.forward += "->".concat(from);
+            }
+            else if (_message.from) {
+                if (_message.from !== from) {
+                    _message.forward = from;
+                }
+            }
+            else {
+                _message.from = from;
+            }
+            window.postMessage(__assign(__assign({}, _message), { source: eventExports.DevToolSource }), "*");
         };
     };
 
+    var agentId = "";
     var port = chrome.runtime.connect({ name: PortName.proxy });
     var proxyPostMessageWithSource = generatePostMessageWithSource(sourceFrom.proxy);
-    var sendMessageToBackend = function (message) {
-        proxyPostMessageWithSource(message);
+    var sendMessageToContent = function (message) {
+        if (message.to === sourceFrom.hook) {
+            proxyPostMessageWithSource(message);
+        }
     };
     var sendMessageToPanel = function (message) {
-        var _a, _b, _c;
+        var _a;
         if (message.source !== window)
             return;
-        if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.type) === eventExports.MessageHookType.mount || ((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === eventExports.MessageHookType.render || ((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageHookType.init) {
+        if (message.data.source !== eventExports.DevToolSource)
+            return;
+        if (message.data.to === sourceFrom.panel) {
+            if (((_a = message.data.data) === null || _a === void 0 ? void 0 : _a.agentId) && message.data.data.agentId !== agentId)
+                return;
             try {
-                port.postMessage(message.data);
+                port.postMessage(__assign(__assign({}, message.data), { forward: message.data.forward ? "".concat(message.data.forward, "->").concat(sourceFrom.proxy) : sourceFrom.proxy }));
             }
             catch (error) {
-                port.postMessage({ type: eventExports.DevToolMessageEnum.message, data: { type: "error", message: "Failed to send message to panel. ".concat(error.message) } });
+                port.postMessage({
+                    type: eventExports.DevToolMessageEnum.message,
+                    source: eventExports.DevToolSource,
+                    data: { type: "error", message: "Failed to send message to panel. ".concat(error.message) },
+                    from: sourceFrom.proxy,
+                    to: sourceFrom.panel,
+                });
             }
         }
     };
+    var onMessage = function (message) {
+        if (message.source !== window)
+            return;
+        if (message.data.source !== eventExports.DevToolSource)
+            return;
+        if (message.data.to !== sourceFrom.proxy)
+            return;
+        if (message.data.type === eventExports.MessageProxyType.init) {
+            agentId = message.data.data;
+        }
+    };
     var handleDisconnect = function () {
-        port.onMessage.removeListener(sendMessageToBackend);
-        sendMessageToBackend({ type: eventExports.MessageWorkerType.close });
+        port.onMessage.removeListener(sendMessageToContent);
+        sendMessageToContent({ type: eventExports.MessageWorkerType.close, to: sourceFrom.hook });
         window.removeEventListener("message", sendMessageToPanel);
     };
-    port.onMessage.addListener(sendMessageToBackend);
+    // listen message from background worker, then forward to page hook
+    port.onMessage.addListener(sendMessageToContent);
     port.onDisconnect.addListener(handleDisconnect);
+    // listen message from hook, then forward to worker -> panel
     window.addEventListener("message", sendMessageToPanel);
+    window.addEventListener("message", onMessage);
 
 })();

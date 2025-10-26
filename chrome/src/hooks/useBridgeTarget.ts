@@ -1,4 +1,5 @@
-import { MessageWorkerType, MessagePanelType, DevToolMessageEnum, DevToolSource, MessageHookType } from "@my-react-devtool/core";
+import { sourceFrom } from "@my-react-devtool/bridge/type";
+import { MessageWorkerType, MessagePanelType, DevToolMessageEnum, DevToolSource, MessageHookType } from "@my-react-devtool/core/event";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -7,14 +8,12 @@ import { onRender } from "@/utils/render";
 
 import { useConnect } from "./useConnect";
 
-export const from = "iframe";
-
 let bridge: null | BroadcastChannel = null;
 
 export const DevBridgeSource = "@my-react/devtool/bridge";
 
 const postMessageToBridge = (data: any) => {
-  bridge?.postMessage({ from, ...data, source: DevBridgeSource });
+  bridge?.postMessage({ from: sourceFrom.iframe, to: sourceFrom.hook, ...data, source: DevBridgeSource });
 };
 
 export const useBridgeTarget = () => {
@@ -44,7 +43,7 @@ export const useBridgeTarget = () => {
 
       let unsubscribe = () => {};
 
-      const listenBackEndReady = () => {
+      const listenBackendReady = () => {
         if (connect) {
           return;
         } else {
@@ -52,7 +51,7 @@ export const useBridgeTarget = () => {
 
           postMessageToBridge({ type: MessagePanelType.show });
 
-          id = setTimeout(listenBackEndReady, 1000);
+          id = setTimeout(listenBackendReady, 1000);
         }
       };
 
@@ -61,7 +60,7 @@ export const useBridgeTarget = () => {
 
         useConnect.getActions().connect();
 
-        listenBackEndReady();
+        listenBackendReady();
 
         unsubscribe = onListener(postMessageToBridge);
       };
@@ -87,7 +86,7 @@ export const useBridgeTarget = () => {
       const onMessage = (e: MessageEvent) => {
         if (e.data?.source !== DevToolSource) return;
 
-        if (e.data?.from === from) return;
+        if (e.data?.from === sourceFrom.iframe) return;
 
         const data = e.data?.type === MessageHookType.render ? e.data.data : e.data;
 

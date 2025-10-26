@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@heroui/react": "^2.7.5",
+    "@my-react-devtool/bridge": "workspace:*",
     "@my-react-devtool/core": "workspace:*",
     "@my-react/react": "^0.3.20",
     "@my-react/react-dom": "^0.3.20",

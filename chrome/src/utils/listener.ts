@@ -3,6 +3,7 @@ import { MessagePanelType } from "@my-react-devtool/core";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
+import { useConnect } from "@/hooks/useConnect";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
@@ -20,6 +21,8 @@ type MessageDataType = {
   type: MessagePanelType | MessageWorkerType | MessageDetectorType;
   data: any;
 };
+
+const getAgentId = () => useConnect.getReadonlyState().agentID;
 
 export const onListener = (postMessage: (data: MessageDataType) => void) => {
   const unSubscribeArray: Array<() => void> = [];
@@ -66,7 +69,7 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
         if (currentSelect) {
           if (chrome?.devtools?.inspectedWindow?.eval) {
-            chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.()");
+            chrome?.devtools?.inspectedWindow?.eval(`window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.("${getAgentId()}")`);
           } else {
             addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
           }
@@ -83,7 +86,7 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
 
         if (currentSelect) {
           if (chrome?.devtools?.inspectedWindow?.eval) {
-            chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectCom?.()");
+            chrome?.devtools?.inspectedWindow?.eval(`window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectCom?.("${getAgentId()}")`);
           } else {
             addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
           }

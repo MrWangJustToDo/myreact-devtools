@@ -18,6 +18,8 @@ import { isServer } from "./isServer";
 
 import type { DevToolMessageType, HMRStatus, NodeValue, PlainNode, Tree } from "@my-react-devtool/core";
 
+const getAgentId = () => useConnect.getReadonlyState().agentID;
+
 export const safeAction = (cb: () => void) => {
   try {
     cb();
@@ -33,9 +35,11 @@ export const onRender = (data: DevToolMessageType) => {
     const detector = data.data as boolean;
 
     safeAction(() => {
-      const { setRender } = useConnect.getActions();
+      const { setRender, setAgentID } = useConnect.getActions();
 
       setRender(detector);
+
+      setAgentID(data.agentId?.toString?.() || '');
     });
   }
 
@@ -164,7 +168,7 @@ export const onRender = (data: DevToolMessageType) => {
 
   if (data.type === DevToolMessageEnum.source) {
     if (chrome?.devtools?.inspectedWindow?.eval) {
-      chrome?.devtools?.inspectedWindow?.eval("window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectSource?.()");
+      chrome?.devtools?.inspectedWindow?.eval(`window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectSource?.("${getAgentId()}")`);
     } else {
       addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
     }

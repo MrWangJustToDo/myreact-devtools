@@ -1,12 +1,17 @@
 import { STATE_TYPE } from "@my-react/react-shared";
-import { getFiberNodeById, getValueById, MessagePanelType, MessageWorkerType } from "@my-react-devtool/core";
+import { DevToolSource, getFiberNodeById, getValueFromId, MessagePanelType, MessageWorkerType } from "@my-react-devtool/core";
 
 import { core } from "./core";
-import { getValidGlobalVarName } from "./tool";
+import { type MessageHookDataType, type MessagePanelDataType, type MessageDetectorDataType, type MessageWorkerDataType } from "./type";
+import { getValidGlobalVarName } from "./utils";
 
-import type { MessagePanelDataType, MessageDetectorDataType, MessageWorkerDataType } from "./type";
+export const onMessageFromPanelOrWorkerOrDetector = (data: MessageHookDataType | MessagePanelDataType | MessageDetectorDataType | MessageWorkerDataType) => {
+  if (data.source !== DevToolSource) return;
 
-export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType | MessageDetectorDataType | MessageWorkerDataType) => {
+  const typedData = data as MessagePanelDataType;
+
+  if (typedData.agentId && typedData.agentId !== core.id) return;
+
   if (data?.type === MessageWorkerType.init || data?.type === MessagePanelType.show) {
     core.connect();
 
@@ -112,7 +117,7 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
   if (data?.type === MessagePanelType.varStore) {
     const id = data.data;
 
-    const { f, v: varStore } = getValueById(id);
+    const { f, v: varStore } = getValueFromId(id);
 
     if (f) {
       const varName = getValidGlobalVarName();
@@ -141,7 +146,7 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessagePanelDataType 
   if (data?.type === MessagePanelType.varSource) {
     const id = data.data;
 
-    const { v: varSource } = getValueById(id);
+    const { v: varSource } = getValueFromId(id);
 
     core.setSource(varSource);
 

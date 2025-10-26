@@ -684,11 +684,16 @@
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
     		    MessageHookType["origin"] = "hook-origin";
+    		    MessageHookType["clear"] = "hook-clear";
     		})(exports.MessageHookType || (exports.MessageHookType = {}));
     		exports.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
     		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessageProxyType = void 0;
+    		(function (MessageProxyType) {
+    		    MessageProxyType["init"] = "proxy-init";
+    		})(exports.MessageProxyType || (exports.MessageProxyType = {}));
     		exports.MessagePanelType = void 0;
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
@@ -1189,6 +1194,16 @@
     		    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     		};
 
+    		var id$1 = 0;
+    		// PlainNode is a simplified version of FiberNode just for show the structure
+    		var PlainNode = /** @class */ (function () {
+    		    // hooks: HOOKTree[];
+    		    function PlainNode(_id) {
+    		        this.i = _id || "".concat(id$1++);
+    		    }
+    		    return PlainNode;
+    		}());
+
     		// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
     		exports.NODE_TYPE = void 0;
     		(function (NODE_TYPE) {
@@ -1217,6 +1232,860 @@
     		    NODE_TYPE[NODE_TYPE["__scopeSuspense__"] = 2097152] = "__scopeSuspense__";
     		    NODE_TYPE[NODE_TYPE["__activity__"] = 4194304] = "__activity__";
     		})(exports.NODE_TYPE || (exports.NODE_TYPE = {}));
+
+    		var typeKeys = [];
+    		// SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
+    		var reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
+    		Object.keys(exports.NODE_TYPE).forEach(function (key) {
+    		    if (!key.startsWith("__")) {
+    		        typeKeys.push(+key);
+    		    }
+    		});
+    		var getTypeName = function (type) {
+    		    switch (type) {
+    		        case exports.NODE_TYPE.__internal__:
+    		            return "KEEP——Internal (not used)";
+    		        case exports.NODE_TYPE.__memo__:
+    		            return "Memo";
+    		        case exports.NODE_TYPE.__forwardRef__:
+    		            return "ForwardRef";
+    		        case exports.NODE_TYPE.__lazy__:
+    		            return "Lazy";
+    		        case exports.NODE_TYPE.__provider__:
+    		            return "Provider";
+    		        case exports.NODE_TYPE.__consumer__:
+    		            return "Consumer";
+    		        case exports.NODE_TYPE.__fragment__:
+    		            return "Fragment";
+    		        case exports.NODE_TYPE.__scope__:
+    		            return "Scope";
+    		        case exports.NODE_TYPE.__strict__:
+    		            return "Strict";
+    		        case exports.NODE_TYPE.__profiler__:
+    		            return "Profiler";
+    		        case exports.NODE_TYPE.__suspense__:
+    		            return "Suspense";
+    		        case exports.NODE_TYPE.__portal__:
+    		            return "Portal";
+    		        case exports.NODE_TYPE.__comment__:
+    		            return "Comment";
+    		        case exports.NODE_TYPE.__empty__:
+    		            return "Empty";
+    		        case exports.NODE_TYPE.__null__:
+    		            return "Null";
+    		        case exports.NODE_TYPE.__text__:
+    		            return "Text";
+    		        case exports.NODE_TYPE.__function__:
+    		            return "Function";
+    		        case exports.NODE_TYPE.__class__:
+    		            return "Class";
+    		        case exports.NODE_TYPE.__plain__:
+    		            return "Plain";
+    		        case exports.NODE_TYPE.__initial__:
+    		            return "Initial";
+    		        case exports.NODE_TYPE.__context__:
+    		            return "Context";
+    		        case exports.NODE_TYPE.__scopeLazy__:
+    		            return "ScopeLazy";
+    		        case exports.NODE_TYPE.__scopeSuspense__:
+    		            return "ScopeSuspense";
+    		        case exports.NODE_TYPE.__activity__:
+    		            return "Activity";
+    		        default:
+    		            return "";
+    		    }
+    		};
+    		var getFiberTag = function (node) {
+    		    var t = node.t;
+    		    var tag = [];
+    		    if (t & exports.NODE_TYPE.__memo__) {
+    		        tag.push("memo");
+    		    }
+    		    if (t & exports.NODE_TYPE.__forwardRef__) {
+    		        tag.push("forwardRef");
+    		    }
+    		    if (t & exports.NODE_TYPE.__lazy__) {
+    		        tag.push("lazy");
+    		    }
+    		    if (node.m) {
+    		        tag.push("compiler ✨");
+    		    }
+    		    return tag;
+    		};
+    		var getFiberType = function (fiber) {
+    		    var _a;
+    		    var t = fiber.type;
+    		    var hasCompiler = false;
+    		    // check react compiler
+    		    (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.listToFoot(function (l) {
+    		        var _a;
+    		        if (hasCompiler)
+    		            return;
+    		        if (l.type === reactShared.HOOK_TYPE.useMemo && ((_a = l.result) === null || _a === void 0 ? void 0 : _a[reactCompilerSymbol])) {
+    		            hasCompiler = true;
+    		        }
+    		    });
+    		    return { t: t, hasCompiler: hasCompiler };
+    		};
+    		var getNameFromRawType = function (rawType) {
+    		    if (typeof rawType === "object") {
+    		        return rawType.displayName || getNameFromRawType(rawType.render);
+    		    }
+    		    if (typeof rawType === "function") {
+    		        return rawType.displayName || rawType.name || "Anonymous";
+    		    }
+    		};
+    		// SEE @my-react/react-reconciler
+    		var getFiberName = function (fiber) {
+    		    var typedFiber = fiber;
+    		    if (fiber.type & exports.NODE_TYPE.__provider__) {
+    		        var typedElementType = fiber.elementType;
+    		        var name_1 = typedElementType.Context.displayName;
+    		        return "".concat(name_1 || "Context", ".Provider");
+    		    }
+    		    if (fiber.type & exports.NODE_TYPE.__context__) {
+    		        var typedElementType = fiber.elementType;
+    		        var name_2 = typedElementType.displayName;
+    		        return "".concat(name_2 || "Context");
+    		    }
+    		    if (fiber.type & exports.NODE_TYPE.__consumer__) {
+    		        var typedElementType = fiber.elementType;
+    		        var name_3 = typedElementType.Context.displayName;
+    		        return "".concat(name_3 || "Context", ".Consumer");
+    		    }
+    		    if (fiber.type & exports.NODE_TYPE.__lazy__) {
+    		        var typedElementType = fiber.elementType;
+    		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
+    		        var name_4 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
+    		        var element = typedFiber._debugElement;
+    		        var type = element === null || element === void 0 ? void 0 : element.type;
+    		        name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
+    		        return "".concat(name_4 || "Anonymous");
+    		    }
+    		    if (fiber.type & exports.NODE_TYPE.__portal__)
+    		        return "Portal";
+    		    if (fiber.type & exports.NODE_TYPE.__null__)
+    		        return "Null";
+    		    if (fiber.type & exports.NODE_TYPE.__empty__)
+    		        return "Empty";
+    		    if (fiber.type & exports.NODE_TYPE.__scope__)
+    		        return "Scope";
+    		    if (fiber.type & exports.NODE_TYPE.__scopeLazy__)
+    		        return "ScopeLazy";
+    		    if (fiber.type & exports.NODE_TYPE.__scopeSuspense__)
+    		        return "ScopeSuspense";
+    		    if (fiber.type & exports.NODE_TYPE.__activity__)
+    		        return "Activity";
+    		    if (fiber.type & exports.NODE_TYPE.__strict__)
+    		        return "Strict";
+    		    if (fiber.type & exports.NODE_TYPE.__profiler__)
+    		        return "Profiler";
+    		    if (fiber.type & exports.NODE_TYPE.__suspense__)
+    		        return "Suspense";
+    		    if (fiber.type & exports.NODE_TYPE.__comment__)
+    		        return "Comment";
+    		    if (fiber.type & exports.NODE_TYPE.__internal__)
+    		        return "KEEP\u2014\u2014Internal";
+    		    if (fiber.type & exports.NODE_TYPE.__fragment__)
+    		        return "Fragment";
+    		    if (fiber.type & exports.NODE_TYPE.__text__)
+    		        return "text";
+    		    if (typeof fiber.elementType === "string")
+    		        return "".concat(fiber.elementType);
+    		    if (typeof fiber.elementType === "function") {
+    		        var typedElementType = fiber.elementType;
+    		        var name_5 = typedElementType.displayName || typedElementType.name || "Anonymous";
+    		        var element = typedFiber._debugElement;
+    		        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    		        // @ts-ignore
+    		        var rawType = typedFiber.elementRawType;
+    		        var type = ((element === null || element === void 0 ? void 0 : element.type) || rawType);
+    		        name_5 = getNameFromRawType(type) || name_5;
+    		        return "".concat(name_5);
+    		    }
+    		    return "unknown";
+    		};
+    		// SEE @my-react/react-reconciler
+    		var isValidElement = function (element) {
+    		    return typeof element === "object" && !Array.isArray(element) && element !== null && (element === null || element === void 0 ? void 0 : element[reactShared.TYPEKEY]) === reactShared.Element;
+    		};
+    		// SEE @my-react/react-reconciler
+    		var getMockFiberFromElement = function (element) {
+    		    var _a, _b, _c, _d, _e;
+    		    var nodeType = exports.NODE_TYPE.__initial__;
+    		    var elementType = element.type;
+    		    var finalElement = element;
+    		    var pendingProps = element.props;
+    		    var ref = (_a = element.ref) !== null && _a !== void 0 ? _a : undefined;
+    		    var key = (_b = element.key) !== null && _b !== void 0 ? _b : undefined;
+    		    if (typeof elementType === "object" && elementType !== null) {
+    		        var typedElementType = elementType;
+    		        switch (typedElementType[reactShared.TYPEKEY]) {
+    		            case reactShared.Provider:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__provider__);
+    		                break;
+    		            // support react 19 context api
+    		            case reactShared.Context:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__context__);
+    		                break;
+    		            case reactShared.Consumer:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__consumer__);
+    		                break;
+    		            case reactShared.Memo:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__memo__);
+    		                elementType = typedElementType.render;
+    		                break;
+    		            case reactShared.ForwardRef:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__forwardRef__);
+    		                elementType = typedElementType.render;
+    		                break;
+    		            case reactShared.Lazy:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__lazy__);
+    		                break;
+    		            default:
+    		                throw new Error("[@my-react/react] invalid object element type \"".concat((_c = typedElementType[reactShared.TYPEKEY]) === null || _c === void 0 ? void 0 : _c.toString(), "\""));
+    		        }
+    		        if (typeof elementType === "object") {
+    		            if (elementType[reactShared.TYPEKEY] === reactShared.ForwardRef) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__forwardRef__);
+    		                elementType = elementType.render;
+    		            }
+    		            if (elementType[reactShared.TYPEKEY] === reactShared.Provider) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__provider__);
+    		            }
+    		            if (elementType[reactShared.TYPEKEY] === reactShared.Context) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__context__);
+    		            }
+    		            if (elementType[reactShared.TYPEKEY] === reactShared.Consumer) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__consumer__);
+    		            }
+    		        }
+    		        if (typeof elementType === "function") {
+    		            if ((_d = elementType.prototype) === null || _d === void 0 ? void 0 : _d.isMyReactComponent) {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__class__);
+    		            }
+    		            else {
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__function__);
+    		            }
+    		        }
+    		    }
+    		    else if (typeof elementType === "function") {
+    		        if ((_e = elementType.prototype) === null || _e === void 0 ? void 0 : _e.isMyReactComponent) {
+    		            nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__class__);
+    		        }
+    		        else {
+    		            nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__function__);
+    		        }
+    		    }
+    		    else if (typeof elementType === "symbol") {
+    		        switch (elementType) {
+    		            case reactShared.Root:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__internal__);
+    		                break;
+    		            case reactShared.Fragment:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__fragment__);
+    		                break;
+    		            case reactShared.Strict:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__strict__);
+    		                break;
+    		            case reactShared.Suspense:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__suspense__);
+    		                break;
+    		            case reactShared.Scope:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scope__);
+    		                break;
+    		            case reactShared.ScopeLazy:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scopeLazy__);
+    		                break;
+    		            case reactShared.ScopeSuspense:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scopeSuspense__);
+    		                break;
+    		            case reactShared.Comment:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__comment__);
+    		                break;
+    		            case reactShared.Portal:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__portal__);
+    		                break;
+    		            case reactShared.Profiler:
+    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__profiler__);
+    		                break;
+    		            default:
+    		                throw new Error("[@my-react/react] invalid symbol element type \"".concat(elementType === null || elementType === void 0 ? void 0 : elementType.toString(), "\""));
+    		        }
+    		    }
+    		    else if (typeof elementType === "string") {
+    		        nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__plain__);
+    		    }
+    		    else {
+    		        nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__empty__);
+    		    }
+    		    var mockFiber = {
+    		        type: nodeType,
+    		        elementType: elementType,
+    		        pendingProps: pendingProps,
+    		        key: key,
+    		        ref: ref,
+    		        _debugElement: finalElement,
+    		    };
+    		    return mockFiber;
+    		};
+    		var getElementName = function (element) { return "<".concat(getFiberName(getMockFiberFromElement(element)), " />"); };
+    		var getContextName = function (value) {
+    		    return value.displayName || "Context";
+    		};
+
+    		// SEE https://github.com/MrWangJustToDo/reactivity-store
+    		// -- reactivity-store utils --
+    		var ReactiveFlags;
+    		(function (ReactiveFlags) {
+    		    ReactiveFlags["SKIP"] = "__v_skip";
+    		    ReactiveFlags["IS_REACTIVE"] = "__v_isReactive";
+    		    ReactiveFlags["IS_READONLY"] = "__v_isReadonly";
+    		    ReactiveFlags["IS_SHALLOW"] = "__v_isShallow";
+    		    ReactiveFlags["RAW"] = "__v_raw";
+    		    ReactiveFlags["IS_REF"] = "__v_isRef";
+    		})(ReactiveFlags || (ReactiveFlags = {}));
+    		function isReactive(value) {
+    		    if (isReadonly(value)) {
+    		        return isReactive(value[ReactiveFlags.RAW]);
+    		    }
+    		    return !!(value && value[ReactiveFlags.IS_REACTIVE]);
+    		}
+    		function isReadonly(value) {
+    		    return !!(value && value[ReactiveFlags.IS_READONLY]);
+    		}
+    		function isShallow(value) {
+    		    return !!(value && value[ReactiveFlags.IS_SHALLOW]);
+    		}
+    		function isProxy(value) {
+    		    return value ? !!value[ReactiveFlags.RAW] : false;
+    		}
+    		function isRef(r) {
+    		    return r ? r[ReactiveFlags.IS_REF] === true : false;
+    		}
+
+    		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
+    		var emptyConstructor = {}.constructor;
+    		var id = 1;
+    		var idToValueMap = new Map();
+    		var valueToIdMap = new Map();
+    		var getType = function (value) {
+    		    if (isValidElement(value)) {
+    		        return "ReactElement";
+    		    }
+    		    if (isInBrowser && value && value instanceof Element) {
+    		        return "Element";
+    		    }
+    		    var type = Object.prototype.toString.call(value).slice(8, -1);
+    		    if (type === "Object" && typeof value[Symbol.iterator] === "function") {
+    		        return "Iterable";
+    		    }
+    		    if (type === "Custom" && value.constructor !== Object && value instanceof Object) {
+    		        // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
+    		        return "Object";
+    		    }
+    		    return type;
+    		};
+    		var getWrapperType = function (value) {
+    		    if (isReadonly(value)) {
+    		        return "Readonly";
+    		    }
+    		    if (isShallow(value)) {
+    		        return "Shallow";
+    		    }
+    		    if (isReactive(value)) {
+    		        return "Reactive";
+    		    }
+    		    if (isRef(value)) {
+    		        return "Ref";
+    		    }
+    		};
+    		var isObject = function (value) {
+    		    return (value !== "String" &&
+    		        value !== "Number" &&
+    		        value !== "Boolean" &&
+    		        value !== "Null" &&
+    		        value !== "Undefined" &&
+    		        value !== "Function" &&
+    		        value !== "AsyncFunction" &&
+    		        value !== "GeneratorFunction" &&
+    		        value !== "Symbol" &&
+    		        value !== "RegExp" &&
+    		        value !== "Promise" &&
+    		        value !== "Element" &&
+    		        value !== "WeakMap" &&
+    		        value !== "WeakSet");
+    		};
+    		var getTargetNode = function (value, type, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    var existId = valueToIdMap.get(value);
+    		    var wrapperType = getWrapperType(value);
+    		    var currentId = existId || id++;
+    		    var n = undefined;
+    		    if (type === "Object" && typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
+    		        n = value.constructor.name;
+    		    }
+    		    if (type === "ReactElement") {
+    		        n = getElementName(value);
+    		    }
+    		    idToValueMap.set(currentId, value);
+    		    valueToIdMap.set(value, currentId);
+    		    // full deep to load
+    		    if (deep === 0) {
+    		        return {
+    		            i: currentId,
+    		            t: type,
+    		            _t: wrapperType,
+    		            n: n,
+    		            v: undefined,
+    		            e: true,
+    		            l: false,
+    		        };
+    		    }
+    		    else {
+    		        if (type === "Array") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                _t: wrapperType,
+    		                v: value.map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Iterable") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                _t: wrapperType,
+    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Map") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                _t: wrapperType,
+    		                v: Array.from(value.entries()).map(function (_a) {
+    		                    var key = _a[0], val = _a[1];
+    		                    return ({
+    		                        t: "Array",
+    		                        e: true,
+    		                        v: [getNode(key, deep - 1), getNode(val, deep - 1)],
+    		                    });
+    		                }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Set") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                _t: wrapperType,
+    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "Object") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                _t: wrapperType,
+    		                n: n,
+    		                v: Object.keys(value).reduce(function (acc, key) {
+    		                    acc[key] = getNode(value[key], deep - 1);
+    		                    return acc;
+    		                }, {}),
+    		                e: true,
+    		            };
+    		        }
+    		        else if (type === "ReactElement") {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                _t: wrapperType,
+    		                n: n,
+    		                v: Object.keys(value).reduce(function (acc, key) {
+    		                    acc[key] = getNode(value[key], deep - 1);
+    		                    return acc;
+    		                }, {}),
+    		                e: true,
+    		            };
+    		        }
+    		        else {
+    		            return {
+    		                i: currentId,
+    		                t: type,
+    		                _t: wrapperType || "Object",
+    		                n: n,
+    		                v: getAllKeys(value).reduce(function (acc, key) {
+    		                    acc[key] = getNode(value[key], deep - 1);
+    		                    return acc;
+    		                }, {}),
+    		                e: true,
+    		            };
+    		        }
+    		    }
+    		};
+    		var getAllKeys = function (data) {
+    		    if (!data)
+    		        return [];
+    		    var keys = [];
+    		    for (var key in data) {
+    		        keys.push(key);
+    		    }
+    		    return keys;
+    		};
+    		var getNode = function (value, deep) {
+    		    if (deep === void 0) { deep = 3; }
+    		    try {
+    		        var type = getType(value);
+    		        var expandable = isObject(type);
+    		        if (type === "Promise" && (value.status === "fulfilled" || value.status === "rejected")) {
+    		            expandable = true;
+    		        }
+    		        if (expandable) {
+    		            // full deep to load
+    		            return getTargetNode(value, type, deep);
+    		        }
+    		        else {
+    		            var wrapperType = getWrapperType(value);
+    		            var existId = valueToIdMap.get(value);
+    		            var currentId = existId || id++;
+    		            idToValueMap.set(currentId, value);
+    		            valueToIdMap.set(value, currentId);
+    		            if (type === "Element") {
+    		                return {
+    		                    i: currentId,
+    		                    t: type,
+    		                    _t: wrapperType,
+    		                    v: "<".concat(value.tagName.toLowerCase(), " />"),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            if (type === "Error") {
+    		                return {
+    		                    i: currentId,
+    		                    t: type,
+    		                    _t: wrapperType,
+    		                    v: value.message,
+    		                    e: expandable,
+    		                };
+    		            }
+    		            if (typeof value === "object" && value !== null) {
+    		                return {
+    		                    i: currentId,
+    		                    t: type,
+    		                    _t: wrapperType,
+    		                    v: Object.prototype.toString.call(value),
+    		                    e: expandable,
+    		                };
+    		            }
+    		            else {
+    		                return {
+    		                    i: currentId,
+    		                    t: type,
+    		                    _t: wrapperType,
+    		                    v: String(value),
+    		                    e: expandable,
+    		                };
+    		            }
+    		        }
+    		    }
+    		    catch (e) {
+    		        return {
+    		            i: NaN,
+    		            t: "ReadError",
+    		            v: "Read data error: " + e.message,
+    		            e: false,
+    		        };
+    		    }
+    		};
+    		var getNodeFromId = function (id) {
+    		    var value = idToValueMap.get(id);
+    		    if (value) {
+    		        return getNode(value);
+    		    }
+    		};
+    		var getValueFromId = function (id) {
+    		    if (id && !Number.isNaN(id)) {
+    		        return { v: idToValueMap.get(id), f: true };
+    		    }
+    		    else {
+    		        return { v: undefined, f: false };
+    		    }
+    		};
+
+    		var getSource = function (fiber) {
+    		    if (fiber._debugElement) {
+    		        var element = fiber._debugElement;
+    		        return element._source;
+    		    }
+    		    return null;
+    		};
+    		var getTree = function (fiber) {
+    		    var tree = [];
+    		    var current = fiber;
+    		    var parent = current === null || current === void 0 ? void 0 : current.parent;
+    		    while (parent) {
+    		        var plain = getPlainNodeByFiber(parent);
+    		        var id = plain.i;
+    		        tree.push(id);
+    		        current = parent;
+    		        parent = parent.parent;
+    		    }
+    		    if (current) {
+    		        var typedCurrent = current;
+    		        var dispatch = typedCurrent.renderDispatch;
+    		        if (dispatch && dispatch.renderMode) {
+    		            var packageName = (dispatch === null || dispatch === void 0 ? void 0 : dispatch.renderPackage) || "@my-react";
+    		            tree.push("$$ ".concat(packageName, " ").concat(dispatch.renderMode));
+    		        }
+    		        if (dispatch && dispatch.version) {
+    		            if (dispatch.dispatcher) {
+    		                tree.push("$$ @my-react ".concat(dispatch.version));
+    		            }
+    		            else {
+    		                tree.push("$$ @my-react legacy ".concat(dispatch.version));
+    		            }
+    		        }
+    		        else {
+    		            tree.push("$$ @my-react legacy");
+    		        }
+    		    }
+    		    return tree;
+    		};
+    		var getProps = function (fiber) {
+    		    return getNode(fiber.pendingProps);
+    		};
+    		var getState = function (fiber) {
+    		    return getNode(fiber.pendingState);
+    		};
+
+    		var editorReducer = function (state, action) {
+    		    return typeof action === "function" ? action(state) : action;
+    		};
+    		var updateFiberByHook = function (fiber, params) {
+    		    var _a, _b, _c;
+    		    if (typeof params.hookIndex !== "number")
+    		        return "params not valid";
+    		    var hookNode = (_c = (_b = (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.toArray) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c[params.hookIndex];
+    		    if (!hookNode)
+    		        return "hook not found";
+    		    var nodeId = Number(params.id);
+    		    var parentId = Number(params.parentId);
+    		    var rootId = Number(params.rootId);
+    		    var currentData = getValueFromId(nodeId);
+    		    var parentData = getValueFromId(parentId);
+    		    var rootData = getValueFromId(rootId);
+    		    if (!currentData.f)
+    		        return "current hook state not exist";
+    		    var currentDataType = typeof currentData.v;
+    		    if (!parentData.f && currentDataType !== "boolean" && currentDataType !== "number" && currentDataType !== "string")
+    		        return "current hook state is not primitive";
+    		    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
+    		    // 更新成功
+    		    if (!parentData.f) {
+    		        var hookInstance = hookNode;
+    		        // oldVersion, not full support
+    		        if (hookInstance._dispatch) {
+    		            hookInstance._dispatch(newVal);
+    		        }
+    		        else {
+    		            hookInstance._update({ payLoad: function () { return newVal; }, reducer: editorReducer, isForce: true });
+    		        }
+    		        return;
+    		    }
+    		    if (parentData.f && !rootData.f) {
+    		        return "root hook state not exist";
+    		    }
+    		    // const parentDataValue = parentData.v;
+    		    // shallow update
+    		    if (parentData.v === rootData.v) {
+    		        var newPayLoad_1 = Object.assign({}, rootData.v);
+    		        newPayLoad_1[params.path] = newVal;
+    		        var hookInstance = hookNode;
+    		        if (hookInstance._dispatch) {
+    		            hookInstance._update({ isForce: true });
+    		        }
+    		        else {
+    		            hookInstance._update({ payLoad: function () { return newPayLoad_1; }, reducer: editorReducer, isForce: true });
+    		        }
+    		    }
+    		    else {
+    		        // deep update
+    		        var newPayLoad_2 = Object.assign({}, rootData.v);
+    		        parentData.v[params.path] = newVal;
+    		        var hookInstance = hookNode;
+    		        if (hookInstance._dispatch) {
+    		            hookInstance._update({ isForce: true });
+    		        }
+    		        else {
+    		            hookInstance._update({ payLoad: function () { return newPayLoad_2; }, reducer: editorReducer, isForce: true });
+    		        }
+    		    }
+    		};
+    		var updateFiberByProps = function (fiber, params) {
+    		    var nodeId = Number(params.id);
+    		    var parentId = Number(params.parentId);
+    		    var currentData = getValueFromId(nodeId);
+    		    var parentData = getValueFromId(parentId);
+    		    if (!currentData.f)
+    		        return "current props not exist";
+    		    var currentDataType = typeof currentData.v;
+    		    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
+    		    // deep props update
+    		    if (parentData.f) {
+    		        var newProps = Object.assign({}, fiber.pendingProps);
+    		        parentData.v[params.path] = newVal;
+    		        fiber.pendingProps = newProps;
+    		        fiber._update(reactShared.STATE_TYPE.__triggerSyncForce__);
+    		    }
+    		    else {
+    		        // shallow props update
+    		        var newProps = Object.assign({}, fiber.pendingProps);
+    		        newProps[params.path] = newVal;
+    		        fiber.pendingProps = newProps;
+    		        fiber._update(reactShared.STATE_TYPE.__triggerSyncForce__);
+    		    }
+    		};
+    		var updateFiberByState = function (fiber, params) {
+    		    var nodeId = Number(params.id);
+    		    var parentId = Number(params.parentId);
+    		    var currentData = getValueFromId(nodeId);
+    		    var parentData = getValueFromId(parentId);
+    		    if (!currentData.f)
+    		        return "current state not exist";
+    		    var currentDataType = typeof currentData.v;
+    		    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
+    		    // deep state update
+    		    if (parentData.f) {
+    		        var typedInstance = fiber.instance;
+    		        var newState = Object.assign({}, typedInstance.state);
+    		        parentData.v[params.path] = newVal;
+    		        typedInstance.setState(newState);
+    		    }
+    		    else {
+    		        // shallow state update
+    		        var typedInstance = fiber.instance;
+    		        var newState = Object.assign({}, typedInstance.state);
+    		        newState[params.path] = newVal;
+    		        typedInstance.setState(newState);
+    		    }
+    		};
+    		var updateFiberNode = function (fiber, params) {
+    		    try {
+    		        if (params.type === "state") {
+    		            return updateFiberByState(fiber, params);
+    		        }
+    		        if (params.type === "hook") {
+    		            return updateFiberByHook(fiber, params);
+    		        }
+    		        if (params.type === "props") {
+    		            return updateFiberByProps(fiber, params);
+    		        }
+    		        return "type not valid";
+    		    }
+    		    catch (e) {
+    		        return e.message;
+    		    }
+    		};
+
+    		var getHMRState = function (dispatch) {
+    		    return dispatch === null || dispatch === void 0 ? void 0 : dispatch["$$hasRefreshInject"];
+    		};
+    		var getHMRInternal = function (dispatch, type) {
+    		    var _a, _b;
+    		    return (_b = (_a = dispatch === null || dispatch === void 0 ? void 0 : dispatch.__dev_refresh_runtime__) === null || _a === void 0 ? void 0 : _a.getSignatureByType) === null || _b === void 0 ? void 0 : _b.call(_a, type);
+    		};
+    		var getHMRInternalFromId = function (id) {
+    		    var fiber = getFiberNodeById(id.toString());
+    		    var dispatch = getDispatchFromFiber(fiber);
+    		    var hmrEnabled = getHMRState(dispatch);
+    		    if (!hmrEnabled)
+    		        return;
+    		    if (dispatch && fiber && reactShared.include(fiber.type, reactShared.merge(exports.NODE_TYPE.__function__, exports.NODE_TYPE.__class__))) {
+    		        return getHMRInternal(dispatch, fiber.elementType);
+    		    }
+    		};
+
+    		/**
+    		 * Copyright (c) Meta Platforms, Inc. and affiliates.
+    		 *
+    		 * This source code is licensed under the MIT license found in the
+    		 * LICENSE file in the root directory of this source tree.
+    		 *
+    		 */
+    		// This is a DevTools fork of shared/ConsolePatchingDev.
+    		// The shared console patching code is DEV-only.
+    		// We can't use it since DevTools only ships production builds.
+    		// Helpers to patch console.logs to avoid logging during side-effect free
+    		// replaying on render function. This currently only patches the object
+    		// lazily which won't cover if the log function was extracted eagerly.
+    		// We could also eagerly patch the method.
+    		var disabledDepth = 0;
+    		var prevLog;
+    		var prevInfo;
+    		var prevWarn;
+    		var prevError;
+    		var prevGroup;
+    		var prevGroupCollapsed;
+    		var prevGroupEnd;
+    		function disabledLog() { }
+    		disabledLog.__reactDisabledLog = true;
+    		function disableLogs() {
+    		    if (disabledDepth === 0) {
+    		        prevLog = console.log;
+    		        prevInfo = console.info;
+    		        prevWarn = console.warn;
+    		        prevError = console.error;
+    		        prevGroup = console.group;
+    		        prevGroupCollapsed = console.groupCollapsed;
+    		        prevGroupEnd = console.groupEnd;
+    		        // https://github.com/facebook/react/issues/19099
+    		        var props = {
+    		            configurable: true,
+    		            enumerable: true,
+    		            value: disabledLog,
+    		            writable: true,
+    		        };
+    		        // $FlowFixMe[cannot-write] Flow thinks console is immutable.
+    		        Object.defineProperties(console, {
+    		            info: props,
+    		            log: props,
+    		            warn: props,
+    		            error: props,
+    		            group: props,
+    		            groupCollapsed: props,
+    		            groupEnd: props,
+    		        });
+    		    }
+    		    disabledDepth++;
+    		}
+    		function reenableLogs() {
+    		    disabledDepth--;
+    		    if (disabledDepth === 0) {
+    		        var props = {
+    		            configurable: true,
+    		            enumerable: true,
+    		            writable: true,
+    		        };
+    		        // $FlowFixMe[cannot-write] Flow thinks console is immutable.
+    		        Object.defineProperties(console, {
+    		            log: __assign(__assign({}, props), { value: prevLog }),
+    		            info: __assign(__assign({}, props), { value: prevInfo }),
+    		            warn: __assign(__assign({}, props), { value: prevWarn }),
+    		            error: __assign(__assign({}, props), { value: prevError }),
+    		            group: __assign(__assign({}, props), { value: prevGroup }),
+    		            groupCollapsed: __assign(__assign({}, props), { value: prevGroupCollapsed }),
+    		            groupEnd: __assign(__assign({}, props), { value: prevGroupEnd }),
+    		        });
+    		    }
+    		    if (disabledDepth < 0) {
+    		        console.error('disabledDepth fell below zero. ' +
+    		            'This is a bug in React. Please file an issue.');
+    		    }
+    		}
 
     		// https://github.com/facebook/react/blob/main/packages/react-debug-tools/src/ReactDebugHooks.js
     		/* eslint-disable @typescript-eslint/no-unused-vars */
@@ -2047,102 +2916,137 @@
     		    }
     		}
 
-    		/**
-    		 * Copyright (c) Meta Platforms, Inc. and affiliates.
-    		 *
-    		 * This source code is licensed under the MIT license found in the
-    		 * LICENSE file in the root directory of this source tree.
-    		 *
-    		 */
-    		// This is a DevTools fork of shared/ConsolePatchingDev.
-    		// The shared console patching code is DEV-only.
-    		// We can't use it since DevTools only ships production builds.
-    		// Helpers to patch console.logs to avoid logging during side-effect free
-    		// replaying on render function. This currently only patches the object
-    		// lazily which won't cover if the log function was extracted eagerly.
-    		// We could also eagerly patch the method.
-    		var disabledDepth = 0;
-    		var prevLog;
-    		var prevInfo;
-    		var prevWarn;
-    		var prevError;
-    		var prevGroup;
-    		var prevGroupCollapsed;
-    		var prevGroupEnd;
-    		function disabledLog() { }
-    		disabledLog.__reactDisabledLog = true;
-    		function disableLogs() {
-    		    if (disabledDepth === 0) {
-    		        prevLog = console.log;
-    		        prevInfo = console.info;
-    		        prevWarn = console.warn;
-    		        prevError = console.error;
-    		        prevGroup = console.group;
-    		        prevGroupCollapsed = console.groupCollapsed;
-    		        prevGroupEnd = console.groupEnd;
-    		        // https://github.com/facebook/react/issues/19099
-    		        var props = {
-    		            configurable: true,
-    		            enumerable: true,
-    		            value: disabledLog,
-    		            writable: true,
+    		var linkStateToHookIndex = new WeakMap();
+    		var parseHooksTreeToHOOKTree = function (node, d, p) {
+    		    var _p = p || { index: 0 };
+    		    return node.map(function (item) {
+    		        var id = item.id, name = item.name, value = item.value, subHooks = item.subHooks, isStateEditable = item.isStateEditable;
+    		        var isHook = !subHooks || subHooks.length === 0;
+    		        var children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, _p) : undefined;
+    		        return {
+    		            k: id === null || id === void 0 ? void 0 : id.toString(),
+    		            e: isStateEditable,
+    		            i: isHook ? _p.index++ : undefined,
+    		            n: name || "Anonymous",
+    		            v: getNode(value),
+    		            d: d,
+    		            h: isHook,
+    		            c: children,
+    		            // all the hooks key
+    		            keys: isHook ? [id] : children.map(function (c) { return c.keys; }).flat(),
     		        };
-    		        // $FlowFixMe[cannot-write] Flow thinks console is immutable.
-    		        Object.defineProperties(console, {
-    		            info: props,
-    		            log: props,
-    		            warn: props,
-    		            error: props,
-    		            group: props,
-    		            groupCollapsed: props,
-    		            groupEnd: props,
+    		    });
+    		};
+    		var getHookName = function (type) {
+    		    switch (type) {
+    		        case reactShared.HOOK_TYPE.useReducer:
+    		            return "Reducer";
+    		        case reactShared.HOOK_TYPE.useEffect:
+    		            return "Effect";
+    		        case reactShared.HOOK_TYPE.useLayoutEffect:
+    		            return "LayoutEffect";
+    		        case reactShared.HOOK_TYPE.useMemo:
+    		            return "Memo";
+    		        case reactShared.HOOK_TYPE.useCallback:
+    		            return "Callback";
+    		        case reactShared.HOOK_TYPE.useRef:
+    		            return "Ref";
+    		        case reactShared.HOOK_TYPE.useImperativeHandle:
+    		            return "ImperativeHandle";
+    		        case reactShared.HOOK_TYPE.useDebugValue:
+    		            return "DebugValue";
+    		        case reactShared.HOOK_TYPE.useContext:
+    		            return "Context";
+    		        case reactShared.HOOK_TYPE.useDeferredValue:
+    		            return "DeferredValue";
+    		        case reactShared.HOOK_TYPE.useTransition:
+    		            return "Transition";
+    		        case reactShared.HOOK_TYPE.useId:
+    		            return "Id";
+    		        case reactShared.HOOK_TYPE.useSyncExternalStore:
+    		            return "SyncExternalStore";
+    		        case reactShared.HOOK_TYPE.useInsertionEffect:
+    		            return "InsertionEffect";
+    		        case reactShared.HOOK_TYPE.useState:
+    		            return "State";
+    		        case reactShared.HOOK_TYPE.useSignal:
+    		            return "Signal";
+    		    }
+    		};
+    		var getHookNormal = function (fiber) {
+    		    var _a;
+    		    var final = [];
+    		    if (!fiber.hookList)
+    		        return final;
+    		    var hookList = fiber.hookList;
+    		    var processStack = function (hook, index) {
+    		        var _a;
+    		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
+    		        var isRef = hook.type === reactShared.HOOK_TYPE.useRef;
+    		        var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
+    		        final.push({
+    		            k: index.toString(),
+    		            i: index,
+    		            n: isContext ? getContextName(hook.value) : getHookName(hook.type),
+    		            v: getNode(isEffect ? hook.value : isRef ? (_a = hook.result) === null || _a === void 0 ? void 0 : _a.current : hook.result),
+    		            d: 0,
+    		            h: true,
+    		            keys: [index],
     		        });
+    		    };
+    		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.toArray()) === null || _a === void 0 ? void 0 : _a.forEach(processStack);
+    		    return final;
+    		};
+    		// disable all log
+    		var getHookStack = function (fiber, dispatch) {
+    		    var final = [];
+    		    if (!fiber.hookList)
+    		        return final;
+    		    disableLogs();
+    		    var hookTree = inspectHooksOfFiber(fiber, dispatch.dispatcher);
+    		    reenableLogs();
+    		    return parseHooksTreeToHOOKTree(hookTree, 0);
+    		};
+    		var getHook = function (fiber) {
+    		    var dispatch = getDispatchFromFiber(fiber);
+    		    if (dispatch && dispatch.dispatcher) {
+    		        try {
+    		            return getHookStack(fiber, dispatch);
+    		        }
+    		        catch (e) {
+    		            console.error(e);
+    		            return getHookNormal(fiber);
+    		        }
     		    }
-    		    disabledDepth++;
-    		}
-    		function reenableLogs() {
-    		    disabledDepth--;
-    		    if (disabledDepth === 0) {
-    		        var props = {
-    		            configurable: true,
-    		            enumerable: true,
-    		            writable: true,
-    		        };
-    		        // $FlowFixMe[cannot-write] Flow thinks console is immutable.
-    		        Object.defineProperties(console, {
-    		            log: __assign(__assign({}, props), { value: prevLog }),
-    		            info: __assign(__assign({}, props), { value: prevInfo }),
-    		            warn: __assign(__assign({}, props), { value: prevWarn }),
-    		            error: __assign(__assign({}, props), { value: prevError }),
-    		            group: __assign(__assign({}, props), { value: prevGroup }),
-    		            groupCollapsed: __assign(__assign({}, props), { value: prevGroupCollapsed }),
-    		            groupEnd: __assign(__assign({}, props), { value: prevGroupEnd }),
-    		        });
+    		    else {
+    		        return getHookNormal(fiber);
     		    }
-    		    if (disabledDepth < 0) {
-    		        console.error('disabledDepth fell below zero. ' +
-    		            'This is a bug in React. Please file an issue.');
+    		};
+    		var tryLinkStateToHookIndex = function (fiber, state) {
+    		    var _a, _b, _c, _d, _e, _f;
+    		    if (state.needUpdate && state.nodes) {
+    		        // filter all hook update queue
+    		        var nodes = (_b = (_a = state.nodes) === null || _a === void 0 ? void 0 : _a.filter) === null || _b === void 0 ? void 0 : _b.call(_a, function (node) { return node.type === reactShared.UpdateQueueType.hook; });
+    		        // get all the keys from the nodes;
+    		        var allHooksArray_1 = ((_d = (_c = fiber.hookList) === null || _c === void 0 ? void 0 : _c.toArray) === null || _d === void 0 ? void 0 : _d.call(_c)) || [];
+    		        var keys = ((_f = (_e = nodes === null || nodes === void 0 ? void 0 : nodes.map) === null || _e === void 0 ? void 0 : _e.call(nodes, function (node) { var _a; return (_a = allHooksArray_1 === null || allHooksArray_1 === void 0 ? void 0 : allHooksArray_1.findIndex) === null || _a === void 0 ? void 0 : _a.call(allHooksArray_1, function (_node) { return (node === null || node === void 0 ? void 0 : node.trigger) === _node; }); })) === null || _f === void 0 ? void 0 : _f.filter(function (i) { return i !== -1; })) || [];
+    		        // link the keys to the state
+    		        linkStateToHookIndex.set(state, keys);
     		    }
-    		}
+    		};
+    		var getHookIndexFromState = function (state) {
+    		    return linkStateToHookIndex.get(state);
+    		};
+    		var deleteLinkState = function (state) {
+    		    linkStateToHookIndex.delete(state);
+    		};
 
-    		var id$1 = 0;
-    		// PlainNode is a simplified version of FiberNode just for show the structure
-    		var PlainNode = /** @class */ (function () {
-    		    // hooks: HOOKTree[];
-    		    function PlainNode(_id) {
-    		        this.i = _id || "".concat(id$1++);
-    		    }
-    		    return PlainNode;
-    		}());
-
-    		/* eslint-disable max-lines */
     		var treeMap = new Map();
     		var detailMap = new Map();
     		var fiberStore = new Map();
     		var domToFiber = new WeakMap();
     		var plainStore = new Map();
     		var directory = {};
-    		var linkStateToHookIndex = new WeakMap();
     		var count = 0;
     		var shallowAssignFiber = function (plain, fiber) {
     		    var hasKey = fiber.key !== null && fiber.key !== undefined;
@@ -2242,11 +3146,6 @@
     		    }
     		    return { current: current, directory: directory };
     		};
-    		var generateTreeMap = function (dispatch) {
-    		    var rootFiber = dispatch.rootFiber;
-    		    var rootNode = loopTree(rootFiber);
-    		    return rootNode;
-    		};
     		var unmountPlainNode = function (_fiber, _runtime) {
     		    if (!_fiber)
     		        return;
@@ -2282,17 +3181,22 @@
     		    var node = getPlainNodeByFiber(fiber);
     		    return node === null || node === void 0 ? void 0 : node.i;
     		};
-    		var getTreeByFiber = function (fiber) {
+    		var getRootTreeByFiber = function (fiber) {
     		    if (!fiber)
     		        return null;
     		    if (fiber.parent) {
-    		        return getTreeByFiber(fiber.parent);
+    		        return getRootTreeByFiber(fiber.parent);
     		    }
     		    else {
     		        return getPlainNodeByFiber(fiber);
     		    }
     		};
-    		var getPlainNodeArrayByList = function (list) {
+    		var inspectDispatch = function (dispatch) {
+    		    var rootFiber = dispatch.rootFiber;
+    		    var map = loopTree(rootFiber);
+    		    return map;
+    		};
+    		var inspectList = function (list) {
     		    var hasViewList = new WeakSet();
     		    var result = [];
     		    list.listToFoot(function (fiber) {
@@ -2306,7 +3210,7 @@
     		    });
     		    return { result: result, directory: directory };
     		};
-    		var getDetailNodeByFiber = function (fiber) {
+    		var inspectFiber = function (fiber) {
     		    var plainNode = getPlainNodeByFiber(fiber);
     		    if (!plainNode) {
     		        throw new Error("plainNode not found, look like a bug for @my-react/devtools");
@@ -2376,9 +3280,6 @@
     		    }
     		    return nodes;
     		};
-    		var getFiberNodeById = function (id) {
-    		    return fiberStore.get(id);
-    		};
     		var getDispatchFromFiber = function (fiber) {
     		    if (!fiber)
     		        return;
@@ -2388,604 +3289,11 @@
     		    }
     		    return getDispatchFromFiber(fiber.parent);
     		};
-    		var editorReducer = function (state, action) {
-    		    return typeof action === "function" ? action(state) : action;
-    		};
-    		var updateFiberByHook = function (fiber, params) {
-    		    var _a, _b, _c;
-    		    if (typeof params.hookIndex !== "number")
-    		        return "params not valid";
-    		    var hookNode = (_c = (_b = (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.toArray) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c[params.hookIndex];
-    		    if (!hookNode)
-    		        return "hook not found";
-    		    var nodeId = Number(params.id);
-    		    var parentId = Number(params.parentId);
-    		    var rootId = Number(params.rootId);
-    		    var currentData = getValueById(nodeId);
-    		    var parentData = getValueById(parentId);
-    		    var rootData = getValueById(rootId);
-    		    if (!currentData.f)
-    		        return "current hook state not exist";
-    		    var currentDataType = typeof currentData.v;
-    		    if (!parentData.f && currentDataType !== "boolean" && currentDataType !== "number" && currentDataType !== "string")
-    		        return "current hook state is not primitive";
-    		    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
-    		    // 更新成功
-    		    if (!parentData.f) {
-    		        var hookInstance = hookNode;
-    		        // oldVersion, not full support
-    		        if (hookInstance._dispatch) {
-    		            hookInstance._dispatch(newVal);
-    		        }
-    		        else {
-    		            hookInstance._update({ payLoad: function () { return newVal; }, reducer: editorReducer, isForce: true });
-    		        }
-    		        return;
-    		    }
-    		    if (parentData.f && !rootData.f) {
-    		        return "root hook state not exist";
-    		    }
-    		    // const parentDataValue = parentData.v;
-    		    // shallow update
-    		    if (parentData.v === rootData.v) {
-    		        var newPayLoad_1 = Object.assign({}, rootData.v);
-    		        newPayLoad_1[params.path] = newVal;
-    		        var hookInstance = hookNode;
-    		        if (hookInstance._dispatch) {
-    		            hookInstance._update({ isForce: true });
-    		        }
-    		        else {
-    		            hookInstance._update({ payLoad: function () { return newPayLoad_1; }, reducer: editorReducer, isForce: true });
-    		        }
-    		    }
-    		    else {
-    		        // deep update
-    		        var newPayLoad_2 = Object.assign({}, rootData.v);
-    		        parentData.v[params.path] = newVal;
-    		        var hookInstance = hookNode;
-    		        if (hookInstance._dispatch) {
-    		            hookInstance._update({ isForce: true });
-    		        }
-    		        else {
-    		            hookInstance._update({ payLoad: function () { return newPayLoad_2; }, reducer: editorReducer, isForce: true });
-    		        }
-    		    }
-    		};
-    		var updateFiberByProps = function (fiber, params) {
-    		    var nodeId = Number(params.id);
-    		    var parentId = Number(params.parentId);
-    		    var currentData = getValueById(nodeId);
-    		    var parentData = getValueById(parentId);
-    		    if (!currentData.f)
-    		        return "current props not exist";
-    		    var currentDataType = typeof currentData.v;
-    		    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
-    		    // deep props update
-    		    if (parentData.f) {
-    		        var newProps = Object.assign({}, fiber.pendingProps);
-    		        parentData.v[params.path] = newVal;
-    		        fiber.pendingProps = newProps;
-    		        fiber._update(reactShared.STATE_TYPE.__triggerSyncForce__);
-    		    }
-    		    else {
-    		        // shallow props update
-    		        var newProps = Object.assign({}, fiber.pendingProps);
-    		        newProps[params.path] = newVal;
-    		        fiber.pendingProps = newProps;
-    		        fiber._update(reactShared.STATE_TYPE.__triggerSyncForce__);
-    		    }
-    		};
-    		var updateFiberByState = function (fiber, params) {
-    		    var nodeId = Number(params.id);
-    		    var parentId = Number(params.parentId);
-    		    var currentData = getValueById(nodeId);
-    		    var parentData = getValueById(parentId);
-    		    if (!currentData.f)
-    		        return "current state not exist";
-    		    var currentDataType = typeof currentData.v;
-    		    var newVal = currentDataType === "boolean" ? (params.newVal === "true" ? true : false) : currentDataType === "number" ? Number(params.newVal) : params.newVal;
-    		    // deep state update
-    		    if (parentData.f) {
-    		        var typedInstance = fiber.instance;
-    		        var newState = Object.assign({}, typedInstance.state);
-    		        parentData.v[params.path] = newVal;
-    		        typedInstance.setState(newState);
-    		    }
-    		    else {
-    		        // shallow state update
-    		        var typedInstance = fiber.instance;
-    		        var newState = Object.assign({}, typedInstance.state);
-    		        newState[params.path] = newVal;
-    		        typedInstance.setState(newState);
-    		    }
-    		};
-    		var updateFiberNode = function (fiber, params) {
-    		    try {
-    		        if (params.type === "state") {
-    		            return updateFiberByState(fiber, params);
-    		        }
-    		        if (params.type === "hook") {
-    		            return updateFiberByHook(fiber, params);
-    		        }
-    		        if (params.type === "props") {
-    		            return updateFiberByProps(fiber, params);
-    		        }
-    		        return "type not valid";
-    		    }
-    		    catch (e) {
-    		        return e.message;
-    		    }
-    		};
-    		var tryLinkStateToHookIndex = function (fiber, state) {
-    		    var _a, _b, _c, _e, _f, _g;
-    		    if (state.needUpdate && state.nodes) {
-    		        // filter all hook update queue
-    		        var nodes = (_b = (_a = state.nodes) === null || _a === void 0 ? void 0 : _a.filter) === null || _b === void 0 ? void 0 : _b.call(_a, function (node) { return node.type === reactShared.UpdateQueueType.hook; });
-    		        // get all the keys from the nodes;
-    		        var allHooksArray_1 = ((_e = (_c = fiber.hookList) === null || _c === void 0 ? void 0 : _c.toArray) === null || _e === void 0 ? void 0 : _e.call(_c)) || [];
-    		        var keys = ((_g = (_f = nodes === null || nodes === void 0 ? void 0 : nodes.map) === null || _f === void 0 ? void 0 : _f.call(nodes, function (node) { var _a; return (_a = allHooksArray_1 === null || allHooksArray_1 === void 0 ? void 0 : allHooksArray_1.findIndex) === null || _a === void 0 ? void 0 : _a.call(allHooksArray_1, function (_node) { return (node === null || node === void 0 ? void 0 : node.trigger) === _node; }); })) === null || _g === void 0 ? void 0 : _g.filter(function (i) { return i !== -1; })) || [];
-    		        // link the keys to the state
-    		        linkStateToHookIndex.set(state, keys);
-    		    }
-    		};
-    		var getHookIndexFromState = function (state) {
-    		    return linkStateToHookIndex.get(state);
-    		};
-    		var deleteLinkState = function (state) {
-    		    linkStateToHookIndex.delete(state);
+    		var getFiberNodeById = function (id) {
+    		    return fiberStore.get(id);
     		};
 
-    		var typeKeys = [];
-    		// SEE https://github.com/facebook/react/blob/main/compiler/packages/react-compiler-runtime/src/index.ts
-    		var reactCompilerSymbol = Symbol.for("react.memo_cache_sentinel");
-    		Object.keys(exports.NODE_TYPE).forEach(function (key) {
-    		    if (!key.startsWith("__")) {
-    		        typeKeys.push(+key);
-    		    }
-    		});
-    		var getTypeName = function (type) {
-    		    switch (type) {
-    		        case exports.NODE_TYPE.__internal__:
-    		            return "KEEP——Internal (not used)";
-    		        case exports.NODE_TYPE.__memo__:
-    		            return "Memo";
-    		        case exports.NODE_TYPE.__forwardRef__:
-    		            return "ForwardRef";
-    		        case exports.NODE_TYPE.__lazy__:
-    		            return "Lazy";
-    		        case exports.NODE_TYPE.__provider__:
-    		            return "Provider";
-    		        case exports.NODE_TYPE.__consumer__:
-    		            return "Consumer";
-    		        case exports.NODE_TYPE.__fragment__:
-    		            return "Fragment";
-    		        case exports.NODE_TYPE.__scope__:
-    		            return "Scope";
-    		        case exports.NODE_TYPE.__strict__:
-    		            return "Strict";
-    		        case exports.NODE_TYPE.__profiler__:
-    		            return "Profiler";
-    		        case exports.NODE_TYPE.__suspense__:
-    		            return "Suspense";
-    		        case exports.NODE_TYPE.__portal__:
-    		            return "Portal";
-    		        case exports.NODE_TYPE.__comment__:
-    		            return "Comment";
-    		        case exports.NODE_TYPE.__empty__:
-    		            return "Empty";
-    		        case exports.NODE_TYPE.__null__:
-    		            return "Null";
-    		        case exports.NODE_TYPE.__text__:
-    		            return "Text";
-    		        case exports.NODE_TYPE.__function__:
-    		            return "Function";
-    		        case exports.NODE_TYPE.__class__:
-    		            return "Class";
-    		        case exports.NODE_TYPE.__plain__:
-    		            return "Plain";
-    		        case exports.NODE_TYPE.__initial__:
-    		            return "Initial";
-    		        case exports.NODE_TYPE.__context__:
-    		            return "Context";
-    		        case exports.NODE_TYPE.__scopeLazy__:
-    		            return "ScopeLazy";
-    		        case exports.NODE_TYPE.__scopeSuspense__:
-    		            return "ScopeSuspense";
-    		        case exports.NODE_TYPE.__activity__:
-    		            return "Activity";
-    		        default:
-    		            return "";
-    		    }
-    		};
-    		var getFiberTag = function (node) {
-    		    var t = node.t;
-    		    var tag = [];
-    		    if (t & exports.NODE_TYPE.__memo__) {
-    		        tag.push("memo");
-    		    }
-    		    if (t & exports.NODE_TYPE.__forwardRef__) {
-    		        tag.push("forwardRef");
-    		    }
-    		    if (t & exports.NODE_TYPE.__lazy__) {
-    		        tag.push("lazy");
-    		    }
-    		    if (node.m) {
-    		        tag.push("compiler ✨");
-    		    }
-    		    return tag;
-    		};
-    		var getFiberType = function (fiber) {
-    		    var _a;
-    		    var t = fiber.type;
-    		    var hasCompiler = false;
-    		    // check react compiler
-    		    (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.listToFoot(function (l) {
-    		        var _a;
-    		        if (hasCompiler)
-    		            return;
-    		        if (l.type === reactShared.HOOK_TYPE.useMemo && ((_a = l.result) === null || _a === void 0 ? void 0 : _a[reactCompilerSymbol])) {
-    		            hasCompiler = true;
-    		        }
-    		    });
-    		    return { t: t, hasCompiler: hasCompiler };
-    		};
-    		var getNameFromRawType = function (rawType) {
-    		    if (typeof rawType === "object") {
-    		        return rawType.displayName || getNameFromRawType(rawType.render);
-    		    }
-    		    if (typeof rawType === "function") {
-    		        return rawType.displayName || rawType.name || "Anonymous";
-    		    }
-    		};
-    		// SEE @my-react/react-reconciler
-    		var getFiberName = function (fiber) {
-    		    var typedFiber = fiber;
-    		    if (fiber.type & exports.NODE_TYPE.__provider__) {
-    		        var typedElementType = fiber.elementType;
-    		        var name_1 = typedElementType.Context.displayName;
-    		        return "".concat(name_1 || "Context", ".Provider");
-    		    }
-    		    if (fiber.type & exports.NODE_TYPE.__context__) {
-    		        var typedElementType = fiber.elementType;
-    		        var name_2 = typedElementType.displayName;
-    		        return "".concat(name_2 || "Context");
-    		    }
-    		    if (fiber.type & exports.NODE_TYPE.__consumer__) {
-    		        var typedElementType = fiber.elementType;
-    		        var name_3 = typedElementType.Context.displayName;
-    		        return "".concat(name_3 || "Context", ".Consumer");
-    		    }
-    		    if (fiber.type & exports.NODE_TYPE.__lazy__) {
-    		        var typedElementType = fiber.elementType;
-    		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
-    		        var name_4 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
-    		        var element = typedFiber._debugElement;
-    		        var type = element === null || element === void 0 ? void 0 : element.type;
-    		        name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
-    		        return "".concat(name_4 || "Anonymous");
-    		    }
-    		    if (fiber.type & exports.NODE_TYPE.__portal__)
-    		        return "Portal";
-    		    if (fiber.type & exports.NODE_TYPE.__null__)
-    		        return "Null";
-    		    if (fiber.type & exports.NODE_TYPE.__empty__)
-    		        return "Empty";
-    		    if (fiber.type & exports.NODE_TYPE.__scope__)
-    		        return "Scope";
-    		    if (fiber.type & exports.NODE_TYPE.__scopeLazy__)
-    		        return "ScopeLazy";
-    		    if (fiber.type & exports.NODE_TYPE.__scopeSuspense__)
-    		        return "ScopeSuspense";
-    		    if (fiber.type & exports.NODE_TYPE.__activity__)
-    		        return "Activity";
-    		    if (fiber.type & exports.NODE_TYPE.__strict__)
-    		        return "Strict";
-    		    if (fiber.type & exports.NODE_TYPE.__profiler__)
-    		        return "Profiler";
-    		    if (fiber.type & exports.NODE_TYPE.__suspense__)
-    		        return "Suspense";
-    		    if (fiber.type & exports.NODE_TYPE.__comment__)
-    		        return "Comment";
-    		    if (fiber.type & exports.NODE_TYPE.__internal__)
-    		        return "KEEP\u2014\u2014Internal";
-    		    if (fiber.type & exports.NODE_TYPE.__fragment__)
-    		        return "Fragment";
-    		    if (fiber.type & exports.NODE_TYPE.__text__)
-    		        return "text";
-    		    if (typeof fiber.elementType === "string")
-    		        return "".concat(fiber.elementType);
-    		    if (typeof fiber.elementType === "function") {
-    		        var typedElementType = fiber.elementType;
-    		        var name_5 = typedElementType.displayName || typedElementType.name || "Anonymous";
-    		        var element = typedFiber._debugElement;
-    		        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    		        // @ts-ignore
-    		        var rawType = typedFiber.elementRawType;
-    		        // may be a Suspense element
-    		        var type = ((element === null || element === void 0 ? void 0 : element.type) || rawType);
-    		        name_5 = getNameFromRawType(type) || name_5;
-    		        return "".concat(name_5);
-    		    }
-    		    return "unknown";
-    		};
-    		// SEE @my-react/react-reconciler
-    		var isValidElement = function (element) {
-    		    return typeof element === "object" && !Array.isArray(element) && element !== null && (element === null || element === void 0 ? void 0 : element[reactShared.TYPEKEY]) === reactShared.Element;
-    		};
-    		// SEE @my-react/react-reconciler
-    		var getMockFiberFromElement = function (element) {
-    		    var _a, _b, _c, _d, _e;
-    		    var nodeType = exports.NODE_TYPE.__initial__;
-    		    var elementType = element.type;
-    		    var finalElement = element;
-    		    var pendingProps = element.props;
-    		    var ref = (_a = element.ref) !== null && _a !== void 0 ? _a : undefined;
-    		    var key = (_b = element.key) !== null && _b !== void 0 ? _b : undefined;
-    		    if (typeof elementType === "object" && elementType !== null) {
-    		        var typedElementType = elementType;
-    		        switch (typedElementType[reactShared.TYPEKEY]) {
-    		            case reactShared.Provider:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__provider__);
-    		                break;
-    		            // support react 19 context api
-    		            case reactShared.Context:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__context__);
-    		                break;
-    		            case reactShared.Consumer:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__consumer__);
-    		                break;
-    		            case reactShared.Memo:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__memo__);
-    		                elementType = typedElementType.render;
-    		                break;
-    		            case reactShared.ForwardRef:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__forwardRef__);
-    		                elementType = typedElementType.render;
-    		                break;
-    		            case reactShared.Lazy:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__lazy__);
-    		                break;
-    		            default:
-    		                throw new Error("[@my-react/react] invalid object element type \"".concat((_c = typedElementType[reactShared.TYPEKEY]) === null || _c === void 0 ? void 0 : _c.toString(), "\""));
-    		        }
-    		        if (typeof elementType === "object") {
-    		            if (elementType[reactShared.TYPEKEY] === reactShared.ForwardRef) {
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__forwardRef__);
-    		                elementType = elementType.render;
-    		            }
-    		            if (elementType[reactShared.TYPEKEY] === reactShared.Provider) {
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__provider__);
-    		            }
-    		            if (elementType[reactShared.TYPEKEY] === reactShared.Context) {
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__context__);
-    		            }
-    		            if (elementType[reactShared.TYPEKEY] === reactShared.Consumer) {
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__consumer__);
-    		            }
-    		        }
-    		        if (typeof elementType === "function") {
-    		            if ((_d = elementType.prototype) === null || _d === void 0 ? void 0 : _d.isMyReactComponent) {
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__class__);
-    		            }
-    		            else {
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__function__);
-    		            }
-    		        }
-    		    }
-    		    else if (typeof elementType === "function") {
-    		        if ((_e = elementType.prototype) === null || _e === void 0 ? void 0 : _e.isMyReactComponent) {
-    		            nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__class__);
-    		        }
-    		        else {
-    		            nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__function__);
-    		        }
-    		    }
-    		    else if (typeof elementType === "symbol") {
-    		        switch (elementType) {
-    		            case reactShared.Root:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__internal__);
-    		                break;
-    		            case reactShared.Fragment:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__fragment__);
-    		                break;
-    		            case reactShared.Strict:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__strict__);
-    		                break;
-    		            case reactShared.Suspense:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__suspense__);
-    		                break;
-    		            case reactShared.Scope:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scope__);
-    		                break;
-    		            case reactShared.ScopeLazy:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scopeLazy__);
-    		                break;
-    		            case reactShared.ScopeSuspense:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__scopeSuspense__);
-    		                break;
-    		            case reactShared.Comment:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__comment__);
-    		                break;
-    		            case reactShared.Portal:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__portal__);
-    		                break;
-    		            case reactShared.Profiler:
-    		                nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__profiler__);
-    		                break;
-    		            default:
-    		                throw new Error("[@my-react/react] invalid symbol element type \"".concat(elementType === null || elementType === void 0 ? void 0 : elementType.toString(), "\""));
-    		        }
-    		    }
-    		    else if (typeof elementType === "string") {
-    		        nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__plain__);
-    		    }
-    		    else {
-    		        nodeType = reactShared.merge(nodeType, exports.NODE_TYPE.__empty__);
-    		    }
-    		    var mockFiber = {
-    		        type: nodeType,
-    		        elementType: elementType,
-    		        pendingProps: pendingProps,
-    		        key: key,
-    		        ref: ref,
-    		        _debugElement: finalElement,
-    		    };
-    		    return mockFiber;
-    		};
-    		var getElementName = function (element) { return "<".concat(getFiberName(getMockFiberFromElement(element)), " />"); };
-    		var getHookName = function (type) {
-    		    switch (type) {
-    		        case reactShared.HOOK_TYPE.useReducer:
-    		            return "Reducer";
-    		        case reactShared.HOOK_TYPE.useEffect:
-    		            return "Effect";
-    		        case reactShared.HOOK_TYPE.useLayoutEffect:
-    		            return "LayoutEffect";
-    		        case reactShared.HOOK_TYPE.useMemo:
-    		            return "Memo";
-    		        case reactShared.HOOK_TYPE.useCallback:
-    		            return "Callback";
-    		        case reactShared.HOOK_TYPE.useRef:
-    		            return "Ref";
-    		        case reactShared.HOOK_TYPE.useImperativeHandle:
-    		            return "ImperativeHandle";
-    		        case reactShared.HOOK_TYPE.useDebugValue:
-    		            return "DebugValue";
-    		        case reactShared.HOOK_TYPE.useContext:
-    		            return "Context";
-    		        case reactShared.HOOK_TYPE.useDeferredValue:
-    		            return "DeferredValue";
-    		        case reactShared.HOOK_TYPE.useTransition:
-    		            return "Transition";
-    		        case reactShared.HOOK_TYPE.useId:
-    		            return "Id";
-    		        case reactShared.HOOK_TYPE.useSyncExternalStore:
-    		            return "SyncExternalStore";
-    		        case reactShared.HOOK_TYPE.useInsertionEffect:
-    		            return "InsertionEffect";
-    		        case reactShared.HOOK_TYPE.useState:
-    		            return "State";
-    		        case reactShared.HOOK_TYPE.useSignal:
-    		            return "Signal";
-    		    }
-    		};
-    		var getContextName = function (value) {
-    		    return value.displayName || "Context";
-    		};
-    		var getSource = function (fiber) {
-    		    if (fiber._debugElement) {
-    		        var element = fiber._debugElement;
-    		        return element._source;
-    		    }
-    		    return null;
-    		};
-    		var getTree = function (fiber) {
-    		    var tree = [];
-    		    var current = fiber;
-    		    var parent = current === null || current === void 0 ? void 0 : current.parent;
-    		    while (parent) {
-    		        var plain = getPlainNodeByFiber(parent);
-    		        var id = plain.i;
-    		        tree.push(id);
-    		        current = parent;
-    		        parent = parent.parent;
-    		    }
-    		    if (current) {
-    		        var typedCurrent = current;
-    		        var dispatch = typedCurrent.renderDispatch;
-    		        if (dispatch && dispatch.renderMode) {
-    		            var packageName = (dispatch === null || dispatch === void 0 ? void 0 : dispatch.renderPackage) || "@my-react";
-    		            tree.push("$$ ".concat(packageName, " ").concat(dispatch.renderMode));
-    		        }
-    		        if (dispatch && dispatch.version) {
-    		            if (dispatch.dispatcher) {
-    		                tree.push("$$ @my-react ".concat(dispatch.version));
-    		            }
-    		            else {
-    		                tree.push("$$ @my-react legacy ".concat(dispatch.version));
-    		            }
-    		        }
-    		        else {
-    		            tree.push("$$ @my-react legacy");
-    		        }
-    		    }
-    		    return tree;
-    		};
-    		var parseHooksTreeToHOOKTree = function (node, d, p) {
-    		    var _p = p || { index: 0 };
-    		    return node.map(function (item) {
-    		        var id = item.id, name = item.name, value = item.value, subHooks = item.subHooks, isStateEditable = item.isStateEditable;
-    		        var isHook = !subHooks || subHooks.length === 0;
-    		        var children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, _p) : undefined;
-    		        return {
-    		            k: id === null || id === void 0 ? void 0 : id.toString(),
-    		            e: isStateEditable,
-    		            i: isHook ? _p.index++ : undefined,
-    		            n: name || "Anonymous",
-    		            v: getNode(value),
-    		            d: d,
-    		            h: isHook,
-    		            c: children,
-    		            // all the hooks key
-    		            keys: isHook ? [id] : children.map(function (c) { return c.keys; }).flat(),
-    		        };
-    		    });
-    		};
-    		var getHookNormal = function (fiber) {
-    		    var _a;
-    		    var final = [];
-    		    if (!fiber.hookList)
-    		        return final;
-    		    var hookList = fiber.hookList;
-    		    var processStack = function (hook, index) {
-    		        var _a;
-    		        var isEffect = hook.type === reactShared.HOOK_TYPE.useEffect || hook.type === reactShared.HOOK_TYPE.useLayoutEffect || hook.type === reactShared.HOOK_TYPE.useInsertionEffect;
-    		        var isRef = hook.type === reactShared.HOOK_TYPE.useRef;
-    		        var isContext = hook.type === reactShared.HOOK_TYPE.useContext;
-    		        final.push({
-    		            k: index.toString(),
-    		            i: index,
-    		            n: isContext ? getContextName(hook.value) : getHookName(hook.type),
-    		            v: getNode(isEffect ? hook.value : isRef ? (_a = hook.result) === null || _a === void 0 ? void 0 : _a.current : hook.result),
-    		            d: 0,
-    		            h: true,
-    		            keys: [index],
-    		        });
-    		    };
-    		    (_a = hookList === null || hookList === void 0 ? void 0 : hookList.toArray()) === null || _a === void 0 ? void 0 : _a.forEach(processStack);
-    		    return final;
-    		};
-    		// disable all log
-    		var getHookStack = function (fiber, dispatch) {
-    		    var final = [];
-    		    if (!fiber.hookList)
-    		        return final;
-    		    disableLogs();
-    		    var hookTree = inspectHooksOfFiber(fiber, dispatch.dispatcher);
-    		    reenableLogs();
-    		    return parseHooksTreeToHOOKTree(hookTree, 0);
-    		};
-    		var getHook = function (fiber) {
-    		    var dispatch = getDispatchFromFiber(fiber);
-    		    if (dispatch && dispatch.dispatcher) {
-    		        try {
-    		            return getHookStack(fiber, dispatch);
-    		        }
-    		        catch (e) {
-    		            console.error(e);
-    		            return getHookNormal(fiber);
-    		        }
-    		    }
-    		    else {
-    		        return getHookNormal(fiber);
-    		    }
-    		};
-    		var getProps = function (fiber) {
-    		    return getNode(fiber.pendingProps);
-    		};
-    		var getState = function (fiber) {
-    		    return getNode(fiber.pendingState);
-    		};
+    		/* eslint-disable @typescript-eslint/no-unsafe-function-type */
     		var debounce = function (callback, time) {
     		    var id = null;
     		    return (function () {
@@ -3014,285 +3322,121 @@
     		        }, time || 40);
     		    });
     		};
-    		// -- reactivity-store utils --
-    		var ReactiveFlags;
-    		(function (ReactiveFlags) {
-    		    ReactiveFlags["SKIP"] = "__v_skip";
-    		    ReactiveFlags["IS_REACTIVE"] = "__v_isReactive";
-    		    ReactiveFlags["IS_READONLY"] = "__v_isReadonly";
-    		    ReactiveFlags["IS_SHALLOW"] = "__v_isShallow";
-    		    ReactiveFlags["RAW"] = "__v_raw";
-    		    ReactiveFlags["IS_REF"] = "__v_isRef";
-    		})(ReactiveFlags || (ReactiveFlags = {}));
-    		function isReactive(value) {
-    		    if (isReadonly(value)) {
-    		        return isReactive(value[ReactiveFlags.RAW]);
-    		    }
-    		    return !!(value && value[ReactiveFlags.IS_REACTIVE]);
-    		}
-    		function isReadonly(value) {
-    		    return !!(value && value[ReactiveFlags.IS_READONLY]);
-    		}
-    		function isShallow(value) {
-    		    return !!(value && value[ReactiveFlags.IS_SHALLOW]);
-    		}
-    		function isProxy(value) {
-    		    return value ? !!value[ReactiveFlags.RAW] : false;
-    		}
-    		function isRef(r) {
-    		    return r ? r[ReactiveFlags.IS_REF] === true : false;
-    		}
 
-    		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
-    		var emptyConstructor = {}.constructor;
-    		var id = 1;
-    		var idToValueMap = new Map();
-    		var valueToIdMap = new Map();
-    		var getType = function (value) {
-    		    if (isValidElement(value)) {
-    		        return "ReactElement";
+    		// browser platform inspect
+    		var inspectSource = function (core) {
+    		    if (!core.hasEnable)
+    		        return;
+    		    if (typeof globalThis["inspect"] !== "function") {
+    		        core.notifyMessage("current platform not support inspect", "warning");
+    		        return;
     		    }
-    		    if (isInBrowser && value && value instanceof Element) {
-    		        return "Element";
+    		    if (typeof core._source === "function" && typeof globalThis["inspect"] === "function") {
+    		        var s = core._source;
+    		        core._source = null;
+    		        globalThis["inspect"](s);
+    		        return;
     		    }
-    		    var type = Object.prototype.toString.call(value).slice(8, -1);
-    		    if (type === "Object" && typeof value[Symbol.iterator] === "function") {
-    		        return "Iterable";
+    		    if (core._source && typeof HTMLElement !== "undefined" && core._source instanceof HTMLElement && typeof globalThis["inspect"] === "function") {
+    		        var s = core._source;
+    		        core._source = null;
+    		        globalThis["inspect"](s);
+    		        window["$$$$0"] = s;
+    		        return;
     		    }
-    		    if (type === "Custom" && value.constructor !== Object && value instanceof Object) {
-    		        // For projects implementing objects overriding `.prototype[Symbol.toStringTag]`
-    		        return "Object";
-    		    }
-    		    return type;
+    		    core.notifyMessage("can not view source for current item", "warning");
     		};
-    		var getWrapperType = function (value) {
-    		    if (isReadonly(value)) {
-    		        return "Readonly";
+    		var inspectCom = function (core) {
+    		    if (!core.hasEnable)
+    		        return;
+    		    var id = core._selectId;
+    		    if (!id)
+    		        return;
+    		    if (typeof globalThis["inspect"] !== "function") {
+    		        core.notifyMessage("current platform not support inspect", "warning");
+    		        return;
     		    }
-    		    if (isShallow(value)) {
-    		        return "Shallow";
+    		    var fiber = getFiberNodeById(id);
+    		    if (fiber) {
+    		        var elementType = fiber.elementType;
+    		        if (typeof globalThis["inspect"] === "function" && elementType) {
+    		            globalThis["inspect"](elementType);
+    		            return;
+    		        }
     		    }
-    		    if (isReactive(value)) {
-    		        return "Reactive";
-    		    }
-    		    if (isRef(value)) {
-    		        return "Ref";
-    		    }
+    		    core.notifyMessage("current id: ".concat(id, " of fiber can not inspect"), "warning");
     		};
-    		var isObject = function (value) {
-    		    return (value !== "String" &&
-    		        value !== "Number" &&
-    		        value !== "Boolean" &&
-    		        value !== "Null" &&
-    		        value !== "Undefined" &&
-    		        value !== "Function" &&
-    		        value !== "AsyncFunction" &&
-    		        value !== "GeneratorFunction" &&
-    		        value !== "Symbol" &&
-    		        value !== "RegExp" &&
-    		        value !== "Promise" &&
-    		        value !== "Element" &&
-    		        value !== "WeakMap" &&
-    		        value !== "WeakSet");
+    		var inspectDom = function (core) {
+    		    if (!core.hasEnable)
+    		        return;
+    		    var dom = core._selectDom;
+    		    if (typeof globalThis["inspect"] !== "function") {
+    		        core.notifyMessage("current platform not support inspect", "warning");
+    		        return;
+    		    }
+    		    if (typeof globalThis["inspect"] === "function" && dom) {
+    		        globalThis["inspect"](dom);
+    		        window["$$$$0"] = dom;
+    		        return;
+    		    }
+    		    core.notifyMessage("current id: ".concat(core._selectId, " of fiber not contain dom node"), "warning");
     		};
-    		var getTargetNode = function (value, type, deep) {
-    		    if (deep === void 0) { deep = 3; }
-    		    var existId = valueToIdMap.get(value);
-    		    var wrapperType = getWrapperType(value);
-    		    var currentId = existId || id++;
-    		    var n = undefined;
-    		    if (type === "Object" && typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
-    		        n = value.constructor.name;
+    		var cb = function () { };
+    		var enableBrowserHover = function (core) {
+    		    if (!core.hasEnable)
+    		        return;
+    		    if (core._enableHoverOnBrowser)
+    		        return;
+    		    if (typeof document === "undefined") {
+    		        return;
     		    }
-    		    if (type === "ReactElement") {
-    		        n = getElementName(value);
-    		    }
-    		    idToValueMap.set(currentId, value);
-    		    valueToIdMap.set(value, currentId);
-    		    // full deep to load
-    		    if (deep === 0) {
-    		        return {
-    		            i: currentId,
-    		            t: type,
-    		            _t: wrapperType,
-    		            n: n,
-    		            v: undefined,
-    		            e: true,
-    		            l: false,
-    		        };
-    		    }
-    		    else {
-    		        if (type === "Array") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                _t: wrapperType,
-    		                v: value.map(function (val) { return getNode(val, deep - 1); }),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "Iterable") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                _t: wrapperType,
-    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "Map") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                _t: wrapperType,
-    		                v: Array.from(value.entries()).map(function (_a) {
-    		                    var key = _a[0], val = _a[1];
-    		                    return ({
-    		                        t: "Array",
-    		                        e: true,
-    		                        v: [getNode(key, deep - 1), getNode(val, deep - 1)],
-    		                    });
-    		                }),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "Set") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                _t: wrapperType,
-    		                v: Array.from(value).map(function (val) { return getNode(val, deep - 1); }),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "Object") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                _t: wrapperType,
-    		                n: n,
-    		                v: Object.keys(value).reduce(function (acc, key) {
-    		                    acc[key] = getNode(value[key], deep - 1);
-    		                    return acc;
-    		                }, {}),
-    		                e: true,
-    		            };
-    		        }
-    		        else if (type === "ReactElement") {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                _t: wrapperType,
-    		                n: n,
-    		                v: Object.keys(value).reduce(function (acc, key) {
-    		                    acc[key] = getNode(value[key], deep - 1);
-    		                    return acc;
-    		                }, {}),
-    		                e: true,
-    		            };
-    		        }
-    		        else {
-    		            return {
-    		                i: currentId,
-    		                t: type,
-    		                _t: wrapperType || "Object",
-    		                n: n,
-    		                v: getAllKeys(value).reduce(function (acc, key) {
-    		                    acc[key] = getNode(value[key], deep - 1);
-    		                    return acc;
-    		                }, {}),
-    		                e: true,
-    		            };
-    		        }
-    		    }
-    		};
-    		var getAllKeys = function (data) {
-    		    if (!data)
-    		        return [];
-    		    var keys = [];
-    		    for (var key in data) {
-    		        keys.push(key);
-    		    }
-    		    return keys;
-    		};
-    		var getNode = function (value, deep) {
-    		    if (deep === void 0) { deep = 3; }
-    		    try {
-    		        var type = getType(value);
-    		        var expandable = isObject(type);
-    		        if (type === "Promise" && (value.status === "fulfilled" || value.status === "rejected")) {
-    		            expandable = true;
-    		        }
-    		        if (expandable) {
-    		            // full deep to load
-    		            return getTargetNode(value, type, deep);
-    		        }
-    		        else {
-    		            var wrapperType = getWrapperType(value);
-    		            var existId = valueToIdMap.get(value);
-    		            var currentId = existId || id++;
-    		            idToValueMap.set(currentId, value);
-    		            valueToIdMap.set(value, currentId);
-    		            if (type === "Element") {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    _t: wrapperType,
-    		                    v: "<".concat(value.tagName.toLowerCase(), " />"),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            if (type === "Error") {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    _t: wrapperType,
-    		                    v: value.message,
-    		                    e: expandable,
-    		                };
-    		            }
-    		            if (typeof value === "object" && value !== null) {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    _t: wrapperType,
-    		                    v: Object.prototype.toString.call(value),
-    		                    e: expandable,
-    		                };
-    		            }
-    		            else {
-    		                return {
-    		                    i: currentId,
-    		                    t: type,
-    		                    _t: wrapperType,
-    		                    v: String(value),
-    		                    e: expandable,
-    		                };
+    		    core._enableHoverOnBrowser = true;
+    		    core.select.remove();
+    		    var debounceNotifyDomHover = debounce(function () {
+    		        core.notifyDomHover();
+    		        core.disableBrowserHover();
+    		        core.notifyConfig();
+    		    }, 100);
+    		    var onMouseEnter = debounce(function (e) {
+    		        var target = e.target;
+    		        core.select.remove();
+    		        if (!core.hasEnable)
+    		            return;
+    		        if (target.nodeType === Node.ELEMENT_NODE) {
+    		            var fiber = getComponentFiberByDom(target);
+    		            if (fiber) {
+    		                core.select.remove();
+    		                core.select.inspect(fiber);
+    		                var id = getPlainNodeIdByFiber(fiber);
+    		                core._tempDomHoverId = id;
     		            }
     		        }
-    		    }
-    		    catch (e) {
-    		        return {
-    		            i: NaN,
-    		            t: "ReadError",
-    		            v: "Read data error: " + e.message,
-    		            e: false,
-    		        };
-    		    }
+    		    }, 16);
+    		    var onClick = function (e) {
+    		        if (!core.hasEnable)
+    		            return;
+    		        core._domHoverId = core._tempDomHoverId;
+    		        debounceNotifyDomHover();
+    		        e.stopPropagation();
+    		        e.preventDefault();
+    		    };
+    		    document.addEventListener("mouseenter", onMouseEnter, true);
+    		    document.addEventListener("click", onClick, true);
+    		    document.addEventListener("mousedown", onClick, true);
+    		    document.addEventListener("pointerdown", onClick, true);
+    		    cb = function () {
+    		        core._enableHoverOnBrowser = false;
+    		        core.select.remove();
+    		        document.removeEventListener("mouseenter", onMouseEnter, true);
+    		        document.removeEventListener("click", onClick, true);
+    		        document.removeEventListener("mousedown", onClick, true);
+    		        document.removeEventListener("pointerdown", onClick, true);
+    		    };
     		};
-    		var getNodeFromId = function (id) {
-    		    var value = idToValueMap.get(id);
-    		    if (value) {
-    		        return getNode(value);
-    		    }
-    		};
-    		var getValueById = function (id) {
-    		    if (id && !Number.isNaN(id)) {
-    		        return { v: idToValueMap.get(id), f: true };
-    		    }
-    		    else {
-    		        return { v: undefined, f: false };
-    		    }
+    		var disableBrowserHover = function (core) {
+    		    if (!core._enableHoverOnBrowser)
+    		        return;
+    		    cb();
     		};
 
     		exports.MessageHookType = void 0;
@@ -3301,11 +3445,16 @@
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
     		    MessageHookType["origin"] = "hook-origin";
+    		    MessageHookType["clear"] = "hook-clear";
     		})(exports.MessageHookType || (exports.MessageHookType = {}));
     		exports.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
     		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessageProxyType = void 0;
+    		(function (MessageProxyType) {
+    		    MessageProxyType["init"] = "proxy-init";
+    		})(exports.MessageProxyType || (exports.MessageProxyType = {}));
     		exports.MessagePanelType = void 0;
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
@@ -3371,6 +3520,232 @@
     		})(exports.HMRStatus || (exports.HMRStatus = {}));
     		var DevToolSource = "@my-react/devtool";
 
+    		var patchDispatch = function (dispatch, runtime) {
+    		    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    		    if (dispatch["$$hasDevToolPatch"])
+    		        return;
+    		    dispatch["$$hasDevToolPatch"] = true;
+    		    var onLoad = throttle(function () {
+    		        if (!runtime.hasEnable)
+    		            return;
+    		        runtime.notifyDispatch(dispatch);
+    		        runtime.notifySelect();
+    		        runtime.notifyHMRStatus();
+    		        runtime.notifyHMRExtend();
+    		        runtime.notifyTriggerStatus();
+    		        runtime.notifyWarnStatus();
+    		        runtime.notifyErrorStatus();
+    		    }, 200);
+    		    var onTrace = function () {
+    		        if (!runtime.hasEnable)
+    		            return;
+    		        if (!runtime._enableUpdate)
+    		            return;
+    		        runtime.update.flushPending();
+    		    };
+    		    var onChange = function (list) {
+    		        if (!runtime.hasEnable)
+    		            return;
+    		        var directory = inspectList(list).directory;
+    		        if (!reactShared.isNormalEquals(runtime._dir, directory)) {
+    		            runtime._dir = __assign({}, directory);
+    		            runtime.notifyDir();
+    		        }
+    		        runtime.notifyChanged(list);
+    		    };
+    		    var onUnmount = function () {
+    		        // if (!runtime.hasEnable) return;
+    		        runtime._needUnmount = true;
+    		        runtime.delDispatch(dispatch);
+    		    };
+    		    var notifyTriggerWithThrottle = throttle(function () { return runtime.notifyTrigger(); }, 100);
+    		    var onFiberTrigger = function (fiber, state) {
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (!id)
+    		            return;
+    		        runtime._trigger[id] = runtime._trigger[id] || [];
+    		        // 长数据过滤
+    		        if (runtime._trigger[id].length > 10) {
+    		            var index = runtime._trigger[id].length - 11;
+    		            if (runtime._trigger[id][index]) {
+    		                deleteLinkState(runtime._trigger[id][index]);
+    		            }
+    		            runtime._trigger[id][index] = { isRetrigger: runtime._trigger[id][index].isRetrigger };
+    		        }
+    		        tryLinkStateToHookIndex(fiber, state);
+    		        runtime._trigger[id].push(state);
+    		        if (!runtime.hasEnable)
+    		            return;
+    		        notifyTriggerWithThrottle();
+    		    };
+    		    var onFiberUpdate = function (fiber) {
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (!id)
+    		            return;
+    		        if (!runtime.hasEnable)
+    		            return;
+    		        if (id === runtime._selectId) {
+    		            runtime.notifySelect();
+    		            runtime.notifyHMRStatus();
+    		            runtime.notifyHMRExtend();
+    		            runtime.notifyTriggerStatus();
+    		            runtime.notifyWarnStatus();
+    		            runtime.notifyErrorStatus();
+    		        }
+    		    };
+    		    var onFiberState = function (fiber) {
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (!id)
+    		            return;
+    		        runtime._state[id] = runtime._state[id] ? runtime._state[id] + 1 : 1;
+    		    };
+    		    var onFiberHMR = function (fiber, forceRefresh) {
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (!id)
+    		            return;
+    		        runtime._hmr[id] = runtime._hmr[id] || [];
+    		        runtime._hmr[id].push(typeof forceRefresh === "boolean" ? (forceRefresh ? exports.HMRStatus.remount : exports.HMRStatus.refresh) : exports.HMRStatus.none);
+    		        if (!runtime.hasEnable)
+    		            return;
+    		        runtime.notifyHMR();
+    		        runtime.notifyDispatch(dispatch, true);
+    		    };
+    		    var onFiberWarn = function (fiber) {
+    		        var args = [];
+    		        for (var _i = 1; _i < arguments.length; _i++) {
+    		            args[_i - 1] = arguments[_i];
+    		        }
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (!id)
+    		            return;
+    		        runtime._warn[id] = runtime._warn[id] || [];
+    		        if (runtime._warn[id].length > 10) {
+    		            var index = runtime._warn[id].length - 11;
+    		            runtime._warn[id][index] = 1;
+    		        }
+    		        runtime._warn[id].push(args);
+    		        runtime.notifyWarn();
+    		    };
+    		    var onFiberError = function (fiber) {
+    		        var args = [];
+    		        for (var _i = 1; _i < arguments.length; _i++) {
+    		            args[_i - 1] = arguments[_i];
+    		        }
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (!id)
+    		            return;
+    		        runtime._error[id] = runtime._error[id] || [];
+    		        if (runtime._error[id].length > 10) {
+    		            var index = runtime._error[id].length - 11;
+    		            runtime._error[id][index] = 1;
+    		        }
+    		        runtime._error[id].push(args);
+    		        runtime.notifyError();
+    		    };
+    		    var onPerformanceWarn = function (fiber) {
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (!id)
+    		            return;
+    		        if (runtime.hasEnable && runtime._enableUpdate) {
+    		            runtime.update.addPending(fiber, "warn");
+    		        }
+    		        runtime.notifyHighlight(id, "performance");
+    		    };
+    		    var onDOMUpdate = function (fiber) {
+    		        if (runtime.hasEnable && runtime._enableUpdate) {
+    		            runtime.update.addPending(fiber, "update");
+    		        }
+    		    };
+    		    var onDOMAppend = function (fiber) {
+    		        if (runtime.hasEnable && runtime._enableUpdate) {
+    		            runtime.update.addPending(fiber, "append");
+    		        }
+    		    };
+    		    var onDOMSetRef = function (fiber) {
+    		        if (runtime.hasEnable && runtime._enableUpdate) {
+    		            runtime.update.addPending(fiber, "setRef");
+    		        }
+    		    };
+    		    if (typeof dispatch.onFiberTrigger === "function") {
+    		        if (typeof dispatch.onAfterCommitMount === "function") {
+    		            dispatch.onAfterCommitMount(onLoad);
+    		            dispatch.onAfterCommitUpdate(onTrace);
+    		            dispatch.onAfterCommitUnmount(onUnmount);
+    		        }
+    		        else {
+    		            dispatch.onAfterCommit(onLoad);
+    		            dispatch.onAfterUpdate(onTrace);
+    		            (_a = dispatch.onAfterUnmount) === null || _a === void 0 ? void 0 : _a.call(dispatch, onUnmount);
+    		        }
+    		        (_b = dispatch.onFiberState) === null || _b === void 0 ? void 0 : _b.call(dispatch, onFiberState);
+    		        (_c = dispatch.onFiberTrigger) === null || _c === void 0 ? void 0 : _c.call(dispatch, onFiberTrigger);
+    		        (_d = dispatch.onPerformanceWarn) === null || _d === void 0 ? void 0 : _d.call(dispatch, onPerformanceWarn);
+    		        (_e = dispatch.onFiberChange) === null || _e === void 0 ? void 0 : _e.call(dispatch, onChange);
+    		        (_f = dispatch.onFiberUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberUpdate);
+    		        (_g = dispatch.onFiberHMR) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberHMR);
+    		        (_h = dispatch.onDOMUpdate) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMUpdate);
+    		        (_j = dispatch.onDOMAppend) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMAppend);
+    		        (_k = dispatch.onDOMSetRef) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMSetRef);
+    		        (_l = dispatch.onFiberError) === null || _l === void 0 ? void 0 : _l.call(dispatch, onFiberError);
+    		        (_m = dispatch.onFiberWarn) === null || _m === void 0 ? void 0 : _m.call(dispatch, onFiberWarn);
+    		    }
+    		    else {
+    		        var originalAfterCommit_1 = dispatch.afterCommit;
+    		        var originalAfterUpdate_1 = dispatch.afterUpdate;
+    		        var originalAfterUnmount_1 = dispatch.afterUnmount;
+    		        dispatch.afterCommit = function () {
+    		            var _a;
+    		            (_a = originalAfterCommit_1 === null || originalAfterCommit_1 === void 0 ? void 0 : originalAfterCommit_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit_1, this);
+    		            onLoad();
+    		        };
+    		        // TODO `global patch` flag for performance
+    		        dispatch.afterUpdate = function () {
+    		            var _a;
+    		            (_a = originalAfterUpdate_1 === null || originalAfterUpdate_1 === void 0 ? void 0 : originalAfterUpdate_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUpdate_1, this);
+    		            onLoad();
+    		        };
+    		        dispatch.afterUnmount = function () {
+    		            var _a;
+    		            (_a = originalAfterUnmount_1 === null || originalAfterUnmount_1 === void 0 ? void 0 : originalAfterUnmount_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUnmount_1, this);
+    		            onUnmount();
+    		        };
+    		    }
+    		};
+
+    		// TODO use 'eventListener' instead of 'patchFunction'
+    		function overridePatchToFiberUnmount(dispatch, runtime) {
+    		    if (typeof dispatch.onFiberUnmount === "function") {
+    		        dispatch.onFiberUnmount(function (f) { return unmountPlainNode(f, runtime); });
+    		    }
+    		    else {
+    		        var originalPatchUnmount_1 = dispatch.patchToFiberUnmount;
+    		        dispatch.patchToFiberUnmount = function (fiber) {
+    		            originalPatchUnmount_1.call(this, fiber);
+    		            unmountPlainNode(fiber, runtime);
+    		        };
+    		    }
+    		}
+    		function overridePatchToFiberInit(dispatch, runtime) {
+    		    if (typeof dispatch.onFiberInitial === "function") {
+    		        dispatch.onFiberInitial(function (f) { return initPlainNode(f); });
+    		    }
+    		    else {
+    		        var originalPatchInit_1 = dispatch.patchToFiberInitial;
+    		        dispatch.patchToFiberInitial = function (fiber) {
+    		            originalPatchInit_1.call(this, fiber);
+    		            initPlainNode(fiber);
+    		        };
+    		    }
+    		}
+    		var setupDispatch = function (dispatch, runtime) {
+    		    if (dispatch["$$hasDevToolInject"])
+    		        return;
+    		    dispatch["$$hasDevToolInject"] = true;
+    		    overridePatchToFiberInit(dispatch);
+    		    overridePatchToFiberUnmount(dispatch, runtime);
+    		    Object.defineProperty(dispatch, "__dev_devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
+    		};
+
     		// Get the window object for the document that a node belongs to,
     		// or return null if it cannot be found (node not attached to DOM,
     		// etc).
@@ -3393,6 +3768,7 @@
     		// offset added to compensate for its border.
     		function getBoundingClientRectWithBorderOffset(node) {
     		    var dimensions = getElementDimensions(node);
+    		    // $FlowFixMe[incompatible-variance]
     		    return mergeRectOffsets([
     		        node.getBoundingClientRect(),
     		        {
@@ -3449,9 +3825,11 @@
     		                onlyOneMore = true;
     		            }
     		        }
+    		        // $FlowFixMe[incompatible-variance]
     		        return mergeRectOffsets(rects);
     		    }
     		    else {
+    		        // $FlowFixMe[incompatible-variance]
     		        return node.getBoundingClientRect();
     		    }
     		}
@@ -3583,7 +3961,6 @@
     		        var doc = currentWindow.document;
     		        this.container = doc.createElement("div");
     		        this.container.style.zIndex = "10000000";
-    		        this.container.setAttribute("data-select", "@my-react");
     		        this.tip = new OverlayTip(doc, this.container);
     		        this.rects = [];
     		        this.agent = agent;
@@ -3603,6 +3980,7 @@
     		        var _this = this;
     		        // We can't get the size of text nodes or comment nodes. React as of v15
     		        // heavily uses comment nodes to delimit text.
+    		        // TODO: We actually can measure text nodes. We should.
     		        var elements = nodes.filter(function (node) { return node.nodeType === Node.ELEMENT_NODE; });
     		        while (this.rects.length > elements.length) {
     		            var rect = this.rects.pop();
@@ -3707,6 +4085,7 @@
     		    margin: "rgba(255, 155, 0, 0.3)",
     		    border: "rgba(255, 200, 50, 0.3)",
     		};
+
     		var Select = /** @class */ (function () {
     		    function Select(agent) {
     		        this.agent = agent;
@@ -3750,6 +4129,16 @@
     		        drawGroupBorders(context, group);
     		        drawGroupLabel(context, group);
     		    });
+    		    if (canvas !== null) {
+    		        if (nodeToData.size === 0 && canvas.matches(":popover-open")) {
+    		            canvas.hidePopover();
+    		            return;
+    		        }
+    		        if (canvas.matches(":popover-open")) {
+    		            canvas.hidePopover();
+    		        }
+    		        canvas.showPopover();
+    		    }
     		}
     		function groupAndSortNodes(nodeToData) {
     		    var positionGroups = new Map();
@@ -3829,6 +4218,9 @@
     		}
     		function destroyWeb() {
     		    if (canvas !== null) {
+    		        if (canvas.matches(":popover-open")) {
+    		            canvas.hidePopover();
+    		        }
     		        if (canvas.parentNode != null) {
     		            canvas.parentNode.removeChild(canvas);
     		        }
@@ -3840,7 +4232,8 @@
     		}
     		function initialize() {
     		    canvas = window.document.createElement("canvas");
-    		    canvas.style.cssText = "\n    xx-background-color: red;\n    xx-opacity: 0.5;\n    bottom: 0;\n    left: 0;\n    pointer-events: none;\n    position: fixed;\n    right: 0;\n    top: 0;\n    z-index: 1000000000;\n  ";
+    		    canvas.setAttribute("popover", "manual");
+    		    canvas.style.cssText = "\n    xx-background-color: red;\n    xx-opacity: 0.5;\n    bottom: 0;\n    left: 0;\n    pointer-events: none;\n    position: fixed;\n    right: 0;\n    top: 0;\n    background-color: transparent;\n    outline: none;\n    box-shadow: none;\n    border: none;\n  ";
     		    canvas.setAttribute("data-update", "@my-react");
     		    var root = window.document.documentElement;
     		    root.insertBefore(canvas, root.firstChild);
@@ -3854,7 +4247,9 @@
     		// How long should a rect be considered valid for?
     		var REMEASUREMENT_AFTER_DURATION = 250;
     		// Some environments (e.g. React Native / Hermes) don't support the performance API yet.
-    		var getCurrentTime = typeof performance === "object" && typeof performance.now === "function" ? function () { return performance.now(); } : function () { return Date.now(); };
+    		var getCurrentTime = 
+    		// $FlowFixMe[method-unbinding]
+    		typeof performance === "object" && typeof performance.now === "function" ? function () { return performance.now(); } : function () { return Date.now(); };
     		var nodeToData = new Map();
     		var drawAnimationFrameID = null;
     		var redrawTimeoutID = null;
@@ -3964,175 +4359,6 @@
     		    return Highlight;
     		}());
 
-    		var getHMRState = function (dispatch) {
-    		    return dispatch === null || dispatch === void 0 ? void 0 : dispatch["$$hasRefreshInject"];
-    		};
-    		var getHMRInternal = function (dispatch, type) {
-    		    var _a, _b;
-    		    return (_b = (_a = dispatch === null || dispatch === void 0 ? void 0 : dispatch.__dev_refresh_runtime__) === null || _a === void 0 ? void 0 : _a.getSignatureByType) === null || _b === void 0 ? void 0 : _b.call(_a, type);
-    		};
-    		var getHMRInternalFromId = function (id) {
-    		    var fiber = getFiberNodeById(id.toString());
-    		    var dispatch = getDispatchFromFiber(fiber);
-    		    var hmrEnabled = getHMRState(dispatch);
-    		    if (!hmrEnabled)
-    		        return;
-    		    if (dispatch && fiber && reactShared.include(fiber.type, reactShared.merge(exports.NODE_TYPE.__function__, exports.NODE_TYPE.__class__))) {
-    		        return getHMRInternal(dispatch, fiber.elementType);
-    		    }
-    		};
-
-    		// browser platform inspect
-    		var inspectSource = function (core) {
-    		    if (!core.hasEnable)
-    		        return;
-    		    if (typeof globalThis["inspect"] !== "function") {
-    		        core.notifyMessage("current platform not support inspect", "warning");
-    		        return;
-    		    }
-    		    if (typeof core._source === "function" && typeof globalThis["inspect"] === "function") {
-    		        var s = core._source;
-    		        core._source = null;
-    		        globalThis["inspect"](s);
-    		        return;
-    		    }
-    		    if (core._source && typeof HTMLElement !== "undefined" && core._source instanceof HTMLElement && typeof globalThis["inspect"] === "function") {
-    		        var s = core._source;
-    		        core._source = null;
-    		        globalThis["inspect"](s);
-    		        window["$$$$0"] = s;
-    		        return;
-    		    }
-    		    core.notifyMessage("can not view source for current item", "warning");
-    		};
-    		var inspectCom = function (core) {
-    		    if (!core.hasEnable)
-    		        return;
-    		    var id = core._selectId;
-    		    if (!id)
-    		        return;
-    		    if (typeof globalThis["inspect"] !== "function") {
-    		        core.notifyMessage("current platform not support inspect", "warning");
-    		        return;
-    		    }
-    		    var fiber = getFiberNodeById(id);
-    		    if (fiber) {
-    		        var elementType = fiber.elementType;
-    		        if (typeof globalThis["inspect"] === "function" && elementType) {
-    		            globalThis["inspect"](elementType);
-    		            return;
-    		        }
-    		    }
-    		    core.notifyMessage("current id: ".concat(id, " of fiber can not inspect"), "warning");
-    		};
-    		var inspectDom = function (core) {
-    		    if (!core.hasEnable)
-    		        return;
-    		    var dom = core._selectDom;
-    		    if (typeof globalThis["inspect"] !== "function") {
-    		        core.notifyMessage("current platform not support inspect", "warning");
-    		        return;
-    		    }
-    		    if (typeof globalThis["inspect"] === "function" && dom) {
-    		        globalThis["inspect"](dom);
-    		        window["$$$$0"] = dom;
-    		        return;
-    		    }
-    		    core.notifyMessage("current id: ".concat(core._selectId, " of fiber not contain dom node"), "warning");
-    		};
-    		var cb = function () { };
-    		var enableBrowserHover = function (core) {
-    		    if (!core.hasEnable)
-    		        return;
-    		    if (core._enableHoverOnBrowser)
-    		        return;
-    		    if (typeof document === "undefined") {
-    		        return;
-    		    }
-    		    core._enableHoverOnBrowser = true;
-    		    core.select.remove();
-    		    var debounceNotifyDomHover = debounce(function () {
-    		        core.notifyDomHover();
-    		        core.disableBrowserHover();
-    		        core.notifyConfig();
-    		    }, 100);
-    		    var onMouseEnter = debounce(function (e) {
-    		        var target = e.target;
-    		        core.select.remove();
-    		        if (!core.hasEnable)
-    		            return;
-    		        if (target.nodeType === Node.ELEMENT_NODE) {
-    		            var fiber = getComponentFiberByDom(target);
-    		            if (fiber) {
-    		                core.select.remove();
-    		                core.select.inspect(fiber);
-    		                var id = getPlainNodeIdByFiber(fiber);
-    		                core._tempDomHoverId = id;
-    		                // debounceNotifyDomHover();
-    		            }
-    		        }
-    		    }, 16);
-    		    var onClick = function (e) {
-    		        if (!core.hasEnable)
-    		            return;
-    		        core._domHoverId = core._tempDomHoverId;
-    		        debounceNotifyDomHover();
-    		        e.stopPropagation();
-    		        e.preventDefault();
-    		    };
-    		    document.addEventListener("mouseenter", onMouseEnter, true);
-    		    document.addEventListener("click", onClick, true);
-    		    document.addEventListener("mousedown", onClick, true);
-    		    document.addEventListener("pointerdown", onClick, true);
-    		    cb = function () {
-    		        core._enableHoverOnBrowser = false;
-    		        core.select.remove();
-    		        document.removeEventListener("mouseenter", onMouseEnter, true);
-    		        document.removeEventListener("click", onClick, true);
-    		        document.removeEventListener("mousedown", onClick, true);
-    		        document.removeEventListener("pointerdown", onClick, true);
-    		    };
-    		};
-    		var disableBrowserHover = function (core) {
-    		    if (!core._enableHoverOnBrowser)
-    		        return;
-    		    cb();
-    		};
-
-    		// TODO use 'eventListener' instead of 'patchFunction'
-    		function overridePatchToFiberUnmount(dispatch, runtime) {
-    		    if (typeof dispatch.onFiberUnmount === "function") {
-    		        dispatch.onFiberUnmount(function (f) { return unmountPlainNode(f, runtime); });
-    		    }
-    		    else {
-    		        var originalPatchUnmount_1 = dispatch.patchToFiberUnmount;
-    		        dispatch.patchToFiberUnmount = function (fiber) {
-    		            originalPatchUnmount_1.call(this, fiber);
-    		            unmountPlainNode(fiber, runtime);
-    		        };
-    		    }
-    		}
-    		function overridePatchToFiberInit(dispatch, runtime) {
-    		    if (typeof dispatch.onFiberInitial === "function") {
-    		        dispatch.onFiberInitial(function (f) { return initPlainNode(f); });
-    		    }
-    		    else {
-    		        var originalPatchInit_1 = dispatch.patchToFiberInitial;
-    		        dispatch.patchToFiberInitial = function (fiber) {
-    		            originalPatchInit_1.call(this, fiber);
-    		            initPlainNode(fiber);
-    		        };
-    		    }
-    		}
-    		var setupDispatch = function (dispatch, runtime) {
-    		    if (dispatch["$$hasDevToolInject"])
-    		        return;
-    		    dispatch["$$hasDevToolInject"] = true;
-    		    overridePatchToFiberInit(dispatch);
-    		    overridePatchToFiberUnmount(dispatch, runtime);
-    		    Object.defineProperty(dispatch, "__dev_devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
-    		};
-
     		var DevToolCore = /** @class */ (function () {
     		    function DevToolCore() {
     		        var _this = this;
@@ -4167,6 +4393,7 @@
     		        this._enableRetrigger = false;
     		        this._listeners = new Set();
     		        this.version = "0.0.1";
+    		        this.id = Math.random().toString(16).slice(2);
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
     		            if (_this._needUnmount) {
@@ -4238,196 +4465,7 @@
     		        this.patchDispatch(dispatch);
     		    };
     		    DevToolCore.prototype.patchDispatch = function (dispatch) {
-    		        var _this = this;
-    		        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-    		        if (dispatch["$$hasDevToolPatch"])
-    		            return;
-    		        dispatch["$$hasDevToolPatch"] = true;
-    		        var onLoad = throttle(function () {
-    		            if (!_this.hasEnable)
-    		                return;
-    		            _this.notifyDispatch(dispatch);
-    		            _this.notifySelect();
-    		            _this.notifyHMRStatus();
-    		            _this.notifyHMRExtend();
-    		            _this.notifyTriggerStatus();
-    		            _this.notifyWarnStatus();
-    		            _this.notifyErrorStatus();
-    		        }, 200);
-    		        var onTrace = function () {
-    		            if (!_this.hasEnable)
-    		                return;
-    		            if (!_this._enableUpdate)
-    		                return;
-    		            _this.update.flushPending();
-    		        };
-    		        var onChange = function (list) {
-    		            if (!_this.hasEnable)
-    		                return;
-    		            var directory = getPlainNodeArrayByList(list).directory;
-    		            if (!reactShared.isNormalEquals(_this._dir, directory)) {
-    		                _this._dir = __assign({}, directory);
-    		                _this.notifyDir();
-    		            }
-    		            _this.notifyChanged(list);
-    		        };
-    		        var onUnmount = function () {
-    		            // if (!this.hasEnable) return;
-    		            _this._needUnmount = true;
-    		            _this.delDispatch(dispatch);
-    		        };
-    		        var notifyTriggerWithThrottle = throttle(function () { return _this.notifyTrigger(); }, 100);
-    		        var onFiberTrigger = function (fiber, state) {
-    		            var id = getPlainNodeIdByFiber(fiber);
-    		            if (!id)
-    		                return;
-    		            _this._trigger[id] = _this._trigger[id] || [];
-    		            // 长数据过滤
-    		            if (_this._trigger[id].length > 10) {
-    		                var index = _this._trigger[id].length - 11;
-    		                if (_this._trigger[id][index]) {
-    		                    deleteLinkState(_this._trigger[id][index]);
-    		                }
-    		                _this._trigger[id][index] = { isRetrigger: _this._trigger[id][index].isRetrigger };
-    		            }
-    		            tryLinkStateToHookIndex(fiber, state);
-    		            _this._trigger[id].push(state);
-    		            if (!_this.hasEnable)
-    		                return;
-    		            notifyTriggerWithThrottle();
-    		        };
-    		        var onFiberUpdate = function (fiber) {
-    		            var id = getPlainNodeIdByFiber(fiber);
-    		            if (!id)
-    		                return;
-    		            if (!_this.hasEnable)
-    		                return;
-    		            if (id === _this._selectId) {
-    		                _this.notifySelect();
-    		                _this.notifyHMRStatus();
-    		                _this.notifyHMRExtend();
-    		                _this.notifyTriggerStatus();
-    		                _this.notifyWarnStatus();
-    		                _this.notifyErrorStatus();
-    		            }
-    		        };
-    		        var onFiberState = function (fiber) {
-    		            var id = getPlainNodeIdByFiber(fiber);
-    		            if (!id)
-    		                return;
-    		            _this._state[id] = _this._state[id] ? _this._state[id] + 1 : 1;
-    		        };
-    		        var onFiberHMR = function (fiber, forceRefresh) {
-    		            var id = getPlainNodeIdByFiber(fiber);
-    		            if (!id)
-    		                return;
-    		            _this._hmr[id] = _this._hmr[id] || [];
-    		            _this._hmr[id].push(typeof forceRefresh === "boolean" ? (forceRefresh ? exports.HMRStatus.remount : exports.HMRStatus.refresh) : exports.HMRStatus.none);
-    		            if (!_this.hasEnable)
-    		                return;
-    		            _this.notifyHMR();
-    		            _this.notifyDispatch(dispatch, true);
-    		        };
-    		        var onFiberWarn = function (fiber) {
-    		            var args = [];
-    		            for (var _i = 1; _i < arguments.length; _i++) {
-    		                args[_i - 1] = arguments[_i];
-    		            }
-    		            var id = getPlainNodeIdByFiber(fiber);
-    		            if (!id)
-    		                return;
-    		            _this._warn[id] = _this._warn[id] || [];
-    		            if (_this._warn[id].length > 10) {
-    		                var index = _this._warn[id].length - 11;
-    		                _this._warn[id][index] = 1;
-    		            }
-    		            _this._warn[id].push(args);
-    		            _this.notifyWarn();
-    		        };
-    		        var onFiberError = function (fiber) {
-    		            var args = [];
-    		            for (var _i = 1; _i < arguments.length; _i++) {
-    		                args[_i - 1] = arguments[_i];
-    		            }
-    		            var id = getPlainNodeIdByFiber(fiber);
-    		            if (!id)
-    		                return;
-    		            _this._error[id] = _this._error[id] || [];
-    		            if (_this._error[id].length > 10) {
-    		                var index = _this._error[id].length - 11;
-    		                _this._error[id][index] = 1;
-    		            }
-    		            _this._error[id].push(args);
-    		            _this.notifyError();
-    		        };
-    		        var onPerformanceWarn = function (fiber) {
-    		            var id = getPlainNodeIdByFiber(fiber);
-    		            if (!id)
-    		                return;
-    		            if (_this.hasEnable && _this._enableUpdate) {
-    		                _this.update.addPending(fiber, "warn");
-    		            }
-    		            _this.notifyHighlight(id, "performance");
-    		        };
-    		        var onDOMUpdate = function (fiber) {
-    		            if (_this.hasEnable && _this._enableUpdate) {
-    		                _this.update.addPending(fiber, "update");
-    		            }
-    		        };
-    		        var onDOMAppend = function (fiber) {
-    		            if (_this.hasEnable && _this._enableUpdate) {
-    		                _this.update.addPending(fiber, "append");
-    		            }
-    		        };
-    		        var onDOMSetRef = function (fiber) {
-    		            if (_this.hasEnable && _this._enableUpdate) {
-    		                _this.update.addPending(fiber, "setRef");
-    		            }
-    		        };
-    		        if (typeof dispatch.onFiberTrigger === "function") {
-    		            if (typeof dispatch.onAfterCommitMount === "function") {
-    		                dispatch.onAfterCommitMount(onLoad);
-    		                dispatch.onAfterCommitUpdate(onTrace);
-    		                dispatch.onAfterCommitUnmount(onUnmount);
-    		            }
-    		            else {
-    		                dispatch.onAfterCommit(onLoad);
-    		                dispatch.onAfterUpdate(onTrace);
-    		                (_a = dispatch.onAfterUnmount) === null || _a === void 0 ? void 0 : _a.call(dispatch, onUnmount);
-    		            }
-    		            (_b = dispatch.onFiberState) === null || _b === void 0 ? void 0 : _b.call(dispatch, onFiberState);
-    		            (_c = dispatch.onFiberTrigger) === null || _c === void 0 ? void 0 : _c.call(dispatch, onFiberTrigger);
-    		            (_d = dispatch.onPerformanceWarn) === null || _d === void 0 ? void 0 : _d.call(dispatch, onPerformanceWarn);
-    		            (_e = dispatch.onFiberChange) === null || _e === void 0 ? void 0 : _e.call(dispatch, onChange);
-    		            (_f = dispatch.onFiberUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberUpdate);
-    		            (_g = dispatch.onFiberHMR) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberHMR);
-    		            (_h = dispatch.onDOMUpdate) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMUpdate);
-    		            (_j = dispatch.onDOMAppend) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMAppend);
-    		            (_k = dispatch.onDOMSetRef) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMSetRef);
-    		            (_l = dispatch.onFiberError) === null || _l === void 0 ? void 0 : _l.call(dispatch, onFiberError);
-    		            (_m = dispatch.onFiberWarn) === null || _m === void 0 ? void 0 : _m.call(dispatch, onFiberWarn);
-    		        }
-    		        else {
-    		            var originalAfterCommit_1 = dispatch.afterCommit;
-    		            var originalAfterUpdate_1 = dispatch.afterUpdate;
-    		            var originalAfterUnmount_1 = dispatch.afterUnmount;
-    		            dispatch.afterCommit = function () {
-    		                var _a;
-    		                (_a = originalAfterCommit_1 === null || originalAfterCommit_1 === void 0 ? void 0 : originalAfterCommit_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterCommit_1, this);
-    		                onLoad();
-    		            };
-    		            // TODO `global patch` flag for performance
-    		            dispatch.afterUpdate = function () {
-    		                var _a;
-    		                (_a = originalAfterUpdate_1 === null || originalAfterUpdate_1 === void 0 ? void 0 : originalAfterUpdate_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUpdate_1, this);
-    		                onLoad();
-    		            };
-    		            dispatch.afterUnmount = function () {
-    		                var _a;
-    		                (_a = originalAfterUnmount_1 === null || originalAfterUnmount_1 === void 0 ? void 0 : originalAfterUnmount_1.call) === null || _a === void 0 ? void 0 : _a.call(originalAfterUnmount_1, this);
-    		                onUnmount();
-    		            };
-    		        }
+    		        patchDispatch(dispatch, this);
     		    };
     		    DevToolCore.prototype.hasDispatch = function (dispatch) {
     		        return this._dispatch.has(dispatch);
@@ -4446,10 +4484,11 @@
     		        this._listeners.delete(listener);
     		    };
     		    DevToolCore.prototype._notify = function (data) {
-    		        this._listeners.forEach(function (listener) { return listener(data); });
+    		        var _this = this;
+    		        this._listeners.forEach(function (listener) { return listener(__assign(__assign({}, data), { agentId: _this.id })); });
     		    };
     		    DevToolCore.prototype.getTree = function (dispatch) {
-    		        var _a = generateTreeMap(dispatch), directory = _a.directory, current = _a.current;
+    		        var _a = inspectDispatch(dispatch), directory = _a.directory, current = _a.current;
     		        if (!reactShared.isNormalEquals(this._dir, directory)) {
     		            this._dir = __assign({}, directory);
     		            this.notifyDir();
@@ -4498,13 +4537,25 @@
     		            this.select.remove();
     		        }
     		    };
-    		    DevToolCore.prototype.inspectDom = function () {
+    		    DevToolCore.prototype.inspectDom = function (agentId) {
+    		        if (agentId && agentId !== this.id) {
+    		            this.notifyMessage("cannot inspect dom from other agent", "error");
+    		            return;
+    		        }
     		        inspectDom(this);
     		    };
-    		    DevToolCore.prototype.inspectCom = function () {
+    		    DevToolCore.prototype.inspectCom = function (agentId) {
+    		        if (agentId && agentId !== this.id) {
+    		            this.notifyMessage("cannot inspect com from other agent", "error");
+    		            return;
+    		        }
     		        inspectCom(this);
     		    };
-    		    DevToolCore.prototype.inspectSource = function () {
+    		    DevToolCore.prototype.inspectSource = function (agentId) {
+    		        if (agentId && agentId !== this.id) {
+    		            this.notifyMessage("cannot inspect source from other agent", "error");
+    		            return;
+    		        }
     		        inspectSource(this);
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
@@ -4609,7 +4660,7 @@
     		    DevToolCore.prototype.notifyChanged = function (list) {
     		        if (!this.hasEnable)
     		            return;
-    		        var tree = getTreeByFiber(list.head.value);
+    		        var tree = getRootTreeByFiber(list.head.value);
     		        this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
     		    };
     		    DevToolCore.prototype.notifyHMR = function () {
@@ -4663,7 +4714,7 @@
     		            return;
     		        var fiber = getFiberNodeById(id);
     		        if (fiber) {
-    		            this._notify({ type: exports.DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber) });
+    		            this._notify({ type: exports.DevToolMessageEnum.detail, data: inspectFiber(fiber) });
     		        }
     		        else {
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
@@ -4795,12 +4846,9 @@
     		exports.PlainNode = PlainNode;
     		exports.assignFiber = assignFiber;
     		exports.debounce = debounce;
-    		exports.deleteLinkState = deleteLinkState;
-    		exports.generateTreeMap = generateTreeMap;
     		exports.getComponentFiberByDom = getComponentFiberByDom;
     		exports.getComponentFiberByFiber = getComponentFiberByFiber;
     		exports.getContextName = getContextName;
-    		exports.getDetailNodeByFiber = getDetailNodeByFiber;
     		exports.getDispatchFromFiber = getDispatchFromFiber;
     		exports.getElementName = getElementName;
     		exports.getElementNodesFromFiber = getElementNodesFromFiber;
@@ -4809,23 +4857,25 @@
     		exports.getFiberNodeById = getFiberNodeById;
     		exports.getFiberTag = getFiberTag;
     		exports.getFiberType = getFiberType;
-    		exports.getHook = getHook;
-    		exports.getHookIndexFromState = getHookIndexFromState;
-    		exports.getHookName = getHookName;
+    		exports.getHMRInternal = getHMRInternal;
+    		exports.getHMRInternalFromId = getHMRInternalFromId;
+    		exports.getHMRState = getHMRState;
     		exports.getMockFiberFromElement = getMockFiberFromElement;
     		exports.getNode = getNode;
     		exports.getNodeFromId = getNodeFromId;
-    		exports.getPlainNodeArrayByList = getPlainNodeArrayByList;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
     		exports.getProps = getProps;
+    		exports.getRootTreeByFiber = getRootTreeByFiber;
     		exports.getSource = getSource;
     		exports.getState = getState;
     		exports.getTree = getTree;
-    		exports.getTreeByFiber = getTreeByFiber;
     		exports.getTypeName = getTypeName;
-    		exports.getValueById = getValueById;
+    		exports.getValueFromId = getValueFromId;
     		exports.initPlainNode = initPlainNode;
+    		exports.inspectDispatch = inspectDispatch;
+    		exports.inspectFiber = inspectFiber;
+    		exports.inspectList = inspectList;
     		exports.isProxy = isProxy;
     		exports.isReactive = isReactive;
     		exports.isReadonly = isReadonly;
@@ -4836,7 +4886,6 @@
     		exports.loopTree = loopTree;
     		exports.shallowAssignFiber = shallowAssignFiber;
     		exports.throttle = throttle;
-    		exports.tryLinkStateToHookIndex = tryLinkStateToHookIndex;
     		exports.typeKeys = typeKeys;
     		exports.unmountPlainNode = unmountPlainNode;
     		exports.updateFiberNode = updateFiberNode; 
@@ -4931,6 +4980,31 @@
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
 
+    var PortName;
+    (function (PortName) {
+        PortName["proxy"] = "dev-tool/proxy";
+        PortName["panel"] = "dev-tool/panel";
+    })(PortName || (PortName = {}));
+    var sourceFrom;
+    (function (sourceFrom) {
+        // message from hook script
+        sourceFrom["hook"] = "hook";
+        // message from proxy script
+        sourceFrom["proxy"] = "proxy";
+        // message from devtool panel
+        sourceFrom["panel"] = "panel";
+        // message from background worker
+        sourceFrom["worker"] = "worker";
+        // message from iframe 
+        sourceFrom["iframe"] = "iframe";
+        // message from socket
+        sourceFrom["socket"] = "socket";
+        // message from detector
+        sourceFrom["detector"] = "detector";
+        // message from another runtime engine
+        sourceFrom["forward"] = "forward";
+    })(sourceFrom || (sourceFrom = {}));
+
     /* eslint-disable @typescript-eslint/no-require-imports */
     var varId = 0;
     var getValidGlobalVarName = function () {
@@ -4979,26 +5053,34 @@
             document.body.appendChild(iframe);
         });
     };
+    var generatePostMessageWithSource = function (from) {
+        return function (message) {
+            if (typeof window === "undefined")
+                return;
+            var _message = __assign({}, message);
+            if (_message.from && _message.forward) {
+                _message.forward += "->".concat(from);
+            }
+            else if (_message.from) {
+                if (_message.from !== from) {
+                    _message.forward = from;
+                }
+            }
+            else {
+                _message.from = from;
+            }
+            window.postMessage(__assign(__assign({}, _message), { source: eventExports.DevToolSource }), "*");
+        };
+    };
 
-    var PortName;
-    (function (PortName) {
-        PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
-    })(PortName || (PortName = {}));
-    var sourceFrom;
-    (function (sourceFrom) {
-        sourceFrom["hook"] = "hook";
-        sourceFrom["proxy"] = "proxy";
-        sourceFrom["panel"] = "panel";
-        sourceFrom["worker"] = "worker";
-        sourceFrom["iframe"] = "iframe";
-        sourceFrom["bridge"] = "bridge";
-        sourceFrom["detector"] = "detector";
-    })(sourceFrom || (sourceFrom = {}));
-
-    var close = function () { };
+    var close = function () {
+        closeCBArray.forEach(function (cb) { return cb(); });
+        closeCBArray.length = 0;
+    };
+    var closeCBArray = [];
+    // 通过 Iframe 调试 Web 应用
     var initIFRAME_DEV = function (origin, token) { return __awaiter(void 0, void 0, void 0, function () {
-        var bridgeUrl, bridgeView, bridgeToken, bridgeIframe, bridgeWindow, viewWindow_1;
+        var bridgeUrl, bridgeView, bridgeToken, bridgeIframe, bridgeWindow, viewWindow_1, onMessage;
         var _a, _b, _c, _d, _e;
         return __generator(this, function (_f) {
             switch (_f.label) {
@@ -5024,15 +5106,17 @@
                         return [2 /*return*/];
                     }
                     if (!token) {
-                        viewWindow_1 = window.open("".concat(bridgeView, "?token=").concat(bridgeToken), 'devtool-view', 'width=800,height=600');
-                        close = function () { return viewWindow_1.close(); };
+                        viewWindow_1 = window.open("".concat(bridgeView, "?token=").concat(bridgeToken), "devtool-view", "width=800,height=600");
+                        closeCBArray.push(function () { return viewWindow_1 === null || viewWindow_1 === void 0 ? void 0 : viewWindow_1.close(); });
                     }
-                    window.addEventListener("message", function (e) {
+                    onMessage = function (e) {
                         var _a;
                         if (e.source === window && e.data && e.data.source === eventExports.DevToolSource && e.data.from === sourceFrom.hook) {
                             (_a = bridgeWindow === null || bridgeWindow === void 0 ? void 0 : bridgeWindow.postMessage) === null || _a === void 0 ? void 0 : _a.call(bridgeWindow, e.data, "*");
                         }
-                    });
+                    };
+                    window.addEventListener("message", onMessage);
+                    closeCBArray.push(function () { return window.removeEventListener("message", onMessage); });
                     (_c = window["__@my-react/dispatch__"]) === null || _c === void 0 ? void 0 : _c.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
                     (_e = (_d = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _d === void 0 ? void 0 : _d.init) === null || _e === void 0 ? void 0 : _e.call(_d);
                     return [2 /*return*/];
@@ -5045,6 +5129,11 @@
     };
 
     var onMessageFromPanelOrWorkerOrDetector = function (data) {
+        if (data.source !== coreExports.DevToolSource)
+            return;
+        var typedData = data;
+        if (typedData.agentId && typedData.agentId !== core.id)
+            return;
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessageWorkerType.init || (data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.show) {
             core.connect();
             core.notifyAll();
@@ -5118,7 +5207,7 @@
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varStore) {
             var id = data.data;
-            var _a = coreExports.getValueById(id), f = _a.f, varStore = _a.v;
+            var _a = coreExports.getValueFromId(id), f = _a.f, varStore = _a.v;
             if (f) {
                 var varName = getValidGlobalVarName();
                 globalThis[varName] = varStore;
@@ -5132,7 +5221,7 @@
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varSource) {
             var id = data.data;
-            var varSource = coreExports.getValueById(id).v;
+            var varSource = coreExports.getValueFromId(id).v;
             core.setSource(varSource);
             core.notifySource();
         }
@@ -5152,7 +5241,7 @@
 
     // support debug more platform
     var connectSocket$1 = null;
-    // Node.js 环境下连接开发工具
+    // 通过 Web 端调试 Node.js 应用
     var initNODE_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
         var connectSocket, unSubscribe;
         var _a, _b, _c;
@@ -5199,7 +5288,7 @@
     };
 
     var connectSocket = null;
-    // 浏览器环境下连接开发工具
+    // 通过 Web 端调试 Web 应用
     var initWEB_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
         var socket, unSubscribe;
         var _b, _c, _d;
@@ -5261,18 +5350,12 @@
         connectSocket = null;
     };
 
-    var generatePostMessageWithSource = function (from) {
-        return function (message) {
-            if (typeof window === 'undefined')
-                return;
-            window.postMessage(__assign(__assign({ from: from }, message), { source: eventExports.DevToolSource }), "*");
-        };
-    };
-
     var _a;
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
+    // default render agentId
+    var agentId = core.id;
     core.subscribe(function (message) {
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.render, data: message });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.render, data: message, to: sourceFrom.panel });
     });
     var set = new Set();
     var detectorReady = false;
@@ -5292,19 +5375,25 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _d, _f;
+        var _a, _b, _c;
         if (typeof window === "undefined")
             return;
-        // allow iframe dev
-        // allow bridge dev
-        if (message.source !== window && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.from) !== sourceFrom.iframe && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.from) !== sourceFrom.bridge)
+        if (message.source !== window)
             return;
-        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.source) !== eventExports.DevToolSource)
+        if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.source) !== eventExports.DevToolSource)
             return;
-        if (((_d = message.data) === null || _d === void 0 ? void 0 : _d.from) === sourceFrom.hook)
+        if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.to) !== sourceFrom.hook)
             return;
-        if (!detectorReady && ((_f = message.data) === null || _f === void 0 ? void 0 : _f.type) === eventExports.MessageDetectorType.init) {
+        if (!detectorReady && ((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageDetectorType.init) {
             detectorReady = true;
+        }
+        if (message.data.from === sourceFrom.forward) {
+            // 通知forward source端，detector已准备好
+            hookPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook, forward: sourceFrom.forward });
+        }
+        if (message.data.type === eventExports.MessagePanelType.show) {
+            hookPostMessageWithSource({ type: eventExports.MessageProxyType.init, to: sourceFrom.proxy, data: agentId });
+            hookPostMessageWithSource({ type: eventExports.MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
         }
         onMessageFromPanelOrWorkerOrDetector(message.data);
     };
@@ -5313,20 +5402,20 @@
     }
     var onceMount = reactSharedExports.once(function () {
         // current site is render by @my-react
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, to: sourceFrom.detector });
     });
     var onceDev = reactSharedExports.once(function () {
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: "develop" });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: "develop", to: sourceFrom.detector });
     });
     var oncePro = reactSharedExports.once(function () {
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: "product" });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: "product", to: sourceFrom.detector });
     });
     var onceOrigin = reactSharedExports.once(function () {
         try {
             var origin_1 = window.location.origin;
             core._origin = origin_1;
             if (origin_1) {
-                hookPostMessageWithSource({ type: eventExports.MessageHookType.origin, data: origin_1 });
+                hookPostMessageWithSource({ type: eventExports.MessageHookType.origin, data: origin_1, to: sourceFrom.detector });
             }
         }
         catch (_a) {
@@ -5370,8 +5459,8 @@
                 });
             }
         }
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.init });
-        globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init }); };
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector });
+        globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector }); };
     }
 
 })();

@@ -2,28 +2,27 @@
 /* eslint-disable max-lines */
 import { isNormalEquals } from "@my-react/react-shared";
 
+import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource } from "./browser/inspect";
 import { getNode, getNodeFromId } from "./data";
-import { DevToolMessageEnum, HMRStatus } from "./event";
-import { Highlight, Select } from "./highlight";
-import { getHMRInternalFromId } from "./hmr";
-import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource } from "./inspect";
+import { patchDispatch } from "./dispatch";
+import { DevToolMessageEnum } from "./event";
+import { updateFiberNode } from "./fiber";
+import { getHMRInternalFromId } from "./fiber/hmr";
+import { getHookIndexFromState } from "./hook";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
 import {
-  generateTreeMap,
-  getDetailNodeByFiber,
   getFiberNodeById,
-  getPlainNodeArrayByList,
   getPlainNodeIdByFiber,
-  getTreeByFiber,
   getComponentFiberByDom,
   getElementNodesFromFiber,
-  updateFiberNode,
-  tryLinkStateToHookIndex,
-  deleteLinkState,
-  getHookIndexFromState,
+  inspectDispatch,
+  getRootTreeByFiber,
+  inspectFiber,
 } from "./tree";
-import { debounce, throttle } from "./utils";
+import { debounce } from "./utils";
+import { Select, Highlight } from "./view";
 
+import type { HMRStatus } from "./event";
 import type { Tree } from "./tree";
 import type { MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
@@ -31,6 +30,7 @@ import type { ListTree } from "@my-react/react-shared";
 export type DevToolMessageType = {
   type: DevToolMessageEnum;
   data: any;
+  agentId?: number | string;
 };
 
 export class DevToolCore {
@@ -94,6 +94,8 @@ export class DevToolCore {
   select: Select;
 
   update: Highlight;
+
+  id = Math.random().toString(16).slice(2);
 
   constructor() {
     this.update = new Highlight(this);
@@ -172,257 +174,7 @@ export class DevToolCore {
   }
 
   patchDispatch(dispatch: DevToolRenderDispatch) {
-    if (dispatch["$$hasDevToolPatch"]) return;
-
-    dispatch["$$hasDevToolPatch"] = true;
-
-    const onLoad = throttle(() => {
-      if (!this.hasEnable) return;
-
-      this.notifyDispatch(dispatch);
-
-      this.notifySelect();
-
-      this.notifyHMRStatus();
-
-      this.notifyHMRExtend();
-
-      this.notifyTriggerStatus();
-
-      this.notifyWarnStatus();
-
-      this.notifyErrorStatus();
-    }, 200);
-
-    const onTrace = () => {
-      if (!this.hasEnable) return;
-
-      if (!this._enableUpdate) return;
-
-      this.update.flushPending();
-    };
-
-    const onChange = (list: ListTree<MyReactFiberNode>) => {
-      if (!this.hasEnable) return;
-
-      const { directory } = getPlainNodeArrayByList(list);
-
-      if (!isNormalEquals(this._dir, directory)) {
-        this._dir = { ...directory };
-
-        this.notifyDir();
-      }
-
-      this.notifyChanged(list);
-    };
-
-    const onUnmount = () => {
-      // if (!this.hasEnable) return;
-
-      this._needUnmount = true;
-
-      this.delDispatch(dispatch);
-    };
-
-    const notifyTriggerWithThrottle = throttle(() => this.notifyTrigger(), 100);
-
-    const onFiberTrigger = (fiber: MyReactFiberNode, state: UpdateState) => {
-      const id = getPlainNodeIdByFiber(fiber);
-
-      if (!id) return;
-
-      this._trigger[id] = this._trigger[id] || [];
-
-      // 长数据过滤
-      if (this._trigger[id].length > 10) {
-        const index = this._trigger[id].length - 11;
-        if (this._trigger[id][index]) {
-          deleteLinkState(this._trigger[id][index] as UpdateState);
-        }
-        this._trigger[id][index] = { isRetrigger: this._trigger[id][index].isRetrigger };
-      }
-
-      tryLinkStateToHookIndex(fiber, state);
-
-      this._trigger[id].push(state);
-
-      if (!this.hasEnable) return;
-
-      notifyTriggerWithThrottle();
-    };
-
-    const onFiberUpdate = (fiber: MyReactFiberNode) => {
-      const id = getPlainNodeIdByFiber(fiber);
-
-      if (!id) return;
-
-      if (!this.hasEnable) return;
-
-      if (id === this._selectId) {
-        this.notifySelect();
-
-        this.notifyHMRStatus();
-
-        this.notifyHMRExtend();
-
-        this.notifyTriggerStatus();
-
-        this.notifyWarnStatus();
-
-        this.notifyErrorStatus();
-      }
-    };
-
-    const onFiberState = (fiber: MyReactFiberNode) => {
-      const id = getPlainNodeIdByFiber(fiber);
-
-      if (!id) return;
-
-      this._state[id] = this._state[id] ? this._state[id] + 1 : 1;
-    };
-
-    const onFiberHMR = (fiber: MyReactFiberNode, forceRefresh?: boolean) => {
-      const id = getPlainNodeIdByFiber(fiber);
-
-      if (!id) return;
-
-      this._hmr[id] = this._hmr[id] || [];
-
-      this._hmr[id].push(typeof forceRefresh === "boolean" ? (forceRefresh ? HMRStatus.remount : HMRStatus.refresh) : HMRStatus.none);
-
-      if (!this.hasEnable) return;
-
-      this.notifyHMR();
-
-      this.notifyDispatch(dispatch, true);
-    };
-
-    const onFiberWarn = (fiber: MyReactFiberNode, ...args: any[]) => {
-      const id = getPlainNodeIdByFiber(fiber);
-
-      if (!id) return;
-
-      this._warn[id] = this._warn[id] || [];
-
-      if (this._warn[id].length > 10) {
-        const index = this._warn[id].length - 11;
-        this._warn[id][index] = 1;
-      }
-
-      this._warn[id].push(args);
-
-      this.notifyWarn();
-    };
-
-    const onFiberError = (fiber: MyReactFiberNode, ...args: any[]) => {
-      const id = getPlainNodeIdByFiber(fiber);
-
-      if (!id) return;
-
-      this._error[id] = this._error[id] || [];
-
-      if (this._error[id].length > 10) {
-        const index = this._error[id].length - 11;
-        this._error[id][index] = 1;
-      }
-
-      this._error[id].push(args);
-
-      this.notifyError();
-    };
-
-    const onPerformanceWarn = (fiber: MyReactFiberNode) => {
-      const id = getPlainNodeIdByFiber(fiber);
-
-      if (!id) return;
-
-      if (this.hasEnable && this._enableUpdate) {
-        this.update.addPending(fiber, "warn");
-      }
-
-      this.notifyHighlight(id, "performance");
-    };
-
-    const onDOMUpdate = (fiber: MyReactFiberNode) => {
-      if (this.hasEnable && this._enableUpdate) {
-        this.update.addPending(fiber, "update");
-      }
-    };
-
-    const onDOMAppend = (fiber: MyReactFiberNode) => {
-      if (this.hasEnable && this._enableUpdate) {
-        this.update.addPending(fiber, "append");
-      }
-    };
-
-    const onDOMSetRef = (fiber: MyReactFiberNode) => {
-      if (this.hasEnable && this._enableUpdate) {
-        this.update.addPending(fiber, "setRef");
-      }
-    };
-
-    if (typeof dispatch.onFiberTrigger === "function") {
-      if (typeof dispatch.onAfterCommitMount === "function") {
-        dispatch.onAfterCommitMount(onLoad);
-
-        dispatch.onAfterCommitUpdate(onTrace);
-
-        dispatch.onAfterCommitUnmount(onUnmount);
-      } else {
-        dispatch.onAfterCommit(onLoad);
-
-        dispatch.onAfterUpdate(onTrace);
-
-        dispatch.onAfterUnmount?.(onUnmount);
-      }
-
-      dispatch.onFiberState?.(onFiberState);
-
-      dispatch.onFiberTrigger?.(onFiberTrigger);
-
-      dispatch.onPerformanceWarn?.(onPerformanceWarn);
-
-      dispatch.onFiberChange?.(onChange);
-
-      dispatch.onFiberUpdate?.(onFiberUpdate);
-
-      dispatch.onFiberHMR?.(onFiberHMR);
-
-      dispatch.onDOMUpdate?.(onDOMUpdate);
-
-      dispatch.onDOMAppend?.(onDOMAppend);
-
-      dispatch.onDOMSetRef?.(onDOMSetRef);
-
-      dispatch.onFiberError?.(onFiberError);
-
-      dispatch.onFiberWarn?.(onFiberWarn);
-    } else {
-      const originalAfterCommit = dispatch.afterCommit;
-
-      const originalAfterUpdate = dispatch.afterUpdate;
-
-      const originalAfterUnmount = dispatch.afterUnmount;
-
-      dispatch.afterCommit = function (this: DevToolRenderDispatch) {
-        originalAfterCommit?.call?.(this);
-
-        onLoad();
-      };
-
-      // TODO `global patch` flag for performance
-      dispatch.afterUpdate = function (this: DevToolRenderDispatch) {
-        originalAfterUpdate?.call?.(this);
-
-        onLoad();
-      };
-
-      dispatch.afterUnmount = function (this: DevToolRenderDispatch) {
-        originalAfterUnmount?.call?.(this);
-
-        onUnmount();
-      };
-    }
+    patchDispatch(dispatch, this);
   }
 
   hasDispatch(dispatch: DevToolRenderDispatch) {
@@ -448,11 +200,11 @@ export class DevToolCore {
   }
 
   _notify(data: DevToolMessageType) {
-    this._listeners.forEach((listener) => listener(data));
+    this._listeners.forEach((listener) => listener({ ...data, agentId: this.id }));
   }
 
   getTree(dispatch: DevToolRenderDispatch) {
-    const { directory, current } = generateTreeMap(dispatch);
+    const { directory, current } = inspectDispatch(dispatch);
 
     if (!isNormalEquals(this._dir, directory)) {
       this._dir = { ...directory };
@@ -519,15 +271,32 @@ export class DevToolCore {
     }
   }
 
-  inspectDom() {
+  inspectDom(agentId?: number | string) {
+    if (agentId && agentId !== this.id) {
+      this.notifyMessage("cannot inspect dom from other agent", "error");
+
+      return;
+    }
+
     inspectDom(this);
   }
 
-  inspectCom() {
+  inspectCom(agentId?: number | string) {
+    if (agentId && agentId !== this.id) {
+      this.notifyMessage("cannot inspect com from other agent", "error");
+
+      return;
+    }
+
     inspectCom(this);
   }
 
-  inspectSource() {
+  inspectSource(agentId?: number | string) {
+    if (agentId && agentId !== this.id) {
+      this.notifyMessage("cannot inspect source from other agent", "error");
+
+      return;
+    }
     inspectSource(this);
   }
 
@@ -656,7 +425,7 @@ export class DevToolCore {
   notifyChanged(list: ListTree<MyReactFiberNode>) {
     if (!this.hasEnable) return;
 
-    const tree = getTreeByFiber(list.head.value);
+    const tree = getRootTreeByFiber(list.head.value);
 
     this._notify({ type: DevToolMessageEnum.ready, data: tree });
   }
@@ -727,7 +496,7 @@ export class DevToolCore {
         console.log("[@my-react-devtool/core] current select fiber", fiber);
       }
 
-      this._notify({ type: DevToolMessageEnum.detail, data: getDetailNodeByFiber(fiber) });
+      this._notify({ type: DevToolMessageEnum.detail, data: inspectFiber(fiber) });
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
     }

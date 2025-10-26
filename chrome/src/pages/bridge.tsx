@@ -1,8 +1,8 @@
-import { useBridgeSource } from "@/hooks/useBridgeSource";
+import { useBridgeForward } from "@/hooks/useBridgeForward";
 
 export default function Page() {
 
-  useBridgeSource();
+  useBridgeForward();
 
   return null;
 }

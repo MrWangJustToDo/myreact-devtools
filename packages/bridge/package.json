@@ -8,6 +8,8 @@
   "types": "index.d.ts",
   "files": [
     "dist",
+    "type.js",
+    "type.d.ts",
     "index.js",
     "index.d.ts"
   ],
@@ -17,11 +19,12 @@
   },
   "exports": {
     ".": "./index.js",
+    "./type": "./type.js",
     "./package.json": "./package.json"
   },
   "buildOptions": [
     {
-      "input": "./src/hook.ts",
+      "input": "./src/content/index.ts",
       "pkgName": "hook",
       "output": [
         {
@@ -34,12 +37,12 @@
       ]
     },
     {
-      "input": "./src/hook-socket-dev.ts",
-      "pkgName": "hook-socket-dev",
+      "input": "./src/content/index-forward.ts",
+      "pkgName": "forward-dev",
       "output": [
         {
           "dir": "./dist",
-          "entryFileNames": "iife/hook-socket-dev.js",
+          "entryFileNames": "iife/forward-dev.js",
           "format": "iife",
           "type": true,
           "multiple": true
@@ -47,7 +50,7 @@
       ]
     },
     {
-      "input": "./src/detector.ts",
+      "input": "./src/popover/index.ts",
       "pkgName": "detector",
       "output": [
         {
@@ -60,7 +63,7 @@
       ]
     },
     {
-      "input": "./src/proxy.ts",
+      "input": "./src/background/proxy.ts",
       "pkgName": "proxy",
       "output": [
         {
@@ -73,7 +76,7 @@
       ]
     },
     {
-      "input": "./src/service-worker.ts",
+      "input": "./src/background/index.ts",
       "pkgName": "service-worker",
       "output": [
         {
@@ -86,7 +89,7 @@
       ]
     },
     {
-      "input": "./src/panel.ts",
+      "input": "./src/panel/index.ts",
       "pkgName": "panel",
       "output": [
         {
@@ -95,6 +98,18 @@
           "format": "iife",
           "type": true,
           "multiple": true
+        }
+      ]
+    },
+    {
+      "input": "./src/type.ts",
+      "pkgName": "type",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "cjs/type.js",
+          "format": "cjs",
+          "type": true
         }
       ]
     }

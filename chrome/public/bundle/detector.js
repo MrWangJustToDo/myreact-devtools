@@ -16,11 +16,16 @@
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
     		    MessageHookType["origin"] = "hook-origin";
+    		    MessageHookType["clear"] = "hook-clear";
     		})(exports.MessageHookType || (exports.MessageHookType = {}));
     		exports.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
     		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
+    		exports.MessageProxyType = void 0;
+    		(function (MessageProxyType) {
+    		    MessageProxyType["init"] = "proxy-init";
+    		})(exports.MessageProxyType || (exports.MessageProxyType = {}));
     		exports.MessagePanelType = void 0;
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
@@ -110,13 +115,22 @@
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
+        // message from hook script
         sourceFrom["hook"] = "hook";
+        // message from proxy script
         sourceFrom["proxy"] = "proxy";
+        // message from devtool panel
         sourceFrom["panel"] = "panel";
+        // message from background worker
         sourceFrom["worker"] = "worker";
+        // message from iframe 
         sourceFrom["iframe"] = "iframe";
-        sourceFrom["bridge"] = "bridge";
+        // message from socket
+        sourceFrom["socket"] = "socket";
+        // message from detector
         sourceFrom["detector"] = "detector";
+        // message from another runtime engine
+        sourceFrom["forward"] = "forward";
     })(sourceFrom || (sourceFrom = {}));
 
     /******************************************************************************
@@ -154,15 +168,27 @@
 
     var generatePostMessageWithSource = function (from) {
         return function (message) {
-            if (typeof window === 'undefined')
+            if (typeof window === "undefined")
                 return;
-            window.postMessage(__assign(__assign({ from: from }, message), { source: eventExports.DevToolSource }), "*");
+            var _message = __assign({}, message);
+            if (_message.from && _message.forward) {
+                _message.forward += "->".concat(from);
+            }
+            else if (_message.from) {
+                if (_message.from !== from) {
+                    _message.forward = from;
+                }
+            }
+            else {
+                _message.from = from;
+            }
+            window.postMessage(__assign(__assign({}, _message), { source: eventExports.DevToolSource }), "*");
         };
     };
 
     var hookReady = false;
-    var id = null;
     var detectorPostMessageWithSource = generatePostMessageWithSource(sourceFrom.detector);
+    var id = null;
     var runWhenHookReady = function (fn, count) {
         clearTimeout(id);
         if (hookReady) {
@@ -175,25 +201,35 @@
             id = setTimeout(function () { return runWhenHookReady(fn, count ? count + 1 : 1); }, 1000);
         }
     };
-    var onMessage = function (message) {
+    // message from hook
+    var onMessageFromHook = function (message) {
         var _a, _b, _c;
         if (message.source !== window)
             return;
         if (((_a = message.data) === null || _a === void 0 ? void 0 : _a.source) !== eventExports.DevToolSource)
             return;
+        if (message.data.to !== sourceFrom.detector)
+            return;
         if (!hookReady && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === eventExports.MessageHookType.init) {
             hookReady = true;
-            detectorPostMessageWithSource({ type: eventExports.MessageDetectorType.init });
+            detectorPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook });
         }
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageHookType.mount) {
             runWhenHookReady(function () {
                 var _a;
-                chrome.runtime.sendMessage({ type: eventExports.MessageHookType.mount, from: sourceFrom.detector, data: (_a = message.data) === null || _a === void 0 ? void 0 : _a.data });
+                // to background worker
+                chrome.runtime.sendMessage({
+                    type: message.data.type,
+                    source: eventExports.DevToolSource,
+                    from: sourceFrom.detector,
+                    data: (_a = message.data) === null || _a === void 0 ? void 0 : _a.data,
+                    to: sourceFrom.worker,
+                });
             });
         }
     };
     if (typeof window !== "undefined") {
-        window.addEventListener("message", onMessage);
+        window.addEventListener("message", onMessageFromHook);
     }
 
 })();
