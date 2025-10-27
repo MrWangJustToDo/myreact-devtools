@@ -264,7 +264,6 @@
         var _a = panelWindow.useConnect.getActions(), disconnect = _a.disconnect, setConnectHandler = _a.setConnectHandler;
         setConnectHandler(function () { return initPort(); });
         port = chrome.runtime.connect({ name: getTabId().toString() });
-        // only process message from worker
         var onMessage = function (message) {
             var _a, _b;
             if (!hasShow)
@@ -288,7 +287,6 @@
             }
             if ((message === null || message === void 0 ? void 0 : message.type) === eventExports.MessageHookType.render) {
                 var currentAgentId = agentIdMap.get(getTabId());
-                console.log("currentAgentId", currentAgentId, message.data.agentId);
                 if (currentAgentId && message.data.agentId !== currentAgentId)
                     return;
                 onRender(message.data, panelWindow);
@@ -302,6 +300,7 @@
             workerReady = false;
             workerConnecting = false;
         };
+        sendMessage({ type: eventExports.MessagePanelType.show });
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);
     };
