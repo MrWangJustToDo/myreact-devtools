@@ -92,7 +92,6 @@ const initPort = () => {
 
   port = chrome.runtime.connect({ name: getTabId().toString() });
 
-  // only process message from worker
   const onMessage = (message: MessageHookDataType | MessageWorkerDataType) => {
     if (!hasShow) return;
 
@@ -127,8 +126,6 @@ const initPort = () => {
     if (message?.type === MessageHookType.render) {
       const currentAgentId = agentIdMap.get(getTabId());
 
-      console.log("currentAgentId", currentAgentId, message.data.agentId);
-
       if (currentAgentId && message.data.agentId !== currentAgentId) return;
 
       onRender(message.data, panelWindow);
@@ -150,6 +147,8 @@ const initPort = () => {
 
     workerConnecting = false;
   };
+
+  sendMessage({ type: MessagePanelType.show });
 
   port.onMessage.addListener(onMessage);
 

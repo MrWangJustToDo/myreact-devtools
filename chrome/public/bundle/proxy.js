@@ -224,6 +224,7 @@
             return;
         if (message.data.to !== sourceFrom.proxy)
             return;
+        // TODO remove this logic
         if (message.data.type === eventExports.MessageProxyType.init) {
             agentId = message.data.data;
         }
@@ -232,6 +233,7 @@
         port.onMessage.removeListener(sendMessageToContent);
         sendMessageToContent({ type: eventExports.MessageWorkerType.close, to: sourceFrom.hook });
         window.removeEventListener("message", sendMessageToPanel);
+        window.removeEventListener("message", onMessage);
     };
     // listen message from background worker, then forward to page hook
     port.onMessage.addListener(sendMessageToContent);

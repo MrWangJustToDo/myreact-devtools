@@ -46,6 +46,7 @@ const onMessage = (message: MessageEvent<MessageProxyDataType>) => {
 
   if (message.data.to !== sourceFrom.proxy) return;
 
+  // TODO remove this logic
   if (message.data.type === MessageProxyType.init) {
     agentId = message.data.data;
   }
@@ -57,6 +58,8 @@ const handleDisconnect = () => {
   sendMessageToContent({ type: MessageWorkerType.close, to: sourceFrom.hook });
 
   window.removeEventListener("message", sendMessageToPanel);
+
+  window.removeEventListener("message", onMessage);
 };
 
 // listen message from background worker, then forward to page hook
