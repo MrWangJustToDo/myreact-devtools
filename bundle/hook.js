@@ -5393,7 +5393,6 @@
             hookPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook, forward: sourceFrom.forward });
         }
         if (message.data.type === eventExports.MessagePanelType.show) {
-            hookPostMessageWithSource({ type: eventExports.MessageProxyType.init, to: sourceFrom.proxy, data: agentId });
             hookPostMessageWithSource({ type: eventExports.MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
         }
         onMessageFromPanelOrWorkerOrDetector(message.data);
