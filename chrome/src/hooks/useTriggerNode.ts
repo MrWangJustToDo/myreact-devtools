@@ -6,18 +6,16 @@ export const useTriggerNode = createState(() => ({ state: {}, count: 0 }) as { s
     return {
       update: (state: Record<string, number>) => {
         const targetKeys = Object.keys(state);
-        const targetLength = targetKeys.length;
-        const existLength = Object.keys(s.state).length;
-        // 更新优化
-        if (targetLength === existLength) {
-          targetKeys.forEach((key) => {
-            if (s.state[key] !== state[key]) {
-              s.state[key] = state[key];
-            }
-          });
-        } else {
-          s.state = state;
-        }
+        const existKeys = Object.keys(s.state);
+        const allKeys = new Set([...targetKeys, ...existKeys]);
+        allKeys.forEach((key) => {
+          if (state[key] === s.state[key]) return;
+          if (state[key]) {
+            s.state[key] = state[key];
+          } else {
+            delete s.state[key];
+          }
+        })
       },
       clearTrigger: () => {
         s.count++;
