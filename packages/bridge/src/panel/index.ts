@@ -114,7 +114,9 @@ const initPort = () => {
 
       if (currentAgentId && message.data?.agentId === currentAgentId) return;
 
-      if (message.data?.agentId) {
+      if (currentAgentId && message.data?.agentId && message.data?.force) {
+        agentIdMap.set(getTabId(), message.data.agentId);
+      } else if (message.data?.agentId) {
         agentIdMap.set(getTabId(), message.data.agentId);
       }
 

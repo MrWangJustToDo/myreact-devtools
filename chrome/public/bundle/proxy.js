@@ -186,7 +186,6 @@
         };
     };
 
-    var agentId = "";
     var port = chrome.runtime.connect({ name: PortName.proxy });
     var proxyPostMessageWithSource = generatePostMessageWithSource(sourceFrom.proxy);
     var sendMessageToContent = function (message) {
@@ -195,14 +194,11 @@
         }
     };
     var sendMessageToPanel = function (message) {
-        var _a;
         if (message.source !== window)
             return;
         if (message.data.source !== eventExports.DevToolSource)
             return;
         if (message.data.to === sourceFrom.panel) {
-            if (((_a = message.data.data) === null || _a === void 0 ? void 0 : _a.agentId) && message.data.data.agentId !== agentId)
-                return;
             try {
                 port.postMessage(__assign(__assign({}, message.data), { forward: message.data.forward ? "".concat(message.data.forward, "->").concat(sourceFrom.proxy) : sourceFrom.proxy }));
             }
@@ -217,29 +213,15 @@
             }
         }
     };
-    var onMessage = function (message) {
-        if (message.source !== window)
-            return;
-        if (message.data.source !== eventExports.DevToolSource)
-            return;
-        if (message.data.to !== sourceFrom.proxy)
-            return;
-        // TODO remove this logic
-        if (message.data.type === eventExports.MessageProxyType.init) {
-            agentId = message.data.data;
-        }
-    };
     var handleDisconnect = function () {
         port.onMessage.removeListener(sendMessageToContent);
         sendMessageToContent({ type: eventExports.MessageWorkerType.close, to: sourceFrom.hook });
         window.removeEventListener("message", sendMessageToPanel);
-        window.removeEventListener("message", onMessage);
     };
     // listen message from background worker, then forward to page hook
     port.onMessage.addListener(sendMessageToContent);
     port.onDisconnect.addListener(handleDisconnect);
     // listen message from hook, then forward to worker -> panel
     window.addEventListener("message", sendMessageToPanel);
-    window.addEventListener("message", onMessage);
 
 })();

@@ -1,5 +1,5 @@
 import { once } from "@my-react/react-shared";
-import { DevToolSource, MessagePanelType, MessageProxyType } from "@my-react-devtool/core/event";
+import { DevToolSource, MessagePanelType } from "@my-react-devtool/core/event";
 
 import { core } from "../core";
 import { initIFRAME_DEV } from "../entry/iframe-dev";
@@ -79,8 +79,6 @@ const onMessage = (message: MessageEvent<MessageHookDataType | MessagePanelDataT
   }
 
   if (message.data.type === MessagePanelType.show) {
-    hookPostMessageWithSource({ type: MessageProxyType.init, to: sourceFrom.proxy, data: agentId });
-
     hookPostMessageWithSource({ type: MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
   }
 

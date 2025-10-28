@@ -5146,8 +5146,7 @@
             detectorReady = true;
         }
         if (message.data.type === eventExports.MessagePanelType.show) {
-            hookPostMessageWithSource({ type: eventExports.MessageProxyType.init, to: sourceFrom.proxy, data: agentId });
-            hookPostMessageWithSource({ type: eventExports.MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
+            hookPostMessageWithSource({ type: eventExports.MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId, force: true } });
         }
         onMessageFromPanelOrWorkerOrDetector(message.data);
     };
