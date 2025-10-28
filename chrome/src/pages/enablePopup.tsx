@@ -7,7 +7,7 @@ export default function Page() {
         <span className="mr-1">
           <CircleCheck className="h-[1.2em]" />
         </span>
-        <p className="text-green-500">This website build on @my-react</p>
+        <p className="text-green-500">Detector @my-react on this page</p>
       </div>
     </main>
   );
