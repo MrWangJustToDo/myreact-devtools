@@ -4165,7 +4165,7 @@
     		        var color = _a.color, rect = _a.rect;
     		        context.beginPath();
     		        context.strokeStyle = color;
-    		        context.rect(rect.left, rect.top, rect.width - 1, rect.height - 1);
+    		        context.rect(rect.left - 1, rect.top, rect.width - 1, rect.height - 1);
     		        context.stroke();
     		    });
     		}
@@ -4209,7 +4209,7 @@
     		    var metrics = context.measureText(text);
     		    var backgroundWidth = metrics.width + padding * 2;
     		    var backgroundHeight = textHeight;
-    		    var labelX = left;
+    		    var labelX = left - 1;
     		    var labelY = top - backgroundHeight;
     		    context.fillStyle = color;
     		    context.fillRect(labelX, labelY, backgroundWidth, backgroundHeight);
