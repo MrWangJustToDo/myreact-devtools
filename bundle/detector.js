@@ -36,6 +36,7 @@
     		    MessagePanelType["enableUpdate"] = "panel-enable-update";
     		    MessagePanelType["enableRetrigger"] = "panel-enable-retrigger";
     		    MessagePanelType["enableHoverOnBrowser"] = "panel-enable-hover-on-browser";
+    		    MessagePanelType["enableRecord"] = "panel-enable-record";
     		    MessagePanelType["nodeHover"] = "panel-hover";
     		    MessagePanelType["nodeSelect"] = "panel-select";
     		    MessagePanelType["nodeStore"] = "panel-store";
@@ -81,6 +82,7 @@
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["errorStatus"] = "errorStatus";
     		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
     		exports.HMRStatus = void 0;
