@@ -13,7 +13,7 @@ export const FlameGraphSelect = () => {
 
   return (
     <style jsx global>{`
-      #flameGraph-node-${select} {
+      [data-id="flameGraph-node-${select}"] {
         opacity: 1;
       }
     `}</style>

@@ -6,6 +6,8 @@ DevTools for @my-react project, currently in beta.
 
 ![screen shout](dark.png)
 
+![screen shout](flameGraph.png)
+
 ![screen shout](setting.png)
 
 ## Debug gemini-cli 

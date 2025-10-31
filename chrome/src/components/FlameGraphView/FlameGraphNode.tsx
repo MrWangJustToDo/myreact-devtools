@@ -60,7 +60,7 @@ export const FlameGraphNode = ({
         }}
       >
         <div
-          id={`flameGraph-node-${current.i}`}
+          data-id={`flameGraph-node-${current.i}`}
           onClick={() => setSelect(current.i)}
           onDoubleClick={() => {
             setSelect(current.i);
