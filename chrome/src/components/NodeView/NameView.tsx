@@ -5,7 +5,7 @@ import { Bug, Eye, Locate, Package, Play } from "lucide-react";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 
-import { TreeItem } from "./TreeItem";
+import { TreeItem } from "../TreeView/TreeItem";
 
 const { storeFiber, triggerFiber, scrollIntoView, inspectComAction, inspectDomAction } = useSelectNode.getActions();
 

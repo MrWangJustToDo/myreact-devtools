@@ -373,3 +373,9 @@ export const getDispatchFromFiber = (fiber?: MyReactFiberNode) => {
 export const getFiberNodeById = (id: string) => {
   return fiberStore.get(id);
 };
+
+export const getDirectoryIdByFiber = (fiber: MyReactFiberNode) => {
+  const name = getFiberName(fiber as MyReactFiberNodeDev);
+
+  return directory[name];
+}

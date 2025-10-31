@@ -8,8 +8,8 @@ import { useAppTree } from "./useAppTree";
 export const useSelectNode = createState(
   () =>
     ({ select: null, hover: null, closeList: {}, selectList: {}, store: 0, trigger: 0, scroll: 0, inspectDom: 0, inspectCom: 0 }) as {
-      select: string | null;
-      hover: string | null;
+      select: string | number | null;
+      hover: string | number | null;
       trigger: number;
       store: number;
       scroll: number;
@@ -35,7 +35,7 @@ export const useSelectNode = createState(
       }, 16);
 
       return {
-        setSelect: (node: string | null, force?: boolean) => {
+        setSelect: (node: string | number | null, force?: boolean) => {
           if (node === s.select && !force) {
             s.select = null;
             s.selectList = {};
@@ -83,14 +83,14 @@ export const useSelectNode = createState(
           }
         },
         updateSelectList,
-        setHover: (node: string | null) => {
+        setHover: (node: string | number | null) => {
           if (node === s.hover) {
             s.hover = null;
           } else {
             s.hover = node;
           }
         },
-        setClose: (node: string | null) => {
+        setClose: (node: string | number | null) => {
           if (!node) return;
           if (s.closeList?.[node]) {
             s.closeList = { ...s.closeList, [node]: false };

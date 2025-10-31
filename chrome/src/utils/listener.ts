@@ -9,6 +9,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
+import { useRecordStack } from "@/hooks/useRecordStack";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useUpdateState } from "@/hooks/useUpdateState";
@@ -235,6 +236,21 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
     useHighlightNode.subscribe(
       (s) => s.count,
       () => postMessage({ type: MessagePanelType.clearMessage, data: null })
+    )
+  );
+
+  unSubscribeArray.push(
+    useRecordStack.subscribe(
+      (s) => s.loading,
+      () => {
+        const l = useRecordStack.getReadonlyState().loading;
+
+        if (l) {
+          postMessage({ type: MessagePanelType.enableRecord, data: true });
+        } else {
+          postMessage({ type: MessagePanelType.enableRecord, data: false });
+        }
+      }
     )
   );
 

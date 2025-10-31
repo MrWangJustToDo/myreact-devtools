@@ -9,7 +9,7 @@ import { useFilterNode } from "@/hooks/useFilterNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { checkHasInclude } from "@/utils/node";
 
-import { TreeItem } from "./TreeItem";
+import { TreeItem } from "../TreeView/TreeItem";
 
 import type { PlainNode } from "@my-react-devtool/core";
 

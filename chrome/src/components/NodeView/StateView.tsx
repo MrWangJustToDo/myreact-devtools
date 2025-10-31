@@ -5,41 +5,43 @@ import { useConfig } from "@/hooks/useConfig";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 
-import { NodeValue } from "./NodeValue";
+import { NodeValue } from "../NodeValue";
 
-export const PropsView = () => {
+export const StateView = () => {
   const select = useSelectNode((s) => s.select);
 
   const nodeList = useDetailNode((s) => s.nodes);
 
-  const enableEdit = useConfig(s => s.state.enableEdit);
+  const enableEdit = useConfig((s) => s.state.enableEdit);
 
   const currentSelectDetail = nodeList.find((i) => i.i === select);
 
-  const propsKeys = Object.keys(currentSelectDetail?.p?.v || {});
+  const hasState = currentSelectDetail?.s?.t !== "Null" && currentSelectDetail?.s?.t !== "Undefined";
+
+  const stateKeys = Object.keys(hasState ? currentSelectDetail?.s?.v || {} : {});
 
   const id = currentSelectDetail?.i;
 
-  const hasProps = propsKeys.length > 0;
+  const hasStates = stateKeys.length > 0;
 
   const render = useCallbackRef((index: number) => {
-    const key = propsKeys[index];
+    const key = stateKeys[index];
     return (
       <div className={`tree-wrapper`} key={id + "-" + index}>
-        <NodeValue name={key} type="props" editable={enableEdit} item={currentSelectDetail?.p?.v?.[key]} />
+        <NodeValue name={key} type="state" editable={enableEdit} item={currentSelectDetail?.s?.v?.[key]} />
       </div>
     );
   });
 
-  if (hasProps) {
+  if (hasStates) {
     return (
       <>
-        <div className="node-props p-2 pb-0">
+        <div className="node-states p-2 pb-0">
           <div className="flex items-center justify-between">
-            <span>props</span>
+            <span>states</span>
           </div>
           <Spacer y={1} />
-          <div className="w-full font-code font-sm">{propsKeys.map((key, index) => render(index))}</div>
+          <div className="w-full font-code font-sm">{stateKeys.map((key, index) => render(index))}</div>
         </div>
         <Divider />
       </>

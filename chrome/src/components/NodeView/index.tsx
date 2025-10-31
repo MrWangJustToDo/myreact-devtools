@@ -21,14 +21,14 @@ export const NodeView = () => {
 
   if (isLoading) {
     return (
-      <div className="node-view h-full p-1 flex items-center justify-center">
+      <div className="node-view h-full flex items-center justify-center">
         <Spinner color="primary" />
       </div>
     );
   }
 
   return (
-    <div className="node-view h-full p-1">
+    <div className="node-view h-full">
       <div className="group h-full overflow-auto">
         <NameView key={select} />
         <PropsView key={select} />

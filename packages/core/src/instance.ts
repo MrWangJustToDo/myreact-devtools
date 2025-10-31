@@ -1,27 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable max-lines */
-import { isNormalEquals } from "@my-react/react-shared";
-
-import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource } from "./browser/inspect";
-import { getNode, getNodeFromId } from "./data";
-import { patchDispatch } from "./dispatch";
+import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource, setHoverStatus, setRetriggerStatus, setUpdateStatus } from "./config";
+import { getNode } from "./data";
+import { getChunkDataFromIds, getMapValueLengthObject, getRecord, getTree, getValidTrigger, getValidTriggerStatus, patchEvent, patchRecord } from "./dispatch";
 import { DevToolMessageEnum } from "./event";
 import { updateFiberNode } from "./fiber";
 import { getHMRInternalFromId } from "./fiber/hmr";
-import { getHookIndexFromState } from "./hook";
 import { setupDispatch, type DevToolRenderDispatch } from "./setup";
-import {
-  getFiberNodeById,
-  getPlainNodeIdByFiber,
-  getComponentFiberByDom,
-  getElementNodesFromFiber,
-  inspectDispatch,
-  getRootTreeByFiber,
-  inspectFiber,
-} from "./tree";
+import { getFiberNodeById, getPlainNodeIdByFiber, getComponentFiberByDom, getElementNodesFromFiber, getRootTreeByFiber, inspectFiber } from "./tree";
 import { debounce } from "./utils";
 import { Select, Highlight } from "./view";
 
+import type { StackItemType } from "./dispatch";
 import type { HMRStatus } from "./event";
 import type { Tree } from "./tree";
 import type { MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
@@ -44,6 +34,8 @@ export class DevToolCore {
   _map: Map<DevToolRenderDispatch, Tree> = new Map();
 
   _timeMap: Map<DevToolRenderDispatch, number> = new Map();
+
+  _stack: StackItemType[] = [];
 
   // 字符串字典
   _dir: Record<string | number, string> = {};
@@ -81,6 +73,10 @@ export class DevToolCore {
 
   _enableUpdate = false;
 
+  _enableRecord = false;
+
+  _supportRecord = false;
+
   // 在浏览器中选中dom定位到开发工具组件树中
   _enableHoverOnBrowser = false;
 
@@ -112,21 +108,7 @@ export class DevToolCore {
   }
 
   setHoverStatus(d: boolean) {
-    if (__DEV__) {
-      console.log(`[@my-react-devtool/core] hoverStatus ${d ? "enable" : "disable"}`);
-    }
-
-    this._enableHover = d;
-  }
-
-  setHoverOnBrowserStatus(d: boolean, cb?: (state: boolean) => void) {
-    if (__DEV__) {
-      console.log(`[@my-react-devtool/core] hoverOnBrowserStatus ${d ? "enable" : "disable"}`);
-    }
-
-    this._enableHoverOnBrowser = d;
-
-    cb?.(d);
+    setHoverStatus(this, d);
   }
 
   enableBrowserHover() {
@@ -138,27 +120,11 @@ export class DevToolCore {
   }
 
   setUpdateStatus(d: boolean) {
-    if (__DEV__) {
-      console.log(`[@my-react-devtool/core] updateStatus ${d ? "enable" : "disable"}`);
-    }
-
-    this._enableUpdate = d;
-
-    if (!this._enableUpdate) {
-      this.update.cancelPending();
-    }
+    setUpdateStatus(this, d);
   }
 
   setRetriggerStatus(d: boolean) {
-    if (__DEV__) {
-      console.log(`[@my-react-devtool/core] retriggerStatus ${d ? "enable" : "disable"}`);
-    }
-
-    this._enableRetrigger = d;
-
-    this.notifyTrigger();
-
-    this.notifyTriggerStatus();
+    setRetriggerStatus(this, d);
   }
 
   addDispatch(dispatch: DevToolRenderDispatch) {
@@ -174,7 +140,8 @@ export class DevToolCore {
   }
 
   patchDispatch(dispatch: DevToolRenderDispatch) {
-    patchDispatch(dispatch, this);
+    patchEvent(dispatch, this);
+    patchRecord(dispatch, this);
   }
 
   hasDispatch(dispatch: DevToolRenderDispatch) {
@@ -201,20 +168,6 @@ export class DevToolCore {
 
   _notify(data: DevToolMessageType) {
     this._listeners.forEach((listener) => listener({ ...data, agentId: this.id }));
-  }
-
-  getTree(dispatch: DevToolRenderDispatch) {
-    const { directory, current } = inspectDispatch(dispatch);
-
-    if (!isNormalEquals(this._dir, directory)) {
-      this._dir = { ...directory };
-
-      this.notifyDir();
-    }
-
-    this._map.set(dispatch, current);
-
-    return current;
   }
 
   setSelect(id: string) {
@@ -297,6 +250,7 @@ export class DevToolCore {
 
       return;
     }
+
     inspectSource(this);
   }
 
@@ -315,15 +269,7 @@ export class DevToolCore {
   notifyTrigger() {
     if (!this.hasEnable) return;
 
-    const state = Object.keys(this._trigger).reduce((p, c) => {
-      const t = this._trigger[c];
-
-      const f = t.filter((i: { isRetrigger?: boolean }) => (i.isRetrigger ? this._enableRetrigger : true));
-
-      p[c] = f.length;
-
-      return p;
-    }, {});
+    const state = getValidTrigger(this);
 
     this._notify({ type: DevToolMessageEnum.trigger, data: state });
   }
@@ -335,26 +281,11 @@ export class DevToolCore {
 
     if (!id) return;
 
-    const status = this._trigger[id];
+    const state = getValidTriggerStatus(id, this);
 
-    if (!status) return;
+    if (!state) return;
 
-    const finalStatus = status.filter((i) => (i.isRetrigger ? this._enableRetrigger : true)).slice(-10);
-
-    this._notify({
-      type: DevToolMessageEnum.triggerStatus,
-      data: finalStatus.map((i) => {
-        const _keysToLinkHook = getHookIndexFromState(i as UpdateState);
-
-        const node = getNode(i);
-
-        if (_keysToLinkHook && _keysToLinkHook.length > 0) {
-          node._keysToLinkHook = _keysToLinkHook;
-        }
-
-        return node;
-      }),
-    });
+    this._notify({ type: DevToolMessageEnum.triggerStatus, data: state });
   }
 
   notifyHighlight(id: string, type: "performance") {
@@ -368,11 +299,7 @@ export class DevToolCore {
 
     this._notify({
       type: DevToolMessageEnum.warn,
-      data: Object.keys(this._warn).reduce((p, c) => {
-        p[c] = this._warn[c].length;
-
-        return p;
-      }, {}),
+      data: getMapValueLengthObject(this._warn),
     });
   }
 
@@ -397,11 +324,7 @@ export class DevToolCore {
 
     this._notify({
       type: DevToolMessageEnum.error,
-      data: Object.keys(this._error).reduce((p, c) => {
-        p[c] = this._error[c].length;
-
-        return p;
-      }, {}),
+      data: getMapValueLengthObject(this._error),
     });
   }
 
@@ -433,13 +356,7 @@ export class DevToolCore {
   notifyHMR() {
     if (!this.hasEnable) return;
 
-    const state = Object.keys(this._hmr).reduce((p, c) => {
-      p[c] = this._hmr[c].length;
-
-      return p;
-    }, {});
-
-    this._notify({ type: DevToolMessageEnum.hmr, data: state });
+    this._notify({ type: DevToolMessageEnum.hmr, data: getMapValueLengthObject(this._hmr) });
   }
 
   notifyHMRStatus() {
@@ -477,6 +394,8 @@ export class DevToolCore {
         enableHover: this._enableHover,
         enableUpdate: this._enableUpdate,
         enableRetrigger: this._enableRetrigger,
+        enableRecord: this._enableRecord,
+        supportRecord: this._supportRecord,
         enableHoverOnBrowser: this._enableHoverOnBrowser,
       },
     });
@@ -534,13 +453,7 @@ export class DevToolCore {
   notifyChunks(ids: (number | string)[]) {
     if (!this.hasEnable) return;
 
-    const data = ids.reduce((p, c) => {
-      const d = getNodeFromId(Number(c));
-
-      p[c] = { loaded: d };
-
-      return p;
-    }, {});
+    const data = getChunkDataFromIds(ids);
 
     this._notify({ type: DevToolMessageEnum.chunks, data });
   }
@@ -584,9 +497,11 @@ export class DevToolCore {
       if (force) {
         this._timeMap.set(dispatch, now);
 
-        const tree = this.getTree(dispatch);
+        const { current, directory } = getTree(dispatch, this);
 
-        this._notify({ type: DevToolMessageEnum.ready, data: tree });
+        if (directory) this.notifyDir();
+
+        this._notify({ type: DevToolMessageEnum.ready, data: current });
       } else {
         const last = this._timeMap.get(dispatch);
 
@@ -594,11 +509,23 @@ export class DevToolCore {
 
         this._timeMap.set(dispatch, now);
 
-        const tree = this.getTree(dispatch);
+        const { current, directory } = getTree(dispatch, this);
 
-        this._notify({ type: DevToolMessageEnum.ready, data: tree });
+        if (directory) this.notifyDir();
+
+        this._notify({ type: DevToolMessageEnum.ready, data: current });
       }
     }
+  }
+
+  notifyRecordStack() {
+    if (!this.hasEnable) return;
+
+    const data = getRecord(this);
+
+    data.map((item) => this._notify({ type: DevToolMessageEnum.record, data: item }));
+
+    this._notify({ type: DevToolMessageEnum.record, data: true });
   }
 
   notifyAll = debounce(() => {
@@ -665,6 +592,10 @@ export class DevToolCore {
     this._enabled = false;
   }
 
+  startRecord() {}
+
+  stopRecord() {}
+
   clear() {
     this._error = {};
 
@@ -691,6 +622,8 @@ export class DevToolCore {
     this._enableHoverOnBrowser = false;
 
     this.disableBrowserHover();
+
+    this.stopRecord();
   }
 
   clearHMR() {

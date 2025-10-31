@@ -9,9 +9,10 @@ import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
-import { AutoHeight } from "./AutoHeight";
+import { AutoHeight } from "../AutoHeight";
+import { NodeValue } from "../NodeValue";
+
 import { TriggerView } from "./ExtendView";
-import { NodeValue } from "./NodeValue";
 
 import type { HOOKTree } from "@my-react-devtool/core";
 import type { RefObject } from "react";

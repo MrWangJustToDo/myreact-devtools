@@ -18,12 +18,13 @@ import {
   Code,
 } from "@heroui/react";
 import { getTypeName, typeKeys } from "@my-react-devtool/core";
-import { CircleCheck, CircleX, LetterText, ListFilter, Moon, Settings, Settings2, Sun } from "lucide-react";
+import { BoxIcon, CircleCheck, CircleX, FlameIcon, LetterText, ListFilter, Moon, Settings, Settings2, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { memo } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
+import { useDetailMode } from "@/hooks/useDetailMode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
@@ -44,6 +45,8 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const { theme, setTheme } = useTheme();
+
+  const { mode, toggleMode } = useDetailMode();
 
   const { clearHMR } = useHMRNode.getActions();
 
@@ -79,6 +82,13 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
           <Button isIconOnly onPress={() => setTheme(theme === "dark" ? "light" : "dark")}>
             {theme === "dark" ? <Moon className="text-gray-500 w-[1.2em]" /> : <Sun className="text-orange-500 w-[1.2em]" />}
           </Button>
+          {configState.supportRecord && (
+            <Tooltip content="Detail mode" showArrow color="foreground">
+              <Button isIconOnly onPress={toggleMode}>
+                {mode === "node" ? <BoxIcon className="text-blue-600 w-[1.2em]" /> : <FlameIcon className="text-yellow-600 w-[1.2em]" />}
+              </Button>
+            </Tooltip>
+          )}
           <Tooltip content="Setting" showArrow color="foreground">
             <Button isIconOnly onPress={onOpen}>
               <Settings className={isOpen ? "text-green-500 w-[1.2em]" : "text-gray-500 w-[1.2em]"} />

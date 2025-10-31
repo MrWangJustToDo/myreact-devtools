@@ -10,10 +10,10 @@ import type { DevToolRenderDispatch } from "../setup";
 import type { MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
-export const patchDispatch = (dispatch: DevToolRenderDispatch, runtime: DevToolCore) => {
-  if (dispatch["$$hasDevToolPatch"]) return;
+export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore) => {
+  if (dispatch["$$hasDevToolEvent"]) return;
 
-  dispatch["$$hasDevToolPatch"] = true;
+  dispatch["$$hasDevToolEvent"] = true;
 
   const onLoad = throttle(() => {
     if (!runtime.hasEnable) return;

@@ -110,6 +110,16 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessageHookDataType |
     core.setRetriggerStatus(d);
   }
 
+  if (data?.type === MessagePanelType.enableRecord) {
+    const d = data.data;
+
+    if (d) {
+      core.startRecord();
+    } else {
+      core.stopRecord();
+    }
+  }
+
   if (data?.type === MessagePanelType.chunks) {
     core.notifyChunks(data.data);
   }

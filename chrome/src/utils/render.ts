@@ -11,12 +11,13 @@ import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
+import { useRecordStack } from "@/hooks/useRecordStack";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
 import { isServer } from "./isServer";
 
-import type { DevToolMessageType, HMRStatus, NodeValue, PlainNode, Tree } from "@my-react-devtool/core";
+import type { DevToolMessageType, HMRStatus, NodeValue, PlainNode, StackItemType, Tree } from "@my-react-devtool/core";
 
 const getAgentId = () => useConnect.getReadonlyState().agentID;
 
@@ -39,7 +40,7 @@ export const onRender = (data: DevToolMessageType) => {
 
       setRender(detector);
 
-      setAgentID(data.agentId?.toString?.() || '');
+      setAgentID(data.agentId?.toString?.() || "");
     });
   }
 
@@ -185,16 +186,20 @@ export const onRender = (data: DevToolMessageType) => {
   }
 
   if (data.type === DevToolMessageEnum.config) {
-    const config = data.data as { enableHover: boolean; enableUpdate: boolean; enableHoverOnBrowser: boolean };
+    const config = data.data as { enableHover: boolean; enableUpdate: boolean; enableHoverOnBrowser: boolean; enableRecord: boolean; supportRecord: boolean };
 
     safeAction(() => {
-      const { setEnableHover, setEnableUpdate, setEnableHoverOnBrowser } = useConfig.getActions();
+      const { setEnableHover, setEnableUpdate, setEnableHoverOnBrowser, setEnableRecord, setSupportRecord } = useConfig.getActions();
 
       setEnableHover(config?.enableHover);
 
       setEnableUpdate(config?.enableUpdate);
 
       setEnableHoverOnBrowser(config?.enableHoverOnBrowser);
+
+      setSupportRecord(!!config?.supportRecord);
+
+      setEnableRecord(!!config?.enableRecord);
     });
   }
 
@@ -206,6 +211,19 @@ export const onRender = (data: DevToolMessageType) => {
 
       setChunk(chunks);
     });
+  }
+
+  if (data.type === DevToolMessageEnum.record) {
+    const recordData = data.data as boolean | { id: string; stack: StackItemType };
+
+    const { stopProcessing, pushStack, processStack } = useRecordStack.getActions();
+
+    if (typeof recordData === "boolean") {
+      stopProcessing();
+      processStack();
+    } else {
+      pushStack(recordData);
+    }
   }
 
   if (data.type === DevToolMessageEnum.warn) {

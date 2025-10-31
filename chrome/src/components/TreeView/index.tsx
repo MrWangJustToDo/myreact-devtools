@@ -97,7 +97,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
   }, [onScroll, data.length]);
 
   useEffect(() => {
-    const id = setTimeout(() => mountRef.current = true, 1000);
+    const id = setTimeout(() => (mountRef.current = true), 1000);
 
     return () => clearTimeout(id);
   }, []);

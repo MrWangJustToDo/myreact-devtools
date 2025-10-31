@@ -23,6 +23,7 @@ export enum MessagePanelType {
   enableUpdate = "panel-enable-update",
   enableRetrigger = "panel-enable-retrigger",
   enableHoverOnBrowser = "panel-enable-hover-on-browser",
+  enableRecord = "panel-enable-record",
   nodeHover = "panel-hover",
   nodeSelect = "panel-select",
   nodeStore = "panel-store",
@@ -71,6 +72,7 @@ export enum DevToolMessageEnum {
   errorStatus = "errorStatus",
 
   chunks = "chunks",
+  record = "record",
 
   domHover = "dom-hover",
 }

@@ -10,11 +10,11 @@ import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
-import { NodeValue } from "./NodeValue";
+import { NodeValue } from "../NodeValue";
 
 const { setKeys: setHoverKeys, clear } = useTriggerHover.getActions();
 
-const Trigger = ({ select, mode = "vertical" }: { select: string; mode?: "horizontal" | "vertical" }) => {
+const Trigger = ({ select, mode = "vertical" }: { select: string | number; mode?: "horizontal" | "vertical" }) => {
   const trigger = useDetailNodeExt((s) => s.triggerStatus);
 
   const { layout, setLayout } = useTriggerLayout();
@@ -57,7 +57,7 @@ const Trigger = ({ select, mode = "vertical" }: { select: string; mode?: "horizo
   ) : null;
 };
 
-const HMR = ({ select: _select }: { select: string }) => {
+const HMR = ({ select: _select }: { select: string | number }) => {
   const hmrInternal = useDetailNodeExt((s) => s.hmrInternal);
 
   if (!hmrInternal) return null;
@@ -78,7 +78,7 @@ const HMR = ({ select: _select }: { select: string }) => {
   );
 };
 
-const Warn = ({ select }: { select: string }) => {
+const Warn = ({ select }: { select: string | number }) => {
   const warn = useDetailNodeExt((s) => s.warnStatus);
 
   const warnCount = useHighlightNode.useShallowSelector((s) => s.warn[select]);
@@ -109,7 +109,7 @@ const Warn = ({ select }: { select: string }) => {
   ) : null;
 };
 
-const Error = ({ select }: { select: string }) => {
+const Error = ({ select }: { select: string | number }) => {
   const error = useDetailNodeExt((s) => s.errorStatus);
 
   const errorCount = useHighlightNode.useShallowSelector((s) => s.error[select]);

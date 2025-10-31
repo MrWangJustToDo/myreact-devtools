@@ -222,7 +222,7 @@ export const NodeValue = ({
             </span>
             <span className="flex-shrink-0">:</span>
             {currentIsEditable ? (
-              <span className="hook-value-placeholder relative line-clamp-1 break-all">
+              <span className="hook-value-placeholder relative line-clamp-1 break-all" title={textContent}>
                 <NodeValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
                   {element}
                 </NodeValueChange>
@@ -241,6 +241,7 @@ export const NodeValue = ({
                     clear();
                   }
                 }}
+                title={textContent}
               >
                 {element}
               </span>
