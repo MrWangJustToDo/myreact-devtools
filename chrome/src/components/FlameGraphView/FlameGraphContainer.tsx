@@ -2,16 +2,13 @@ import { Button, ButtonGroup, Divider, Tooltip } from "@heroui/react";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, XIcon } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
-import { useDetailNode } from "@/hooks/useDetailNode";
 import { useRecordStack } from "@/hooks/useRecordStack";
-import { useSelectNode } from "@/hooks/useSelectNode";
 import { useDomSize } from "@/hooks/useSize";
 
-import { TreeItem } from "../TreeView/TreeItem";
+import { FlameGraphName } from "./FlameGraphName";
+import { FlameGraphNodeRender } from "./FlameGraphNodeRender";
 
-import { FlameGraphNode } from "./FlameGraphNode";
-
-import type { PlainNode, StackItemType } from "@my-react-devtool/core";
+import type { StackItemType } from "@my-react-devtool/core";
 
 type DeepRequired<T> = {
   [P in keyof T]-?: T[P] extends object ? DeepRequired<T[P]> : T[P];
@@ -21,17 +18,11 @@ export type SafeStackItemType = DeepRequired<StackItemType>;
 
 export const FlameGraphContainer = () => {
   const { state, record } = useRecordStack((s) => ({ state: s.state, record: s.select })) as {
-    state: Array<{ stack: SafeStackItemType; id?: string }>;
+    state: Array<{ stack: SafeStackItemType; id?: string; mode: "legacy" | "concurrent" }>;
     record?: SafeStackItemType;
   };
 
   const { clearSelect } = useRecordStack.getActions();
-
-  const select = useSelectNode((s) => s.select);
-
-  const nodeList = useDetailNode((s) => s.nodes);
-
-  const currentSelectDetail = nodeList.find((i) => i.i === select) as PlainNode;
 
   const [index, setIndex] = useState(0);
 
@@ -65,7 +56,7 @@ export const FlameGraphContainer = () => {
 
   return (
     <div
-      className="w-full flex flex-col"
+      className="w-full h-full overflow-auto"
       ref={ref}
       style={{
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -75,12 +66,8 @@ export const FlameGraphContainer = () => {
       }}
     >
       <div className="sticky top-0 z-50">
-        <div className="flex node-name p-2 pb-0 font-lg font-code bg-content1">
-          {currentSelectDetail ? (
-            <TreeItem node={currentSelectDetail} withCollapse={false} withSelect={false} withKey={false} />
-          ) : (
-            <div className="opacity-0">1</div>
-          )}
+        <div className="flex node-name p-2 pb-0 font-lg font-code bg-content1 transition-transform-background">
+          <FlameGraphName />
           <div className="ml-auto flex gap-x-2 absolute right-4 top-0">
             {(hasPrevPage || hasNextPage) && (
               <ButtonGroup size="sm">
@@ -118,22 +105,7 @@ export const FlameGraphContainer = () => {
         <Divider />
       </div>
       <div className="flex mt-1">
-        {record ? (
-          <FlameGraphNode isRoot={true} parent={undefined} previous={undefined} current={record as SafeStackItemType} />
-        ) : (
-          currentPageStack.map((item, index) => {
-            const prev = index > 0 ? currentPageStack[index - 1] : undefined;
-            return (
-              <FlameGraphNode
-                key={index}
-                isRoot={true}
-                parent={undefined}
-                previous={prev ? (prev.stack as SafeStackItemType) : undefined}
-                current={item.stack as SafeStackItemType}
-              />
-            );
-          })
-        )}
+        <FlameGraphNodeRender item={record as SafeStackItemType} list={currentPageStack} />
       </div>
     </div>
   );

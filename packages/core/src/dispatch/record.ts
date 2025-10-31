@@ -1,11 +1,11 @@
-import { include } from "@my-react/react-shared";
+import { include, STATE_TYPE } from "@my-react/react-shared";
 
 import { NODE_TYPE } from "../fiber";
 import { getDirectoryIdByFiber, getPlainNodeIdByFiber } from "../tree";
 
 import type { DevToolCore } from "../instance";
 import type { DevToolRenderDispatch } from "../setup";
-import type { MyReactFiberNodeDev } from "@my-react/react-reconciler";
+import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 
 type TreeItemType = {
   // id
@@ -46,9 +46,11 @@ const checkIsComponent = (fiber: MyReactFiberNodeDev) => {
   return include(fiber.type, NODE_TYPE.__class__ | NODE_TYPE.__function__);
 };
 
-const getCurrent = () => (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now()) * 1000;
+const checkIsConCurrent = (dispatch: DevToolRenderDispatch, list: MyReactFiberNode[]) => {
+  return dispatch.enableConcurrentMode && list.every((f) => include(f.state, STATE_TYPE.__triggerConcurrent__ | STATE_TYPE.__triggerConcurrentForce__));
+};
 
-const stateMap = new Map<StackItemType, DevToolRenderDispatch>();
+const getCurrent = () => (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now()) * 1000;
 
 const resetArray: Array<() => void> = [];
 
@@ -63,13 +65,17 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
 
   let map = {};
 
+  let mode = "legacy" as "legacy" | "concurrent";
+
+  let id = "";
+
   let current: StackItemType | null = null;
 
   if (dispatch["$$hasDevToolRecord"]) return;
 
   dispatch["$$hasDevToolRecord"] = true;
 
-  dispatch.onBeforeDispatchUpdate(() => {
+  dispatch.onBeforeDispatchUpdate((_, list) => {
     if (!runtime._enableRecord) return;
 
     current = null;
@@ -77,6 +83,10 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
     stack.length = 0;
 
     map = {};
+
+    mode = checkIsConCurrent(dispatch, list) ? "concurrent" : "legacy";
+
+    id = dispatch.id;
   });
 
   dispatch.onBeforeFiberRun((fiber: MyReactFiberNodeDev) => {
@@ -143,9 +153,7 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
     current = stack[stack.length - 1] || null;
 
     if (!current) {
-      runtime._stack.push(stackTop);
-
-      stateMap.set(stackTop, dispatch);
+      runtime._stack.push({ stack: stackTop, id, mode });
     }
   });
 
@@ -165,8 +173,6 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
     runtime._stack.length = 0;
 
     resetArray.forEach((r) => r());
-
-    stateMap.clear();
   };
 
   runtime.stopRecord = () => {
@@ -177,8 +183,6 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
     runtime.notifyRecordStack();
 
     resetArray.forEach((r) => r());
-
-    stateMap.clear();
   };
 };
 
@@ -187,8 +191,5 @@ export const getRecord = (runtime: DevToolCore) => {
 
   const stack = runtime._stack;
 
-  return stack.map((s) => ({
-    stack: s,
-    id: stateMap.get(s)?.id || null,
-  }));
+  return stack;
 };

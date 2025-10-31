@@ -3757,8 +3757,10 @@
     		var checkIsComponent = function (fiber) {
     		    return reactShared.include(fiber.type, exports.NODE_TYPE.__class__ | exports.NODE_TYPE.__function__);
     		};
+    		var checkIsConCurrent = function (dispatch, list) {
+    		    return dispatch.enableConcurrentMode && list.every(function (f) { return reactShared.include(f.state, reactShared.STATE_TYPE.__triggerConcurrent__ | reactShared.STATE_TYPE.__triggerConcurrentForce__); });
+    		};
     		var getCurrent = function () { return (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now()) * 1000; };
-    		var stateMap = new Map();
     		var resetArray = [];
     		var patchRecord = function (dispatch, runtime) {
     		    if (!checkIsValidDispatchVersion(dispatch))
@@ -3768,16 +3770,20 @@
     		    runtime._supportRecord = true;
     		    var stack = [];
     		    var map = {};
+    		    var mode = "legacy";
+    		    var id = "";
     		    var current = null;
     		    if (dispatch["$$hasDevToolRecord"])
     		        return;
     		    dispatch["$$hasDevToolRecord"] = true;
-    		    dispatch.onBeforeDispatchUpdate(function () {
+    		    dispatch.onBeforeDispatchUpdate(function (_, list) {
     		        if (!runtime._enableRecord)
     		            return;
     		        current = null;
     		        stack.length = 0;
     		        map = {};
+    		        mode = checkIsConCurrent(dispatch, list) ? "concurrent" : "legacy";
+    		        id = dispatch.id;
     		    });
     		    dispatch.onBeforeFiberRun(function (fiber) {
     		        if (!runtime._enableRecord)
@@ -3826,8 +3832,7 @@
     		        stackTop.d = Math.max(Math.floor(stackTop.e - stackTop.s), 1);
     		        current = stack[stack.length - 1] || null;
     		        if (!current) {
-    		            runtime._stack.push(stackTop);
-    		            stateMap.set(stackTop, dispatch);
+    		            runtime._stack.push({ stack: stackTop, id: id, mode: mode });
     		        }
     		    });
     		    var reset = function () {
@@ -3842,7 +3847,6 @@
     		        runtime._enableRecord = true;
     		        runtime._stack.length = 0;
     		        resetArray.forEach(function (r) { return r(); });
-    		        stateMap.clear();
     		    };
     		    runtime.stopRecord = function () {
     		        if (!runtime._supportRecord)
@@ -3850,20 +3854,13 @@
     		        runtime._enableRecord = false;
     		        runtime.notifyRecordStack();
     		        resetArray.forEach(function (r) { return r(); });
-    		        stateMap.clear();
     		    };
     		};
     		var getRecord = function (runtime) {
     		    if (!runtime._enabled)
     		        return [];
     		    var stack = runtime._stack;
-    		    return stack.map(function (s) {
-    		        var _a;
-    		        return ({
-    		            stack: s,
-    		            id: ((_a = stateMap.get(s)) === null || _a === void 0 ? void 0 : _a.id) || null,
-    		        });
-    		    });
+    		    return stack;
     		};
 
     		var getTree = function (dispatch, runtime) {

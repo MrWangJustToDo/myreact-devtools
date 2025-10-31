@@ -3,10 +3,15 @@ import { createState } from "reactivity-store";
 import type { StackItemType } from "@my-react-devtool/core";
 
 export const useRecordStack = createState(
-  () => ({ state: [] as Array<{ stack: StackItemType; id?: string }>, loading: false, processing: false, select: undefined as StackItemType | undefined }),
+  () => ({
+    state: [] as Array<{ stack: StackItemType; id?: string; mode: "legacy" | "concurrent" }>,
+    loading: false,
+    processing: false,
+    select: undefined as StackItemType | undefined,
+  }),
   {
     withActions: (s) => ({
-      pushStack(data: { stack: StackItemType; id?: string }) {
+      pushStack(data: { stack: StackItemType; id?: string; mode: "legacy" | "concurrent" }) {
         s.state.push(data);
       },
       startLoading() {

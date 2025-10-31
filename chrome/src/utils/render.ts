@@ -214,7 +214,7 @@ export const onRender = (data: DevToolMessageType) => {
   }
 
   if (data.type === DevToolMessageEnum.record) {
-    const recordData = data.data as boolean | { id: string; stack: StackItemType };
+    const recordData = data.data as boolean | { id: string; stack: StackItemType; mode: "legacy" | "concurrent" };
 
     const { stopProcessing, pushStack, processStack } = useRecordStack.getActions();
 

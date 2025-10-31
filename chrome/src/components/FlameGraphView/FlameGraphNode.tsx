@@ -11,17 +11,20 @@ export const FlameGraphNode = ({
   previous,
   current,
   isRoot,
+  isLegacy,
+  isConCurrent,
 }: {
   parent?: SafeStackItemType;
   previous?: SafeStackItemType;
   current: SafeStackItemType;
   isRoot?: boolean;
+  isLegacy?: boolean;
+  isConCurrent?: boolean;
 }) => {
   const { setHover, setSelect } = useSelectNode.getActions();
 
   const { setSelect: setRecordNode } = useRecordStack.getActions();
 
-  // const name = useNodeName.getReadonlyState()
   const name = useMemo(() => useNodeName.getReadonlyState().map[current.n], [current.n]);
 
   const prev = previous || parent;
@@ -35,8 +38,6 @@ export const FlameGraphNode = ({
   width = width === 0 ? 1 : width;
 
   const hasGap = !!prev;
-
-  // const hasSelect = selectId === current.i;
 
   return (
     <>
@@ -66,8 +67,8 @@ export const FlameGraphNode = ({
             setSelect(current.i);
             setRecordNode(current);
           }}
-          title={`${name}${current.r ? ` +${current.r}` : ""} Duration: ${Math.ceil(current.e - current.s) / 1000} ms`}
-          className={`flameGraph-node-view rounded-sm opacity-40 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-ssm bg-blue-200 dark:bg-blue-950`}
+          title={`${name}${current.r ? ` +${current.r}` : ""}${isLegacy ? ` | Legacy update` : ""}${isConCurrent ? ` | Concurrent update` : ""} | Duration: ${Math.ceil(current.e - current.s) / 1000} ms`}
+          className={`flameGraph-node-view rounded-sm opacity-50 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-ssm bg-blue-200 dark:bg-blue-950`}
         >
           {name}
           {current.r ? ` +${current.r}` : ""}

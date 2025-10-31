@@ -35,7 +35,7 @@ export class DevToolCore {
 
   _timeMap: Map<DevToolRenderDispatch, number> = new Map();
 
-  _stack: StackItemType[] = [];
+  _stack: Array<{ stack: StackItemType; id: string; mode: "legacy" | "concurrent" }> = [];
 
   // 字符串字典
   _dir: Record<string | number, string> = {};
