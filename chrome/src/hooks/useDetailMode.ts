@@ -9,6 +9,7 @@ export const useDetailMode = createState(() => ({ mode: "node" as "node" | "flam
       s.mode = s.mode === "node" ? "flameGraph" : "node";
     },
   }),
+  withPersist: "useDetailMode",
   withDeepSelector: false,
   withStableSelector: true,
 });

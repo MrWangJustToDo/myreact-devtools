@@ -82,13 +82,11 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
           <Button isIconOnly onPress={() => setTheme(theme === "dark" ? "light" : "dark")}>
             {theme === "dark" ? <Moon className="text-gray-500 w-[1.2em]" /> : <Sun className="text-orange-500 w-[1.2em]" />}
           </Button>
-          {configState.supportRecord && (
-            <Tooltip content="Detail mode" showArrow color="foreground">
-              <Button isIconOnly onPress={toggleMode}>
-                {mode === "node" ? <BoxIcon className="text-blue-600 w-[1.2em]" /> : <FlameIcon className="text-yellow-600 w-[1.2em]" />}
-              </Button>
-            </Tooltip>
-          )}
+          <Tooltip content="Detail mode" showArrow color="foreground">
+            <Button isIconOnly onPress={toggleMode}>
+              {mode === "node" ? <BoxIcon className="text-blue-600 w-[1.2em]" /> : <FlameIcon className="text-yellow-600 w-[1.2em]" />}
+            </Button>
+          </Tooltip>
           <Tooltip content="Setting" showArrow color="foreground">
             <Button isIconOnly onPress={onOpen}>
               <Settings className={isOpen ? "text-green-500 w-[1.2em]" : "text-gray-500 w-[1.2em]"} />
