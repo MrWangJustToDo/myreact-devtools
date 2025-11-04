@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useRecordStack } from "@/hooks/useRecordStack";
 import { useSelectNode } from "@/hooks/useSelectNode";
+import { useUnmountNode } from "@/hooks/useUnmountNode";
 
 import type { SafeStackItemType } from "./FlameGraphContainer";
 
@@ -26,6 +27,8 @@ export const FlameGraphNode = ({
   const { setSelect: setRecordNode } = useRecordStack.getActions();
 
   const name = useMemo(() => useNodeName.getReadonlyState().map[current.n], [current.n]);
+
+  const hasUnmount = useMemo(() => useUnmountNode.getReadonlyState().state[current.i], [current.i]);
 
   const prev = previous || parent;
 
@@ -68,7 +71,7 @@ export const FlameGraphNode = ({
             setRecordNode(current);
           }}
           title={`${name}${current.r ? ` +${current.r}` : ""}${isLegacy ? ` | Legacy update` : ""}${isConCurrent ? ` | Concurrent update` : ""} | Duration: ${Math.ceil(current.e - current.s) / 1000} ms`}
-          className={`flameGraph-node-view rounded-sm opacity-50 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-ssm bg-blue-200 dark:bg-blue-950`}
+          className={`flameGraph-node-view rounded-sm opacity-50 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-ssm bg-blue-200 dark:bg-blue-950 ${hasUnmount ? "bg-red-200 dark:bg-red-950" : ""}`}
         >
           {name}
           {current.r ? ` +${current.r}` : ""}

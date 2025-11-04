@@ -14,6 +14,7 @@ import { useNodeName } from "@/hooks/useNodeName";
 import { useRecordStack } from "@/hooks/useRecordStack";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
+import { useUnmountNode } from "@/hooks/useUnmountNode";
 
 import { isServer } from "./isServer";
 
@@ -93,6 +94,8 @@ export const onRender = (data: DevToolMessageType) => {
       useSelectNode.getActions().clearSelectIfNeed?.(node.toString());
 
       useHighlightNode.getActions().deleteHighlight?.(node.toString());
+
+      useUnmountNode.getActions().addUnmountNode(node.toString());
     });
   }
 

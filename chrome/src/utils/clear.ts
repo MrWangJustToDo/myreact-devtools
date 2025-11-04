@@ -9,6 +9,7 @@ import { useNodeName } from "@/hooks/useNodeName";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useTriggerHover } from "@/hooks/useTriggerState";
+import { useUnmountNode } from "@/hooks/useUnmountNode";
 
 import { isServer } from "./isServer";
 
@@ -24,6 +25,7 @@ export const onClear = () => {
   useTriggerHover?.getActions?.()?.clear?.();
   useHighlightNode?.getActions?.()?.clear?.();
   useDetailNodeExt?.getActions?.()?.clear?.();
+  useUnmountNode?.getActions?.()?.onClear?.();
 };
 
 if (!isServer) {
