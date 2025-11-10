@@ -3867,7 +3867,7 @@
     		    var _a = inspectDispatch(dispatch), directory = _a.directory, current = _a.current;
     		    runtime._map.set(dispatch, current);
     		    if (!reactShared.isNormalEquals(runtime._dir, directory)) {
-    		        runtime._dir = directory;
+    		        runtime._dir = __assign({}, directory);
     		        return { directory: directory, current: current };
     		    }
     		    return { current: current };
