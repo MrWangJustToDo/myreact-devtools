@@ -13,6 +13,8 @@ import { useWebDev } from "@/hooks/useWebDev";
 
 import type { AppProps } from "next/app";
 
+import "@/utils/clear";
+
 import "@/styles/globals.css";
 import "allotment/dist/style.css";
 
@@ -139,8 +141,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
     <HeroUIProvider>
       <style jsx global>{`
         .font-code {
-          font-family: ${'Maple Mono'} !important;
-          --root-font--: ${'Maple Mono'} ;
+          font-family: ${"Maple Mono"} !important;
+          --root-font--: ${"Maple Mono"};
         }
       `}</style>
       <FontSize />

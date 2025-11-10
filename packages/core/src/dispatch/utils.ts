@@ -14,7 +14,7 @@ export const getTree = (dispatch: DevToolRenderDispatch, runtime: DevToolCore) =
   runtime._map.set(dispatch, current);
 
   if (!isNormalEquals(runtime._dir, directory)) {
-    runtime._dir = directory;
+    runtime._dir = { ...directory };
 
     return { directory, current };
   }

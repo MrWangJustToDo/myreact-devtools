@@ -1,4 +1,4 @@
-import { DevToolMessageType } from "@my-react-devtool/core";
+import { DevToolMessageType, PlainNode, Tree } from "@my-react-devtool/core";
 import { CustomRenderDispatch } from "@my-react/react-reconciler";
 import { UseSelectorWithState } from "reactivity-store";
 import { io } from "socket.io-client";
@@ -30,6 +30,8 @@ declare global {
         setConnectHandler: (cb: () => void) => void;
       }
     >;
+
+    useAppTree: UseSelectorWithState<{ nodes: Tree[]; list: PlainNode[] }, {}>;
 
     __MY_REACT_DEVTOOL_RUNTIME__?: ((dispatch: CustomRenderDispatch) => void) & { init: () => void };
 

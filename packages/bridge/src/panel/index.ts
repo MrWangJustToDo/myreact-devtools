@@ -64,9 +64,15 @@ const showPanel = (onShow: (_window: Window) => void, onHide: () => void): Promi
   });
 };
 
-const sendMessage = <T = any>(data: T) => {
+const sendMessage = <T = any>(data: T, withAgentId = true) => {
   runWhenWorkerReady(() => {
-    port?.postMessage({ ...data, _messageId: messageId++, from: sourceFrom.panel, to: sourceFrom.hook, agentId: agentIdMap.get(getTabId()) });
+    port?.postMessage({
+      ...data,
+      _messageId: messageId++,
+      from: sourceFrom.panel,
+      to: sourceFrom.hook,
+      agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined,
+    });
   });
 };
 
@@ -100,7 +106,7 @@ const initPort = () => {
     workerConnecting = false;
 
     if (__DEV__) {
-      console.log("[@my-react-devtool/panel] message from port", message);
+      console.log("[@my-react-devtool/panel] message from port", message, agentIdMap.get(getTabId()));
     }
 
     if (!workerReady && message.type === MessageWorkerType.init) {
@@ -128,6 +134,10 @@ const initPort = () => {
     if (message?.type === MessageHookType.render) {
       const currentAgentId = agentIdMap.get(getTabId());
 
+      if (!currentAgentId && message.data?.agentId) {
+        agentIdMap.set(getTabId(), message.data.agentId);
+      }
+
       if (currentAgentId && message.data.agentId !== currentAgentId) return;
 
       onRender(message.data, panelWindow);
@@ -150,7 +160,7 @@ const initPort = () => {
     workerConnecting = false;
   };
 
-  sendMessage({ type: MessagePanelType.show });
+  sendMessage({ type: MessagePanelType.show }, false);
 
   port.onMessage.addListener(onMessage);
 
@@ -171,7 +181,7 @@ const init = async (id: number) => {
 
         panelWindow = window;
 
-        sendMessage({ type: MessagePanelType.show });
+        sendMessage({ type: MessagePanelType.show }, false);
 
         unsubscribe = panelWindow.onListener(sendMessage);
       },
@@ -214,6 +224,6 @@ chrome.devtools.network.onNavigated.addListener(() => {
   setTimeout(() => {
     sendMessage({ type: MessagePanelType.clear });
 
-    if (hasShow) sendMessage({ type: MessagePanelType.show });
+    if (hasShow) sendMessage({ type: MessagePanelType.show }, false);
   }, 60);
 });

@@ -247,9 +247,10 @@
             });
         });
     };
-    var sendMessage = function (data) {
+    var sendMessage = function (data, withAgentId) {
+        if (withAgentId === void 0) { withAgentId = true; }
         runWhenWorkerReady(function () {
-            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++, from: sourceFrom.panel, to: sourceFrom.hook, agentId: agentIdMap.get(getTabId()) }));
+            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++, from: sourceFrom.panel, to: sourceFrom.hook, agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined }));
         });
     };
     var onRender = function (data, _window) {
@@ -267,7 +268,7 @@
         setConnectHandler(function () { return initPort(); });
         port = chrome.runtime.connect({ name: getTabId().toString() });
         var onMessage = function (message) {
-            var _a, _b, _c, _d;
+            var _a, _b, _c, _d, _e;
             if (!hasShow)
                 return;
             if (message.to !== sourceFrom.panel)
@@ -292,6 +293,9 @@
             }
             if ((message === null || message === void 0 ? void 0 : message.type) === eventExports.MessageHookType.render) {
                 var currentAgentId = agentIdMap.get(getTabId());
+                if (!currentAgentId && ((_e = message.data) === null || _e === void 0 ? void 0 : _e.agentId)) {
+                    agentIdMap.set(getTabId(), message.data.agentId);
+                }
                 if (currentAgentId && message.data.agentId !== currentAgentId)
                     return;
                 onRender(message.data, panelWindow);
@@ -305,7 +309,7 @@
             workerReady = false;
             workerConnecting = false;
         };
-        sendMessage({ type: eventExports.MessagePanelType.show });
+        sendMessage({ type: eventExports.MessagePanelType.show }, false);
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);
     };
@@ -319,7 +323,7 @@
                     return [4 /*yield*/, showPanel(function (window) {
                             hasShow = true;
                             panelWindow = window;
-                            sendMessage({ type: eventExports.MessagePanelType.show });
+                            sendMessage({ type: eventExports.MessagePanelType.show }, false);
                             unsubscribe_1 = panelWindow.onListener(sendMessage);
                         }, function () {
                             sendMessage({ type: eventExports.MessagePanelType.hide });
@@ -348,7 +352,7 @@
         setTimeout(function () {
             sendMessage({ type: eventExports.MessagePanelType.clear });
             if (hasShow)
-                sendMessage({ type: eventExports.MessagePanelType.show });
+                sendMessage({ type: eventExports.MessagePanelType.show }, false);
         }, 60);
     });
 
