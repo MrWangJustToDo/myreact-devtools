@@ -3770,6 +3770,7 @@
     		    runtime._supportRecord = true;
     		    var stack = [];
     		    var map = {};
+    		    var trigger = [];
     		    var mode = "legacy";
     		    var id = "";
     		    var current = null;
@@ -3783,6 +3784,13 @@
     		        stack.length = 0;
     		        map = {};
     		        mode = checkIsConCurrent(dispatch, list) ? "concurrent" : "legacy";
+    		        trigger = list.map(function (f) {
+    		            var plain = getPlainNodeByFiber(f);
+    		            return {
+    		                n: plain ? plain.n : "",
+    		                i: plain ? plain.i : "",
+    		            };
+    		        });
     		        id = dispatch.id;
     		    });
     		    dispatch.onBeforeFiberRun(function (fiber) {
@@ -3832,13 +3840,14 @@
     		        stackTop.d = Math.max(Math.floor(stackTop.e - stackTop.s), 1);
     		        current = stack[stack.length - 1] || null;
     		        if (!current) {
-    		            runtime._stack.push({ stack: stackTop, id: id, mode: mode });
+    		            runtime._stack.push({ stack: stackTop, id: id, mode: mode, list: trigger });
     		        }
     		    });
     		    var reset = function () {
     		        stack.length = 0;
     		        current = null;
     		        map = {};
+    		        trigger = [];
     		    };
     		    resetArray.push(reset);
     		    runtime.startRecord = function () {
