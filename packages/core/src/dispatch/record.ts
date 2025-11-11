@@ -1,7 +1,7 @@
 import { include, STATE_TYPE } from "@my-react/react-shared";
 
 import { NODE_TYPE } from "../fiber";
-import { getDirectoryIdByFiber, getPlainNodeIdByFiber } from "../tree";
+import { getDirectoryIdByFiber, getPlainNodeByFiber, getPlainNodeIdByFiber } from "../tree";
 
 import type { DevToolCore } from "../instance";
 import type { DevToolRenderDispatch } from "../setup";
@@ -65,6 +65,8 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
 
   let map = {};
 
+  let trigger: Array<{ n: string; i: string }> = [];
+
   let mode = "legacy" as "legacy" | "concurrent";
 
   let id = "";
@@ -85,6 +87,15 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
     map = {};
 
     mode = checkIsConCurrent(dispatch, list) ? "concurrent" : "legacy";
+
+    trigger = list.map((f) => {
+      const plain = getPlainNodeByFiber(f);
+
+      return {
+        n: plain ? plain.n : "",
+        i: plain ? plain.i : "",
+      };
+    });
 
     id = dispatch.id;
   });
@@ -153,7 +164,7 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
     current = stack[stack.length - 1] || null;
 
     if (!current) {
-      runtime._stack.push({ stack: stackTop, id, mode });
+      runtime._stack.push({ stack: stackTop, id, mode, list: trigger });
     }
   });
 
@@ -161,6 +172,7 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
     stack.length = 0;
     current = null;
     map = {};
+    trigger = [];
   };
 
   resetArray.push(reset);

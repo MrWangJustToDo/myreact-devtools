@@ -7,6 +7,7 @@ import { useDomSize } from "@/hooks/useSize";
 
 import { FlameGraphName } from "./FlameGraphName";
 import { FlameGraphNodeRender } from "./FlameGraphNodeRender";
+import { FlameGraphTrigger } from "./FlameGraphTrigger";
 
 import type { StackItemType } from "@my-react-devtool/core";
 
@@ -16,9 +17,11 @@ type DeepRequired<T> = {
 
 export type SafeStackItemType = DeepRequired<StackItemType>;
 
+export type RootStack = Array<{ stack: SafeStackItemType; id?: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string }> }>;
+
 export const FlameGraphContainer = () => {
   const { state, record } = useRecordStack((s) => ({ state: s.state, record: s.select })) as {
-    state: Array<{ stack: SafeStackItemType; id?: string; mode: "legacy" | "concurrent" }>;
+    state: RootStack;
     record?: SafeStackItemType;
   };
 
@@ -88,6 +91,7 @@ export const FlameGraphContainer = () => {
                 <ChevronUpIcon className="w-[1.2em]" />
               </Button>
             )}
+            <FlameGraphTrigger />
             <Tooltip content="Clear Recorded Data" showArrow placement="bottom-end">
               <Button
                 isIconOnly

@@ -3,6 +3,7 @@ import { getFiberTag } from "@my-react-devtool/core";
 import { Play } from "lucide-react";
 import { memo, useCallback, useMemo } from "react";
 
+import { useDetailNode } from "@/hooks/useDetailNode";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
@@ -48,7 +49,12 @@ const RenderKey = memo(({ node }: { node: PlainNode }) => {
       <div className=" text-gray-400">=</div>
       <div className="flex">
         {'"'}
-        <Tooltip content={<div className="max-w-[300px] max-h-[400px] overflow-y-auto whitespace-pre-wrap break-words">{finalKey}</div>} delay={800} showArrow color="foreground">
+        <Tooltip
+          content={<div className="max-w-[300px] max-h-[400px] overflow-y-auto whitespace-pre-wrap break-words">{finalKey}</div>}
+          delay={800}
+          showArrow
+          color="foreground"
+        >
           <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
         </Tooltip>
         {'"'}
@@ -259,4 +265,59 @@ export const TreeItem = ({
       </div>
     </div>
   );
+};
+
+export const TreeItemWithId = ({
+  i,
+  n,
+  className,
+  withKey = true,
+  withTag = true,
+  withHMR = true,
+  withSelect = true,
+  withTrigger = true,
+  withCollapse = true,
+  withFallback = false,
+}: {
+  i: number | string;
+  n: string;
+  className?: string;
+  withCollapse?: boolean;
+  withTrigger?: boolean;
+  withSelect?: boolean;
+  withHMR?: boolean;
+  withTag?: boolean;
+  withKey?: boolean;
+  withFallback?: boolean;
+}) => {
+  const nodeList = useDetailNode((s) => s.nodes);
+
+  const map = useNodeName((s) => s.map);
+
+  const currentSelectDetail = nodeList.find((_i) => _i.i === i) as PlainNode;
+
+  if (currentSelectDetail) {
+    return (
+      <TreeItem
+        node={currentSelectDetail}
+        className={className}
+        withCollapse={withCollapse}
+        withTrigger={withTrigger}
+        withSelect={withSelect}
+        withHMR={withHMR}
+        withTag={withTag}
+        withKey={withKey}
+      />
+    );
+  }
+
+  if (withFallback) {
+    return (
+      <div className="node-item w-full h-full cursor-pointer transition-transform-background rounded-sm select-none">
+        <div className="node-name line-clamp-1">{map[n]}</div> 
+      </div>
+    );
+  }
+
+  return null;
 };
