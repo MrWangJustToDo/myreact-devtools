@@ -12,6 +12,7 @@ export const FlameGraphNode = ({
   previous,
   current,
   isRoot,
+  isSelect,
   isLegacy,
   isConCurrent,
   rootStack,
@@ -20,6 +21,7 @@ export const FlameGraphNode = ({
   previous?: SafeStackItemType;
   current: SafeStackItemType;
   isRoot?: boolean;
+  isSelect?: boolean;
   isLegacy?: boolean;
   isConCurrent?: boolean;
   rootStack?: RootStack[number];
@@ -53,7 +55,7 @@ export const FlameGraphNode = ({
         />
       )}
       <div
-        className="flameGraph-node-container cursor-pointer"
+        className={`flameGraph-node-container cursor-pointer ${isRoot && isSelect && 'relative after:content-[""] after:absolute after:top-0 after:left-0 after:w-full after:h-full after:border-2 after:border-blue-400 after:rounded-sm after:pointer-events-none'}`}
         style={{
           width: `calc(calc(var(--flameGraph-width-step)*${width}))`,
           // height: `var(--flameGraph-height-step)`,
