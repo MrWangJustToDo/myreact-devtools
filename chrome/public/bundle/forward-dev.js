@@ -1626,6 +1626,9 @@
     		    var n = undefined;
     		    if (type === "Object" && typeof (value === null || value === void 0 ? void 0 : value.constructor) === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
     		        n = value.constructor.name;
+    		        if (n === "Object") {
+    		            n = undefined;
+    		        }
     		    }
     		    if (type === "ReactElement") {
     		        n = getElementName(value);

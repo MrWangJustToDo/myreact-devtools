@@ -133,6 +133,10 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
 
   if (type === "Object" && typeof value?.constructor === "function" && value.constructor !== emptyConstructor && value.constructor.name) {
     n = value.constructor.name;
+
+    if (n === "Object") {
+      n = undefined;
+    }
   }
 
   if (type === "ReactElement") {
