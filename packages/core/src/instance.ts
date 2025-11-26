@@ -254,6 +254,10 @@ export class DevToolCore {
     inspectSource(this);
   }
 
+  inspectFun(source?: string) {
+    globalThis["inspect"](source);
+  }
+
   notifyDir() {
     if (!this.hasEnable) return;
 

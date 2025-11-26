@@ -1822,9 +1822,28 @@
     		};
 
     		var getSource = function (fiber) {
+    		    var _a, _b, _c;
     		    if (fiber._debugElement) {
     		        var element = fiber._debugElement;
-    		        return element._source;
+    		        try {
+    		            if (element._debugStack) {
+    		                var stack = ErrorStackParser.parse(element._debugStack);
+    		                var currentStack = stack[1];
+    		                return {
+    		                    type: "stack",
+    		                    value: currentStack.fileName + ":" + currentStack.lineNumber + ":" + currentStack.columnNumber,
+    		                };
+    		            }
+    		            throw new Error("No stack");
+    		        }
+    		        catch (_d) {
+    		            if (element._source && typeof element._source === "object") {
+    		                return {
+    		                    type: "source",
+    		                    value: ((_a = element._source) === null || _a === void 0 ? void 0 : _a.fileName) + ":" + ((_b = element._source) === null || _b === void 0 ? void 0 : _b.lineNumber) + ":" + ((_c = element._source) === null || _c === void 0 ? void 0 : _c.columnNumber),
+    		                };
+    		            }
+    		        }
     		    }
     		    return null;
     		};
@@ -4751,6 +4770,9 @@
     		            return;
     		        }
     		        inspectSource(this);
+    		    };
+    		    DevToolCore.prototype.inspectFun = function (source) {
+    		        globalThis["inspect"](source);
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
     		        if (!this.hasEnable)

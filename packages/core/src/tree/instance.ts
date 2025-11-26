@@ -67,7 +67,7 @@ export class PlainNode {
   _t: string[];
   // tree: string[];
 
-  _s: MyReactElement["_source"];
+  _s?: { type: "stack" | "source"; value: string } | null;
   // source: MyReactElement["_source"];
 
   _d?: number;

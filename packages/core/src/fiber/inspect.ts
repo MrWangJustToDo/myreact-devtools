@@ -1,3 +1,5 @@
+import ErrorStackParser from "error-stack-parser";
+
 import { getNode } from "../data";
 import { getPlainNodeByFiber } from "../tree";
 
@@ -5,10 +7,27 @@ import type { DevToolRenderDispatch } from "../setup";
 import type { MyReactElement } from "@my-react/react";
 import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 
-export const getSource = (fiber: MyReactFiberNodeDev) => {
+export const getSource = (fiber: MyReactFiberNodeDev): { type: "stack" | "source"; value: string } => {
   if (fiber._debugElement) {
     const element = fiber._debugElement as MyReactElement;
-    return element._source;
+    try {
+      if (element._debugStack) {
+        const stack = ErrorStackParser.parse(element._debugStack);
+        const currentStack = stack[1];
+        return {
+          type: "stack",
+          value: currentStack.fileName + ":" + currentStack.lineNumber + ":" + currentStack.columnNumber,
+        };
+      }
+      throw new Error("No stack");
+    } catch {
+      if (element._source && typeof element._source === "object") {
+        return {
+          type: "source",
+          value: element._source?.fileName + ":" + element._source?.lineNumber + ":" + element._source?.columnNumber,
+        };
+      }
+    }
   }
   return null;
 };
