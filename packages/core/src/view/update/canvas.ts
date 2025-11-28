@@ -165,6 +165,7 @@ function initialize(): void {
     position: fixed;
     right: 0;
     top: 0;
+    padding: 0;
     background-color: transparent;
     outline: none;
     box-shadow: none;

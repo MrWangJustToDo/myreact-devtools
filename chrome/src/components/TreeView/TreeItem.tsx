@@ -7,6 +7,7 @@ import { useDetailNode } from "@/hooks/useDetailNode";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
+import { useRunningCount } from "@/hooks/useRunningCount";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 
@@ -19,19 +20,22 @@ const RenderTag = memo(({ node }: { node: PlainNode }) => {
 
   if (tag?.length) {
     return (
-      <div className="gap-x-[2px] flex items-center">
-        {tag.map((tag) => (
-          <Chip
-            key={tag}
-            size="sm"
-            color={tag.includes("compiler") ? "primary" : undefined}
-            radius="none"
-            className="rounded-md capitalize text-[8px] h-[14px]"
-          >
-            {tag}
-          </Chip>
-        ))}
-      </div>
+      <>
+        <Spacer x={1} />
+        <div className="gap-x-[2px] flex items-center">
+          {tag.map((tag) => (
+            <Chip
+              key={tag}
+              size="sm"
+              color={tag.includes("compiler") ? "primary" : undefined}
+              radius="none"
+              className="rounded-md capitalize text-[8px] h-[14px]"
+            >
+              {tag}
+            </Chip>
+          ))}
+        </div>
+      </>
     );
   } else {
     return null;
@@ -44,26 +48,103 @@ const RenderKey = memo(({ node }: { node: PlainNode }) => {
   const finalKey = useNodeName(useCallback((s) => s.map?.[node.k!], [node.k]));
 
   return (
-    <div data-key className="flex items-center gap-x-[1px] text-[11px]">
-      <div className=" text-[#40af2c]">key</div>
-      <div className=" text-gray-400">=</div>
-      <div className="flex">
-        {'"'}
-        <Tooltip
-          content={<div className="max-w-[300px] max-h-[400px] overflow-y-auto whitespace-pre-wrap break-words">{finalKey}</div>}
-          delay={800}
-          showArrow
-          color="foreground"
-        >
-          <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
-        </Tooltip>
-        {'"'}
+    <>
+      <Spacer x={1} />
+      <div data-key className="flex items-center gap-x-[1px] text-[11px]">
+        <div className=" text-[#40af2c]">key</div>
+        <div className=" text-gray-400">=</div>
+        <div className="flex">
+          {'"'}
+          <Tooltip
+            content={<div className="max-w-[300px] max-h-[400px] overflow-y-auto whitespace-pre-wrap break-words">{finalKey}</div>}
+            delay={800}
+            showArrow
+            color="foreground"
+          >
+            <div className="text-gray-600 max-w-[200px] text-ellipsis overflow-hidden whitespace-nowrap">{finalKey}</div>
+          </Tooltip>
+          {'"'}
+        </div>
       </div>
-    </div>
+    </>
   );
 });
 
 RenderKey.displayName = "RenderKey";
+
+const RenderTrigger = memo(({ node }: { node: PlainNode }) => {
+  const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.i], [node.i]));
+
+  if (!triggerCount) return null;
+
+  return (
+    <>
+      <Spacer x={1} />
+      <Tooltip content="trigger update" showArrow color="primary">
+        <Chip size="sm" radius="none" color="primary" className="rounded-md capitalize text-[8px] h-[14px]">
+          {triggerCount}
+        </Chip>
+      </Tooltip>
+    </>
+  );
+});
+
+RenderTrigger.displayName = "RenderTrigger";
+
+const RenderHMR = memo(({ node }: { node: PlainNode }) => {
+  const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.i], [node.i]));
+
+  if (!hmrCount) return null;
+
+  return (
+    <>
+      <Spacer x={1} />
+      <Tooltip content="hmr update" showArrow color="success">
+        <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
+          {hmrCount}
+        </Chip>
+      </Tooltip>
+    </>
+  );
+});
+
+RenderHMR.displayName = "RenderHMR";
+
+export const RenderRunningCount = memo(({ node }: { node: PlainNode }) => {
+  const runningCount = useRunningCount(useCallback((s) => s.state?.[node.i], [node.i]));
+
+  if (!runningCount) return null;
+
+  return (
+    <>
+      <Spacer x={1} />
+      <Tooltip content="running count" showArrow color="secondary">
+        <Chip size="sm" radius="none" color="secondary" className="rounded-md capitalize text-[8px] h-[14px]">
+          {runningCount}
+        </Chip>
+      </Tooltip>
+    </>
+  );
+});
+
+RenderRunningCount.displayName = "RenderRunningCount";
+
+const RenderHighlightType = memo(({ node }: { node: PlainNode }) => {
+  const highlightType = useHighlightNode(useCallback((s) => s.state?.[node.i], [node.i]));
+
+  if (!highlightType) return null;
+
+  return (
+    <>
+      <Spacer x={1} />
+      <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
+        {highlightType}
+      </Chip>
+    </>
+  );
+});
+
+RenderHighlightType.displayName = "RenderHighlightType";
 
 // const RenderIndent = memo(({ node }: { node: PlainNode }) => {
 //   const ele: ReactNode[] = [];
@@ -103,6 +184,8 @@ export const TreeItem = ({
   withSelect = true,
   withTrigger = true,
   withCollapse = true,
+  withRunningCount = false,
+  withHighlightType = true,
 }: {
   width?: number;
   node: PlainNode;
@@ -113,14 +196,10 @@ export const TreeItem = ({
   withHMR?: boolean;
   withTag?: boolean;
   withKey?: boolean;
+  withRunningCount?: boolean;
+  withHighlightType?: boolean;
 }) => {
   const current = node;
-
-  const triggerCount = useTriggerNode(useCallback((s) => s.state?.[node.i], [node.i]));
-
-  const hmrCount = useHMRNode(useCallback((s) => s.state?.[node.i], [node.i]));
-
-  const highlightType = useHighlightNode(useCallback((s) => s.state?.[node.i], [node.i]));
 
   const { error, warn } = useHighlightNode.useShallowSelector(
     (s) => ({ error: s.error?.[node.i], warn: s.warn?.[node.i] }),
@@ -204,40 +283,11 @@ export const TreeItem = ({
               </span>
             )}
             <p className="node-name line-clamp-1">{finalName}</p>
-            {withTag && (
-              <>
-                <Spacer x={1} />
-                <RenderTag node={current} />
-              </>
-            )}
-            {withTrigger && triggerCount > 0 && (
-              <>
-                <Spacer x={1} />
-                <Tooltip content="trigger update" showArrow color="primary">
-                  <Chip size="sm" radius="none" color="primary" className="rounded-md capitalize text-[8px] h-[14px]">
-                    {triggerCount}
-                  </Chip>
-                </Tooltip>
-              </>
-            )}
-            {withHMR && hmrCount > 0 && (
-              <>
-                <Spacer x={1} />
-                <Tooltip content="hmr update" showArrow color="success">
-                  <Chip size="sm" radius="none" color="success" className="rounded-md capitalize text-[8px] h-[14px]">
-                    {hmrCount}
-                  </Chip>
-                </Tooltip>
-              </>
-            )}
-            {highlightType && (
-              <>
-                <Spacer x={1} />
-                <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
-                  {highlightType}
-                </Chip>
-              </>
-            )}
+            {withTag && <RenderTag node={current} />}
+            {withTrigger && <RenderTrigger node={current} />}
+            {withHMR && <RenderHMR node={current} />}
+            {withRunningCount && <RenderRunningCount node={current} />}
+            {withHighlightType && <RenderHighlightType node={current} />}
             {warn && (
               <>
                 <Spacer x={1} />
@@ -254,12 +304,7 @@ export const TreeItem = ({
                 </Chip>
               </>
             )}
-            {withKey && current.k && (
-              <>
-                <Spacer x={1} />
-                <RenderKey node={current} />
-              </>
-            )}
+            {withKey && current.k && <RenderKey node={current} />}
           </div>
         </div>
       </div>
@@ -314,7 +359,7 @@ export const TreeItemWithId = ({
   if (withFallback) {
     return (
       <div className="node-item w-full h-full cursor-pointer transition-transform-background rounded-sm select-none">
-        <div className="node-name line-clamp-1">{map[n]}</div> 
+        <div className="node-name line-clamp-1">{map[n]}</div>
       </div>
     );
   }

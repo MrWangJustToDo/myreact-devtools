@@ -52,6 +52,8 @@ export class DevToolCore {
 
   _selectDom = null;
 
+  _selectNode = null;
+
   _hasSelectChange = false;
 
   _tempDomHoverId = "";
@@ -419,10 +421,20 @@ export class DevToolCore {
         console.log("[@my-react-devtool/core] current select fiber", fiber);
       }
 
-      this._notify({ type: DevToolMessageEnum.detail, data: inspectFiber(fiber) });
+      const detailNode = inspectFiber(fiber);
+
+      this._selectNode = detailNode;
+
+      this._notify({ type: DevToolMessageEnum.detail, data: detailNode });
     } else {
       this._notify({ type: DevToolMessageEnum.detail, data: null });
     }
+  }
+
+  notifyRunning(id: number | string) {
+    if (!this.hasEnable) return;
+
+    this._notify({ type: DevToolMessageEnum.running, data: id });
   }
 
   notifySelectSync() {

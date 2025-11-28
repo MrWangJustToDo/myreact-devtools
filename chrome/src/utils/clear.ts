@@ -6,6 +6,7 @@ import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
+import { useRunningCount } from "@/hooks/useRunningCount";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useTriggerHover } from "@/hooks/useTriggerState";
@@ -26,6 +27,7 @@ export const onClear = () => {
   useHighlightNode?.getActions?.()?.clear?.();
   useDetailNodeExt?.getActions?.()?.clear?.();
   useUnmountNode?.getActions?.()?.onClear?.();
+  useRunningCount?.getActions?.()?.clear?.();
 };
 
 if (!isServer) {

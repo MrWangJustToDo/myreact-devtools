@@ -12,6 +12,7 @@ import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useRecordStack } from "@/hooks/useRecordStack";
+import { useRunningCount } from "@/hooks/useRunningCount";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useUnmountNode } from "@/hooks/useUnmountNode";
@@ -143,6 +144,16 @@ export const onRender = (data: DevToolMessageType) => {
       const { update } = useTriggerNode.getActions();
 
       update(nodes);
+    });
+  }
+
+  if (data.type === DevToolMessageEnum.running) {
+    const id = data.data as number | string;
+
+    safeAction(() => {
+      const { increment } = useRunningCount.getActions();
+
+      increment(id);
     });
   }
 

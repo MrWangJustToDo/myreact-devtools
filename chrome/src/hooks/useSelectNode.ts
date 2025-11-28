@@ -4,6 +4,7 @@ import { createState } from "reactivity-store";
 import { flattenNode } from "@/utils/node";
 
 import { useAppTree } from "./useAppTree";
+import { useRunningCount } from "./useRunningCount";
 
 export const useSelectNode = createState(
   () =>
@@ -34,6 +35,14 @@ export const useSelectNode = createState(
         }, {});
       }, 16);
 
+      const internalClear = () => {
+        s.select = null;
+        s.selectList = {};
+        updateSelectList();
+
+        useRunningCount.getActions().clear();
+      };
+
       return {
         setSelect: (node: string | number | null, force?: boolean) => {
           if (node === s.select && !force) {
@@ -44,17 +53,15 @@ export const useSelectNode = createState(
             s.selectList = {};
             updateSelectList();
           }
+
+          useRunningCount.getActions().clear();
         },
         clearSelect: () => {
-          s.select = null;
-          s.selectList = {};
-          updateSelectList();
+          internalClear();
         },
         clearSelectIfNeed: (node: string) => {
           if (node === s.select) {
-            s.select = null;
-            s.selectList = {};
-            updateSelectList();
+            internalClear();
           }
         },
         storeFiber: () => {

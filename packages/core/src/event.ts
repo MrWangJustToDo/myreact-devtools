@@ -54,6 +54,7 @@ export enum DevToolMessageEnum {
   changed = "changed",
   highlight = "highlight",
   trigger = "trigger",
+  running = "running",
   triggerStatus = "triggerStatus",
   hmr = "hmr",
   hmrStatus = "hmrStatus",

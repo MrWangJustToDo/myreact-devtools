@@ -187,6 +187,7 @@
     		    DevToolMessageEnum["changed"] = "changed";
     		    DevToolMessageEnum["highlight"] = "highlight";
     		    DevToolMessageEnum["trigger"] = "trigger";
+    		    DevToolMessageEnum["running"] = "running";
     		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
     		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
@@ -3135,6 +3136,7 @@
     		    DevToolMessageEnum["changed"] = "changed";
     		    DevToolMessageEnum["highlight"] = "highlight";
     		    DevToolMessageEnum["trigger"] = "trigger";
+    		    DevToolMessageEnum["running"] = "running";
     		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
     		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
@@ -3162,7 +3164,7 @@
     		var DevToolSource = "@my-react/devtool";
 
     		var patchEvent = function (dispatch, runtime) {
-    		    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    		    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
     		    if (dispatch["$$hasDevToolEvent"])
     		        return;
     		    dispatch["$$hasDevToolEvent"] = true;
@@ -3283,6 +3285,17 @@
     		        runtime._error[id].push(args);
     		        runtime.notifyError();
     		    };
+    		    var onFiberRun = function (fiber) {
+    		        var id = getPlainNodeIdByFiber(fiber);
+    		        if (!id)
+    		            return;
+    		        if (!runtime._selectNode)
+    		            return;
+    		        var selectTree = runtime._selectNode._t || [];
+    		        if (!selectTree.includes(id))
+    		            return;
+    		        runtime.notifyRunning(id);
+    		    };
     		    var onPerformanceWarn = function (fiber) {
     		        var id = getPlainNodeIdByFiber(fiber);
     		        if (!id)
@@ -3323,12 +3336,13 @@
     		        (_d = dispatch.onPerformanceWarn) === null || _d === void 0 ? void 0 : _d.call(dispatch, onPerformanceWarn);
     		        (_e = dispatch.onFiberChange) === null || _e === void 0 ? void 0 : _e.call(dispatch, onChange);
     		        (_f = dispatch.onFiberUpdate) === null || _f === void 0 ? void 0 : _f.call(dispatch, onFiberUpdate);
-    		        (_g = dispatch.onFiberHMR) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberHMR);
-    		        (_h = dispatch.onDOMUpdate) === null || _h === void 0 ? void 0 : _h.call(dispatch, onDOMUpdate);
-    		        (_j = dispatch.onDOMAppend) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMAppend);
-    		        (_k = dispatch.onDOMSetRef) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMSetRef);
-    		        (_l = dispatch.onFiberError) === null || _l === void 0 ? void 0 : _l.call(dispatch, onFiberError);
-    		        (_m = dispatch.onFiberWarn) === null || _m === void 0 ? void 0 : _m.call(dispatch, onFiberWarn);
+    		        (_g = dispatch.onAfterFiberRun) === null || _g === void 0 ? void 0 : _g.call(dispatch, onFiberRun);
+    		        (_h = dispatch.onFiberHMR) === null || _h === void 0 ? void 0 : _h.call(dispatch, onFiberHMR);
+    		        (_j = dispatch.onDOMUpdate) === null || _j === void 0 ? void 0 : _j.call(dispatch, onDOMUpdate);
+    		        (_k = dispatch.onDOMAppend) === null || _k === void 0 ? void 0 : _k.call(dispatch, onDOMAppend);
+    		        (_l = dispatch.onDOMSetRef) === null || _l === void 0 ? void 0 : _l.call(dispatch, onDOMSetRef);
+    		        (_m = dispatch.onFiberError) === null || _m === void 0 ? void 0 : _m.call(dispatch, onFiberError);
+    		        (_o = dispatch.onFiberWarn) === null || _o === void 0 ? void 0 : _o.call(dispatch, onFiberWarn);
     		    }
     		    else {
     		        var originalAfterCommit_1 = dispatch.afterCommit;
@@ -4048,7 +4062,7 @@
     		function initialize() {
     		    canvas = window.document.createElement("canvas");
     		    canvas.setAttribute("popover", "manual");
-    		    canvas.style.cssText = "\n    xx-background-color: red;\n    xx-opacity: 0.5;\n    bottom: 0;\n    left: 0;\n    pointer-events: none;\n    position: fixed;\n    right: 0;\n    top: 0;\n    background-color: transparent;\n    outline: none;\n    box-shadow: none;\n    border: none;\n  ";
+    		    canvas.style.cssText = "\n    xx-background-color: red;\n    xx-opacity: 0.5;\n    bottom: 0;\n    left: 0;\n    pointer-events: none;\n    position: fixed;\n    right: 0;\n    top: 0;\n    padding: 0;\n    background-color: transparent;\n    outline: none;\n    box-shadow: none;\n    border: none;\n  ";
     		    canvas.setAttribute("data-update", "@my-react");
     		    var root = window.document.documentElement;
     		    root.insertBefore(canvas, root.firstChild);
@@ -4192,6 +4206,7 @@
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._selectDom = null;
+    		        this._selectNode = null;
     		        this._hasSelectChange = false;
     		        this._tempDomHoverId = "";
     		        this._domHoverId = "";
@@ -4489,11 +4504,18 @@
     		            return;
     		        var fiber = getFiberNodeById(id);
     		        if (fiber) {
-    		            this._notify({ type: exports.DevToolMessageEnum.detail, data: inspectFiber(fiber) });
+    		            var detailNode = inspectFiber(fiber);
+    		            this._selectNode = detailNode;
+    		            this._notify({ type: exports.DevToolMessageEnum.detail, data: detailNode });
     		        }
     		        else {
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: null });
     		        }
+    		    };
+    		    DevToolCore.prototype.notifyRunning = function (id) {
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({ type: exports.DevToolMessageEnum.running, data: id });
     		    };
     		    DevToolCore.prototype.notifySelectSync = function () {
     		        if (!this.hasEnable)

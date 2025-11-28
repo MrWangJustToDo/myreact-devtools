@@ -7,6 +7,7 @@ import { throttle } from "../utils";
 
 import type { DevToolCore } from "../instance";
 import type { DevToolRenderDispatch } from "../setup";
+import type { PlainNode } from "../tree";
 import type { MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
@@ -170,6 +171,20 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
     runtime.notifyError();
   };
 
+  const onFiberRun = (fiber: MyReactFiberNode) => {
+    const id = getPlainNodeIdByFiber(fiber);
+
+    if (!id) return;
+
+    if (!runtime._selectNode) return;
+
+    const selectTree = (runtime._selectNode as PlainNode)._t || [];
+
+    if (!selectTree.includes(id)) return;
+
+    runtime.notifyRunning(id);
+  };
+
   const onPerformanceWarn = (fiber: MyReactFiberNode) => {
     const id = getPlainNodeIdByFiber(fiber);
 
@@ -224,6 +239,8 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
     dispatch.onFiberChange?.(onChange);
 
     dispatch.onFiberUpdate?.(onFiberUpdate);
+
+    dispatch.onAfterFiberRun?.(onFiberRun);
 
     dispatch.onFiberHMR?.(onFiberHMR);
 
