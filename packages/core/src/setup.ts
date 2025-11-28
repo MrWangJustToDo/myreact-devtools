@@ -4,7 +4,6 @@ import type { DevToolCore } from "./instance";
 import type { CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-reconciler";
 
 export interface DevToolRenderDispatch extends CustomRenderDispatch {
-  id?: string;
   ["$$hasDevToolInject"]?: boolean;
   ["$$hasDevToolPatch"]?: boolean;
   onDOMUpdate?: (cb: (f: MyReactFiberNode) => void) => void;

@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from "fs/promises";
 import { resolve } from "path";
 import { rollupBuild } from "project-tool/rollup";
 
-const externalCorePackage = (id: string) => !id.includes("tslib") && id.includes("node_modules");
+const externalCorePackage = (id: string) => !id.includes("tslib") && id.includes("node_modules") && !id.includes("@my-react");
 
 const cleanDir = async () => {
   const path = resolve(process.cwd(), `chrome/public/bundle`);

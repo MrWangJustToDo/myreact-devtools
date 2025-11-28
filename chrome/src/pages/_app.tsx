@@ -25,22 +25,6 @@ import "allotment/dist/style.css";
 //   variable: "--root-font--",
 // });
 
-const getWebTitle = (name?: string, url?: string) => {
-  if (name && url) {
-    return `${name}-${url}`;
-  }
-
-  if (name) {
-    return name;
-  }
-
-  if (url) {
-    return url;
-  }
-
-  return "unknown";
-};
-
 const source = (str: string, type: "web" | "local", token?: string) => `function loadScript(url) {
   const script = document.createElement("script");
   return new Promise((resolve, reject) => {
@@ -65,7 +49,7 @@ init();
 `;
 
 export default function App({ Component, pageProps, router }: AppProps) {
-  const { render, state, name, url, reconnect } = useConnect((s) => ({ render: s.render, state: s.state, name: s.name, url: s.url, reconnect: s.cb }));
+  const { render, state, reconnect } = useConnect((s) => ({ render: s.render, state: s.state, name: s.name, url: s.url, reconnect: s.cb }));
 
   const isMounted = useIsMounted();
 
@@ -101,7 +85,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
       <div className="flex items-center justify-center w-screen h-screen">
         <div className="text-center text-[1.5rem] text-red-400 px-10">
           <div>
-            This {isWebDev ? `${getWebTitle(name, url)} page` : "page"} not render By <Code className=" text-inherit text-[1.5rem] ml-2">@my-react</Code>
+            Not Detector <Code className=" text-inherit text-[1.5rem] ml-2">@my-react</Code>
           </div>
           <Spacer className="my-2" />
           <Snippet symbol="" color="warning" variant="solid" hideCopyButton>

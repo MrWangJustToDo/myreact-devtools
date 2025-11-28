@@ -47,9 +47,9 @@
     }
   ],
   "devDependencies": {
-    "@my-react/react": "^0.3.20",
-    "@my-react/react-reconciler": "^0.3.20",
-    "@my-react/react-shared": "^0.3.20",
+    "@my-react/react": "^0.3.21",
+    "@my-react/react-reconciler": "^0.3.21",
+    "@my-react/react-shared": "^0.3.21",
     "@types/lodash": "^4.17.20"
   },
   "dependencies": {
