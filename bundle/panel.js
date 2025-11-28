@@ -138,6 +138,7 @@
     		    DevToolMessageEnum["changed"] = "changed";
     		    DevToolMessageEnum["highlight"] = "highlight";
     		    DevToolMessageEnum["trigger"] = "trigger";
+    		    DevToolMessageEnum["running"] = "running";
     		    DevToolMessageEnum["triggerStatus"] = "triggerStatus";
     		    DevToolMessageEnum["hmr"] = "hmr";
     		    DevToolMessageEnum["hmrStatus"] = "hmrStatus";
