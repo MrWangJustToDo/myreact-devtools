@@ -5,6 +5,7 @@ import { useSelectNode } from "@/hooks/useSelectNode";
 
 import { ContextMenu } from "./ContextMenu";
 import { ExtendView } from "./ExtendView";
+import { HookCompare } from "./HookCompare";
 import { HookView } from "./HookView";
 import { NameView } from "./NameView";
 import { PropsView } from "./PropsView";
@@ -39,6 +40,7 @@ export const NodeView = () => {
         <SourceView key={select} />
         <ContextMenu key={select} />
       </div>
+      <HookCompare />
     </div>
   );
 };

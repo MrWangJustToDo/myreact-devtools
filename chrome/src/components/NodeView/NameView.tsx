@@ -22,7 +22,7 @@ export const NameView = () => {
     return (
       <div className="sticky top-0 z-50">
         <div className={`node-name p-2 pb-0 font-lg font-code bg-content1 transition-transform-background`}>
-          <TreeItem node={currentSelectDetail} withCollapse={false} withSelect={false} withKey={false} />
+          <TreeItem node={currentSelectDetail} withCollapse={false} withSelect={false} withKey={false} withRunningCount />
           <ButtonGroup className="absolute right-4 top-0">
             <Tooltip content="force scroll to select" showArrow color="foreground" placement="bottom-end">
               <Button isIconOnly size="sm" variant="flat" onPress={scrollIntoView}>

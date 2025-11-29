@@ -7,10 +7,12 @@ import { getDispatchFromFiber, type HOOKTree } from "../tree";
 
 import { inspectHooksOfFiber } from "./internal";
 
+import type { NodeValue } from "../data";
 import type { DispatcherType, HooksTree } from "./internal";
 import type { CustomRenderDispatch, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNodeDev, UpdateState } from "@my-react/react-reconciler";
 
 const linkStateToHookIndex = new WeakMap<UpdateState, Array<number | string>>();
+const linkStateToUpdaterNode = new WeakMap<UpdateState, Record<string | number, NodeValue>>();
 
 const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, p?: { index: number }): HOOKTree[] => {
   const _p = p || { index: 0 };
@@ -129,13 +131,32 @@ export const getHook = (fiber: MyReactFiberNodeDev) => {
 export const tryLinkStateToHookIndex = (fiber: MyReactFiberNode, state: UpdateState) => {
   if (state.needUpdate && state.nodes) {
     // filter all hook update queue
-    const nodes = state.nodes?.filter?.((node) => node.type === UpdateQueueType.hook);
+    // const nodes = state.nodes?.filter?.((node) => node.type === UpdateQueueType.hook);
     // get all the keys from the nodes;
     const allHooksArray = fiber.hookList?.toArray?.() || [];
 
-    const keys = nodes?.map?.((node) => allHooksArray?.findIndex?.((_node) => node?.trigger === _node))?.filter((i) => i !== -1) || [];
+    const nodes = state.nodes || [];
+
+    const indexMap: Record<string | number, NodeValue> = {};
+
+    const keys =
+      nodes.map?.((node) => {
+        if (node.type !== UpdateQueueType.hook) return -1;
+
+        const index = allHooksArray?.findIndex?.((_node) => node?.trigger === _node);
+
+        // there are a valid updater, link the before node value
+        if (index !== -1 && Object.prototype.hasOwnProperty.call(node, "_debugBeforeValue")) {
+          const data = getNode(node._debugBeforeValue);
+
+          indexMap[index] = data;
+        }
+
+        return index;
+      }) || [];
     // link the keys to the state
     linkStateToHookIndex.set(state, keys);
+    linkStateToUpdaterNode.set(state, indexMap);
   }
 };
 
@@ -143,6 +164,11 @@ export const getHookIndexFromState = (state: UpdateState) => {
   return linkStateToHookIndex.get(state);
 };
 
+export const getUpdaterNodeFromState = (state: UpdateState) => {
+  return linkStateToUpdaterNode.get(state);
+};
+
 export const deleteLinkState = (state: UpdateState) => {
   linkStateToHookIndex.delete(state);
+  linkStateToUpdaterNode.delete(state);
 };

@@ -1,13 +1,18 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Bug, Eye, Package } from "lucide-react";
+import { Bug, DiffIcon, Eye, Package } from "lucide-react";
 import { memo } from "react";
 
 import { useContextMenu } from "@/hooks/useContextMenu";
+import { useHookValue } from "@/hooks/useHookValue";
 
 const { close: contextMenuClose, setStore, setSource } = useContextMenu.getActions();
 
 export const ContextMenu = memo(() => {
   const { state, position, type } = useContextMenu((s) => s);
+
+  const index = useHookValue((s) => s.index);
+
+  const toggleOpen = useHookValue.getActions().toggleOpen;
 
   return (
     <>
@@ -63,6 +68,18 @@ export const ContextMenu = memo(() => {
                       <span className="flex-grow">Inspect Element node</span>
                     </>
                   )}
+                </div>
+              )}
+              {typeof index === "number" && (
+                <div
+                  className="context-menu-item px-2 cursor-pointer select-none flex justify-center items-center node-item-hover"
+                  onClick={() => {
+                    toggleOpen();
+                    contextMenuClose();
+                  }}
+                >
+                  <DiffIcon className="mr-2 w-[1em]" />
+                  <span className="flex-grow">Track the change</span>
                 </div>
               )}
             </motion.div>

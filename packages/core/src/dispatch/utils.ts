@@ -1,7 +1,7 @@
 import { isNormalEquals } from "@my-react/react-shared";
 
 import { getNode, getNodeFromId } from "../data";
-import { getHookIndexFromState } from "../hook";
+import { getHookIndexFromState, getUpdaterNodeFromState } from "../hook";
 import { inspectDispatch } from "../tree";
 
 import type { DevToolCore } from "../instance";
@@ -43,11 +43,16 @@ export const getValidTriggerStatus = (id: string, runtime: DevToolCore) => {
 
   return finalStatus.map((i) => {
     const _keysToLinkHook = getHookIndexFromState(i as UpdateState);
+    const _nodesToLinkHook = getUpdaterNodeFromState(i as UpdateState);
 
     const node = getNode(i);
 
     if (_keysToLinkHook && _keysToLinkHook.length > 0) {
       node._keysToLinkHook = _keysToLinkHook;
+    }
+
+    if (_nodesToLinkHook && Object.keys(_nodesToLinkHook).length > 0) {
+      node._nodesToLinkHook = _nodesToLinkHook;
     }
 
     return node;

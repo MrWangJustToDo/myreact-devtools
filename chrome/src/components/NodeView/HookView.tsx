@@ -1,21 +1,55 @@
 import { Chip, Divider, Spacer } from "@heroui/react";
-import { Allotment } from "allotment";
 import { Play } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
+import { useHookValue } from "@/hooks/useHookValue";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
-import { AutoHeight } from "../AutoHeight";
+import { AutoHeightLayout } from "../AutoHeightLayout";
 import { NodeValue } from "../NodeValue";
 
 import { TriggerView } from "./ExtendView";
 
 import type { HOOKTree } from "@my-react-devtool/core";
-import type { RefObject } from "react";
+
+const HookRender = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boolean }) => {
+  const beforeValue = useDetailNodeExt.useShallowSelector((s) => s.hookUpdaterStatus?.[item.i || ""]);
+
+  const afterValue = item.v;
+
+  const index = item.i;
+
+  useEffect(() => {
+    if (index && beforeValue && afterValue && beforeValue.i !== afterValue.i) {
+      const setValue = useHookValue.getActions().setHookValue;
+
+      setValue(index, beforeValue, afterValue);
+    }
+  }, [beforeValue, afterValue, index]);
+
+  return (
+    <NodeValue
+      name={item.n}
+      item={item.v}
+      editable={item.e && enableEdit}
+      hookIndex={item.i}
+      type="hook"
+      prefix={
+        <Chip
+          classNames={{ content: "p-0" }}
+          size="sm"
+          className="rounded-sm text-center mr-1 flex-shrink-0 font-[300] !px-1 text-gray-800 dark:text-gray-200 !h-[1.4em] !max-w-[initial] !min-w-[initial]"
+        >
+          {item.i}
+        </Chip>
+      }
+    />
+  );
+};
 
 const HookViewTree = ({ item, enableEdit, hoverKeys }: { item: HOOKTree; enableEdit?: boolean; hoverKeys?: Array<string | number> }) => {
   const [expand, setExpand] = useState(false);
@@ -31,22 +65,7 @@ const HookViewTree = ({ item, enableEdit, hoverKeys }: { item: HOOKTree; enableE
   if (currentIsHookNode) {
     return (
       <div data-hover-state-wrapper className={isHover ? "hook-hover" : ""}>
-        <NodeValue
-          name={item.n}
-          item={item.v}
-          editable={item.e && enableEdit}
-          hookIndex={item.i}
-          type="hook"
-          prefix={
-            <Chip
-              classNames={{ content: "p-0" }}
-              size="sm"
-              className="rounded-sm text-center mr-1 flex-shrink-0 font-[300] !px-1 text-gray-800 dark:text-gray-200 !h-[1.4em] !max-w-[initial] !min-w-[initial]"
-            >
-              {item.i}
-            </Chip>
-          }
-        />
+        <HookRender item={item} enableEdit={enableEdit} />
       </div>
     );
   } else {
@@ -60,13 +79,18 @@ const HookViewTree = ({ item, enableEdit, hoverKeys }: { item: HOOKTree; enableE
             >
               {StateIcon}
             </span>
-            <div className={`max-w-full line-clamp-1 cursor-pointer ${item.n === 'Anonymous' ? 'opacity-20' : 'opacity-40'}`} onClick={() => setExpand(!expand)}>
+            <div
+              className={`max-w-full line-clamp-1 cursor-pointer ${item.n === "Anonymous" ? "opacity-20" : "opacity-40"}`}
+              onClick={() => setExpand(!expand)}
+            >
               {item.n}
             </div>
             {item.n === "Anonymous" ? null : ":"}
           </div>
           <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>
-            {item.c?.map((i, index) => <HookViewTree key={i.n + "-" + index} item={i} enableEdit={enableEdit} hoverKeys={hoverKeys} />)}
+            {item.c?.map((i, index) => (
+              <HookViewTree key={i.n + "-" + index} item={i} enableEdit={enableEdit} hoverKeys={hoverKeys} />
+            ))}
           </div>
         </div>
       </div>
@@ -116,41 +140,16 @@ const InternalHookView = ({ mode = "vertical" }: { mode?: "horizontal" | "vertic
 };
 
 export const HookView = () => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const elementRefS = useRef<Array<RefObject<HTMLDivElement>>>();
-
   const layout = useTriggerLayout((s) => s.layout);
 
   const enable = useDetailNodeExt((s) => s.enable);
 
-  const onAutoUpdateHeight = () => {
-    if (ref.current) {
-      const maxHeight = Math.max(...(elementRefS.current?.map((i) => i.current?.clientHeight || 0) || []));
-      ref.current.style.height = `${maxHeight + 2}px`;
-    }
-  };
-
-  const onCreateRef = useCallback((ref: RefObject<HTMLDivElement>) => {
-    if (!elementRefS.current) {
-      elementRefS.current = [];
-    }
-    elementRefS.current.push(ref);
-  }, []);
-
   if (enable && layout === "horizontal") {
     return (
-      <div ref={ref}>
-        <Allotment>
-          <AutoHeight onHeightChange={onAutoUpdateHeight} onAttachRef={onCreateRef}>
-            <InternalHookView mode="horizontal" />
-          </AutoHeight>
-          <AutoHeight onHeightChange={onAutoUpdateHeight} onAttachRef={onCreateRef}>
-            <TriggerView mode="horizontal" />
-          </AutoHeight>
-        </Allotment>
+      <>
+        <AutoHeightLayout left={<InternalHookView mode="horizontal" />} right={<TriggerView mode="horizontal" />} />
         <Divider />
-      </div>
+      </>
     );
   } else {
     return <InternalHookView />;
