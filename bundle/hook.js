@@ -2530,6 +2530,7 @@
     		}
 
     		var linkStateToHookIndex = new WeakMap();
+    		var linkStateToUpdaterNode = new WeakMap();
     		var parseHooksTreeToHOOKTree = function (node, d, p) {
     		    var _p = p || { index: 0 };
     		    return node.map(function (item) {
@@ -2636,22 +2637,40 @@
     		    }
     		};
     		var tryLinkStateToHookIndex = function (fiber, state) {
-    		    var _a, _b, _c, _d, _e, _f;
+    		    var _a, _b, _c;
     		    if (state.needUpdate && state.nodes) {
     		        // filter all hook update queue
-    		        var nodes = (_b = (_a = state.nodes) === null || _a === void 0 ? void 0 : _a.filter) === null || _b === void 0 ? void 0 : _b.call(_a, function (node) { return node.type === UpdateQueueType.hook; });
+    		        // const nodes = state.nodes?.filter?.((node) => node.type === UpdateQueueType.hook);
     		        // get all the keys from the nodes;
-    		        var allHooksArray_1 = ((_d = (_c = fiber.hookList) === null || _c === void 0 ? void 0 : _c.toArray) === null || _d === void 0 ? void 0 : _d.call(_c)) || [];
-    		        var keys = ((_f = (_e = nodes === null || nodes === void 0 ? void 0 : nodes.map) === null || _e === void 0 ? void 0 : _e.call(nodes, function (node) { var _a; return (_a = allHooksArray_1 === null || allHooksArray_1 === void 0 ? void 0 : allHooksArray_1.findIndex) === null || _a === void 0 ? void 0 : _a.call(allHooksArray_1, function (_node) { return (node === null || node === void 0 ? void 0 : node.trigger) === _node; }); })) === null || _f === void 0 ? void 0 : _f.filter(function (i) { return i !== -1; })) || [];
+    		        var allHooksArray_1 = ((_b = (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.toArray) === null || _b === void 0 ? void 0 : _b.call(_a)) || [];
+    		        var nodes = state.nodes || [];
+    		        var indexMap_1 = {};
+    		        var keys = ((_c = nodes.map) === null || _c === void 0 ? void 0 : _c.call(nodes, function (node) {
+    		            var _a;
+    		            if (node.type !== UpdateQueueType.hook)
+    		                return -1;
+    		            var index = (_a = allHooksArray_1 === null || allHooksArray_1 === void 0 ? void 0 : allHooksArray_1.findIndex) === null || _a === void 0 ? void 0 : _a.call(allHooksArray_1, function (_node) { return (node === null || node === void 0 ? void 0 : node.trigger) === _node; });
+    		            // there are a valid updater, link the before node value
+    		            if (index !== -1 && Object.prototype.hasOwnProperty.call(node, "_debugBeforeValue")) {
+    		                var data = getNode(node._debugBeforeValue);
+    		                indexMap_1[index] = data;
+    		            }
+    		            return index;
+    		        })) || [];
     		        // link the keys to the state
     		        linkStateToHookIndex.set(state, keys);
+    		        linkStateToUpdaterNode.set(state, indexMap_1);
     		    }
     		};
     		var getHookIndexFromState = function (state) {
     		    return linkStateToHookIndex.get(state);
     		};
+    		var getUpdaterNodeFromState = function (state) {
+    		    return linkStateToUpdaterNode.get(state);
+    		};
     		var deleteLinkState = function (state) {
     		    linkStateToHookIndex.delete(state);
+    		    linkStateToUpdaterNode.delete(state);
     		};
 
     		var treeMap = new Map();
@@ -3520,9 +3539,13 @@
     		    var finalStatus = status.filter(function (i) { return (i.isRetrigger ? runtime._enableRetrigger : true); }).slice(-10);
     		    return finalStatus.map(function (i) {
     		        var _keysToLinkHook = getHookIndexFromState(i);
+    		        var _nodesToLinkHook = getUpdaterNodeFromState(i);
     		        var node = getNode(i);
     		        if (_keysToLinkHook && _keysToLinkHook.length > 0) {
     		            node._keysToLinkHook = _keysToLinkHook;
+    		        }
+    		        if (_nodesToLinkHook && Object.keys(_nodesToLinkHook).length > 0) {
+    		            node._nodesToLinkHook = _nodesToLinkHook;
     		        }
     		        return node;
     		    });
