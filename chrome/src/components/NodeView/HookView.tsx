@@ -1,5 +1,5 @@
 import { Chip, Divider, Spacer } from "@heroui/react";
-import { Play } from "lucide-react";
+import { DiffIcon, Play } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
@@ -31,6 +31,8 @@ const HookRender = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boolean
     }
   }, [beforeValue, afterValue, index]);
 
+  const hasDiff = beforeValue && afterValue && beforeValue.i !== afterValue.i;
+
   return (
     <NodeValue
       name={item.n}
@@ -39,13 +41,16 @@ const HookRender = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boolean
       hookIndex={item.i}
       type="hook"
       prefix={
-        <Chip
-          classNames={{ content: "p-0" }}
-          size="sm"
-          className="rounded-sm text-center mr-1 flex-shrink-0 font-[300] !px-1 text-gray-800 dark:text-gray-200 !h-[1.4em] !max-w-[initial] !min-w-[initial]"
-        >
-          {item.i}
-        </Chip>
+        <>
+          <Chip
+            classNames={{ content: "p-0" }}
+            size="sm"
+            className="rounded-sm text-center mr-1 flex-shrink-0 font-[300] !px-1 text-gray-800 dark:text-gray-200 !h-[1.4em] !max-w-[initial] !min-w-[initial]"
+          >
+            {item.i}
+          </Chip>
+          {hasDiff && <DiffIcon className="text-red-400 mx-0.5" size="1em" />}
+        </>
       }
     />
   );

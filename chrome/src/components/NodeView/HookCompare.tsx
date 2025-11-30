@@ -11,7 +11,7 @@ export const HookCompare = memo(() => {
 
   return (
     <Modal isOpen={open && !!state} onClose={toggle} size="3xl">
-      <ModalContent>
+      <ModalContent className="max-h-[70%] overflow-auto">
         <ModalHeader>
           <div className="font-bold text-lg mb-2">Hook Value Change</div>
         </ModalHeader>
