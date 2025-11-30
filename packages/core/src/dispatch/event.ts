@@ -3,7 +3,7 @@ import { isNormalEquals } from "@my-react/react-shared";
 import { HMRStatus } from "../event";
 import { deleteLinkState, tryLinkStateToHookIndex } from "../hook";
 import { getPlainNodeIdByFiber, inspectList } from "../tree";
-import { throttle } from "../utils";
+import { debounce, throttle } from "../utils";
 
 import type { DevToolCore } from "../instance";
 import type { DevToolRenderDispatch } from "../setup";
@@ -42,6 +42,8 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
     runtime.update.flushPending();
   };
 
+  const notifyChangedWithDebounce = debounce((list: ListTree<MyReactFiberNode>) => runtime.notifyChanged(list), 100);
+
   const onChange = (list: ListTree<MyReactFiberNode>) => {
     if (!runtime.hasEnable) return;
 
@@ -53,7 +55,7 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
       runtime.notifyDir();
     }
 
-    runtime.notifyChanged(list);
+    notifyChangedWithDebounce(list);
   };
 
   const onUnmount = () => {

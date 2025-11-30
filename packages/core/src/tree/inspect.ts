@@ -257,11 +257,13 @@ export const inspectList = (list: ListTree<MyReactFiberNode>) => {
   const result: PlainNode[] = [];
 
   list.listToFoot((fiber) => {
-    if (hasViewList.has(fiber)) return;
+    const loopFiber = fiber.parent || fiber;
 
-    hasViewList.add(fiber);
+    if (hasViewList.has(loopFiber)) return;
 
-    const re = loopChangedTree(fiber, hasViewList);
+    hasViewList.add(loopFiber);
+
+    const re = loopChangedTree(loopFiber, hasViewList);
 
     if (re && re.current) {
       result.push(re.current);

@@ -2832,10 +2832,11 @@
     		    var hasViewList = new WeakSet();
     		    var result = [];
     		    list.listToFoot(function (fiber) {
-    		        if (hasViewList.has(fiber))
+    		        var loopFiber = fiber.parent || fiber;
+    		        if (hasViewList.has(loopFiber))
     		            return;
-    		        hasViewList.add(fiber);
-    		        var re = loopChangedTree(fiber, hasViewList);
+    		        hasViewList.add(loopFiber);
+    		        var re = loopChangedTree(loopFiber, hasViewList);
     		        if (re && re.current) {
     		            result.push(re.current);
     		        }
@@ -3205,6 +3206,7 @@
     		            return;
     		        runtime.update.flushPending();
     		    };
+    		    var notifyChangedWithDebounce = debounce(function (list) { return runtime.notifyChanged(list); }, 100);
     		    var onChange = function (list) {
     		        if (!runtime.hasEnable)
     		            return;
@@ -3213,7 +3215,7 @@
     		            runtime._dir = __assign({}, directory);
     		            runtime.notifyDir();
     		        }
-    		        runtime.notifyChanged(list);
+    		        notifyChangedWithDebounce(list);
     		    };
     		    var onUnmount = function () {
     		        // if (!runtime.hasEnable) return;
