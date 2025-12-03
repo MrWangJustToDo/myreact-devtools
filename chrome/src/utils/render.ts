@@ -185,7 +185,7 @@ export const onRender = (data: DevToolMessageType) => {
     if (chrome?.devtools?.inspectedWindow?.eval) {
       chrome?.devtools?.inspectedWindow?.eval(`window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectSource?.("${getAgentId()}")`);
     } else {
-      addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
+      addToast({ severity: "danger", description: "inspect only support extension usage", title: "error", color: "danger" });
     }
   }
 

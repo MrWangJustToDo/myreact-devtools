@@ -72,7 +72,7 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
           if (chrome?.devtools?.inspectedWindow?.eval) {
             chrome?.devtools?.inspectedWindow?.eval(`window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectDom?.("${getAgentId()}")`);
           } else {
-            addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
+            addToast({ severity: "danger", description: "inspect only support extension usage", title: "error", color: "danger" });
           }
         }
       }
@@ -89,7 +89,7 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
           if (chrome?.devtools?.inspectedWindow?.eval) {
             chrome?.devtools?.inspectedWindow?.eval(`window.__MY_REACT_DEVTOOL_INTERNAL__?.inspectCom?.("${getAgentId()}")`);
           } else {
-            addToast({ severity: "danger", description: "inspect not support", title: "error", color: "danger" });
+            addToast({ severity: "danger", description: "inspect only support extension usage", title: "error", color: "danger" });
           }
         }
       }
