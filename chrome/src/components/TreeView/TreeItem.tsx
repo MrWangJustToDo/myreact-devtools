@@ -175,142 +175,149 @@ RenderHighlightType.displayName = "RenderHighlightType";
 
 // RenderIndent.displayName = "RenderIndent";
 
-export const TreeItem = ({
-  node,
-  className,
-  withKey = true,
-  withTag = true,
-  withHMR = true,
-  withSelect = true,
-  withTrigger = true,
-  withCollapse = true,
-  withRunningCount = false,
-  withHighlightType = true,
-}: {
-  width?: number;
-  node: PlainNode;
-  className?: string;
-  withCollapse?: boolean;
-  withTrigger?: boolean;
-  withSelect?: boolean;
-  withHMR?: boolean;
-  withTag?: boolean;
-  withKey?: boolean;
-  withRunningCount?: boolean;
-  withHighlightType?: boolean;
-}) => {
-  const current = node;
+export const TreeItem = memo(
+  ({
+    node,
+    className,
+    withKey = true,
+    withTag = true,
+    withHMR = true,
+    withSelect = true,
+    withTrigger = true,
+    withCollapse = true,
+    withRunningCount = false,
+    withHighlightType = true,
+  }: {
+    width?: number;
+    node: PlainNode;
+    className?: string;
+    withCollapse?: boolean;
+    withTrigger?: boolean;
+    withSelect?: boolean;
+    withHMR?: boolean;
+    withTag?: boolean;
+    withKey?: boolean;
+    withRunningCount?: boolean;
+    withHighlightType?: boolean;
+  }) => {
+    const current = node;
 
-  const { error, warn } = useHighlightNode.useShallowSelector(
-    (s) => ({ error: s.error?.[node.i], warn: s.warn?.[node.i] }),
-    (p, c) => p.error === c.error && p.warn === c.warn
-  );
+    const { error, warn } = useHighlightNode.useShallowSelector(
+      (s) => ({ error: s.error?.[node.i], warn: s.warn?.[node.i] }),
+      (p, c) => p.error === c.error && p.warn === c.warn
+    );
 
-  const finalName = useNodeName(useCallback((s) => s.map[current.n], [current.n]));
+    const finalName = useNodeName(useCallback((s) => s.map[current.n], [current.n]));
 
-  const { select, closeList, selectList } = useSelectNode.useShallowStableSelector((s) => ({
-    select: s.select,
-    closeList: s.closeList,
-    selectList: s.selectList,
-  }));
+    const { select, hasClose, hasSelect } = useSelectNode.useShallowSelector(
+      (s) => ({
+        select: s.select,
+        hasClose: s.closeList?.[node?.i],
+        hasSelect: s.selectList?.[node?.i],
+      }),
+      (p, c) => p.select === c.select && p.hasClose === c.hasClose && p.hasSelect === c.hasSelect
+    );
 
-  const currentIsSelect = withSelect && node.i === select;
+    const currentIsSelect = withSelect && node.i === select;
 
-  const currentIsClose = withCollapse && closeList?.[node.i];
+    const currentIsClose = withCollapse && hasClose;
 
-  const hasSelect = useMemo(() => withSelect && select && !currentIsSelect && selectList?.[node.i], [withSelect, select, currentIsSelect, selectList, node.i]);
+    const currentHasSelect = useMemo(() => withSelect && select && !currentIsSelect && hasSelect, [withSelect, select, currentIsSelect, hasSelect]);
 
-  const hasChild = Array.isArray(current?.c);
+    const hasChild = Array.isArray(current?.c);
 
-  const StateIcon = hasChild ? (
-    <Play fill="currentColor" className={`origin-center ${!currentIsClose ? "rotate-90" : ""}`} width="0.7em" height="0.7em" />
-  ) : null;
+    const StateIcon = hasChild ? (
+      <Play fill="currentColor" className={`origin-center ${!currentIsClose ? "rotate-90" : ""}`} width="0.7em" height="0.7em" />
+    ) : null;
 
-  const deep = current._d || 0;
+    const deep = current._d || 0;
 
-  return (
-    <div
-      id={"node-" + current.i.toString()}
-      data-depth={deep}
-      onClick={() => {
-        if (withSelect) {
-          setSelect(node.i);
+    return (
+      <div
+        id={"node-" + current.i.toString()}
+        data-depth={deep}
+        onClick={() => {
+          if (withSelect) {
+            setSelect(node.i);
+          }
+        }}
+        onMouseEnter={() => {
+          if (withSelect) {
+            setHover(node.i);
+          }
+        }}
+        onMouseLeave={() => {
+          if (withSelect) {
+            setHover("");
+          }
+        }}
+        className={
+          "node-item w-full h-full cursor-pointer transition-transform-background rounded-sm select-none " +
+          (className || "") +
+          `${withSelect ? (currentHasSelect ? " node-item-select-hover" : " node-item-hover") : ""}` +
+          `${currentHasSelect ? " node-item-select" : ""}` +
+          `${currentIsSelect ? " node-item-selected" : ""}`
         }
-      }}
-      onMouseEnter={() => {
-        if (withSelect) {
-          setHover(node.i);
-        }
-      }}
-      onMouseLeave={() => {
-        if (withSelect) {
-          setHover("");
-        }
-      }}
-      className={
-        "node-item w-full h-full cursor-pointer transition-transform-background rounded-sm select-none " +
-        (className || "") +
-        `${withSelect ? (hasSelect ? " node-item-select-hover" : " node-item-hover") : ""}` +
-        `${hasSelect ? " node-item-select" : ""}` +
-        `${currentIsSelect ? " node-item-selected" : ""}`
-      }
-    >
-      <div className="flex items-center h-full w-full px-[2px] relative">
-        {currentIsSelect && <div className="absolute top-0 left-[1px] h-full border-l-2 border-blue-400 rounded-sm pointer-events-none" />}
-        {/* {withIndent && <RenderIndent node={current} />} */}
-        <div
-          className="flex-grow"
-          style={{
-            transform: `translateX(calc(${deep} * var(--indentation-size))`,
-            // width: `calc(100%-calc(${deep}*var(--indentation-size)))`,
-            // marginLeft: `calc(${deep} * var(--indentation-size)`,
-          }}
-        >
-          <div data-content className="flex items-center w-fit">
-            {withCollapse && (
-              <span
-                className={"text-gray-400 w-[1em]" + (hasChild ? " hover:text-gray-700" : "")}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setClose(node.i);
-                }}
-              >
-                {hasChild && (
-                  <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow color="foreground">
-                    {StateIcon}
-                  </Tooltip>
-                )}
-              </span>
-            )}
-            <p className="node-name line-clamp-1">{finalName}</p>
-            {withTag && <RenderTag node={current} />}
-            {withTrigger && <RenderTrigger node={current} />}
-            {withHMR && <RenderHMR node={current} />}
-            {withRunningCount && <RenderRunningCount node={current} />}
-            {withHighlightType && <RenderHighlightType node={current} />}
-            {warn && (
-              <>
-                <Spacer x={1} />
-                <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
-                  {warn}
-                </Chip>
-              </>
-            )}
-            {error && (
-              <>
-                <Spacer x={1} />
-                <Chip size="sm" radius="none" color="danger" className="rounded-md capitalize text-[8px] h-[14px]">
-                  {error}
-                </Chip>
-              </>
-            )}
-            {withKey && current.k && <RenderKey node={current} />}
+      >
+        <div className="flex items-center h-full w-full px-[2px] relative">
+          {currentIsSelect && <div className="absolute top-0 left-[1px] h-full border-l-2 border-blue-400 rounded-sm pointer-events-none" />}
+          {/* {withIndent && <RenderIndent node={current} />} */}
+          <div
+            className="flex-grow"
+            style={{
+              transform: `translateX(calc(${deep} * var(--indentation-size))`,
+              // width: `calc(100%-calc(${deep}*var(--indentation-size)))`,
+              // marginLeft: `calc(${deep} * var(--indentation-size)`,
+            }}
+          >
+            <div data-content className="flex items-center w-fit">
+              {withCollapse && (
+                <span
+                  className={"text-gray-400 w-[1em]" + (hasChild ? " hover:text-gray-700" : "")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setClose(node.i);
+                  }}
+                >
+                  {hasChild && (
+                    <Tooltip content={!currentIsClose ? "Toggle to close" : "Toggle to open"} delay={800} showArrow color="foreground">
+                      {StateIcon}
+                    </Tooltip>
+                  )}
+                </span>
+              )}
+              <p className="node-name line-clamp-1">{finalName}</p>
+              {withTag && <RenderTag node={current} />}
+              {withTrigger && <RenderTrigger node={current} />}
+              {withHMR && <RenderHMR node={current} />}
+              {withRunningCount && <RenderRunningCount node={current} />}
+              {withHighlightType && <RenderHighlightType node={current} />}
+              {warn && (
+                <>
+                  <Spacer x={1} />
+                  <Chip size="sm" radius="none" color="warning" className="rounded-md capitalize text-[8px] h-[14px]">
+                    {warn}
+                  </Chip>
+                </>
+              )}
+              {error && (
+                <>
+                  <Spacer x={1} />
+                  <Chip size="sm" radius="none" color="danger" className="rounded-md capitalize text-[8px] h-[14px]">
+                    {error}
+                  </Chip>
+                </>
+              )}
+              {withKey && current.k && <RenderKey node={current} />}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
+
+TreeItem.displayName = "TreeItem";
 
 export const TreeItemWithId = ({
   i,

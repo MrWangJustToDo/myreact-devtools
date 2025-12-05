@@ -2,34 +2,41 @@ import { createState } from "reactivity-store";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
-export const useDetailNode = createState(() => ({ nodes: [], loading: false, error: null }) as { nodes: PlainNode[]; loading: boolean; error: Error | null }, {
-  withActions: (s) => ({
-    addNode: (node: PlainNode) => {
-      const list = s.nodes.filter((i) => i.i !== node.i);
+export const useDetailNode = createState(
+  () =>
+    ({ nodes: [], loading: false, error: null, prevNode: null }) as { nodes: PlainNode[]; loading: boolean; error: Error | null; prevNode: PlainNode | null },
+  {
+    withActions: (s) => ({
+      addNode: (node: PlainNode) => {
+        const prevNode = s.nodes.find((i) => i.i === node.i);
 
-      list.push(node);
+        s.prevNode = prevNode || null;
 
-      s.nodes = list;
-    },
+        const list = s.nodes.filter((i) => i.i !== node.i);
 
-    delNode: (id: string) => {
-      s.nodes = s.nodes.filter((i) => i.i !== id);
-    },
+        list.push(node);
 
-    setLoading: (loading: boolean) => {
-      s.loading = loading;
-    },
+        s.nodes = list;
+      },
 
-    setError: (error: Error | null) => {
-      s.error = error;
-    },
-    
-    clear: () => {
-      s.nodes = [];
-      s.loading = false;
-      s.error = null;
-    }
-  }),
-  withDeepSelector: false,
-});
+      delNode: (id: string) => {
+        s.nodes = s.nodes.filter((i) => i.i !== id);
+      },
 
+      setLoading: (loading: boolean) => {
+        s.loading = loading;
+      },
+
+      setError: (error: Error | null) => {
+        s.error = error;
+      },
+
+      clear: () => {
+        s.nodes = [];
+        s.loading = false;
+        s.error = null;
+      },
+    }),
+    withDeepSelector: false,
+  }
+);

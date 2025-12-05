@@ -4,8 +4,6 @@ import { useState, useRef, useMemo, useEffect, Fragment } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useContextMenu } from "@/hooks/useContextMenu";
-import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
-import { useHookValue } from "@/hooks/useHookValue";
 import { usePrevious } from "@/hooks/usePrevious";
 import { getText } from "@/utils/treeValue";
 
@@ -186,22 +184,6 @@ export const NodeValue = ({
     setId(item.i);
 
     setType(item.t);
-
-    const enable = useDetailNodeExt.getReadonlyState().enable;
-
-    const { setIndex } = useHookValue.getActions();
-
-    if (type === "hook" && typeof hookIndex === "number" && enable) {
-      const state = useHookValue.getReadonlyState().state[hookIndex];
-
-      if (state) {
-        setIndex(hookIndex);
-      } else {
-        setIndex(null);
-      }
-    } else {
-      setIndex(null);
-    }
   };
 
   if (!item) return null;

@@ -1,11 +1,10 @@
 import { Chip, Divider, Spacer } from "@heroui/react";
-import { DiffIcon, Play } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Play } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
-import { useHookValue } from "@/hooks/useHookValue";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
@@ -17,21 +16,6 @@ import { TriggerView } from "./ExtendView";
 import type { HOOKTree } from "@my-react-devtool/core";
 
 const HookRender = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boolean }) => {
-  const beforeValue = useDetailNodeExt.useShallowSelector((s) => s.hookUpdaterStatus?.[item.i || ""]);
-
-  const afterValue = item.v;
-
-  const index = item.i;
-
-  useEffect(() => {
-    if (index && beforeValue && afterValue && beforeValue.i !== afterValue.i) {
-      const setValue = useHookValue.getActions().setHookValue;
-
-      setValue(index, beforeValue, afterValue);
-    }
-  }, [beforeValue, afterValue, index]);
-
-  const hasDiff = beforeValue && afterValue && beforeValue.i !== afterValue.i;
 
   return (
     <NodeValue
@@ -49,7 +33,7 @@ const HookRender = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boolean
           >
             {item.i}
           </Chip>
-          {hasDiff && <DiffIcon className="text-red-400 mx-0.5" size="1em" />}
+          {/* {hasDiff && <DiffIcon className="text-red-400 mx-0.5" size="1em" />} */}
         </>
       }
     />

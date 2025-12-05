@@ -97,6 +97,8 @@ export const onRender = (data: DevToolMessageType) => {
       useHighlightNode.getActions().deleteHighlight?.(node.toString());
 
       useUnmountNode.getActions().addUnmountNode(node.toString());
+
+      useDetailNode.getActions().delNode?.(node.toString());
     });
   }
 

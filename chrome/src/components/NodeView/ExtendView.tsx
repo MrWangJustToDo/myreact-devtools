@@ -22,7 +22,7 @@ const Trigger = ({ select, mode = "vertical" }: { select: string | number; mode?
   const triggerCount = useTriggerNode.useShallowSelector((s) => s.state?.[select]);
 
   const render = useCallbackRef((index: number, item: NodeValueType) => {
-    const { _keysToLinkHook, _nodesToLinkHook, ...itemToDisplay } = item;
+    const { _keysToLinkHook, ...itemToDisplay } = item;
 
     return (
       // SEE DevToolCore/instance.ts notifyTriggerStatus:574
