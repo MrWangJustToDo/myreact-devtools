@@ -12,12 +12,16 @@ import { RenderView } from "./RenderView";
 import { SourceView } from "./SourceView";
 import { StateView } from "./StateView";
 
-export const NodeView = () => {
-  const { loading } = useDetailNode.useShallowStableSelector((s) => ({ nodeList: s.nodes, loading: s.loading }));
+import type { PlainNode } from "@my-react-devtool/core";
 
+export const NodeView = () => {
   const select = useSelectNode.useShallowStableSelector((s) => s.select);
 
+  const { loading, node: _node } = useDetailNode.useShallowSelector((s) => ({ node: s.nodes?.find((i) => i.i === select), loading: s.loading }));
+
   const isLoading = loading;
+
+  const node = _node as PlainNode;
 
   if (isLoading) {
     return (
@@ -30,13 +34,13 @@ export const NodeView = () => {
   return (
     <div className="node-view h-full">
       <div className="group h-full overflow-auto">
-        <NameView key={select} />
-        <PropsView key={select} />
-        <StateView key={select} />
-        <HookView key={select} />
+        <NameView key={select} node={node} />
+        <PropsView key={select} node={node} />
+        <StateView key={select} node={node} />
+        <HookView key={select} node={node} />
         <ExtendView key={select} />
-        <RenderView key={select} />
-        <SourceView key={select} />
+        <RenderView key={select} node={node} />
+        <SourceView key={select} node={node} />
         <ContextMenu key={select} />
       </div>
     </div>

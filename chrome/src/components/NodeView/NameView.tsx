@@ -1,22 +1,33 @@
-import { Button, ButtonGroup, Divider, Tooltip } from "@heroui/react";
+import { Button, ButtonGroup, Divider, Modal, ModalBody, ModalContent, ModalHeader, Tooltip, useDisclosure } from "@heroui/react";
 import { NODE_TYPE, type PlainNode } from "@my-react-devtool/core";
-import { Bug, Eye, Locate, Package, Play } from "lucide-react";
+import { Bug, DiffIcon, Eye, GitCompareArrowsIcon, Locate, Package, Play } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 
 import { TreeItem } from "../TreeView/TreeItem";
 
+import { CompareView } from "./CompareView";
+
 const { storeFiber, triggerFiber, scrollIntoView, inspectComAction, inspectDomAction } = useSelectNode.getActions();
 
-export const NameView = () => {
-  const select = useSelectNode((s) => s.select);
+export const NameView = ({ node }: { node?: PlainNode }) => {
+  const currentSelectDetail = node;
 
-  const nodeList = useDetailNode((s) => s.nodes);
+  const [count, setCount] = useState(0);
 
-  const currentSelectDetail = nodeList.find((i) => i.i === select) as PlainNode;
+  const nextNode = node;
 
-  const isComponent = currentSelectDetail?.t & NODE_TYPE.__class__ || currentSelectDetail?.t & NODE_TYPE.__function__;
+  const prevNode = useDetailNode.useShallowStableSelector((s) => s.prevNode) as PlainNode;
+
+  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+  const isComponent = currentSelectDetail && (currentSelectDetail?.t & NODE_TYPE.__class__ || currentSelectDetail?.t & NODE_TYPE.__function__);
+
+  useEffect(() => {
+    setCount((c) => c + 1);
+  }, [prevNode]);
 
   if (currentSelectDetail) {
     return (
@@ -44,16 +55,40 @@ export const NameView = () => {
                 <Eye className="w-[1.1em]" />
               </Button>
             </Tooltip>
-            {isComponent > 0 && (
+            {Boolean(isComponent) && (
               <Tooltip content="inspect code" showArrow color="foreground" placement="bottom-end">
                 <Button isIconOnly size="sm" variant="flat" onPress={inspectComAction}>
                   <Bug className="w-[1.1em]" />
                 </Button>
               </Tooltip>
             )}
+            {prevNode && nextNode && (
+              <Tooltip content="compare with previous node" showArrow color="foreground" placement="bottom-end">
+                <Button isIconOnly size="sm" variant="flat" onPress={onOpen}>
+                  <GitCompareArrowsIcon className="w-[1.1em] rotate-180" />
+                </Button>
+              </Tooltip>
+            )}
           </ButtonGroup>
         </div>
         <Divider />
+        <Modal isOpen={isOpen} scrollBehavior="inside" size="4xl" onClose={onClose} onOpenChange={onOpenChange}>
+          <ModalContent>
+            <ModalHeader>
+              <div className="flex items-center">
+                <DiffIcon size="1.1em" className="text-red-400 mx-2" />
+                <h2>Compare Node (+{count})</h2>
+              </div>
+            </ModalHeader>
+            <ModalBody className="font-sm">
+              <div className="flex">
+                <CompareView node={prevNode} />
+                <Divider className="h-auto" orientation="vertical" />
+                <CompareView node={nextNode} />
+              </div>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       </div>
     );
   } else {

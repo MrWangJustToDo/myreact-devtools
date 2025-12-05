@@ -4,7 +4,6 @@ import { useMemo } from "react";
 
 import { useAppTree } from "@/hooks/useAppTree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
-import { useDetailNode } from "@/hooks/useDetailNode";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { checkHasInclude } from "@/utils/node";
@@ -15,12 +14,8 @@ import type { PlainNode } from "@my-react-devtool/core";
 
 const { scrollIntoView } = useSelectNode.getActions();
 
-export const RenderView = () => {
-  const select = useSelectNode((s) => s.select);
-
-  const nodeList = useDetailNode((s) => s.nodes);
-
-  const currentSelectDetail = nodeList.find((i) => i.i === select);
+export const RenderView = ({ node }: { node?: PlainNode }) => {
+  const currentSelectDetail = node;
 
   const t = currentSelectDetail?.["_t"];
 

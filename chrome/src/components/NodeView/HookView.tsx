@@ -3,9 +3,7 @@ import { Play } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
-import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
-import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
 import { AutoHeightLayout } from "../AutoHeightLayout";
@@ -13,10 +11,9 @@ import { ValueView } from "../ValueView";
 
 import { TriggerView } from "./ExtendView";
 
-import type { HOOKTree } from "@my-react-devtool/core";
+import type { HOOKTree, PlainNode } from "@my-react-devtool/core";
 
 const HookRender = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boolean }) => {
-
   return (
     <ValueView
       name={item.n}
@@ -87,16 +84,12 @@ const HookViewTree = ({ item, enableEdit, hoverKeys }: { item: HOOKTree; enableE
   }
 };
 
-const InternalHookView = ({ mode = "vertical" }: { mode?: "horizontal" | "vertical" }) => {
-  const select = useSelectNode((s) => s.select);
-
-  const nodeList = useDetailNode((s) => s.nodes);
-
+export const InternalHookView = ({ mode = "vertical", node, editable = true }: { mode?: "horizontal" | "vertical"; node?: PlainNode; editable?: boolean }) => {
   const enableEdit = useConfig((s) => s.state.enableEdit);
 
   const hoverKeys = useTriggerHover((s) => s.keys) as Array<string | number>;
 
-  const currentSelectDetail = nodeList.find((i) => i.i === select);
+  const currentSelectDetail = node;
 
   const id = currentSelectDetail?.i;
 
@@ -115,7 +108,7 @@ const InternalHookView = ({ mode = "vertical" }: { mode?: "horizontal" | "vertic
           <div className={`w-full font-code font-sm`}>
             {hookList.map((item, index) => (
               <div className="tree-wrapper" key={id + "-" + index}>
-                <HookViewTree item={item as HOOKTree} enableEdit={enableEdit} hoverKeys={hoverKeys} />
+                <HookViewTree item={item as HOOKTree} enableEdit={editable && enableEdit} hoverKeys={hoverKeys} />
               </div>
             ))}
           </div>
@@ -128,7 +121,9 @@ const InternalHookView = ({ mode = "vertical" }: { mode?: "horizontal" | "vertic
   }
 };
 
-export const HookView = () => {
+export const HookView = ({ node }: { node?: PlainNode }) => {
+  // const
+
   const layout = useTriggerLayout((s) => s.layout);
 
   const enable = useDetailNodeExt((s) => s.enable);
@@ -136,11 +131,11 @@ export const HookView = () => {
   if (enable && layout === "horizontal") {
     return (
       <>
-        <AutoHeightLayout left={<InternalHookView mode="horizontal" />} right={<TriggerView mode="horizontal" />} />
+        <AutoHeightLayout left={<InternalHookView mode="horizontal" node={node} />} right={<TriggerView mode="horizontal" />} />
         <Divider />
       </>
     );
   } else {
-    return <InternalHookView />;
+    return <InternalHookView node={node} />;
   }
 };

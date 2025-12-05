@@ -1,14 +1,9 @@
 import { Spacer } from "@heroui/react";
 
-import { useDetailNode } from "@/hooks/useDetailNode";
-import { useSelectNode } from "@/hooks/useSelectNode";
+import type { PlainNode } from "@my-react-devtool/core";
 
-export const SourceView = () => {
-  const select = useSelectNode((s) => s.select);
-
-  const nodeList = useDetailNode((s) => s.nodes);
-
-  const currentSelectDetail = nodeList.find((i) => i.i === select);
+export const SourceView = ({ node }: { node?: PlainNode }) => {
+  const currentSelectDetail = node;
 
   const renderSource = currentSelectDetail?.["_s"];
 
@@ -18,11 +13,7 @@ export const SourceView = () => {
         <div>source</div>
         <Spacer y={1} />
         <div className="w-full font-code font-sm">
-          <div
-            className={`ml-2 px-[2px] text-gray-600`}
-          >
-            {renderSource.value}
-          </div>
+          <div className={`ml-2 px-[2px] text-gray-600`}>{renderSource.value}</div>
         </div>
       </div>
     );

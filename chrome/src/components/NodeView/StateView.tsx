@@ -2,19 +2,15 @@ import { Divider, Spacer } from "@heroui/react";
 
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useConfig } from "@/hooks/useConfig";
-import { useDetailNode } from "@/hooks/useDetailNode";
-import { useSelectNode } from "@/hooks/useSelectNode";
 
 import { ValueView } from "../ValueView";
 
-export const StateView = () => {
-  const select = useSelectNode((s) => s.select);
+import type { PlainNode } from "@my-react-devtool/core";
 
-  const nodeList = useDetailNode((s) => s.nodes);
-
+export const StateView = ({ node, editable = true }: { node?: PlainNode; editable?: boolean }) => {
   const enableEdit = useConfig((s) => s.state.enableEdit);
 
-  const currentSelectDetail = nodeList.find((i) => i.i === select);
+  const currentSelectDetail = node;
 
   const hasState = currentSelectDetail?.s?.t !== "Null" && currentSelectDetail?.s?.t !== "Undefined";
 
@@ -28,7 +24,7 @@ export const StateView = () => {
     const key = stateKeys[index];
     return (
       <div className={`tree-wrapper`} key={id + "-" + index}>
-        <ValueView name={key} type="state" editable={enableEdit} item={currentSelectDetail?.s?.v?.[key]} />
+        <ValueView name={key} type="state" editable={editable && enableEdit} item={currentSelectDetail?.s?.v?.[key]} />
       </div>
     );
   });

@@ -13,7 +13,7 @@ export const ContextMenu = memo(() => {
     <>
       <div
         data-context-cover
-        className="fixed w-screen h-screen top-0 left-0"
+        className="fixed w-screen h-screen top-0 left-0 z-[99999]"
         onContextMenu={(e) => {
           e.preventDefault();
           contextMenuClose();
@@ -21,7 +21,7 @@ export const ContextMenu = memo(() => {
         style={{ display: state ? "block" : "none" }}
         onClick={contextMenuClose}
       />
-      <div data-context-content className={`fixed z-10 font-sans`} style={{ top: position.y + 4, left: position.x + 4 }}>
+      <div data-context-content className={`fixed z-[999999] font-sans`} style={{ top: position.y + 4, left: position.x + 4 }}>
         <AnimatePresence initial={false} mode="wait">
           {state && (
             <motion.div
