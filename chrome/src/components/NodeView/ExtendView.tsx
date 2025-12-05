@@ -10,7 +10,7 @@ import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerNode } from "@/hooks/useTriggerNode";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
-import { NodeValue } from "../NodeValue";
+import { ValueView } from "../ValueView";
 
 const { setKeys: setHoverKeys, clear } = useTriggerHover.getActions();
 
@@ -27,7 +27,7 @@ const Trigger = ({ select, mode = "vertical" }: { select: string | number; mode?
     return (
       // SEE DevToolCore/instance.ts notifyTriggerStatus:574
       <div className="tree-wrapper cursor-pointer" key={index} onMouseEnter={() => setHoverKeys(_keysToLinkHook || [])} onMouseLeave={() => setHoverKeys([])}>
-        <NodeValue name={index.toString()} item={itemToDisplay} />
+        <ValueView name={index.toString()} item={itemToDisplay} />
       </div>
     );
   });
@@ -70,7 +70,7 @@ const HMR = ({ select: _select }: { select: string | number }) => {
         </div>
         <Spacer y={1} />
         <div className="w-full font-code font-sm">
-          <NodeValue name="signature" item={hmrInternal} />
+          <ValueView name="signature" item={hmrInternal} />
         </div>
       </div>
       <Divider />
@@ -86,7 +86,7 @@ const Warn = ({ select }: { select: string | number }) => {
   const render = useCallbackRef((index: number, item: NodeValueType) => {
     return (
       <div className={`tree-wrapper`} key={index}>
-        <NodeValue name={index.toString()} item={item} />
+        <ValueView name={index.toString()} item={item} />
       </div>
     );
   });
@@ -117,7 +117,7 @@ const Error = ({ select }: { select: string | number }) => {
   const render = useCallbackRef((index: number, item: NodeValueType) => {
     return (
       <div className={`tree-wrapper`} key={index}>
-        <NodeValue name={index.toString()} item={item} />
+        <ValueView name={index.toString()} item={item} />
       </div>
     );
   });

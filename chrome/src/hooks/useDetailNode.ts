@@ -31,10 +31,15 @@ export const useDetailNode = createState(
         s.error = error;
       },
 
+      clearPrev: () => {
+        s.prevNode = null;
+      },
+
       clear: () => {
         s.nodes = [];
         s.loading = false;
         s.error = null;
+        s.prevNode = null;
       },
     }),
     withDeepSelector: false,

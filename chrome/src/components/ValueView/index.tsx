@@ -7,15 +7,15 @@ import { useContextMenu } from "@/hooks/useContextMenu";
 import { usePrevious } from "@/hooks/usePrevious";
 import { getText } from "@/utils/treeValue";
 
-import { NodeValueChange } from "./NodeValueChange";
+import { ValueChange } from "./ValueChange";
 
 import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
 import type { ReactNode } from "react";
 
 const { open: contextOpen, setId, setType, setSource, clear } = useContextMenu.getActions();
 
-// core component to view any typeof data
-export const NodeValue = ({
+// core component to view any typeof data with incremental loading
+export const ValueView = ({
   name,
   item,
   rootItem,
@@ -223,9 +223,9 @@ export const NodeValue = ({
             <span className="flex-shrink-0">:</span>
             {currentIsEditable ? (
               <span className="hook-value-placeholder relative line-clamp-1 break-all" title={textContent}>
-                <NodeValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
+                <ValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
                   {element}
-                </NodeValueChange>
+                </ValueChange>
               </span>
             ) : (
               <span
@@ -278,7 +278,7 @@ export const NodeValue = ({
                 Array.isArray(data) ? (
                   <>
                     {data.map((i: HOOKTree["v"], index: number) => (
-                      <NodeValue
+                      <ValueView
                         key={index}
                         name={index.toString()}
                         item={i}
@@ -297,7 +297,7 @@ export const NodeValue = ({
                       .sort()
                       .reverse()
                       .map((key) => (
-                        <NodeValue
+                        <ValueView
                           key={key}
                           name={key}
                           item={data[key]}

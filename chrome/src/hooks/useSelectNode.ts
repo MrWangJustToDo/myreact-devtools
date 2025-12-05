@@ -4,6 +4,7 @@ import { createState } from "reactivity-store";
 import { flattenNode } from "@/utils/node";
 
 import { useAppTree } from "./useAppTree";
+import { useDetailNode } from "./useDetailNode";
 import { useRunningCount } from "./useRunningCount";
 
 export const useSelectNode = createState(
@@ -55,6 +56,8 @@ export const useSelectNode = createState(
           }
 
           useRunningCount.getActions().clear();
+
+          useDetailNode.getActions().clearPrev();
         },
         clearSelect: () => {
           internalClear();

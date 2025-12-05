@@ -3306,7 +3306,7 @@
     		        if (!runtime._selectNode)
     		            return;
     		        var selectTree = runtime._selectNode._t || [];
-    		        if (!selectTree.includes(id))
+    		        if (id !== runtime._selectId && !selectTree.includes(id))
     		            return;
     		        runtime.notifyRunning(id);
     		    };

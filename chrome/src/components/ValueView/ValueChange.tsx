@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 
 const { setUpdateState, clear } = useUpdateState.getActions();
 
-export const NodeValueChange = ({
+export const ValueChange = ({
   item,
   rootItem,
   parentItem,

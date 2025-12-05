@@ -5,7 +5,7 @@ import { useConfig } from "@/hooks/useConfig";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
 
-import { NodeValue } from "../NodeValue";
+import { ValueView } from "../ValueView";
 
 export const StateView = () => {
   const select = useSelectNode((s) => s.select);
@@ -28,7 +28,7 @@ export const StateView = () => {
     const key = stateKeys[index];
     return (
       <div className={`tree-wrapper`} key={id + "-" + index}>
-        <NodeValue name={key} type="state" editable={enableEdit} item={currentSelectDetail?.s?.v?.[key]} />
+        <ValueView name={key} type="state" editable={enableEdit} item={currentSelectDetail?.s?.v?.[key]} />
       </div>
     );
   });

@@ -9,7 +9,7 @@ import { useSelectNode } from "@/hooks/useSelectNode";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
 import { AutoHeightLayout } from "../AutoHeightLayout";
-import { NodeValue } from "../NodeValue";
+import { ValueView } from "../ValueView";
 
 import { TriggerView } from "./ExtendView";
 
@@ -18,7 +18,7 @@ import type { HOOKTree } from "@my-react-devtool/core";
 const HookRender = ({ item, enableEdit }: { item: HOOKTree; enableEdit?: boolean }) => {
 
   return (
-    <NodeValue
+    <ValueView
       name={item.n}
       item={item.v}
       editable={item.e && enableEdit}
