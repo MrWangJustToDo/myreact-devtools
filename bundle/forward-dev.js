@@ -1940,7 +1940,7 @@
     		        displayName: null,
     		        primitive: "LayoutEffect",
     		        stackError: new Error(),
-    		        value: create,
+    		        value: (hook === null || hook === void 0 ? void 0 : hook.value) || create,
     		        dispatcherHookName: "LayoutEffect",
     		    });
     		}
@@ -1953,7 +1953,7 @@
     		        displayName: null,
     		        primitive: "InsertionEffect",
     		        stackError: new Error(),
-    		        value: create,
+    		        value: (hook === null || hook === void 0 ? void 0 : hook.value) || create,
     		        dispatcherHookName: "InsertionEffect",
     		    });
     		}
@@ -1966,7 +1966,7 @@
     		        displayName: null,
     		        primitive: "Effect",
     		        stackError: new Error(),
-    		        value: create,
+    		        value: (hook === null || hook === void 0 ? void 0 : hook.value) || create,
     		        dispatcherHookName: "Effect",
     		    });
     		}
@@ -1987,7 +1987,7 @@
     		        displayName: null,
     		        primitive: "ImperativeHandle",
     		        stackError: new Error(),
-    		        value: instance,
+    		        value: hook && typeof (hook === null || hook === void 0 ? void 0 : hook.value) === "object" ? hook.value : instance,
     		        dispatcherHookName: "ImperativeHandle",
     		    });
     		}
