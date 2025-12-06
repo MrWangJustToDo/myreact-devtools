@@ -302,7 +302,7 @@ function useLayoutEffect(create: () => (() => void) | void, inputs: Array<any> |
     displayName: null,
     primitive: "LayoutEffect",
     stackError: new Error(),
-    value: create,
+    value: hook?.value || create,
     dispatcherHookName: "LayoutEffect",
   });
 }
@@ -318,7 +318,7 @@ function useInsertionEffect(create: () => any, inputs: Array<any> | void | null)
     displayName: null,
     primitive: "InsertionEffect",
     stackError: new Error(),
-    value: create,
+    value: hook?.value || create,
     dispatcherHookName: "InsertionEffect",
   });
 }
@@ -334,7 +334,7 @@ function useEffect(create: () => (() => void) | void, deps?: any[] | void | null
     displayName: null,
     primitive: "Effect",
     stackError: new Error(),
-    value: create,
+    value: hook?.value || create,
     dispatcherHookName: "Effect",
   });
 }
@@ -359,7 +359,7 @@ function useImperativeHandle<T>(ref: { current: T | null } | ((inst: T | null) =
     displayName: null,
     primitive: "ImperativeHandle",
     stackError: new Error(),
-    value: instance,
+    value: hook && typeof hook?.value === "object" ? hook.value : instance,
     dispatcherHookName: "ImperativeHandle",
   });
 }

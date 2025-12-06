@@ -4,12 +4,12 @@ import { ControlStateView } from "./StateView";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
-export const CompareView = ({ node }: { node?: PlainNode }) => {
+export const CompareView = ({ node, side }: { node?: PlainNode; side: "l" | "r" }) => {
   return (
     <div className="group h-full overflow-auto w-[50%]">
-      <ControlPropsView key={node?.i} node={node} />
-      <ControlStateView key={node?.i} node={node} />
-      <ControlHookView key={node?.i} node={node} />
+      <ControlPropsView key={node?.i} node={node} side={side} />
+      <ControlStateView key={node?.i} node={node} side={side} />
+      <ControlHookView key={node?.i} node={node} side={side} />
     </div>
   );
 };

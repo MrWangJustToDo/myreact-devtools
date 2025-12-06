@@ -1,11 +1,11 @@
 import { Button, ButtonGroup, Divider, Modal, ModalBody, ModalContent, ModalHeader, Tooltip, useDisclosure } from "@heroui/react";
 import { NODE_TYPE, type PlainNode } from "@my-react-devtool/core";
-import { Bug, DiffIcon, Eye, GitCompareArrowsIcon, Locate, Package, Play } from "lucide-react";
+import { Bug, Eye, GitCompareArrowsIcon, Locate, Package, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { useCompare } from "@/hooks/useCompare";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
-import { useValueExpand } from "@/hooks/useValueExpand";
 
 import { TreeItem } from "../TreeView/TreeItem";
 
@@ -31,7 +31,7 @@ export const NameView = ({ node }: { node?: PlainNode }) => {
   }, [prevNode]);
 
   useEffect(() => {
-    const clearExpandState = useValueExpand.getActions().reset;
+    const clearExpandState = useCompare.getActions().reset;
 
     return clearExpandState;
   }, []);
@@ -83,15 +83,14 @@ export const NameView = ({ node }: { node?: PlainNode }) => {
           <ModalContent>
             <ModalHeader>
               <div className="flex items-center">
-                <DiffIcon size="1.1em" className="text-red-400 mx-2" />
                 <h2>Compare Node (+{count})</h2>
               </div>
             </ModalHeader>
             <ModalBody className="font-sm">
               <div className="flex">
-                <CompareView node={prevNode} />
+                <CompareView node={prevNode} side="l" />
                 <Divider className="h-auto" orientation="vertical" />
-                <CompareView node={nextNode} />
+                <CompareView node={nextNode} side="r" />
               </div>
             </ModalBody>
           </ModalContent>

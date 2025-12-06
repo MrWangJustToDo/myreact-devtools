@@ -2,10 +2,10 @@ import { Chip, Divider, Spacer } from "@heroui/react";
 import { Play } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { useCompare } from "@/hooks/useCompare";
 import { useConfig } from "@/hooks/useConfig";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
-import { useValueExpand } from "@/hooks/useValueExpand";
 
 import { AutoHeightLayout } from "../AutoHeightLayout";
 import { SimpleValueView, ValueView } from "../ValueView";
@@ -14,7 +14,7 @@ import { TriggerView } from "./ExtendView";
 
 import type { HOOKTree, PlainNode } from "@my-react-devtool/core";
 
-const { toggleExpand } = useValueExpand.getActions();
+const { toggleExpand } = useCompare.getActions();
 
 const HookViewTree = ({ item, enableEdit, hoverKeys }: { item: HOOKTree; enableEdit?: boolean; hoverKeys?: Array<string | number> }) => {
   const [expand, setExpand] = useState(false);
@@ -80,12 +80,12 @@ const HookViewTree = ({ item, enableEdit, hoverKeys }: { item: HOOKTree; enableE
   }
 };
 
-const ControlHookViewTree = ({ prevName, item }: { prevName: string; item: HOOKTree }) => {
+const ControlHookViewTree = ({ prevName, item, side }: { prevName: string; item: HOOKTree; side: "l" | "r" }) => {
   const currentName = prevName + "_$_$_" + item.n;
 
   const currentIsHookNode = item.h;
 
-  const expand = useValueExpand.useShallowSelector((s) => s.state[currentName]);
+  const expand = useCompare.useShallowSelector((s) => s.expand[currentName]);
 
   const StateIcon = <Play fill="currentColor" className={`origin-center ${expand ? "rotate-90" : ""}`} width="0.6em" height="0.6em" />;
 
@@ -95,6 +95,7 @@ const ControlHookViewTree = ({ prevName, item }: { prevName: string; item: HOOKT
         name={item.n}
         prevName={currentName}
         item={item.v}
+        side={side}
         prefix={
           <>
             <Chip
@@ -128,7 +129,7 @@ const ControlHookViewTree = ({ prevName, item }: { prevName: string; item: HOOKT
         </div>
         <div className={`${expand ? "block" : "hidden"} ml-4 my-0.5`}>
           {item.c?.map((i, index) => (
-            <ControlHookViewTree key={i.n + "-" + index} item={i} prevName={currentName} />
+            <ControlHookViewTree key={i.n + "-" + index} side={side} item={i} prevName={currentName + "_$_$_" + index} />
           ))}
         </div>
       </div>
@@ -190,7 +191,7 @@ export const HookView = ({ node }: { node?: PlainNode }) => {
   }
 };
 
-export const ControlHookView = ({ node }: { node?: PlainNode }) => {
+export const ControlHookView = ({ node, side }: { node?: PlainNode; side: "l" | "r" }) => {
   const currentSelectDetail = node;
 
   const id = currentSelectDetail?.i;
@@ -209,7 +210,7 @@ export const ControlHookView = ({ node }: { node?: PlainNode }) => {
         <div className={`w-full font-code font-sm`}>
           {hookList.map((item, index) => (
             <div className="tree-wrapper" key={id + "-" + index}>
-              <ControlHookViewTree prevName="hook" item={item as HOOKTree} />
+              <ControlHookViewTree prevName={"hook" + "_$_$_" + index} item={item as HOOKTree} side={side} />
             </div>
           ))}
         </div>

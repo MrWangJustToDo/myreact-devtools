@@ -48,7 +48,7 @@ export const PropsView = ({ node, editable = true }: { node?: PlainNode; editabl
   }
 };
 
-export const ControlPropsView = ({ node }: { node?: PlainNode }) => {
+export const ControlPropsView = ({ node, side }: { node?: PlainNode; side: "l" | "r" }) => {
   const detailNode = node;
 
   const propsKeys = Object.keys(detailNode?.p?.v || {});
@@ -64,7 +64,7 @@ export const ControlPropsView = ({ node }: { node?: PlainNode }) => {
 
     return (
       <div className={`tree-wrapper`} key={id + "-" + index}>
-        <SimpleValueView name={key} prevName="props" item={item} />
+        <SimpleValueView name={key} side={side} prevName="props" item={item} />
       </div>
     );
   });

@@ -1,11 +1,11 @@
 import { Spinner } from "@heroui/react";
-import { Ellipsis, MinusCircleIcon, Play, PlusCircleIcon } from "lucide-react";
+import { DiffIcon, Ellipsis, MinusCircleIcon, Play, PlusCircleIcon } from "lucide-react";
 import { useRef, useMemo, useEffect, Fragment } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
+import { useCompare } from "@/hooks/useCompare";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { usePrevious } from "@/hooks/usePrevious";
-import { useValueExpand } from "@/hooks/useValueExpand";
 import { getText } from "@/utils/treeValue";
 
 import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
@@ -13,24 +13,26 @@ import type { ReactNode } from "react";
 
 const { open: contextOpen, setId, setType, setSource, clear } = useContextMenu.getActions();
 
-const { toggleExpand } = useValueExpand.getActions();
+const { toggleExpand, setLId, setRId } = useCompare.getActions();
 
 export const SimpleValueView = ({
   prevName,
   name,
   item,
+  side,
   prefix,
   chunkId,
 }: {
   prevName: string;
   name: string;
+  side: "l" | "r";
   item?: NodeValueType;
   prefix?: ReactNode;
   chunkId?: number;
 }) => {
   const currentName = prevName + "_$_$_" + name;
 
-  const expand = useValueExpand.useShallowSelector((s) => s.state[currentName]);
+  const { expand, lId, rId } = useCompare.useShallowSelector((s) => ({ expand: s.expand[currentName], lId: s.lIds[currentName], rId: s.rIds[currentName] }));
 
   const hasOpenRef = useRef(false);
 
@@ -47,6 +49,8 @@ export const SimpleValueView = ({
   const t = chunkData?.t ?? item?.t;
 
   const _t = chunkData?._t ?? item?._t;
+
+  const id = chunkData?.i || item?.i;
 
   const text = useMemo(() => {
     const getTextElement = () => {
@@ -167,6 +171,14 @@ export const SimpleValueView = ({
     }
   }, [cData, expand]);
 
+  useEffect(() => {
+    if (side === "l") {
+      setLId(currentName, id || "");
+    } else {
+      setRId(currentName, id || "");
+    }
+  }, [id, side, currentName]);
+
   const onContextClick = (e: React.MouseEvent) => {
     // if the data not loaded, do not show context menu
     if (!data || !item) return;
@@ -180,11 +192,11 @@ export const SimpleValueView = ({
     setType(item.t);
   };
 
-  if (!item) return null;
+  const hasDiff = lId && rId && lId !== rId;
+
+  if (!item || !id) return null;
 
   const isChunk = item.l === false;
-
-  const id = chunkData?.i || item.i;
 
   const currentIsExpandable = item.e;
 
@@ -208,6 +220,7 @@ export const SimpleValueView = ({
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block shrink-0">{StateIcon}</span>
           {prefix}
+          {hasDiff && <DiffIcon size="1em" className="mr-0.5 shrink-0 text-red-400" />}
           <div className={`w-full relative flex pr-2 line-clamp-1 break-all`}>
             <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
               {name}
@@ -246,6 +259,7 @@ export const SimpleValueView = ({
               {StateIcon}
             </span>
             {prefix}
+            {hasDiff && <DiffIcon size="1em" className="mr-0.5 shrink-0 text-red-400" />}
             <div className="max-w-full flex line-clamp-1 break-all">
               <span
                 className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap"
@@ -266,7 +280,7 @@ export const SimpleValueView = ({
                 Array.isArray(data) ? (
                   <>
                     {data.map((i: HOOKTree["v"], index: number) => (
-                      <SimpleValueView key={index} prevName={currentName} name={index.toString()} item={i} chunkId={isChunk ? id : chunkId} />
+                      <SimpleValueView key={index} side={side} prevName={currentName} name={index.toString()} item={i} chunkId={isChunk ? id : chunkId} />
                     ))}
                   </>
                 ) : (
@@ -275,7 +289,7 @@ export const SimpleValueView = ({
                       .sort()
                       .reverse()
                       .map((key) => (
-                        <SimpleValueView key={key} prevName={currentName} name={key} item={data[key]} chunkId={isChunk ? id : chunkId} />
+                        <SimpleValueView key={key} side={side} prevName={currentName} name={key} item={data[key]} chunkId={isChunk ? id : chunkId} />
                       ))}
                   </>
                 )

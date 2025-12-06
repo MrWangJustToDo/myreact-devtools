@@ -47,7 +47,7 @@ export const StateView = ({ node, editable = true }: { node?: PlainNode; editabl
   }
 };
 
-export const ControlStateView = ({ node }: { node?: PlainNode }) => {
+export const ControlStateView = ({ node, side }: { node?: PlainNode; side: "l" | "r" }) => {
   const currentSelectDetail = node;
 
   const hasState = currentSelectDetail?.s?.t !== "Null" && currentSelectDetail?.s?.t !== "Undefined";
@@ -62,7 +62,7 @@ export const ControlStateView = ({ node }: { node?: PlainNode }) => {
     const key = stateKeys[index];
     return (
       <div className={`tree-wrapper`} key={id + "-" + index}>
-        <SimpleValueView name={key} prevName="state" item={currentSelectDetail?.s?.v?.[key]} />
+        <SimpleValueView name={key} side={side} prevName="state" item={currentSelectDetail?.s?.v?.[key]} />
       </div>
     );
   });
