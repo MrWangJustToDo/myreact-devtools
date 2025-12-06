@@ -3,7 +3,7 @@ import { Divider, Spacer } from "@heroui/react";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useConfig } from "@/hooks/useConfig";
 
-import { ValueView } from "../ValueView";
+import { SimpleValueView, ValueView } from "../ValueView";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
@@ -41,6 +41,41 @@ export const StateView = ({ node, editable = true }: { node?: PlainNode; editabl
         </div>
         <Divider />
       </>
+    );
+  } else {
+    return null;
+  }
+};
+
+export const ControlStateView = ({ node }: { node?: PlainNode }) => {
+  const currentSelectDetail = node;
+
+  const hasState = currentSelectDetail?.s?.t !== "Null" && currentSelectDetail?.s?.t !== "Undefined";
+
+  const stateKeys = Object.keys(hasState ? currentSelectDetail?.s?.v || {} : {});
+
+  const id = currentSelectDetail?.i;
+
+  const hasStates = stateKeys.length > 0;
+
+  const render = useCallbackRef((index: number) => {
+    const key = stateKeys[index];
+    return (
+      <div className={`tree-wrapper`} key={id + "-" + index}>
+        <SimpleValueView name={key} prevName="state" item={currentSelectDetail?.s?.v?.[key]} />
+      </div>
+    );
+  });
+
+  if (hasStates) {
+    return (
+      <div className="node-states p-2 pb-0">
+        <div className="flex items-center justify-between">
+          <span>states</span>
+        </div>
+        <Spacer y={1} />
+        <div className="w-full font-code font-sm">{stateKeys.map((key, index) => render(index))}</div>
+      </div>
     );
   } else {
     return null;

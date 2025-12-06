@@ -2,7 +2,7 @@ import { isNormalEquals } from "@my-react/react-shared";
 
 import { HMRStatus } from "../event";
 import { deleteLinkState, tryLinkStateToHookIndex } from "../hook";
-import { getPlainNodeIdByFiber, inspectList } from "../tree";
+import { getPlainNodeByFiber, getPlainNodeIdByFiber, inspectList } from "../tree";
 import { debounce, throttle } from "../utils";
 
 import type { DevToolCore } from "../instance";
@@ -174,15 +174,19 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
   };
 
   const onFiberRun = (fiber: MyReactFiberNode) => {
-    const id = getPlainNodeIdByFiber(fiber);
+    const node = getPlainNodeByFiber(fiber);
 
-    if (!id) return;
+    if (!node) return;
+
+    const id = node.i;
 
     if (!runtime._selectNode) return;
 
     const selectTree = (runtime._selectNode as PlainNode)._t || [];
 
     if (id !== runtime._selectId && !selectTree.includes(id)) return;
+
+    if (id === runtime._selectId) node._r++;
 
     runtime.notifyRunning(id);
   };

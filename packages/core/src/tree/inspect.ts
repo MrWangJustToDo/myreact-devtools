@@ -6,13 +6,8 @@ import { getHook } from "../hook";
 import { PlainNode } from "./instance";
 
 import type { DevToolCore } from "../instance";
-import type {
-  CustomRenderDispatch,
-  MyReactFiberContainer,
-  MyReactFiberNode,
-  MyReactFiberNodeDev,
-  MyReactFiberRoot,
-} from "@my-react/react-reconciler";
+import type { DevToolRenderDispatch } from "../setup";
+import type { CustomRenderDispatch, MyReactFiberContainer, MyReactFiberNode, MyReactFiberNodeDev, MyReactFiberRoot } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
 const treeMap = new Map<MyReactFiberNode, PlainNode>();
@@ -280,16 +275,28 @@ export const inspectFiber = (fiber: MyReactFiberNode) => {
     throw new Error("plainNode not found, look like a bug for @my-react/devtools");
   }
 
+  if (__DEV__ && plainNode._$f) {
+    console.warn("inspectFiber: inspect node repeated", fiber, plainNode);
+  }
+
   const exist = detailMap.get(fiber);
 
   if (exist) {
     assignFiber(exist, fiber);
+
+    exist._r = plainNode._r;
 
     return exist;
   } else {
     const created = new PlainNode(plainNode.i);
 
     assignFiber(created, fiber);
+
+    created._$f = true;
+
+    // sync running count, it is a marker to make use know whether the fiber has been re-rendered
+    // only work for development mode
+    created._r = plainNode._r;
 
     detailMap.set(fiber, created);
 
@@ -360,8 +367,8 @@ export const getElementNodesFromFiber = (fiber: MyReactFiberNode) => {
   return nodes;
 };
 
-export const getDispatchFromFiber = (fiber?: MyReactFiberNode) => {
-  if (!fiber) return;
+export const getDispatchFromFiber = (fiber?: MyReactFiberNode): DevToolRenderDispatch | null => {
+  if (!fiber) return null;
 
   const typedFiber = fiber as MyReactFiberRoot;
 
@@ -380,4 +387,4 @@ export const getDirectoryIdByFiber = (fiber: MyReactFiberNode) => {
   const name = getFiberName(fiber as MyReactFiberNodeDev);
 
   return directory[name];
-}
+};

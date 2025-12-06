@@ -8,9 +8,13 @@ export const useDetailNode = createState(
   {
     withActions: (s) => ({
       addNode: (node: PlainNode) => {
+        if (!node._$f) {
+          console.warn("Detail node must be full filled", node);
+        }
+
         const prevNode = s.nodes.find((i) => i.i === node.i);
 
-        s.prevNode = prevNode || null;
+        s.prevNode = prevNode && prevNode._r !== node._r ? prevNode : s.prevNode;
 
         const list = s.nodes.filter((i) => i.i !== node.i);
 

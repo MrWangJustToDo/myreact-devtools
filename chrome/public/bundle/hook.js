@@ -651,9 +651,10 @@
     		var id$1 = 0;
     		// PlainNode is a simplified version of FiberNode just for show the structure
     		var PlainNode = /** @class */ (function () {
-    		    // hooks: HOOKTree[];
+    		    // inspect node
     		    function PlainNode(_id) {
     		        this.i = _id || "".concat(id$1++);
+    		        this._r = 0;
     		    }
     		    return PlainNode;
     		}());
@@ -2844,11 +2845,16 @@
     		    var exist = detailMap.get(fiber);
     		    if (exist) {
     		        assignFiber(exist, fiber);
+    		        exist._r = plainNode._r;
     		        return exist;
     		    }
     		    else {
     		        var created = new PlainNode(plainNode.i);
     		        assignFiber(created, fiber);
+    		        created._$f = true;
+    		        // sync running count, it is a marker to make use know whether the fiber has been re-rendered
+    		        // only work for development mode
+    		        created._r = plainNode._r;
     		        detailMap.set(fiber, created);
     		        return created;
     		    }
@@ -2908,7 +2914,7 @@
     		};
     		var getDispatchFromFiber = function (fiber) {
     		    if (!fiber)
-    		        return;
+    		        return null;
     		    var typedFiber = fiber;
     		    if (typedFiber.renderDispatch) {
     		        return typedFiber.renderDispatch;
@@ -3300,14 +3306,17 @@
     		        runtime.notifyError();
     		    };
     		    var onFiberRun = function (fiber) {
-    		        var id = getPlainNodeIdByFiber(fiber);
-    		        if (!id)
+    		        var node = getPlainNodeByFiber(fiber);
+    		        if (!node)
     		            return;
+    		        var id = node.i;
     		        if (!runtime._selectNode)
     		            return;
     		        var selectTree = runtime._selectNode._t || [];
     		        if (id !== runtime._selectId && !selectTree.includes(id))
     		            return;
+    		        if (id === runtime._selectId)
+    		            node._r++;
     		        runtime.notifyRunning(id);
     		    };
     		    var onPerformanceWarn = function (fiber) {

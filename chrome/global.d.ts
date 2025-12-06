@@ -5,7 +5,6 @@ import type { CustomRenderDispatch, CustomRenderPlatform, initHMR } from "@my-re
 import { useAppTree } from "@/hooks/useAppTree";
 
 declare global {
-  const __DEV__: boolean;
 
   interface Window {
     __MY_REACT_DEVTOOL_RUNTIME__: (dispatch: CustomRenderDispatch, platform: CustomRenderPlatform, initHMR: typeof initHMR) => void;

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
+import { useValueExpand } from "@/hooks/useValueExpand";
 
 import { TreeItem } from "../TreeView/TreeItem";
 
@@ -28,6 +29,12 @@ export const NameView = ({ node }: { node?: PlainNode }) => {
   useEffect(() => {
     setCount((c) => c + 1);
   }, [prevNode]);
+
+  useEffect(() => {
+    const clearExpandState = useValueExpand.getActions().reset;
+
+    return clearExpandState;
+  }, []);
 
   if (currentSelectDetail) {
     return (

@@ -18,7 +18,8 @@ export const checkHasInclude = (node: PlainNode, typeArray: number[]) => {
 const assignNode = (exist: PlainNode, inComing: PlainNode) => {
   for (const key in inComing) {
     if (Object.prototype.hasOwnProperty.call(inComing, key)) {
-      exist[key as keyof PlainNode] = inComing[key as keyof PlainNode];
+      const typeKey = key as keyof PlainNode;
+      (exist as any)[typeKey] = inComing[typeKey];
     }
   }
 };

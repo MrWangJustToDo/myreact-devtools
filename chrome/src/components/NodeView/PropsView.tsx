@@ -3,7 +3,7 @@ import { Divider, Spacer } from "@heroui/react";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useConfig } from "@/hooks/useConfig";
 
-import { ValueView } from "../ValueView";
+import { SimpleValueView, ValueView } from "../ValueView";
 
 import type { NodeValue, PlainNode } from "@my-react-devtool/core";
 
@@ -21,11 +21,11 @@ export const PropsView = ({ node, editable = true }: { node?: PlainNode; editabl
   const render = useCallbackRef((index: number) => {
     const key = propsKeys[index];
 
-    const nextItem = detailNode?.p?.v?.[key] as NodeValue | undefined;
+    const item = detailNode?.p?.v?.[key] as NodeValue | undefined;
 
     return (
       <div className={`tree-wrapper`} key={id + "-" + index}>
-        <ValueView name={key} type="props" editable={editable && enableEdit} item={nextItem} />
+        <ValueView name={key} type="props" editable={editable && enableEdit} item={item} />
       </div>
     );
   });
@@ -42,6 +42,42 @@ export const PropsView = ({ node, editable = true }: { node?: PlainNode; editabl
         </div>
         <Divider />
       </>
+    );
+  } else {
+    return null;
+  }
+};
+
+export const ControlPropsView = ({ node }: { node?: PlainNode }) => {
+  const detailNode = node;
+
+  const propsKeys = Object.keys(detailNode?.p?.v || {});
+
+  const id = detailNode?.i;
+
+  const hasProps = propsKeys.length > 0;
+
+  const render = useCallbackRef((index: number) => {
+    const key = propsKeys[index];
+
+    const item = detailNode?.p?.v?.[key] as NodeValue | undefined;
+
+    return (
+      <div className={`tree-wrapper`} key={id + "-" + index}>
+        <SimpleValueView name={key} prevName="props" item={item} />
+      </div>
+    );
+  });
+
+  if (hasProps) {
+    return (
+      <div className="node-props p-2 pb-0">
+        <div className="flex items-center justify-between">
+          <span>props</span>
+        </div>
+        <Spacer y={1} />
+        <div className="w-full font-code font-sm">{propsKeys.map((key, index) => render(index))}</div>
+      </div>
     );
   } else {
     return null;

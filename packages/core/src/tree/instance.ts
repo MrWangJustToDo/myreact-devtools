@@ -76,8 +76,16 @@ export class PlainNode {
   _h: HOOKTree[];
   // hooks: HOOKTree[];
 
+  _r: number;
+  // running count for fiber node
+
+  _$f?: boolean;
+  // inspect node
+
   constructor(_id?: string) {
     this.i = _id || `${id++}`;
+
+    this._r = 0;
   }
 }
 
