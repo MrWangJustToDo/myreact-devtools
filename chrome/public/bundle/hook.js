@@ -899,6 +899,9 @@
     		    if (t & exports.NODE_TYPE.__lazy__) {
     		        tag.push("lazy");
     		    }
+    		    if (t & exports.NODE_TYPE.__portal__) {
+    		        tag.push("portal");
+    		    }
     		    if (node.m) {
     		        tag.push("compiler ✨");
     		    }
