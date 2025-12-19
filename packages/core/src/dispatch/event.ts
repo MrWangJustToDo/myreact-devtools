@@ -151,7 +151,11 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
       runtime._warn[id][index] = 1;
     }
 
-    runtime._warn[id].push(args);
+    if (args.length === 1) {
+      runtime._warn[id].push(args[0]);
+    } else {
+      runtime._warn[id].push(args);
+    }
 
     runtime.notifyWarn();
   };
@@ -168,7 +172,11 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
       runtime._error[id][index] = 1;
     }
 
-    runtime._error[id].push(args);
+    if (args.length === 1) {
+      runtime._error[id].push(args[0]);
+    } else {
+      runtime._error[id].push(args);
+    }
 
     runtime.notifyError();
   };
