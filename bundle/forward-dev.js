@@ -3289,7 +3289,12 @@
     		            var index = runtime._warn[id].length - 11;
     		            runtime._warn[id][index] = 1;
     		        }
-    		        runtime._warn[id].push(args);
+    		        if (args.length === 1) {
+    		            runtime._warn[id].push(args[0]);
+    		        }
+    		        else {
+    		            runtime._warn[id].push(args);
+    		        }
     		        runtime.notifyWarn();
     		    };
     		    var onFiberError = function (fiber) {
@@ -3305,7 +3310,12 @@
     		            var index = runtime._error[id].length - 11;
     		            runtime._error[id][index] = 1;
     		        }
-    		        runtime._error[id].push(args);
+    		        if (args.length === 1) {
+    		            runtime._error[id].push(args[0]);
+    		        }
+    		        else {
+    		            runtime._error[id].push(args);
+    		        }
     		        runtime.notifyError();
     		    };
     		    var onFiberRun = function (fiber) {
