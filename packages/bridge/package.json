@@ -124,6 +124,6 @@
     "@my-react/react-shared": "^0.3.21",
     "@types/node": "^22.18.10",
     "reactivity-store": "^0.3.12",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.3"
   }
 }

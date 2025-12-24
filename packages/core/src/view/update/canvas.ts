@@ -72,7 +72,7 @@ function drawGroupBorders(context: CanvasRenderingContext2D, group: Array<GroupI
   group.forEach(({ color, rect }) => {
     context.beginPath();
     context.strokeStyle = color;
-    context.rect(rect.left - 1, rect.top, rect.width - 1, rect.height - 1);
+    context.rect(rect.left, rect.top, rect.width, rect.height);
     context.stroke();
   });
 }
@@ -125,7 +125,7 @@ function drawLabel(context: CanvasRenderingContext2D, rect: Rect, text: string, 
   const metrics = context.measureText(text);
   const backgroundWidth = metrics.width + padding * 2;
   const backgroundHeight = textHeight;
-  const labelX = left - 1;
+  const labelX = left;
   const labelY = top - backgroundHeight;
 
   context.fillStyle = color;
