@@ -1,11 +1,12 @@
 import { include, STATE_TYPE } from "@my-react/react-shared";
 
+import { getNode } from "../data";
 import { NODE_TYPE } from "../fiber";
 import { getDirectoryIdByFiber, getPlainNodeByFiber, getPlainNodeIdByFiber } from "../tree";
 
 import type { DevToolCore } from "../instance";
 import type { DevToolRenderDispatch } from "../setup";
-import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
+import type { MyReactFiberNode, MyReactFiberNodeDev, UpdateQueueDev } from "@my-react/react-reconciler";
 
 type TreeItemType = {
   // id
@@ -46,7 +47,7 @@ const checkIsComponent = (fiber: MyReactFiberNodeDev) => {
   return include(fiber.type, NODE_TYPE.__class__ | NODE_TYPE.__function__);
 };
 
-const checkIsConCurrent = (dispatch: DevToolRenderDispatch, list: MyReactFiberNode[]) => {
+const checkIsConcurrent = (dispatch: DevToolRenderDispatch, list: MyReactFiberNode[]) => {
   return dispatch.enableConcurrentMode && list.every((f) => include(f.state, STATE_TYPE.__triggerConcurrent__ | STATE_TYPE.__triggerConcurrentForce__));
 };
 
@@ -65,7 +66,7 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
 
   let map = {};
 
-  let trigger: Array<{ n: string; i: string }> = [];
+  let trigger: Array<{ n: string; i: string; updater: UpdateQueueDev[] }> = [];
 
   let mode = "legacy" as "legacy" | "concurrent";
 
@@ -86,14 +87,18 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
 
     map = {};
 
-    mode = checkIsConCurrent(dispatch, list) ? "concurrent" : "legacy";
+    mode = checkIsConcurrent(dispatch, list) ? "concurrent" : "legacy";
 
     trigger = list.map((f) => {
       const plain = getPlainNodeByFiber(f);
 
+      // next version of @my-react support _debugLatestUpdateQueue
+      const updater = (f as any)._debugLatestUpdateQueue as MyReactFiberNodeDev["_debugUpdateQueue"] | null;
+
       return {
         n: plain ? plain.n : "",
         i: plain ? plain.i : "",
+        updater: updater?.toArray() || [],
       };
     });
 
@@ -201,7 +206,7 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
 export const getRecord = (runtime: DevToolCore) => {
   if (!runtime._enabled) return [];
 
-  const stack = runtime._stack;
+  const stack = runtime._stack.map((item) => ({ ...item, list: item.list.map((t) => ({ ...t, updater: t.updater.map((u) => getNode(u)) })) }));
 
   return stack;
 };

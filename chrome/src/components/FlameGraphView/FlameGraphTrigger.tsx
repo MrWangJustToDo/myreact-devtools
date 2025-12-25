@@ -1,9 +1,10 @@
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from "@heroui/react";
+import { Accordion, AccordionItem, Button, Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from "@heroui/react";
 import { ComponentIcon } from "lucide-react";
 
 import { useRecordStack } from "@/hooks/useRecordStack";
 
 import { TreeItemWithId } from "../TreeView/TreeItem";
+import { ValueView } from "../ValueView";
 
 export const FlameGraphTrigger = () => {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -25,9 +26,17 @@ export const FlameGraphTrigger = () => {
             <h3>Trigger fiber</h3>
           </ModalHeader>
           <ModalBody className="p-4">
-            {root.list.map((i) => (
-              <TreeItemWithId i={i.i} n={i.n} key={i.i} withCollapse={false} withSelect={false} withFallback />
-            ))}
+            <Accordion>
+              {root.list.map((i) => (
+                <AccordionItem key={i.i} title={<TreeItemWithId i={i.i} n={i.n} key={i.i} withCollapse={false} withSelect={false} withFallback />}>
+                  {i.updater.map((u, index) => (
+                    <div key={index} className="font-code">
+                      <ValueView name={index.toString()} item={u} />
+                    </div>
+                  ))}
+                </AccordionItem>
+              ))}
+            </Accordion>
           </ModalBody>
         </ModalContent>
       </Modal>

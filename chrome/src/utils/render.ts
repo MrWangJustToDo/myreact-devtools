@@ -230,7 +230,9 @@ export const onRender = (data: DevToolMessageType) => {
   }
 
   if (data.type === DevToolMessageEnum.record) {
-    const recordData = data.data as boolean | { id: string; stack: StackItemType; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string }> };
+    const recordData = data.data as
+      | boolean
+      | { id: string; stack: StackItemType; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string; updater: NodeValue[] }> };
 
     const { stopProcessing, pushStack, processStack } = useRecordStack.getActions();
 

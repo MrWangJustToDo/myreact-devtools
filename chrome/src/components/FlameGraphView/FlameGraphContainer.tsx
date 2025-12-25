@@ -9,6 +9,7 @@ import { FlameGraphName } from "./FlameGraphName";
 import { FlameGraphNodeRender } from "./FlameGraphNodeRender";
 import { FlameGraphTrigger } from "./FlameGraphTrigger";
 
+import type { StackRecordItem } from "@/hooks/useRecordStack";
 import type { StackItemType } from "@my-react-devtool/core";
 
 type DeepRequired<T> = {
@@ -17,7 +18,7 @@ type DeepRequired<T> = {
 
 export type SafeStackItemType = DeepRequired<StackItemType>;
 
-export type RootStack = Array<{ stack: SafeStackItemType; id?: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string }> }>;
+export type RootStack = Array<StackRecordItem>;
 
 export const FlameGraphContainer = () => {
   const { state, record } = useRecordStack((s) => ({ state: s.state, record: s.select })) as {
@@ -54,7 +55,10 @@ export const FlameGraphContainer = () => {
   };
 
   const totalStackTime = Math.ceil(
-    useMemo(() => (record ? record.e - record.s : currentPageStack.reduce((p, c) => p + c.stack.e - c.stack.s, 0)), [currentPageStack, record])
+    useMemo(
+      () => (record ? record.e - record.s : currentPageStack.reduce((p, c) => p + (c?.stack?.e || 0) - (c?.stack?.s || 0), 0)),
+      [currentPageStack, record]
+    )
   );
 
   return (

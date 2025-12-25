@@ -14,7 +14,7 @@ import { Select, Highlight } from "./view";
 import type { StackItemType } from "./dispatch";
 import type { HMRStatus } from "./event";
 import type { Tree } from "./tree";
-import type { MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
+import type { MyReactFiberNode, UpdateQueueDev, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
 export type DevToolMessageType = {
@@ -35,7 +35,12 @@ export class DevToolCore {
 
   _timeMap: Map<DevToolRenderDispatch, number> = new Map();
 
-  _stack: Array<{ stack: StackItemType; id: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string }> }> = [];
+  _stack: Array<{
+    stack: StackItemType;
+    id: string;
+    mode: "legacy" | "concurrent";
+    list?: Array<{ n: string; i: string; updater?: UpdateQueueDev[] }>;
+  }> = [];
 
   // 字符串字典
   _dir: Record<string | number, string> = {};

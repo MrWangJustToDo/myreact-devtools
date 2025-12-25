@@ -1,18 +1,20 @@
 import { createState } from "reactivity-store";
 
-import type { StackItemType } from "@my-react-devtool/core";
+import type { NodeValue, StackItemType } from "@my-react-devtool/core";
+
+export type StackRecordItem = { stack: StackItemType; id?: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string; updater: NodeValue[] }> };
 
 export const useRecordStack = createState(
   () => ({
-    state: [] as Array<{ stack: StackItemType; id?: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string }> }>,
+    state: [] as Array<StackRecordItem>,
     loading: false,
     processing: false,
-    root: undefined as { stack: StackItemType; id?: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string }> } | undefined,
+    root: undefined as StackRecordItem | undefined,
     select: undefined as StackItemType | undefined,
   }),
   {
     withActions: (s) => ({
-      pushStack(data: { stack: StackItemType; id?: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string }> }) {
+      pushStack(data: StackRecordItem) {
         s.state.push(data);
       },
       startLoading() {
@@ -38,7 +40,7 @@ export const useRecordStack = createState(
       clearSelect() {
         s.select = undefined;
       },
-      setRoot(root: { stack: StackItemType; id?: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string }> } | undefined) {
+      setRoot(root: StackRecordItem | undefined) {
         s.root = root;
       },
       clearRoot() {
