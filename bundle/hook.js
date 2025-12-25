@@ -3417,7 +3417,7 @@
     		var checkIsComponent = function (fiber) {
     		    return include(fiber.type, exports.NODE_TYPE.__class__ | exports.NODE_TYPE.__function__);
     		};
-    		var checkIsConCurrent = function (dispatch, list) {
+    		var checkIsConcurrent = function (dispatch, list) {
     		    return dispatch.enableConcurrentMode && list.every(function (f) { return include(f.state, STATE_TYPE.__triggerConcurrent__ | STATE_TYPE.__triggerConcurrentForce__); });
     		};
     		var getCurrent = function () { return (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now()) * 1000; };
@@ -3443,12 +3443,15 @@
     		        current = null;
     		        stack.length = 0;
     		        map = {};
-    		        mode = checkIsConCurrent(dispatch, list) ? "concurrent" : "legacy";
+    		        mode = checkIsConcurrent(dispatch, list) ? "concurrent" : "legacy";
     		        trigger = list.map(function (f) {
     		            var plain = getPlainNodeByFiber(f);
+    		            // next version of @my-react support _debugLatestUpdateQueue
+    		            var updater = f._debugLatestUpdateQueue;
     		            return {
     		                n: plain ? plain.n : "",
     		                i: plain ? plain.i : "",
+    		                updater: (updater === null || updater === void 0 ? void 0 : updater.toArray()) || [],
     		            };
     		        });
     		        id = dispatch.id;
@@ -3528,7 +3531,7 @@
     		var getRecord = function (runtime) {
     		    if (!runtime._enabled)
     		        return [];
-    		    var stack = runtime._stack;
+    		    var stack = runtime._stack.map(function (item) { return (__assign(__assign({}, item), { list: item.list.map(function (t) { return (__assign(__assign({}, t), { updater: t.updater.map(function (u) { return getNode(u); }) })); }) })); });
     		    return stack;
     		};
 
