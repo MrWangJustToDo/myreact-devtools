@@ -79,7 +79,7 @@ export const FlameGraphNode = ({
             setRootNode(rootStack);
           }}
           title={`${name}${current.r ? ` +${current.r}` : ""}${isLegacy ? ` | Legacy update` : ""}${isConCurrent ? ` | Concurrent update` : ""} | Duration: ${Math.ceil(current.e - current.s) / 1000} ms`}
-          className={`flameGraph-node-view py-0.5 rounded-sm opacity-50 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-ssm bg-blue-200 dark:bg-blue-950 ${hasUnmount ? "bg-red-200 dark:bg-red-950" : ""}`}
+          className={`flameGraph-node-view py-0.5 rounded-sm opacity-50 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-ssm bg-blue-200 dark:bg-blue-950 ${isLegacy ? "bg-orange-200 dark:bg-orange-800" : ""} ${hasUnmount ? "bg-red-200 dark:bg-red-950" : ""}`}
         >
           {name}
           {current.r ? ` +${current.r}` : ""}
@@ -96,6 +96,7 @@ export const FlameGraphNode = ({
                   parent={current}
                   previous={previousChild as SafeStackItemType | undefined}
                   current={child as SafeStackItemType}
+                  isLegacy={isLegacy}
                   rootStack={rootStack}
                 />
               );
