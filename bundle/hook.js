@@ -2802,6 +2802,22 @@
     		        fiberStore.set(newPlain.i, _fiber);
     		        plainStore.set(newPlain.i, newPlain);
     		    }
+    		    initFiberNode(_fiber, _runtime);
+    		};
+    		var initFiberNode = function (_fiber, _runtime) {
+    		    if (!_fiber)
+    		        return;
+    		    var prototype = Reflect.getPrototypeOf(_fiber);
+    		    if (prototype['_debugSelectInDevtool'])
+    		        return;
+    		    Reflect.defineProperty(prototype, "_debugSelectInDevtool", {
+    		        get: function get() {
+    		            var id = getPlainNodeIdByFiber(this);
+    		            _runtime.setSelect(id);
+    		            _runtime._hasSelectChange = true;
+    		            return true;
+    		        },
+    		    });
     		};
     		var getPlainNodeByFiber = function (fiber) {
     		    return treeMap.get(fiber);
@@ -3595,13 +3611,13 @@
     		}
     		function overridePatchToFiberInit(dispatch, runtime) {
     		    if (typeof dispatch.onFiberInitial === "function") {
-    		        dispatch.onFiberInitial(function (f) { return initPlainNode(f); });
+    		        dispatch.onFiberInitial(function (f) { return initPlainNode(f, runtime); });
     		    }
     		    else {
     		        var originalPatchInit_1 = dispatch.patchToFiberInitial;
     		        dispatch.patchToFiberInitial = function (fiber) {
     		            originalPatchInit_1.call(this, fiber);
-    		            initPlainNode(fiber);
+    		            initPlainNode(fiber, runtime);
     		        };
     		    }
     		}
@@ -3609,7 +3625,7 @@
     		    if (dispatch["$$hasDevToolInject"])
     		        return;
     		    dispatch["$$hasDevToolInject"] = true;
-    		    overridePatchToFiberInit(dispatch);
+    		    overridePatchToFiberInit(dispatch, runtime);
     		    overridePatchToFiberUnmount(dispatch, runtime);
     		    Object.defineProperty(dispatch, "__dev_devtool_runtime__", { value: { core: runtime, version: "0.0.1" } });
     		};
