@@ -216,6 +216,28 @@ export const initPlainNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) =
 
     plainStore.set(newPlain.i, newPlain);
   }
+
+  initFiberNode(_fiber, _runtime);
+};
+
+const initFiberNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) => {
+  if (!_fiber) return;
+
+  const prototype = Reflect.getPrototypeOf(_fiber);
+
+  if (prototype['_debugSelectInDevtool']) return;
+
+  Reflect.defineProperty(prototype, "_debugSelectInDevtool", {
+    get: function get() {
+      const id = getPlainNodeIdByFiber(this);
+
+      _runtime.setSelect(id);
+
+      _runtime._hasSelectChange = true;
+
+      return true;
+    },
+  });
 };
 
 export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {
