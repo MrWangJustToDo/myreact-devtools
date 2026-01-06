@@ -51,6 +51,8 @@ export class DevToolCore {
 
   _warn: Record<string | number, any> = {};
 
+  _unmount: Record<string | number, any> = {};
+
   _hoverId = "";
 
   _selectId = "";
@@ -265,6 +267,12 @@ export class DevToolCore {
     globalThis["inspect"](source);
   }
 
+  unmountNode(id: string | number) {
+    this._unmount[id] = true;
+
+    setTimeout(() => this.notifyUnmountNode());
+  }
+
   notifyDir() {
     if (!this.hasEnable) return;
 
@@ -452,10 +460,16 @@ export class DevToolCore {
     }
   }
 
-  notifyUnmountNode(id: number | string) {
+  notifyUnmountNode() {
     if (!this.hasEnable) return;
 
-    this._notify({ type: DevToolMessageEnum.unmountNode, data: id });
+    const allPending = this._unmount;
+
+    if (!Object.keys(allPending).length) return;
+
+    this._unmount = {};
+
+    this._notify({ type: DevToolMessageEnum.unmountNode, data: allPending });
   }
 
   notifyDomHover() {

@@ -2780,7 +2780,7 @@
     		        return;
     		    var plain = treeMap.get(_fiber);
     		    if (plain) {
-    		        _runtime.notifyUnmountNode(plain.i);
+    		        _runtime.unmountNode(plain.i);
     		        fiberStore.delete(plain.i);
     		        plainStore.delete(plain.i);
     		        delete _runtime._hmr[plain.i];
@@ -4258,6 +4258,7 @@
     		        this._hmr = {};
     		        this._error = {};
     		        this._warn = {};
+    		        this._unmount = {};
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._selectDom = null;
@@ -4432,6 +4433,11 @@
     		    DevToolCore.prototype.inspectFun = function (source) {
     		        globalThis["inspect"](source);
     		    };
+    		    DevToolCore.prototype.unmountNode = function (id) {
+    		        var _this = this;
+    		        this._unmount[id] = true;
+    		        setTimeout(function () { return _this.notifyUnmountNode(); });
+    		    };
     		    DevToolCore.prototype.notifyDir = function () {
     		        if (!this.hasEnable)
     		            return;
@@ -4580,10 +4586,14 @@
     		            this._notify({ type: exports.DevToolMessageEnum.selectSync, data: this._selectId });
     		        }
     		    };
-    		    DevToolCore.prototype.notifyUnmountNode = function (id) {
+    		    DevToolCore.prototype.notifyUnmountNode = function () {
     		        if (!this.hasEnable)
     		            return;
-    		        this._notify({ type: exports.DevToolMessageEnum.unmountNode, data: id });
+    		        var allPending = this._unmount;
+    		        if (!Object.keys(allPending).length)
+    		            return;
+    		        this._unmount = {};
+    		        this._notify({ type: exports.DevToolMessageEnum.unmountNode, data: allPending });
     		    };
     		    DevToolCore.prototype.notifyDomHover = function () {
     		        if (!this.hasEnable)

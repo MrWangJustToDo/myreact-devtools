@@ -180,7 +180,7 @@ export const unmountPlainNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore
   const plain = treeMap.get(_fiber);
 
   if (plain) {
-    _runtime.notifyUnmountNode(plain.i);
+    _runtime.unmountNode(plain.i);
 
     fiberStore.delete(plain.i);
 

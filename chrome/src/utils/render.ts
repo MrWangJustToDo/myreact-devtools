@@ -95,15 +95,17 @@ export const onRender = (data: DevToolMessageType) => {
 
   if (data.type === DevToolMessageEnum.unmountNode) {
     safeAction(() => {
-      const node = data.data as number | string;
+      const nodeMap = data.data as Record<number | string, any>;
 
-      useSelectNode.getActions().clearSelectIfNeed?.(node.toString());
+      Object.keys(nodeMap).forEach((key) => {
+        useSelectNode.getActions().clearSelectIfNeed?.(key.toString());
 
-      useHighlightNode.getActions().deleteHighlight?.(node.toString());
+        useHighlightNode.getActions().deleteHighlight?.(key.toString());
 
-      useUnmountNode.getActions().addUnmountNode(node.toString());
+        useUnmountNode.getActions().addUnmountNode(key.toString());
 
-      useDetailNode.getActions().delNode?.(node.toString());
+        useDetailNode.getActions().delNode?.(key.toString());
+      });
     });
   }
 
