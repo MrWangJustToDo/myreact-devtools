@@ -4509,7 +4509,7 @@
     		        if (!this.hasEnable)
     		            return;
     		        var tree = getRootTreeByFiber(list.head.value);
-    		        this._notify({ type: exports.DevToolMessageEnum.ready, data: tree });
+    		        this._notify({ type: exports.DevToolMessageEnum.changed, data: tree });
     		    };
     		    DevToolCore.prototype.notifyHMR = function () {
     		        if (!this.hasEnable)
