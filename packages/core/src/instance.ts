@@ -361,7 +361,7 @@ export class DevToolCore {
 
     const tree = getRootTreeByFiber(list.head.value);
 
-    this._notify({ type: DevToolMessageEnum.ready, data: tree });
+    this._notify({ type: DevToolMessageEnum.changed, data: tree });
   }
 
   notifyHMR() {

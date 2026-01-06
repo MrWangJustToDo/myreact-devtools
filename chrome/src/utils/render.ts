@@ -56,7 +56,7 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
-  if (data.type === DevToolMessageEnum.ready) {
+  if (data.type === DevToolMessageEnum.ready || data.type === DevToolMessageEnum.changed) {
     const node = data.data as Tree;
 
     safeAction(() => {
@@ -65,6 +65,8 @@ export const onRender = (data: DevToolMessageType) => {
       if (node) {
         addNode(node);
       }
+
+      if (data.type === DevToolMessageEnum.changed) return;
 
       chrome?.devtools?.inspectedWindow?.eval?.(`(() => {
         if ($0 && window['$$$$0'] !== $0) {
@@ -107,7 +109,12 @@ export const onRender = (data: DevToolMessageType) => {
 
   if (data.type === DevToolMessageEnum.selectSync) {
     safeAction(() => {
+      const currentSelect = useSelectNode.getReadonlyState().select;
+
+      if (currentSelect === data.data) return;
+
       useSelectNode.getActions().setSelect(data.data as string);
+
       useSelectNode.getActions().scrollIntoView();
     });
   }
