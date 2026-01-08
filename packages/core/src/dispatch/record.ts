@@ -89,11 +89,10 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
 
     mode = checkIsConcurrent(dispatch, list) ? "concurrent" : "legacy";
 
-    trigger = list.map((f) => {
+    trigger = list.map((f: MyReactFiberNodeDev) => {
       const plain = getPlainNodeByFiber(f);
 
-      // next version of @my-react support _debugLatestUpdateQueue
-      const updater = (f as any)._debugLatestUpdateQueue as MyReactFiberNodeDev["_debugUpdateQueue"] | null;
+      const updater = f._debugLatestUpdateQueue;
 
       return {
         n: plain ? plain.n : "",
