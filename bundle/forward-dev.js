@@ -3462,7 +3462,6 @@
     		        mode = checkIsConcurrent(dispatch, list) ? "concurrent" : "legacy";
     		        trigger = list.map(function (f) {
     		            var plain = getPlainNodeByFiber(f);
-    		            // next version of @my-react support _debugLatestUpdateQueue
     		            var updater = f._debugLatestUpdateQueue;
     		            return {
     		                n: plain ? plain.n : "",
