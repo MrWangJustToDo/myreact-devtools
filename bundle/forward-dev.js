@@ -1433,6 +1433,7 @@
     		            if (element._source && typeof element._source === "object") {
     		                return {
     		                    type: "source",
+    		                    // TODO type error
     		                    value: ((_a = element._source) === null || _a === void 0 ? void 0 : _a.fileName) + ":" + ((_b = element._source) === null || _b === void 0 ? void 0 : _b.lineNumber) + ":" + ((_c = element._source) === null || _c === void 0 ? void 0 : _c.columnNumber),
     		                };
     		            }
