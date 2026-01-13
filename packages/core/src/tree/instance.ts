@@ -1,5 +1,5 @@
 import type { NodeValue } from "../data";
-import type { MyReactElement } from "@my-react/react";
+import type { MyReactElement } from "@my-react/react/type";
 import type { NODE_TYPE } from "@my-react/react-reconciler";
 
 let id = 0;

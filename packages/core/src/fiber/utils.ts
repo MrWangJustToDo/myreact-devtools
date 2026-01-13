@@ -35,7 +35,7 @@ import type {
   forwardRef,
   lazy,
   memo,
-} from "@my-react/react";
+} from "@my-react/react/type";
 import type { MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNode } from "@my-react/react-reconciler";
 
 export const typeKeys: number[] = [];
@@ -149,9 +149,9 @@ export const getFiberType = (fiber: MyReactFiberNode) => {
   return { t, hasCompiler };
 };
 
-const getNameFromRawType = (rawType: MixinMyReactObjectComponent) => {
+const getNameFromRawType = (rawType: MixinMyReactObjectComponent | MixinMyReactFunctionComponent) => {
   if (typeof rawType === "object") {
-    return rawType.displayName || getNameFromRawType(rawType.render);
+    return rawType.displayName || getNameFromRawType((rawType as any).render);
   }
 
   if (typeof rawType === "function") {

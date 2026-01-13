@@ -4,12 +4,12 @@ import { getNode } from "../data";
 import { getPlainNodeByFiber } from "../tree";
 
 import type { DevToolRenderDispatch } from "../setup";
-import type { MyReactElement } from "@my-react/react";
+import type { MyReactElement } from "@my-react/react/type";
 import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 
 export const getSource = (fiber: MyReactFiberNodeDev): { type: "stack" | "source"; value: string } => {
   if (fiber._debugElement) {
-    const element = fiber._debugElement as MyReactElement;
+    const element = fiber._debugElement as MyReactElement & { _debugStack?: Error };
     try {
       if (element._debugStack) {
         const stack = ErrorStackParser.parse(element._debugStack);
@@ -24,7 +24,8 @@ export const getSource = (fiber: MyReactFiberNodeDev): { type: "stack" | "source
       if (element._source && typeof element._source === "object") {
         return {
           type: "source",
-          value: element._source?.fileName + ":" + element._source?.lineNumber + ":" + element._source?.columnNumber,
+          // TODO type error
+          value: element._source?.fileName + ":" + element._source?.lineNumber + ":" + (element._source as any)?.columnNumber,
         };
       }
     }

@@ -4,7 +4,7 @@ import { getElementDimensions, getNestedBoundingClientRect } from "../utils";
 
 import type { DevToolCore } from "../../instance";
 import type { Rect } from "../utils";
-import type { MyReactElement } from "@my-react/react";
+import type { MyReactElement } from "@my-react/react/type";
 import type { MyReactFiberNodeDev } from "@my-react/react-reconciler";
 
 type Box = { top: number; left: number; width: number; height: number };

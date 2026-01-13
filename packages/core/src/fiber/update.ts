@@ -2,7 +2,7 @@ import { STATE_TYPE } from "@my-react/react-shared";
 
 import { getValueFromId } from "../data";
 
-import type { Action, MyReactComponent, Reducer } from "@my-react/react";
+import type { Action, MyReactComponent, Reducer } from "@my-react/react/type";
 import type { MyReactFiberNode } from "@my-react/react-reconciler";
 
 

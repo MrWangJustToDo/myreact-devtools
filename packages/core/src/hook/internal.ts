@@ -8,7 +8,7 @@ import ErrorStackParser from "error-stack-parser";
 
 import { NODE_TYPE } from "../fiber";
 
-import type { createContext, MixinMyReactFunctionComponent } from "@my-react/react";
+import type { createContext, MixinMyReactFunctionComponent } from "@my-react/react/type";
 import type { MyReactFiberNode, MyReactHookNode } from "@my-react/react-reconciler";
 import type { ListTreeNode } from "@my-react/react-shared";
 import type { StackFrame as ParsedStackFrame } from "error-stack-parser";
