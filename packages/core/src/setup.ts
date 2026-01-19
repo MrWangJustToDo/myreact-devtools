@@ -31,6 +31,9 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
 function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch, runtime: DevToolCore) {
   if (typeof dispatch.onFiberUnmount === "function") {
     dispatch.onFiberUnmount((f) => unmountPlainNode(f, runtime));
+    dispatch.onAfterCommitMount(() => runtime.notifyUnmountNode());
+    dispatch.onAfterCommitUpdate(() => runtime.notifyUnmountNode());
+    dispatch.onAfterCommitUnmount(() => runtime.notifyUnmountNode());
   } else {
     if (__DEV__) {
       console.warn("[@my-react-devtool/core] current version of @my-react will deprecate in next update, please upgrade to latest version");
@@ -41,6 +44,7 @@ function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch, runtime: D
     dispatch.patchToFiberUnmount = function (this: CustomRenderDispatch, fiber) {
       originalPatchUnmount.call(this, fiber);
       unmountPlainNode(fiber, runtime);
+      runtime._notifyUnmountNode();
     };
   }
 }

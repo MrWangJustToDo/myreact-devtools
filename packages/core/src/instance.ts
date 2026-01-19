@@ -267,10 +267,10 @@ export class DevToolCore {
     globalThis["inspect"](source);
   }
 
+  _notifyUnmountNode = debounce(() => this.notifyUnmountNode(), 16);
+
   unmountNode(id: string | number) {
     this._unmount[id] = true;
-
-    setTimeout(() => this.notifyUnmountNode());
   }
 
   notifyDir() {
