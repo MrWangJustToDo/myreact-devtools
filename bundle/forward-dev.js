@@ -3600,12 +3600,16 @@
     		function overridePatchToFiberUnmount(dispatch, runtime) {
     		    if (typeof dispatch.onFiberUnmount === "function") {
     		        dispatch.onFiberUnmount(function (f) { return unmountPlainNode(f, runtime); });
+    		        dispatch.onAfterCommitMount(function () { return runtime.notifyUnmountNode(); });
+    		        dispatch.onAfterCommitUpdate(function () { return runtime.notifyUnmountNode(); });
+    		        dispatch.onAfterCommitUnmount(function () { return runtime.notifyUnmountNode(); });
     		    }
     		    else {
     		        var originalPatchUnmount_1 = dispatch.patchToFiberUnmount;
     		        dispatch.patchToFiberUnmount = function (fiber) {
     		            originalPatchUnmount_1.call(this, fiber);
     		            unmountPlainNode(fiber, runtime);
+    		            runtime._notifyUnmountNode();
     		        };
     		    }
     		}
@@ -4283,6 +4287,7 @@
     		        this._listeners = new Set();
     		        this.version = "0.0.1";
     		        this.id = Math.random().toString(16).slice(2);
+    		        this._notifyUnmountNode = debounce(function () { return _this.notifyUnmountNode(); }, 16);
     		        this.notifyAll = debounce(function () {
     		            _this.notifyDetector();
     		            if (_this._needUnmount) {
@@ -4434,9 +4439,7 @@
     		        globalThis["inspect"](source);
     		    };
     		    DevToolCore.prototype.unmountNode = function (id) {
-    		        var _this = this;
     		        this._unmount[id] = true;
-    		        setTimeout(function () { return _this.notifyUnmountNode(); });
     		    };
     		    DevToolCore.prototype.notifyDir = function () {
     		        if (!this.hasEnable)
