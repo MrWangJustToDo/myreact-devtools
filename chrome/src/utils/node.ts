@@ -111,3 +111,5 @@ export function getLastChild(nodes: PlainNode[], node: PlainNode): PlainNode {
 
   return last;
 }
+
+export const clearNodeCache = () => nodeMap.clear();

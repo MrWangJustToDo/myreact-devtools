@@ -1,6 +1,7 @@
 import { createState } from "reactivity-store";
 
 import { isServer } from "@/utils/isServer";
+import { clearNodeCache } from "@/utils/node";
 
 export const useConnect = createState(
   () =>
@@ -37,6 +38,7 @@ export const useConnect = createState(
         s.url = undefined;
         s.name = undefined;
         s.agentID = undefined;
+        clearNodeCache();
       },
       setConnectHandler(cb: () => void) {
         s.cb = cb;
