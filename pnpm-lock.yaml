@@ -94,8 +94,8 @@ importers:
         specifier: ^0.3.22
         version: 0.3.22(@my-react/react@0.3.22(react@18.3.1))
       '@my-react/react-refresh-tools':
-        specifier: ^0.0.31
-        version: 0.0.31(@my-react/react-refresh@0.3.22(@my-react/react@0.3.22(react@18.3.1)))
+        specifier: ^0.0.32
+        version: 0.0.32(@my-react/react-refresh@0.3.22(@my-react/react@0.3.22(react@18.3.1)))
       '@types/chrome':
         specifier: ^0.0.304
         version: 0.0.304
@@ -918,8 +918,8 @@ packages:
     peerDependencies:
       '@my-react/react': '>=0.3.22'
 
-  '@my-react/react-refresh-tools@0.0.31':
-    resolution: {integrity: sha512-rpJwBD94xfmaCTLQpglcWWm+erVPgpdPtbTi0/CMi1XliMT91HCYvo44iIkmCCecAhbnf5RT43hyDOUcQeB+pQ==}
+  '@my-react/react-refresh-tools@0.0.32':
+    resolution: {integrity: sha512-UdquSlp0vJKpYGEW8m+lJKUUR4YQRAPHCXpH6g0UQDv2A1KiQ16WvzO/wD78Kg/QXR6VsTKhN6rtMeDchKpiJg==}
     peerDependencies:
       '@my-react/react-refresh': '>=0.3.22'
       webpack: ^4 || ^5
@@ -5854,7 +5854,7 @@ snapshots:
     dependencies:
       '@my-react/react': 0.3.22(react@18.3.1)
 
-  '@my-react/react-refresh-tools@0.0.31(@my-react/react-refresh@0.3.22(@my-react/react@0.3.22(react@18.3.1)))':
+  '@my-react/react-refresh-tools@0.0.32(@my-react/react-refresh@0.3.22(@my-react/react@0.3.22(react@18.3.1)))':
     dependencies:
       '@my-react/react-refresh': 0.3.22(@my-react/react@0.3.22(react@18.3.1))
 
