@@ -2,13 +2,19 @@ import { createState } from "reactivity-store";
 
 import type { NodeValue, StackItemType } from "@my-react-devtool/core";
 
-export type StackRecordItem = { stack: StackItemType; id?: string; mode: "legacy" | "concurrent"; list?: Array<{ n: string; i: string; updater: NodeValue[] }> };
+export type StackRecordItem = {
+  stack: StackItemType;
+  id?: string;
+  mode: "legacy" | "concurrent";
+  list?: Array<{ n: string; i: string; updater: NodeValue[] }>;
+};
 
 export const useRecordStack = createState(
   () => ({
     state: [] as Array<StackRecordItem>,
     loading: false,
     processing: false,
+    index: 0,
     root: undefined as StackRecordItem | undefined,
     select: undefined as StackItemType | undefined,
   }),
@@ -29,8 +35,17 @@ export const useRecordStack = createState(
       stopProcessing() {
         s.processing = false;
       },
+      setIndex(index: number | ((prevIndex: number) => number)) {
+        if (typeof index === "function") {
+          s.index = index(s.index);
+          return;
+        } else {
+          s.index = index;
+        }
+      },
       clearStack() {
         s.state = [];
+        s.index = 0;
         s.root = undefined;
         s.select = undefined;
       },

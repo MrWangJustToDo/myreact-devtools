@@ -1,6 +1,6 @@
 import { Button, ButtonGroup, Divider, Tooltip } from "@heroui/react";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, XIcon } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 
 import { useRecordStack } from "@/hooks/useRecordStack";
 import { useDomSize } from "@/hooks/useSize";
@@ -21,14 +21,13 @@ export type SafeStackItemType = DeepRequired<StackItemType>;
 export type RootStack = Array<StackRecordItem>;
 
 export const FlameGraphContainer = () => {
-  const { state, record } = useRecordStack((s) => ({ state: s.state, record: s.select })) as {
+  const { index, state, record } = useRecordStack((s) => ({ state: s.state, record: s.select, index: s.index })) as {
+    index: number;
     state: RootStack;
     record?: SafeStackItemType;
   };
 
-  const { clearSelect } = useRecordStack.getActions();
-
-  const [index, setIndex] = useState(0);
+  const { clearSelect, setIndex } = useRecordStack.getActions();
 
   const ref = useRef<HTMLDivElement>(null);
 
