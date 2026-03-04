@@ -121,6 +121,315 @@
         Effect_TYPE[Effect_TYPE["__unmount__"] = 2] = "__unmount__";
     })(Effect_TYPE || (Effect_TYPE = {}));
 
+    var ListTreeNode = /** @class */ (function () {
+        function ListTreeNode(value) {
+            this.prev = null;
+            this.next = null;
+            this.value = value;
+        }
+        return ListTreeNode;
+    }());
+    var ListTree = /** @class */ (function () {
+        function ListTree(max) {
+            this.length = 0;
+            this.maxLength = Infinity;
+            this.maxLength = max || Infinity;
+            var _stickyHead = null;
+            Object.defineProperty(this, "stickyHead", {
+                get: function () {
+                    return _stickyHead;
+                },
+                set: function (v) {
+                    _stickyHead = v;
+                },
+            });
+            var _stickyFoot = null;
+            Object.defineProperty(this, "stickyFoot", {
+                get: function () {
+                    return _stickyFoot;
+                },
+                set: function (v) {
+                    _stickyFoot = v;
+                },
+            });
+            var _head = null;
+            Object.defineProperty(this, "head", {
+                get: function () {
+                    return _head;
+                },
+                set: function (v) {
+                    _head = v;
+                },
+            });
+            var _foot = null;
+            Object.defineProperty(this, "foot", {
+                get: function () {
+                    return _foot;
+                },
+                set: function (v) {
+                    _foot = v;
+                },
+            });
+        }
+        ListTree.prototype.push = function (node) {
+            while (this.length >= this.maxLength) {
+                this.pop();
+            }
+            var listNode = new ListTreeNode(node);
+            this.length++;
+            if (!this.foot) {
+                this.head = listNode;
+                this.foot = listNode;
+            }
+            else {
+                this.foot.next = listNode;
+                listNode.prev = this.foot;
+                this.foot = listNode;
+            }
+        };
+        ListTree.prototype.pushToLast = function (node) {
+            if (this.stickyFoot) {
+                var node_1 = this.stickyFoot;
+                this.push(node_1.value);
+                this.stickyFoot = null;
+                this.length--;
+            }
+            else {
+                this.length++;
+            }
+            var listNode = new ListTreeNode(node);
+            this.stickyFoot = listNode;
+        };
+        ListTree.prototype.pushToHead = function (node) {
+            if (this.stickyHead) {
+                var node_2 = this.stickyHead;
+                this.unshift(node_2.value);
+                this.stickyHead = null;
+                this.length--;
+            }
+            else {
+                this.length++;
+            }
+            var listNode = new ListTreeNode(node);
+            this.stickyHead = listNode;
+        };
+        ListTree.prototype.pop = function () {
+            var foot = this.stickyFoot || this.foot || this.stickyHead;
+            if (foot) {
+                this.delete(foot);
+                return foot.value;
+            }
+            else {
+                return null;
+            }
+        };
+        ListTree.prototype.unshift = function (node) {
+            while (this.length >= this.maxLength) {
+                this.shift();
+            }
+            var listNode = new ListTreeNode(node);
+            this.length++;
+            if (!this.head) {
+                this.head = listNode;
+                this.foot = listNode;
+            }
+            else {
+                this.head.prev = listNode;
+                listNode.next = this.head;
+                this.head = listNode;
+            }
+        };
+        ListTree.prototype.unshiftToHead = function (node) {
+            if (this.stickyHead) {
+                var node_3 = this.stickyHead;
+                this.unshift(node_3.value);
+                this.stickyHead = null;
+                this.length--;
+            }
+            else {
+                this.length++;
+            }
+            var listNode = new ListTreeNode(node);
+            this.stickyHead = listNode;
+        };
+        ListTree.prototype.unshiftToFoot = function (node) {
+            if (this.stickyFoot) {
+                var node_4 = this.stickyFoot;
+                this.push(node_4.value);
+                this.stickyFoot = null;
+                this.length--;
+            }
+            else {
+                this.length++;
+            }
+            var listNode = new ListTreeNode(node);
+            this.stickyFoot = listNode;
+        };
+        ListTree.prototype.shift = function () {
+            var head = this.stickyHead || this.head || this.stickyFoot;
+            if (head) {
+                this.delete(head);
+                return head.value;
+            }
+            else {
+                return null;
+            }
+        };
+        ListTree.prototype.pickHead = function () {
+            var _a, _b;
+            return ((_a = this.stickyHead) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.head) === null || _b === void 0 ? void 0 : _b.value);
+        };
+        ListTree.prototype.pickFoot = function () {
+            var _a, _b;
+            return ((_a = this.stickyFoot) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.foot) === null || _b === void 0 ? void 0 : _b.value);
+        };
+        ListTree.prototype.listToFoot = function (action) {
+            if (this.stickyHead) {
+                action(this.stickyHead.value);
+            }
+            var node = this.head;
+            while (node) {
+                action(node.value);
+                node = node.next;
+            }
+            if (this.stickyFoot) {
+                action(this.stickyFoot.value);
+            }
+        };
+        ListTree.prototype.listToHead = function (action) {
+            if (this.stickyFoot) {
+                action(this.stickyFoot.value);
+            }
+            var node = this.foot;
+            while (node) {
+                action(node.value);
+                node = node.prev;
+            }
+            if (this.stickyHead) {
+                action(this.stickyHead.value);
+            }
+        };
+        ListTree.prototype.toArray = function () {
+            var re = [];
+            this.listToFoot(function (v) { return re.push(v); });
+            return re;
+        };
+        ListTree.prototype.delete = function (node) {
+            if (this.stickyHead === node) {
+                this.stickyHead = null;
+                this.length--;
+            }
+            else if (this.stickyFoot === node) {
+                this.stickyFoot = null;
+                this.length--;
+            }
+            else if (this.head === node) {
+                var next = node.next;
+                node.next = null;
+                if (next) {
+                    this.head = next;
+                    next.prev = null;
+                }
+                else {
+                    this.head = null;
+                    this.foot = null;
+                }
+                this.length--;
+            }
+            else if (this.foot === node) {
+                var prev = node.prev;
+                node.prev = null;
+                if (prev) {
+                    this.foot = prev;
+                    prev.next = null;
+                }
+                else {
+                    this.head = null;
+                    this.foot = null;
+                }
+                this.length--;
+            }
+            else if (this.hasNode(node)) {
+                var prev = node.prev;
+                var next = node.next;
+                node.prev = null;
+                node.next = null;
+                prev.next = next;
+                next.prev = prev;
+                this.length--;
+            }
+        };
+        ListTree.prototype.size = function () {
+            return this.length;
+        };
+        ListTree.prototype.hasNode = function (node) {
+            if (this.stickyHead && Object.is(this.stickyHead, node))
+                return true;
+            if (this.stickyFoot && Object.is(this.stickyFoot, node))
+                return true;
+            var listNode = this.head;
+            while (listNode) {
+                if (Object.is(listNode, node))
+                    return true;
+                listNode = listNode.next;
+            }
+            return false;
+        };
+        ListTree.prototype.hasValue = function (node) {
+            if (this.stickyHead && Object.is(this.stickyHead.value, node))
+                return true;
+            if (this.stickyFoot && Object.is(this.stickyFoot.value, node))
+                return true;
+            var listNode = this.head;
+            while (listNode) {
+                if (Object.is(listNode.value, node))
+                    return true;
+                listNode = listNode.next;
+            }
+            return false;
+        };
+        ListTree.prototype.some = function (iterator) {
+            var re = false;
+            this.listToFoot(function (node) {
+                re = re || iterator(node);
+            });
+            return re;
+        };
+        ListTree.prototype.every = function (iterator) {
+            var re = true;
+            this.listToFoot(function (node) {
+                re = re && iterator(node);
+            });
+            return re;
+        };
+        ListTree.prototype.concat = function (list) {
+            var newList = new ListTree();
+            this.listToFoot(function (node) { return newList.push(node); });
+            list.listToFoot(function (node) { return newList.push(node); });
+            return newList;
+        };
+        ListTree.prototype.clone = function () {
+            var newList = new ListTree(this.maxLength);
+            this.listToFoot(function (v) { return newList.push(v); });
+            return newList;
+        };
+        ListTree.prototype.clear = function () {
+            this.length = 0;
+            this.head = null;
+            this.foot = null;
+            this.stickyHead = null;
+            this.stickyFoot = null;
+        };
+        return ListTree;
+    }());
+    {
+        Object.defineProperty(ListTree.prototype, "_debugToArray", {
+            get: function () {
+                return this.toArray();
+            },
+        });
+    }
+
     var event$1 = {};
 
     var hasRequiredEvent$1;
@@ -232,8 +541,6 @@
     var eventExports = requireEvent();
 
     var core$1 = {exports: {}};
-
-    var index_production = {};
 
     var errorStackParser$1 = {exports: {}};
 
@@ -596,11 +903,13 @@
     	return errorStackParser$1.exports;
     }
 
-    var hasRequiredIndex_production;
+    var index_development = {};
 
-    function requireIndex_production () {
-    	if (hasRequiredIndex_production) return index_production;
-    	hasRequiredIndex_production = 1;
+    var hasRequiredIndex_development;
+
+    function requireIndex_development () {
+    	if (hasRequiredIndex_development) return index_development;
+    	hasRequiredIndex_development = 1;
     	(function (exports) {
 
     		var ErrorStackParser = requireErrorStackParser();
@@ -658,6 +967,13 @@
     		    }
     		    return PlainNode;
     		}());
+    		{
+    		    Object.defineProperty(PlainNode.prototype, "__debugToString", {
+    		        value: function () {
+    		            return JSON.stringify(this);
+    		        },
+    		    });
+    		}
 
     		var merge = function (src, rest) {
     		    return src | rest;
@@ -795,6 +1111,315 @@
     		    }
     		    return false;
     		};
+
+    		var ListTreeNode = /** @class */ (function () {
+    		    function ListTreeNode(value) {
+    		        this.prev = null;
+    		        this.next = null;
+    		        this.value = value;
+    		    }
+    		    return ListTreeNode;
+    		}());
+    		var ListTree = /** @class */ (function () {
+    		    function ListTree(max) {
+    		        this.length = 0;
+    		        this.maxLength = Infinity;
+    		        this.maxLength = max || Infinity;
+    		        var _stickyHead = null;
+    		        Object.defineProperty(this, "stickyHead", {
+    		            get: function () {
+    		                return _stickyHead;
+    		            },
+    		            set: function (v) {
+    		                _stickyHead = v;
+    		            },
+    		        });
+    		        var _stickyFoot = null;
+    		        Object.defineProperty(this, "stickyFoot", {
+    		            get: function () {
+    		                return _stickyFoot;
+    		            },
+    		            set: function (v) {
+    		                _stickyFoot = v;
+    		            },
+    		        });
+    		        var _head = null;
+    		        Object.defineProperty(this, "head", {
+    		            get: function () {
+    		                return _head;
+    		            },
+    		            set: function (v) {
+    		                _head = v;
+    		            },
+    		        });
+    		        var _foot = null;
+    		        Object.defineProperty(this, "foot", {
+    		            get: function () {
+    		                return _foot;
+    		            },
+    		            set: function (v) {
+    		                _foot = v;
+    		            },
+    		        });
+    		    }
+    		    ListTree.prototype.push = function (node) {
+    		        while (this.length >= this.maxLength) {
+    		            this.pop();
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.length++;
+    		        if (!this.foot) {
+    		            this.head = listNode;
+    		            this.foot = listNode;
+    		        }
+    		        else {
+    		            this.foot.next = listNode;
+    		            listNode.prev = this.foot;
+    		            this.foot = listNode;
+    		        }
+    		    };
+    		    ListTree.prototype.pushToLast = function (node) {
+    		        if (this.stickyFoot) {
+    		            var node_1 = this.stickyFoot;
+    		            this.push(node_1.value);
+    		            this.stickyFoot = null;
+    		            this.length--;
+    		        }
+    		        else {
+    		            this.length++;
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.stickyFoot = listNode;
+    		    };
+    		    ListTree.prototype.pushToHead = function (node) {
+    		        if (this.stickyHead) {
+    		            var node_2 = this.stickyHead;
+    		            this.unshift(node_2.value);
+    		            this.stickyHead = null;
+    		            this.length--;
+    		        }
+    		        else {
+    		            this.length++;
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.stickyHead = listNode;
+    		    };
+    		    ListTree.prototype.pop = function () {
+    		        var foot = this.stickyFoot || this.foot || this.stickyHead;
+    		        if (foot) {
+    		            this.delete(foot);
+    		            return foot.value;
+    		        }
+    		        else {
+    		            return null;
+    		        }
+    		    };
+    		    ListTree.prototype.unshift = function (node) {
+    		        while (this.length >= this.maxLength) {
+    		            this.shift();
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.length++;
+    		        if (!this.head) {
+    		            this.head = listNode;
+    		            this.foot = listNode;
+    		        }
+    		        else {
+    		            this.head.prev = listNode;
+    		            listNode.next = this.head;
+    		            this.head = listNode;
+    		        }
+    		    };
+    		    ListTree.prototype.unshiftToHead = function (node) {
+    		        if (this.stickyHead) {
+    		            var node_3 = this.stickyHead;
+    		            this.unshift(node_3.value);
+    		            this.stickyHead = null;
+    		            this.length--;
+    		        }
+    		        else {
+    		            this.length++;
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.stickyHead = listNode;
+    		    };
+    		    ListTree.prototype.unshiftToFoot = function (node) {
+    		        if (this.stickyFoot) {
+    		            var node_4 = this.stickyFoot;
+    		            this.push(node_4.value);
+    		            this.stickyFoot = null;
+    		            this.length--;
+    		        }
+    		        else {
+    		            this.length++;
+    		        }
+    		        var listNode = new ListTreeNode(node);
+    		        this.stickyFoot = listNode;
+    		    };
+    		    ListTree.prototype.shift = function () {
+    		        var head = this.stickyHead || this.head || this.stickyFoot;
+    		        if (head) {
+    		            this.delete(head);
+    		            return head.value;
+    		        }
+    		        else {
+    		            return null;
+    		        }
+    		    };
+    		    ListTree.prototype.pickHead = function () {
+    		        var _a, _b;
+    		        return ((_a = this.stickyHead) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.head) === null || _b === void 0 ? void 0 : _b.value);
+    		    };
+    		    ListTree.prototype.pickFoot = function () {
+    		        var _a, _b;
+    		        return ((_a = this.stickyFoot) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.foot) === null || _b === void 0 ? void 0 : _b.value);
+    		    };
+    		    ListTree.prototype.listToFoot = function (action) {
+    		        if (this.stickyHead) {
+    		            action(this.stickyHead.value);
+    		        }
+    		        var node = this.head;
+    		        while (node) {
+    		            action(node.value);
+    		            node = node.next;
+    		        }
+    		        if (this.stickyFoot) {
+    		            action(this.stickyFoot.value);
+    		        }
+    		    };
+    		    ListTree.prototype.listToHead = function (action) {
+    		        if (this.stickyFoot) {
+    		            action(this.stickyFoot.value);
+    		        }
+    		        var node = this.foot;
+    		        while (node) {
+    		            action(node.value);
+    		            node = node.prev;
+    		        }
+    		        if (this.stickyHead) {
+    		            action(this.stickyHead.value);
+    		        }
+    		    };
+    		    ListTree.prototype.toArray = function () {
+    		        var re = [];
+    		        this.listToFoot(function (v) { return re.push(v); });
+    		        return re;
+    		    };
+    		    ListTree.prototype.delete = function (node) {
+    		        if (this.stickyHead === node) {
+    		            this.stickyHead = null;
+    		            this.length--;
+    		        }
+    		        else if (this.stickyFoot === node) {
+    		            this.stickyFoot = null;
+    		            this.length--;
+    		        }
+    		        else if (this.head === node) {
+    		            var next = node.next;
+    		            node.next = null;
+    		            if (next) {
+    		                this.head = next;
+    		                next.prev = null;
+    		            }
+    		            else {
+    		                this.head = null;
+    		                this.foot = null;
+    		            }
+    		            this.length--;
+    		        }
+    		        else if (this.foot === node) {
+    		            var prev = node.prev;
+    		            node.prev = null;
+    		            if (prev) {
+    		                this.foot = prev;
+    		                prev.next = null;
+    		            }
+    		            else {
+    		                this.head = null;
+    		                this.foot = null;
+    		            }
+    		            this.length--;
+    		        }
+    		        else if (this.hasNode(node)) {
+    		            var prev = node.prev;
+    		            var next = node.next;
+    		            node.prev = null;
+    		            node.next = null;
+    		            prev.next = next;
+    		            next.prev = prev;
+    		            this.length--;
+    		        }
+    		    };
+    		    ListTree.prototype.size = function () {
+    		        return this.length;
+    		    };
+    		    ListTree.prototype.hasNode = function (node) {
+    		        if (this.stickyHead && Object.is(this.stickyHead, node))
+    		            return true;
+    		        if (this.stickyFoot && Object.is(this.stickyFoot, node))
+    		            return true;
+    		        var listNode = this.head;
+    		        while (listNode) {
+    		            if (Object.is(listNode, node))
+    		                return true;
+    		            listNode = listNode.next;
+    		        }
+    		        return false;
+    		    };
+    		    ListTree.prototype.hasValue = function (node) {
+    		        if (this.stickyHead && Object.is(this.stickyHead.value, node))
+    		            return true;
+    		        if (this.stickyFoot && Object.is(this.stickyFoot.value, node))
+    		            return true;
+    		        var listNode = this.head;
+    		        while (listNode) {
+    		            if (Object.is(listNode.value, node))
+    		                return true;
+    		            listNode = listNode.next;
+    		        }
+    		        return false;
+    		    };
+    		    ListTree.prototype.some = function (iterator) {
+    		        var re = false;
+    		        this.listToFoot(function (node) {
+    		            re = re || iterator(node);
+    		        });
+    		        return re;
+    		    };
+    		    ListTree.prototype.every = function (iterator) {
+    		        var re = true;
+    		        this.listToFoot(function (node) {
+    		            re = re && iterator(node);
+    		        });
+    		        return re;
+    		    };
+    		    ListTree.prototype.concat = function (list) {
+    		        var newList = new ListTree();
+    		        this.listToFoot(function (node) { return newList.push(node); });
+    		        list.listToFoot(function (node) { return newList.push(node); });
+    		        return newList;
+    		    };
+    		    ListTree.prototype.clone = function () {
+    		        var newList = new ListTree(this.maxLength);
+    		        this.listToFoot(function (v) { return newList.push(v); });
+    		        return newList;
+    		    };
+    		    ListTree.prototype.clear = function () {
+    		        this.length = 0;
+    		        this.head = null;
+    		        this.foot = null;
+    		        this.stickyHead = null;
+    		        this.stickyFoot = null;
+    		    };
+    		    return ListTree;
+    		}());
+    		{
+    		    Object.defineProperty(ListTree.prototype, "_debugToArray", {
+    		        get: function () {
+    		            return this.toArray();
+    		        },
+    		    });
+    		}
 
     		// sync from import { NODE_TYPE } from '@my-react/react-reconciler';
     		exports.NODE_TYPE = void 0;
@@ -2862,6 +3487,9 @@
     		    if (!plainNode) {
     		        throw new Error("plainNode not found, look like a bug for @my-react/devtools");
     		    }
+    		    if (plainNode._$f) {
+    		        console.warn("inspectFiber: inspect node repeated", fiber, plainNode);
+    		    }
     		    var exist = detailMap.get(fiber);
     		    if (exist) {
     		        assignFiber(exist, fiber);
@@ -3045,6 +3673,9 @@
     		    if (core._enableHoverOnBrowser)
     		        return;
     		    if (typeof document === "undefined") {
+    		        {
+    		            console.warn("[@my-react-devtool/core] current env not support");
+    		        }
     		        return;
     		    }
     		    core._enableHoverOnBrowser = true;
@@ -3098,12 +3729,18 @@
     		var setHoverStatus = function (core, d) {
     		    if (!core.hasEnable)
     		        return;
+    		    {
+    		        console.log("[@my-react-devtool/core] hoverStatus ".concat(d ? "enable" : "disable"));
+    		    }
     		    core._enableHover = d;
     		};
 
     		var setUpdateStatus = function (core, d) {
     		    if (!core._enabled)
     		        return;
+    		    {
+    		        console.log("[@my-react-devtool/core] updateStatus ".concat(d ? "enable" : "disable"));
+    		    }
     		    core._enableUpdate = d;
     		    if (!core._enableUpdate) {
     		        core.update.cancelPending();
@@ -3113,6 +3750,9 @@
     		var setRetriggerStatus = function (core, d) {
     		    if (!core._enabled)
     		        return;
+    		    {
+    		        console.log("[@my-react-devtool/core] retriggerStatus ".concat(d ? "enable" : "disable"));
+    		    }
     		    core._enableRetrigger = d;
     		    core.notifyTrigger();
     		    core.notifyTriggerStatus();
@@ -3507,6 +4147,9 @@
     		        if (nodeId === null)
     		            return;
     		        if (!map[nodeId]) {
+    		            {
+    		                console.warn("[@my-react-devtool/core] record node id missing: ".concat(nodeId, " %o"), fiber);
+    		            }
     		            return;
     		        }
     		        var stackTop = stack.pop();
@@ -3605,6 +4248,9 @@
     		        dispatch.onAfterCommitUnmount(function () { return runtime.notifyUnmountNode(); });
     		    }
     		    else {
+    		        {
+    		            console.warn("[@my-react-devtool/core] current version of @my-react will deprecate in next update, please upgrade to latest version");
+    		        }
     		        var originalPatchUnmount_1 = dispatch.patchToFiberUnmount;
     		        dispatch.patchToFiberUnmount = function (fiber) {
     		            originalPatchUnmount_1.call(this, fiber);
@@ -3618,6 +4264,9 @@
     		        dispatch.onFiberInitial(function (f) { return initPlainNode(f, runtime); });
     		    }
     		    else {
+    		        {
+    		            console.warn("[@my-react-devtool/core] current version of @my-react will deprecate in next update, please upgrade to latest version");
+    		        }
     		        var originalPatchInit_1 = dispatch.patchToFiberInitial;
     		        dispatch.patchToFiberInitial = function (fiber) {
     		            originalPatchInit_1.call(this, fiber);
@@ -4568,6 +5217,9 @@
     		            return;
     		        var fiber = getFiberNodeById(id);
     		        if (fiber) {
+    		            {
+    		                console.log("[@my-react-devtool/core] current select fiber", fiber);
+    		            }
     		            var detailNode = inspectFiber(fiber);
     		            this._selectNode = detailNode;
     		            this._notify({ type: exports.DevToolMessageEnum.detail, data: detailNode });
@@ -4669,6 +5321,9 @@
     		    DevToolCore.prototype.connect = function () {
     		        if (this._enabled)
     		            return;
+    		        {
+    		            console.log("[@my-react-devtool/core] connect");
+    		        }
     		        this._enabled = true;
     		    };
     		    DevToolCore.prototype.disconnect = function () {
@@ -4676,6 +5331,9 @@
     		            return;
     		        this.select.remove();
     		        this.update.cancelPending();
+    		        {
+    		            console.log("[@my-react-devtool/core] disconnect");
+    		        }
     		        this._enabled = false;
     		    };
     		    DevToolCore.prototype.startRecord = function () { };
@@ -4766,8 +5424,8 @@
     		exports.typeKeys = typeKeys;
     		exports.unmountPlainNode = unmountPlainNode;
     		exports.updateFiberNode = updateFiberNode; 
-    	} (index_production));
-    	return index_production;
+    	} (index_development));
+    	return index_development;
     }
 
     var hasRequiredCore;
@@ -4777,7 +5435,7 @@
     	hasRequiredCore = 1;
 
     	{
-    	  core$1.exports = requireIndex_production();
+    	  core$1.exports = requireIndex_development();
     	}
     	return core$1.exports;
     }
@@ -5134,6 +5792,9 @@
         return __generator(this, function (_d) {
             if (typeof process !== "object" || typeof globalThis.io !== "function")
                 return [2 /*return*/];
+            {
+                console.log("[@my-react-devtool/hook] start a node devtool");
+            }
             (_a = globalThis["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(globalThis, d); });
             (_c = (_b = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
             connectSocket = globalThis.io(url, {
@@ -5145,6 +5806,9 @@
             });
             unSubscribe = function () { };
             connectSocket.on("connect", function () {
+                {
+                    console.log("[@my-react-devtool/hook] socket connected");
+                }
                 connectSocket.emit("init", {
                     name: "node-app-engine",
                     type: "client",
@@ -5154,6 +5818,9 @@
                 });
             });
             connectSocket.on("disconnect", function () {
+                {
+                    console.log("[@my-react-devtool/hook] socket disconnected");
+                }
                 unSubscribe();
                 core.disconnect();
             });
@@ -5204,6 +5871,9 @@
                     connectSocket = socket;
                     unSubscribe = function () { };
                     socket.on("connect", function () {
+                        {
+                            console.log("[@my-react-devtool/hook] socket connected");
+                        }
                         socket.emit("web-dev", { name: window.document.title, url: window.location.href });
                         socket.emit("init", {
                             name: "web-app-engine",
@@ -5216,6 +5886,9 @@
                         });
                     });
                     socket.on("disconnect", function () {
+                        {
+                            console.log("[@my-react-devtool/hook] socket disconnected");
+                        }
                         unSubscribe();
                         core.disconnect();
                     });
@@ -5241,6 +5914,9 @@
     // default render agentId
     var agentId = core.id;
     core.subscribe(function (message) {
+        {
+            console.log("[@my-react-devtool/hook] core message", message);
+        }
         hookPostMessageWithSource({ type: eventExports.MessageHookType.render, data: message, to: sourceFrom.panel });
     });
     var set = new Set();
@@ -5253,6 +5929,11 @@
             fn();
         }
         else {
+            if (count && count > 10) {
+                {
+                    console.error("[@my-react-devtool/hook] detector not ready");
+                }
+            }
             if (count && count > 18) {
                 return;
             }
@@ -5272,6 +5953,9 @@
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.to) !== sourceFrom.hook)
             return;
         if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === eventExports.MessageDetectorType.init) {
+            {
+                console.log("[@my-react-devtool/hook] detector init");
+            }
             detectorReady = true;
         }
         if (message.data.from === sourceFrom.forward) {
@@ -5347,6 +6031,11 @@
         }
         hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector });
         globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector }); };
+    }
+    else {
+        {
+            console.warn("[@my-react-devtool/hook] current file should only be loaded once");
+        }
     }
 
 })();
