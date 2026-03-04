@@ -53,19 +53,19 @@ export type MessageProxyDataType = {
 }
 
 export enum sourceFrom {
-  // message from hook script
+  // message from hook script, `content` dir
   hook = "hook",
-  // message from proxy script
+  // message from proxy script, `backend` dir
   proxy = "proxy",
-  // message from devtool panel
+  // message from devtool panel, `panel` dir
   panel = "panel",
-  // message from background worker
+  // message from background worker, `background` dir
   worker = "worker",
-  // message from iframe 
+  // message from iframe, chrome/src/hooks/useBridgeForward.ts
   iframe = "iframe",
-  // message from socket
+  // message from socket, chrome/src/hooks/useWebDev.ts
   socket = "socket",
-  // message from detector
+  // message from detector, `popover` dir
   detector = "detector",
 
   // message from another runtime engine

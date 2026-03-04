@@ -151,19 +151,19 @@
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
-        // message from hook script
+        // message from hook script, `content` dir
         sourceFrom["hook"] = "hook";
-        // message from proxy script
+        // message from proxy script, `backend` dir
         sourceFrom["proxy"] = "proxy";
-        // message from devtool panel
+        // message from devtool panel, `panel` dir
         sourceFrom["panel"] = "panel";
-        // message from background worker
+        // message from background worker, `background` dir
         sourceFrom["worker"] = "worker";
-        // message from iframe 
+        // message from iframe, chrome/src/hooks/useBridgeForward.ts
         sourceFrom["iframe"] = "iframe";
-        // message from socket
+        // message from socket, chrome/src/hooks/useWebDev.ts
         sourceFrom["socket"] = "socket";
-        // message from detector
+        // message from detector, `popover` dir
         sourceFrom["detector"] = "detector";
         // message from another runtime engine
         sourceFrom["forward"] = "forward";
@@ -233,7 +233,11 @@
             return;
         }
         if (((_a = sender.tab) === null || _a === void 0 ? void 0 : _a.id) && message.type === eventExports.MessageHookType.mount) {
-            if (message.data === "develop") {
+            var type = typeof message.data === "string" ? message.data : message.data.mode;
+            var forwardMode = typeof message.data === "object" ? message.data.forwardMode : false;
+            var icon_48 = forwardMode ? "icons/48-s-f.png" : type === "develop" ? "icons/48-s-d.png" : "icons/48-s.png";
+            var icon_128 = forwardMode ? "icons/128-s-f.png" : type === "develop" ? "icons/128-s-d.png" : "icons/128-s.png";
+            if (type === "develop") {
                 chrome.action.setPopup({
                     tabId: sender.tab.id,
                     popup: chrome.runtime.getURL("enablePopupDev.html"),
@@ -241,12 +245,12 @@
                 chrome.action.setIcon({
                     tabId: sender.tab.id,
                     path: {
-                        48: chrome.runtime.getURL("icons/48-s-d.png"),
-                        128: chrome.runtime.getURL("icons/128-s-d.png"),
+                        48: chrome.runtime.getURL(icon_48),
+                        128: chrome.runtime.getURL(icon_128),
                     },
                 });
             }
-            else if (message.data === "product") {
+            else if (type === "product") {
                 chrome.action.setPopup({
                     tabId: sender.tab.id,
                     popup: chrome.runtime.getURL("enablePopupPro.html"),
@@ -254,8 +258,8 @@
                 chrome.action.setIcon({
                     tabId: sender.tab.id,
                     path: {
-                        48: chrome.runtime.getURL("icons/48-s.png"),
-                        128: chrome.runtime.getURL("icons/128-s.png"),
+                        48: chrome.runtime.getURL(icon_48),
+                        128: chrome.runtime.getURL(icon_128),
                     },
                 });
             }
@@ -267,8 +271,8 @@
                 chrome.action.setIcon({
                     tabId: sender.tab.id,
                     path: {
-                        48: chrome.runtime.getURL("icons/48-s.png"),
-                        128: chrome.runtime.getURL("icons/128-s.png"),
+                        48: chrome.runtime.getURL(icon_48),
+                        128: chrome.runtime.getURL(icon_128),
                     },
                 });
             }

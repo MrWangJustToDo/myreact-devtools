@@ -29,6 +29,8 @@ const set = new Set<CustomRenderDispatch>();
 
 let detectorReady = false;
 
+let forwardMode = false;
+
 const idMap = new Map<() => void, NodeJS.Timeout>();
 
 const runWhenDetectorReady = (fn: () => void, count?: number) => {
@@ -71,11 +73,21 @@ const onMessage = (message: MessageEvent<MessageHookDataType | MessagePanelDataT
     }
 
     detectorReady = true;
+
+    const res = message.data as any;
+
+    if (res.forward === sourceFrom.forward) {
+      forwardMode = true;
+    } else {
+      forwardMode = false;
+    }
   }
 
   if (message.data.from === sourceFrom.forward) {
     // 通知forward source端，detector已准备好
     hookPostMessageWithSource({ type: MessageDetectorType.init, to: sourceFrom.hook, forward: sourceFrom.forward });
+
+    forwardMode = true;
   }
 
   if (message.data.type === MessagePanelType.show) {
@@ -91,15 +103,15 @@ if (typeof window !== "undefined") {
 
 const onceMount = once(() => {
   // current site is render by @my-react
-  hookPostMessageWithSource({ type: MessageHookType.mount, to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: { forwardMode }, to: sourceFrom.detector });
 });
 
 const onceDev = once(() => {
-  hookPostMessageWithSource({ type: MessageHookType.mount, data: "develop", to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: { mode: "develop", forwardMode }, to: sourceFrom.detector });
 });
 
 const oncePro = once(() => {
-  hookPostMessageWithSource({ type: MessageHookType.mount, data: "product", to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: { mode: "product", forwardMode }, to: sourceFrom.detector });
 });
 
 const onceOrigin = once(() => {

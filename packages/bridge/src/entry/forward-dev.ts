@@ -85,15 +85,15 @@ if (typeof window !== "undefined") {
 
 const onceMount = once(() => {
   // current site is render by @my-react
-  hookPostMessageWithSource({ type: MessageHookType.mount, to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: { forwardMode: true }, to: sourceFrom.detector });
 });
 
 const onceDev = once(() => {
-  hookPostMessageWithSource({ type: MessageHookType.mount, data: "develop", to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: { mode: "develop", forwardMode: true }, to: sourceFrom.detector });
 });
 
 const oncePro = once(() => {
-  hookPostMessageWithSource({ type: MessageHookType.mount, data: "product", to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: { mode: "product", forwardMode: true }, to: sourceFrom.detector });
 });
 
 const onceOrigin = once(() => {

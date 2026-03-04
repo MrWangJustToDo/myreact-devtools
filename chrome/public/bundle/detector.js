@@ -118,19 +118,19 @@
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
-        // message from hook script
+        // message from hook script, `content` dir
         sourceFrom["hook"] = "hook";
-        // message from proxy script
+        // message from proxy script, `backend` dir
         sourceFrom["proxy"] = "proxy";
-        // message from devtool panel
+        // message from devtool panel, `panel` dir
         sourceFrom["panel"] = "panel";
-        // message from background worker
+        // message from background worker, `background` dir
         sourceFrom["worker"] = "worker";
-        // message from iframe 
+        // message from iframe, chrome/src/hooks/useBridgeForward.ts
         sourceFrom["iframe"] = "iframe";
-        // message from socket
+        // message from socket, chrome/src/hooks/useWebDev.ts
         sourceFrom["socket"] = "socket";
-        // message from detector
+        // message from detector, `popover` dir
         sourceFrom["detector"] = "detector";
         // message from another runtime engine
         sourceFrom["forward"] = "forward";

@@ -106,7 +106,15 @@ chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender) => {
   }
 
   if (sender.tab?.id && message.type === MessageHookType.mount) {
-    if (message.data === "develop") {
+    const type = typeof message.data === "string" ? message.data : message.data.mode;
+
+    const forwardMode = typeof message.data === "object" ? message.data.forwardMode : false;
+
+    const icon_48 = forwardMode ? "icons/48-s-f.png" : type === "develop" ? "icons/48-s-d.png" : "icons/48-s.png";
+
+    const icon_128 = forwardMode ? "icons/128-s-f.png" : type === "develop" ? "icons/128-s-d.png" : "icons/128-s.png";
+
+    if (type === "develop") {
       chrome.action.setPopup({
         tabId: sender.tab.id,
         popup: chrome.runtime.getURL("enablePopupDev.html"),
@@ -114,11 +122,11 @@ chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender) => {
       chrome.action.setIcon({
         tabId: sender.tab.id,
         path: {
-          48: chrome.runtime.getURL("icons/48-s-d.png"),
-          128: chrome.runtime.getURL("icons/128-s-d.png"),
+          48: chrome.runtime.getURL(icon_48),
+          128: chrome.runtime.getURL(icon_128),
         },
       });
-    } else if (message.data === "product") {
+    } else if (type === "product") {
       chrome.action.setPopup({
         tabId: sender.tab.id,
         popup: chrome.runtime.getURL("enablePopupPro.html"),
@@ -126,8 +134,8 @@ chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender) => {
       chrome.action.setIcon({
         tabId: sender.tab.id,
         path: {
-          48: chrome.runtime.getURL("icons/48-s.png"),
-          128: chrome.runtime.getURL("icons/128-s.png"),
+          48: chrome.runtime.getURL(icon_48),
+          128: chrome.runtime.getURL(icon_128),
         },
       });
     } else {
@@ -138,8 +146,8 @@ chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender) => {
       chrome.action.setIcon({
         tabId: sender.tab.id,
         path: {
-          48: chrome.runtime.getURL("icons/48-s.png"),
-          128: chrome.runtime.getURL("icons/128-s.png"),
+          48: chrome.runtime.getURL(icon_48),
+          128: chrome.runtime.getURL(icon_128),
         },
       });
     }

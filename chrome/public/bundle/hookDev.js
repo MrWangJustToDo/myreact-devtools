@@ -5522,19 +5522,19 @@
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
-        // message from hook script
+        // message from hook script, `content` dir
         sourceFrom["hook"] = "hook";
-        // message from proxy script
+        // message from proxy script, `backend` dir
         sourceFrom["proxy"] = "proxy";
-        // message from devtool panel
+        // message from devtool panel, `panel` dir
         sourceFrom["panel"] = "panel";
-        // message from background worker
+        // message from background worker, `background` dir
         sourceFrom["worker"] = "worker";
-        // message from iframe 
+        // message from iframe, chrome/src/hooks/useBridgeForward.ts
         sourceFrom["iframe"] = "iframe";
-        // message from socket
+        // message from socket, chrome/src/hooks/useWebDev.ts
         sourceFrom["socket"] = "socket";
-        // message from detector
+        // message from detector, `popover` dir
         sourceFrom["detector"] = "detector";
         // message from another runtime engine
         sourceFrom["forward"] = "forward";
@@ -5921,6 +5921,7 @@
     });
     var set = new Set();
     var detectorReady = false;
+    var forwardMode = false;
     var idMap = new Map();
     var runWhenDetectorReady = function (fn, count) {
         var id = idMap.get(fn);
@@ -5957,10 +5958,18 @@
                 console.log("[@my-react-devtool/hook] detector init");
             }
             detectorReady = true;
+            var res = message.data;
+            if (res.forward === sourceFrom.forward) {
+                forwardMode = true;
+            }
+            else {
+                forwardMode = false;
+            }
         }
         if (message.data.from === sourceFrom.forward) {
             // 通知forward source端，detector已准备好
             hookPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook, forward: sourceFrom.forward });
+            forwardMode = true;
         }
         if (message.data.type === eventExports.MessagePanelType.show) {
             hookPostMessageWithSource({ type: eventExports.MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
@@ -5972,13 +5981,13 @@
     }
     var onceMount = once(function () {
         // current site is render by @my-react
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, to: sourceFrom.detector });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { forwardMode: forwardMode }, to: sourceFrom.detector });
     });
     var onceDev = once(function () {
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: "develop", to: sourceFrom.detector });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { mode: "develop", forwardMode: forwardMode }, to: sourceFrom.detector });
     });
     var oncePro = once(function () {
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: "product", to: sourceFrom.detector });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { mode: "product", forwardMode: forwardMode }, to: sourceFrom.detector });
     });
     var onceOrigin = once(function () {
         try {
@@ -6012,7 +6021,7 @@
         if (typeof window !== "undefined") {
             // support web dev
             globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
-            // support iframe dev
+            // support iframe dev, see chrome/src/pages/bridge.tsx
             globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
         }
         if (typeof process !== "undefined") {
