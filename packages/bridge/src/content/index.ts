@@ -142,7 +142,7 @@ if (!globalThis["__MY_REACT_DEVTOOL_INTERNAL__"]) {
   if (typeof window !== "undefined") {
     // support web dev
     globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
-    // support iframe dev
+    // support iframe dev, see chrome/src/pages/bridge.tsx
     globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
   }
 

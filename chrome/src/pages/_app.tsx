@@ -41,7 +41,7 @@ function init() {
   if (typeof getFunc() === 'function') {
     getFunc()("${str}", "${token}");
   } else {
-    loadScript("${str}/bundle/hook.js").then(init);
+    loadScript("${str}/bundle/${type === "web" ? "hookDev" : "hook"}.js").then(init);
   }
 }
 
@@ -57,8 +57,10 @@ export default function App({ Component, pageProps, router }: AppProps) {
 
   const isPanelPage = router.pathname === "/devTool";
 
+  // for web server dev mode
   const isWebDev = process.env.NEXT_PUBLIC_MODE === "web";
 
+  // for iframe dev mode
   const isLocalDev = process.env.NEXT_PUBLIC_MODE === "local";
 
   let children = <Component {...pageProps} />;

@@ -24,9 +24,11 @@ const createDir = async () => {
   }
 };
 
-const copyFile = async (type: "hook" | "proxy" | "service-worker" | "panel" | "detector" | "forward-dev") => {
-  const path = resolve(process.cwd(), `packages/bridge/dist/iife/${type}.production.js`);
-  const dest = resolve(process.cwd(), `chrome/public/bundle/${type}.js`);
+const copyFile = async (type: "hook" | "proxy" | "service-worker" | "panel" | "detector" | "forward-dev", dev = false) => {
+  const path = dev
+    ? resolve(process.cwd(), `packages/bridge/dist/iife/${type}.development.js`)
+    : resolve(process.cwd(), `packages/bridge/dist/iife/${type}.production.js`);
+  const dest = dev ? resolve(process.cwd(), `chrome/public/bundle/${type}Dev.js`) : resolve(process.cwd(), `chrome/public/bundle/${type}.js`);
   const content = await readFile(path, "utf-8");
   await writeFile(dest, content, "utf-8");
 };
@@ -45,6 +47,7 @@ const start = async () => {
   await cleanDir();
   await createDir();
   copyFile("hook");
+  copyFile("hook", true);
   copyFile("detector");
   copyFile("proxy");
   copyFile("service-worker");
