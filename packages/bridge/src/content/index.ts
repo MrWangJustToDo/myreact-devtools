@@ -81,6 +81,8 @@ const onMessage = (message: MessageEvent<MessageHookDataType | MessagePanelDataT
     } else {
       forwardMode = false;
     }
+
+    globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = forwardMode;
   }
 
   if (message.data.from === sourceFrom.forward) {
@@ -88,6 +90,8 @@ const onMessage = (message: MessageEvent<MessageHookDataType | MessagePanelDataT
     hookPostMessageWithSource({ type: MessageDetectorType.init, to: sourceFrom.hook, forward: sourceFrom.forward });
 
     forwardMode = true;
+
+    globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = forwardMode;
   }
 
   if (message.data.type === MessagePanelType.show) {
@@ -150,6 +154,8 @@ if (!globalThis["__MY_REACT_DEVTOOL_INTERNAL__"]) {
   globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
 
   globalThis["__@my-react/react-devtool-inject__"] = globalHook;
+
+  globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = false;
 
   if (typeof window !== "undefined") {
     // support web dev
