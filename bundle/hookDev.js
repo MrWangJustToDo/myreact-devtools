@@ -5965,11 +5965,13 @@
             else {
                 forwardMode = false;
             }
+            globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = forwardMode;
         }
         if (message.data.from === sourceFrom.forward) {
             // 通知forward source端，detector已准备好
             hookPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook, forward: sourceFrom.forward });
             forwardMode = true;
+            globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = forwardMode;
         }
         if (message.data.type === eventExports.MessagePanelType.show) {
             hookPostMessageWithSource({ type: eventExports.MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
@@ -6018,6 +6020,7 @@
         globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
         globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
         globalThis["__@my-react/react-devtool-inject__"] = globalHook;
+        globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = false;
         if (typeof window !== "undefined") {
             // support web dev
             globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
