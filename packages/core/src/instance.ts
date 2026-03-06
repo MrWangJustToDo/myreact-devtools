@@ -175,6 +175,10 @@ export class DevToolCore {
     this._listeners.delete(listener);
   }
 
+  clearSubscribe() {
+    this._listeners.clear();
+  }
+
   _notify(data: DevToolMessageType) {
     this._listeners.forEach((listener) => listener({ ...data, agentId: this.id }));
   }

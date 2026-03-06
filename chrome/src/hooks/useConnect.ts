@@ -11,9 +11,6 @@ export const useConnect = createState(
       error?: string;
       agentID?: string;
       cb: (() => void) | null;
-      // used for web dev
-      name?: string;
-      url?: string;
     },
   {
     withActions: (s) => ({
@@ -29,14 +26,8 @@ export const useConnect = createState(
       setError(error?: string) {
         s.error = error;
       },
-      setWebDev(name: string, url: string) {
-        s.name = name;
-        s.url = url;
-      },
       disconnect() {
         s.state = false;
-        s.url = undefined;
-        s.name = undefined;
         s.agentID = undefined;
         clearNodeCache();
       },

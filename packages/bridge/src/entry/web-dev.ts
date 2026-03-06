@@ -1,6 +1,6 @@
-import { core } from "../core";
-import { onMessageFromPanelOrWorkerOrDetector } from "../message";
 import { loadScript } from "../utils";
+
+import { socketClient } from "./socket-share";
 
 import type { Socket } from "socket.io-client";
 
@@ -10,7 +10,7 @@ let connectSocket: Socket | null = null;
 export const initWEB_DEV = async (url: string) => {
   if (typeof window === "undefined") return;
 
-  console.log("[@my-react-devtool/hook] start a web ui devtool");
+  console.log("[@my-react-devtool/hook] start a web app devtool");
 
   if (!window.io || !globalThis["io"]) {
     try {
@@ -22,54 +22,11 @@ export const initWEB_DEV = async (url: string) => {
 
   window.io = window.io || globalThis["io"];
 
-  window["__@my-react/dispatch__"]?.forEach((d) => window.__MY_REACT_DEVTOOL_RUNTIME__?.(d));
+  window.__MY_REACT_DEVTOOL_RUNTIME__?.prepare?.();
 
   window.__MY_REACT_DEVTOOL_RUNTIME__?.init?.();
 
-  const socket = window.io(url);
-
-  connectSocket = socket;
-
-  let unSubscribe = () => {};
-
-  socket.on("connect", () => {
-    if (__DEV__) {
-      console.log("[@my-react-devtool/hook] socket connected");
-    }
-
-    socket.emit("web-dev", { name: window.document.title, url: window.location.href });
-
-    socket.emit("init", {
-      name: "web-app-engine",
-      type: "client",
-      url: window.location.href,
-      title: window.document.title,
-    });
-
-    unSubscribe = core.subscribe((message) => {
-      socket.emit("render", message);
-    });
-  });
-
-  socket.on("disconnect", () => {
-    if (__DEV__) {
-      console.log("[@my-react-devtool/hook] socket disconnected");
-    }
-
-    unSubscribe();
-
-    core.disconnect();
-  });
-
-  socket.on("action", (data) => {
-    onMessageFromPanelOrWorkerOrDetector(data);
-  });
-
-  socket.on("duplicate", () => {
-    console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
-
-    socket?.disconnect();
-  });
+  connectSocket = socketClient({ io: window.io, url, name: "web-app-engine" });
 };
 
 initWEB_DEV.close = () => {

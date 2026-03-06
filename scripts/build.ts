@@ -24,7 +24,7 @@ const createDir = async () => {
   }
 };
 
-const copyFile = async (type: "hook" | "proxy" | "service-worker" | "panel" | "detector" | "forward-dev", dev = false) => {
+const copyFile = async (type: "hook" | "proxy" | "service-worker" | "panel" | "detector" | "forward-dev" | "bundle-dev", dev = false) => {
   const path = dev
     ? resolve(process.cwd(), `packages/bridge/dist/iife/${type}.development.js`)
     : resolve(process.cwd(), `packages/bridge/dist/iife/${type}.production.js`);
@@ -52,6 +52,7 @@ const start = async () => {
   copyFile("proxy");
   copyFile("service-worker");
   copyFile("panel");
+  copyFile("bundle-dev");
   copyFile("forward-dev");
 };
 

@@ -9,7 +9,7 @@ import { FontSize } from "@/components/FontSize";
 import { useBridgeTarget } from "@/hooks/useBridgeTarget";
 import { useConnect } from "@/hooks/useConnect";
 import { useIsMounted } from "@/hooks/useIsMounted";
-import { useWebDev } from "@/hooks/useWebDev";
+import { useSocketDev } from "@/hooks/useSocketDev";
 
 import type { AppProps } from "next/app";
 
@@ -25,7 +25,7 @@ import "allotment/dist/style.css";
 //   variable: "--root-font--",
 // });
 
-const source = (str: string, type: "web" | "local", token?: string) => `function loadScript(url) {
+const source = (str: string, type: "web" | "local" | "socket", token?: string) => `function loadScript(url) {
   const script = document.createElement("script");
   return new Promise((resolve, reject) => {
     script.src = url;
@@ -35,13 +35,13 @@ const source = (str: string, type: "web" | "local", token?: string) => `function
   }).finally(() => script.remove());
 }
 
-const getFunc = () => ${type === "web" ? "window.__MY_REACT_DEVTOOL_WEB__" : "window.__MY_REACT_DEVTOOL_IFRAME__"};
+const getFunc = () => ${type === "web" ? "window.__MY_REACT_DEVTOOL_WEB__" : type === "socket" ? "window.__MY_REACT_DEVTOOL_BUNDLE__" : "window.__MY_REACT_DEVTOOL_IFRAME__"};
 
 function init() {
   if (typeof getFunc() === 'function') {
     getFunc()("${str}", "${token}");
   } else {
-    loadScript("${str}/bundle/${type === "web" ? "hookDev" : "hook"}.js").then(init);
+    loadScript("${str}/bundle/${type === "web" ? "hookDev" : type === "socket" ? "bundle-dev" : "hook"}.js").then(init);
   }
 }
 
@@ -49,7 +49,7 @@ init();
 `;
 
 export default function App({ Component, pageProps, router }: AppProps) {
-  const { render, state, reconnect } = useConnect((s) => ({ render: s.render, state: s.state, name: s.name, url: s.url, reconnect: s.cb }));
+  const { render, state, reconnect } = useConnect((s) => ({ render: s.render, state: s.state, reconnect: s.cb }));
 
   const isMounted = useIsMounted();
 
@@ -63,6 +63,9 @@ export default function App({ Component, pageProps, router }: AppProps) {
   // for iframe dev mode
   const isLocalDev = process.env.NEXT_PUBLIC_MODE === "local";
 
+  // for socket dev mode
+  const isSocket = process.env.NEXT_PUBLIC_MODE === "socket";
+
   let children = <Component {...pageProps} />;
 
   if (isPanelPage && typeof render !== "boolean") {
@@ -75,6 +78,9 @@ export default function App({ Component, pageProps, router }: AppProps) {
           {isWebDev || isLocalDev ? <Spacer className="my-2" /> : null}
           {isWebDev && (
             <CodePreview code={source(str, "web", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
+          )}
+          {isSocket && (
+            <CodePreview code={source(str, "socket", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
           )}
           {isLocalDev && (
             <CodePreview code={source(str, "local", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
@@ -111,7 +117,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
     );
   }
 
-  useWebDev();
+  useSocketDev();
 
   useBridgeTarget();
 

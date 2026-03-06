@@ -1,7 +1,7 @@
 import { DevToolMessageType, PlainNode, Tree } from "@my-react-devtool/core";
 import { CustomRenderDispatch } from "@my-react/react-reconciler";
 import { UseSelectorWithState } from "reactivity-store";
-import { io } from "socket.io-client";
+import { io as socketIO } from "socket.io-client";
 
 declare global {
   const __DEV__: boolean;
@@ -13,36 +13,53 @@ declare global {
     }
   }
 
+  var onListener: (postMessage: (data: any) => void) => () => void;
+
+  var onRender: (data: DevToolMessageType) => void;
+
+  var onClear: () => void;
+
+  var useConnect: UseSelectorWithState<
+    { state: boolean },
+    {
+      connect: () => void;
+      disconnect: () => void;
+      setError: (r?: string) => void;
+      setRender: (r?: boolean) => void;
+      setConnectHandler: (cb: () => void) => void;
+    }
+  >;
+
+  var useAppTree: UseSelectorWithState<{ nodes: Tree[]; list: PlainNode[] }, {}>;
+
+  var __MY_REACT_DEVTOOL_RUNTIME__: (((dispatch: CustomRenderDispatch) => void) & { init: () => void; prepare?: () => void }) | undefined;
+
+  var io: typeof socketIO;
+
   interface Window {
-    onListener: (postMessage: (data: any) => void) => () => void;
+    onListener: typeof onListener;
 
-    onRender: (data: DevToolMessageType) => void;
+    onRender: typeof onRender;
 
-    onClear: () => void;
+    onClear: typeof onClear;
 
-    useConnect: UseSelectorWithState<
-      { state: boolean },
-      {
-        connect: () => void;
-        disconnect: () => void;
-        setError: (r?: string) => void;
-        setRender: (r?: boolean) => void;
-        setConnectHandler: (cb: () => void) => void;
-      }
-    >;
+    useConnect: typeof useConnect;
 
-    useAppTree: UseSelectorWithState<{ nodes: Tree[]; list: PlainNode[] }, {}>;
+    useAppTree: typeof useAppTree;
 
-    __MY_REACT_DEVTOOL_RUNTIME__?: ((dispatch: CustomRenderDispatch) => void) & { init: () => void };
+    __MY_REACT_DEVTOOL_RUNTIME__?: typeof __MY_REACT_DEVTOOL_RUNTIME__;
 
     ["__@my-react/dispatch__"]?: CustomRenderDispatch[];
 
     io: typeof io;
   }
 
-  interface globalThis {
-    io: typeof io;
-  }
+  var __MY_REACT_DEVTOOL_FORWARD__: any;
+  var __MY_REACT_DEVTOOL_INTERNAL__: any;
+  var __MY_REACT_DEVTOOL_WEB__: any;
+  var __MY_REACT_DEVTOOL_IFRAME__: any;
+  var __MY_REACT_DEVTOOL_NODE__: any;
+  var __MY_REACT_DEVTOOL_BUNDLE__: any;
 }
 
 export {};

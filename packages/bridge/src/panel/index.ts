@@ -118,17 +118,13 @@ const initPort = () => {
     if (message?.type === MessageHookType.clear) {
       const currentAgentId = agentIdMap.get(getTabId());
 
-      if (currentAgentId && message.data?.agentId === currentAgentId) return;
+      if (currentAgentId && message.data?.agentId === currentAgentId) {
+        clear?.();
 
-      if (currentAgentId && message.data?.agentId && message.data?.force) {
-        agentIdMap.set(getTabId(), message.data.agentId);
-      } else if (message.data?.agentId) {
-        agentIdMap.set(getTabId(), message.data.agentId);
+        agentIdMap.delete(getTabId());
+
+        return;
       }
-
-      clear?.();
-
-      return;
     }
 
     if (message?.type === MessageHookType.render) {

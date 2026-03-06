@@ -50,6 +50,19 @@
       ]
     },
     {
+      "input": "./src/content/index-bundle.ts",
+      "pkgName": "bundle-dev",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "iife/bundle-dev.js",
+          "format": "iife",
+          "type": true,
+          "multiple": true
+        }
+      ]
+    },
+    {
       "input": "./src/popover/index.ts",
       "pkgName": "detector",
       "output": [

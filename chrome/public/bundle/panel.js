@@ -269,7 +269,7 @@
         setConnectHandler(function () { return initPort(); });
         port = chrome.runtime.connect({ name: getTabId().toString() });
         var onMessage = function (message) {
-            var _a, _b, _c, _d, _e;
+            var _a, _b;
             if (!hasShow)
                 return;
             if (message.to !== sourceFrom.panel)
@@ -281,20 +281,15 @@
             }
             if ((message === null || message === void 0 ? void 0 : message.type) === eventExports.MessageHookType.clear) {
                 var currentAgentId = agentIdMap.get(getTabId());
-                if (currentAgentId && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.agentId) === currentAgentId)
+                if (currentAgentId && ((_a = message.data) === null || _a === void 0 ? void 0 : _a.agentId) === currentAgentId) {
+                    clear === null || clear === void 0 ? void 0 : clear();
+                    agentIdMap.delete(getTabId());
                     return;
-                if (currentAgentId && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.agentId) && ((_c = message.data) === null || _c === void 0 ? void 0 : _c.force)) {
-                    agentIdMap.set(getTabId(), message.data.agentId);
                 }
-                else if ((_d = message.data) === null || _d === void 0 ? void 0 : _d.agentId) {
-                    agentIdMap.set(getTabId(), message.data.agentId);
-                }
-                clear === null || clear === void 0 ? void 0 : clear();
-                return;
             }
             if ((message === null || message === void 0 ? void 0 : message.type) === eventExports.MessageHookType.render) {
                 var currentAgentId = agentIdMap.get(getTabId());
-                if (!currentAgentId && ((_e = message.data) === null || _e === void 0 ? void 0 : _e.agentId)) {
+                if (!currentAgentId && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.agentId)) {
                     agentIdMap.set(getTabId(), message.data.agentId);
                 }
                 if (currentAgentId && message.data.agentId !== currentAgentId)

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:web": "NEXT_PUBLIC_MODE=web node server.mjs",
+    "dev:socket": "NEXT_PUBLIC_MODE=socket node server.mjs",
     "dev:local": "NEXT_PUBLIC_MODE=local next dev",
     "dev:extension": "npm-watch",
     "build": "next build",

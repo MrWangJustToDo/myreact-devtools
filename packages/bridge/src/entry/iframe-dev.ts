@@ -55,7 +55,7 @@ export const initIFRAME_DEV = async (origin: string, token?: string) => {
 
   closeCBArray.push(() => window.removeEventListener("message", onMessage));
 
-  window["__@my-react/dispatch__"]?.forEach((d) => window.__MY_REACT_DEVTOOL_RUNTIME__?.(d));
+  window.__MY_REACT_DEVTOOL_RUNTIME__?.prepare?.();
 
   window.__MY_REACT_DEVTOOL_RUNTIME__?.init?.();
 };

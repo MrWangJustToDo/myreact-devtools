@@ -7,9 +7,9 @@ import { onRender } from "@/utils/render";
 
 import { useConnect } from "./useConnect";
 
-export const useWebDev = () => {
+export const useSocketDev = () => {
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_MODE === "web" && window.io && typeof window.io === "function") {
+    if ((process.env.NEXT_PUBLIC_MODE === "web" || process.env.NEXT_PUBLIC_MODE === "socket") && window.io && typeof window.io === "function") {
       const io = window.io();
 
       let connect = false;
@@ -71,12 +71,6 @@ export const useWebDev = () => {
 
       io.on("refresh", () => {
         window.location.reload();
-      });
-
-      io.on("web-dev", (data) => {
-        console.log("[Dev mode] web-dev", data);
-
-        useConnect.getActions().setWebDev(data.name || "", data.url || "");
       });
 
       io.on("duplicate", () => {
