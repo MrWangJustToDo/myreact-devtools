@@ -18,8 +18,57 @@
     /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
 
-    function __spreadArray(to, from, pack) {
-        if (arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    function __awaiter(thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    }
+
+    function __generator(thisArg, body) {
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        function verb(n) { return function (v) { return step([n, v]); }; }
+        function step(op) {
+            if (f) throw new TypeError("Generator is already executing.");
+            while (g && (g = 0, op[0] && (_ = 0)), _) try {
+                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+                if (y = 0, t) op = [op[0] & 2, t.value];
+                switch (op[0]) {
+                    case 0: case 1: t = op; break;
+                    case 4: _.label++; return { value: op[1], done: false };
+                    case 5: _.label++; y = op[1]; op = [0]; continue;
+                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                    default:
+                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                        if (t[2]) _.ops.pop();
+                        _.trys.pop(); continue;
+                }
+                op = body.call(thisArg, _);
+            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+        }
+    }
+
+    function __spreadArray$1(to, from, pack) {
+        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
             if (ar || !(i in from)) {
                 if (!ar) ar = Array.prototype.slice.call(from, 0, i);
                 ar[i] = from[i];
@@ -32,403 +81,6 @@
         var e = new Error(message);
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
-
-    var once = function (action) {
-        var called = false;
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            if (called)
-                return;
-            called = true;
-            if (typeof action === "function")
-                action.call.apply(action, __spreadArray([null], args, false));
-        };
-    };
-
-    var HOOK_TYPE;
-    (function (HOOK_TYPE) {
-        HOOK_TYPE[HOOK_TYPE["useId"] = 0] = "useId";
-        HOOK_TYPE[HOOK_TYPE["useRef"] = 1] = "useRef";
-        HOOK_TYPE[HOOK_TYPE["useMemo"] = 2] = "useMemo";
-        HOOK_TYPE[HOOK_TYPE["useState"] = 3] = "useState";
-        HOOK_TYPE[HOOK_TYPE["useSignal"] = 4] = "useSignal";
-        HOOK_TYPE[HOOK_TYPE["useEffect"] = 5] = "useEffect";
-        HOOK_TYPE[HOOK_TYPE["useContext"] = 6] = "useContext";
-        HOOK_TYPE[HOOK_TYPE["useReducer"] = 7] = "useReducer";
-        HOOK_TYPE[HOOK_TYPE["useCallback"] = 8] = "useCallback";
-        HOOK_TYPE[HOOK_TYPE["useTransition"] = 9] = "useTransition";
-        HOOK_TYPE[HOOK_TYPE["useDebugValue"] = 10] = "useDebugValue";
-        HOOK_TYPE[HOOK_TYPE["useLayoutEffect"] = 11] = "useLayoutEffect";
-        HOOK_TYPE[HOOK_TYPE["useDeferredValue"] = 12] = "useDeferredValue";
-        HOOK_TYPE[HOOK_TYPE["useInsertionEffect"] = 13] = "useInsertionEffect";
-        HOOK_TYPE[HOOK_TYPE["useImperativeHandle"] = 14] = "useImperativeHandle";
-        HOOK_TYPE[HOOK_TYPE["useSyncExternalStore"] = 15] = "useSyncExternalStore";
-        HOOK_TYPE[HOOK_TYPE["useOptimistic"] = 16] = "useOptimistic";
-        HOOK_TYPE[HOOK_TYPE["useEffectEvent"] = 17] = "useEffectEvent";
-    })(HOOK_TYPE || (HOOK_TYPE = {}));
-
-    var UpdateQueueType;
-    (function (UpdateQueueType) {
-        UpdateQueueType[UpdateQueueType["component"] = 1] = "component";
-        UpdateQueueType[UpdateQueueType["hook"] = 2] = "hook";
-        UpdateQueueType[UpdateQueueType["context"] = 3] = "context";
-        UpdateQueueType[UpdateQueueType["hmr"] = 4] = "hmr";
-        UpdateQueueType[UpdateQueueType["trigger"] = 5] = "trigger";
-        UpdateQueueType[UpdateQueueType["suspense"] = 6] = "suspense";
-        UpdateQueueType[UpdateQueueType["lazy"] = 7] = "lazy";
-        UpdateQueueType[UpdateQueueType["promise"] = 8] = "promise";
-    })(UpdateQueueType || (UpdateQueueType = {}));
-
-    var STATE_TYPE;
-    (function (STATE_TYPE) {
-        STATE_TYPE[STATE_TYPE["__initial__"] = 0] = "__initial__";
-        STATE_TYPE[STATE_TYPE["__create__"] = 1] = "__create__";
-        STATE_TYPE[STATE_TYPE["__stable__"] = 2] = "__stable__";
-        STATE_TYPE[STATE_TYPE["__inherit__"] = 4] = "__inherit__";
-        STATE_TYPE[STATE_TYPE["__triggerConcurrent__"] = 8] = "__triggerConcurrent__";
-        STATE_TYPE[STATE_TYPE["__triggerConcurrentForce__"] = 16] = "__triggerConcurrentForce__";
-        STATE_TYPE[STATE_TYPE["__triggerSync__"] = 32] = "__triggerSync__";
-        STATE_TYPE[STATE_TYPE["__triggerSyncForce__"] = 64] = "__triggerSyncForce__";
-        STATE_TYPE[STATE_TYPE["__unmount__"] = 128] = "__unmount__";
-        STATE_TYPE[STATE_TYPE["__hmr__"] = 256] = "__hmr__";
-        STATE_TYPE[STATE_TYPE["__retrigger__"] = 512] = "__retrigger__";
-        STATE_TYPE[STATE_TYPE["__reschedule__"] = 1024] = "__reschedule__";
-        STATE_TYPE[STATE_TYPE["__recreate__"] = 2048] = "__recreate__";
-        STATE_TYPE[STATE_TYPE["__suspense__"] = 4096] = "__suspense__";
-    })(STATE_TYPE || (STATE_TYPE = {}));
-
-    var PATCH_TYPE;
-    (function (PATCH_TYPE) {
-        PATCH_TYPE[PATCH_TYPE["__initial__"] = 0] = "__initial__";
-        PATCH_TYPE[PATCH_TYPE["__create__"] = 1] = "__create__";
-        PATCH_TYPE[PATCH_TYPE["__update__"] = 2] = "__update__";
-        PATCH_TYPE[PATCH_TYPE["__append__"] = 4] = "__append__";
-        PATCH_TYPE[PATCH_TYPE["__position__"] = 8] = "__position__";
-        PATCH_TYPE[PATCH_TYPE["__effect__"] = 16] = "__effect__";
-        PATCH_TYPE[PATCH_TYPE["__layoutEffect__"] = 32] = "__layoutEffect__";
-        PATCH_TYPE[PATCH_TYPE["__insertionEffect__"] = 64] = "__insertionEffect__";
-        PATCH_TYPE[PATCH_TYPE["__unmount__"] = 128] = "__unmount__";
-        PATCH_TYPE[PATCH_TYPE["__ref__"] = 256] = "__ref__";
-    })(PATCH_TYPE || (PATCH_TYPE = {}));
-
-    var Effect_TYPE;
-    (function (Effect_TYPE) {
-        Effect_TYPE[Effect_TYPE["__initial__"] = 0] = "__initial__";
-        Effect_TYPE[Effect_TYPE["__effect__"] = 1] = "__effect__";
-        Effect_TYPE[Effect_TYPE["__unmount__"] = 2] = "__unmount__";
-    })(Effect_TYPE || (Effect_TYPE = {}));
-
-    var ListTreeNode = /** @class */ (function () {
-        function ListTreeNode(value) {
-            this.prev = null;
-            this.next = null;
-            this.value = value;
-        }
-        return ListTreeNode;
-    }());
-    var ListTree = /** @class */ (function () {
-        function ListTree(max) {
-            this.length = 0;
-            this.maxLength = Infinity;
-            this.maxLength = max || Infinity;
-            var _stickyHead = null;
-            Object.defineProperty(this, "stickyHead", {
-                get: function () {
-                    return _stickyHead;
-                },
-                set: function (v) {
-                    _stickyHead = v;
-                },
-            });
-            var _stickyFoot = null;
-            Object.defineProperty(this, "stickyFoot", {
-                get: function () {
-                    return _stickyFoot;
-                },
-                set: function (v) {
-                    _stickyFoot = v;
-                },
-            });
-            var _head = null;
-            Object.defineProperty(this, "head", {
-                get: function () {
-                    return _head;
-                },
-                set: function (v) {
-                    _head = v;
-                },
-            });
-            var _foot = null;
-            Object.defineProperty(this, "foot", {
-                get: function () {
-                    return _foot;
-                },
-                set: function (v) {
-                    _foot = v;
-                },
-            });
-        }
-        ListTree.prototype.push = function (node) {
-            while (this.length >= this.maxLength) {
-                this.pop();
-            }
-            var listNode = new ListTreeNode(node);
-            this.length++;
-            if (!this.foot) {
-                this.head = listNode;
-                this.foot = listNode;
-            }
-            else {
-                this.foot.next = listNode;
-                listNode.prev = this.foot;
-                this.foot = listNode;
-            }
-        };
-        ListTree.prototype.pushToLast = function (node) {
-            if (this.stickyFoot) {
-                var node_1 = this.stickyFoot;
-                this.push(node_1.value);
-                this.stickyFoot = null;
-                this.length--;
-            }
-            else {
-                this.length++;
-            }
-            var listNode = new ListTreeNode(node);
-            this.stickyFoot = listNode;
-        };
-        ListTree.prototype.pushToHead = function (node) {
-            if (this.stickyHead) {
-                var node_2 = this.stickyHead;
-                this.unshift(node_2.value);
-                this.stickyHead = null;
-                this.length--;
-            }
-            else {
-                this.length++;
-            }
-            var listNode = new ListTreeNode(node);
-            this.stickyHead = listNode;
-        };
-        ListTree.prototype.pop = function () {
-            var foot = this.stickyFoot || this.foot || this.stickyHead;
-            if (foot) {
-                this.delete(foot);
-                return foot.value;
-            }
-            else {
-                return null;
-            }
-        };
-        ListTree.prototype.unshift = function (node) {
-            while (this.length >= this.maxLength) {
-                this.shift();
-            }
-            var listNode = new ListTreeNode(node);
-            this.length++;
-            if (!this.head) {
-                this.head = listNode;
-                this.foot = listNode;
-            }
-            else {
-                this.head.prev = listNode;
-                listNode.next = this.head;
-                this.head = listNode;
-            }
-        };
-        ListTree.prototype.unshiftToHead = function (node) {
-            if (this.stickyHead) {
-                var node_3 = this.stickyHead;
-                this.unshift(node_3.value);
-                this.stickyHead = null;
-                this.length--;
-            }
-            else {
-                this.length++;
-            }
-            var listNode = new ListTreeNode(node);
-            this.stickyHead = listNode;
-        };
-        ListTree.prototype.unshiftToFoot = function (node) {
-            if (this.stickyFoot) {
-                var node_4 = this.stickyFoot;
-                this.push(node_4.value);
-                this.stickyFoot = null;
-                this.length--;
-            }
-            else {
-                this.length++;
-            }
-            var listNode = new ListTreeNode(node);
-            this.stickyFoot = listNode;
-        };
-        ListTree.prototype.shift = function () {
-            var head = this.stickyHead || this.head || this.stickyFoot;
-            if (head) {
-                this.delete(head);
-                return head.value;
-            }
-            else {
-                return null;
-            }
-        };
-        ListTree.prototype.pickHead = function () {
-            var _a, _b;
-            return ((_a = this.stickyHead) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.head) === null || _b === void 0 ? void 0 : _b.value);
-        };
-        ListTree.prototype.pickFoot = function () {
-            var _a, _b;
-            return ((_a = this.stickyFoot) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.foot) === null || _b === void 0 ? void 0 : _b.value);
-        };
-        ListTree.prototype.listToFoot = function (action) {
-            if (this.stickyHead) {
-                action(this.stickyHead.value);
-            }
-            var node = this.head;
-            while (node) {
-                action(node.value);
-                node = node.next;
-            }
-            if (this.stickyFoot) {
-                action(this.stickyFoot.value);
-            }
-        };
-        ListTree.prototype.listToHead = function (action) {
-            if (this.stickyFoot) {
-                action(this.stickyFoot.value);
-            }
-            var node = this.foot;
-            while (node) {
-                action(node.value);
-                node = node.prev;
-            }
-            if (this.stickyHead) {
-                action(this.stickyHead.value);
-            }
-        };
-        ListTree.prototype.toArray = function () {
-            var re = [];
-            this.listToFoot(function (v) { return re.push(v); });
-            return re;
-        };
-        ListTree.prototype.delete = function (node) {
-            if (this.stickyHead === node) {
-                this.stickyHead = null;
-                this.length--;
-            }
-            else if (this.stickyFoot === node) {
-                this.stickyFoot = null;
-                this.length--;
-            }
-            else if (this.head === node) {
-                var next = node.next;
-                node.next = null;
-                if (next) {
-                    this.head = next;
-                    next.prev = null;
-                }
-                else {
-                    this.head = null;
-                    this.foot = null;
-                }
-                this.length--;
-            }
-            else if (this.foot === node) {
-                var prev = node.prev;
-                node.prev = null;
-                if (prev) {
-                    this.foot = prev;
-                    prev.next = null;
-                }
-                else {
-                    this.head = null;
-                    this.foot = null;
-                }
-                this.length--;
-            }
-            else if (this.hasNode(node)) {
-                var prev = node.prev;
-                var next = node.next;
-                node.prev = null;
-                node.next = null;
-                prev.next = next;
-                next.prev = prev;
-                this.length--;
-            }
-        };
-        ListTree.prototype.size = function () {
-            return this.length;
-        };
-        ListTree.prototype.hasNode = function (node) {
-            if (this.stickyHead && Object.is(this.stickyHead, node))
-                return true;
-            if (this.stickyFoot && Object.is(this.stickyFoot, node))
-                return true;
-            var listNode = this.head;
-            while (listNode) {
-                if (Object.is(listNode, node))
-                    return true;
-                listNode = listNode.next;
-            }
-            return false;
-        };
-        ListTree.prototype.hasValue = function (node) {
-            if (this.stickyHead && Object.is(this.stickyHead.value, node))
-                return true;
-            if (this.stickyFoot && Object.is(this.stickyFoot.value, node))
-                return true;
-            var listNode = this.head;
-            while (listNode) {
-                if (Object.is(listNode.value, node))
-                    return true;
-                listNode = listNode.next;
-            }
-            return false;
-        };
-        ListTree.prototype.some = function (iterator) {
-            var re = false;
-            this.listToFoot(function (node) {
-                re = re || iterator(node);
-            });
-            return re;
-        };
-        ListTree.prototype.every = function (iterator) {
-            var re = true;
-            this.listToFoot(function (node) {
-                re = re && iterator(node);
-            });
-            return re;
-        };
-        ListTree.prototype.concat = function (list) {
-            var newList = new ListTree();
-            this.listToFoot(function (node) { return newList.push(node); });
-            list.listToFoot(function (node) { return newList.push(node); });
-            return newList;
-        };
-        ListTree.prototype.clone = function () {
-            var newList = new ListTree(this.maxLength);
-            this.listToFoot(function (v) { return newList.push(v); });
-            return newList;
-        };
-        ListTree.prototype.clear = function () {
-            this.length = 0;
-            this.head = null;
-            this.foot = null;
-            this.stickyHead = null;
-            this.stickyFoot = null;
-        };
-        return ListTree;
-    }());
-    {
-        Object.defineProperty(ListTree.prototype, "_debugToArray", {
-            get: function () {
-                return this.toArray();
-            },
-        });
-    }
 
     var event$1 = {};
 
@@ -5018,6 +4670,9 @@
     		    DevToolCore.prototype.unSubscribe = function (listener) {
     		        this._listeners.delete(listener);
     		    };
+    		    DevToolCore.prototype.clearSubscribe = function () {
+    		        this._listeners.clear();
+    		    };
     		    DevToolCore.prototype._notify = function (data) {
     		        var _this = this;
     		        this._listeners.forEach(function (listener) { return listener(__assign(__assign({}, data), { agentId: _this.id })); });
@@ -5444,77 +5099,6 @@
 
     var core = new coreExports.DevToolCore();
 
-    /******************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
-
-
-    var __assign = function() {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-
-    function __awaiter(thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    }
-
-    function __generator(thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-        function verb(n) { return function (v) { return step([n, v]); }; }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (g && (g = 0, op[0] && (_ = 0)), _) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [op[0] & 2, t.value];
-                switch (op[0]) {
-                    case 0: case 1: t = op; break;
-                    case 4: _.label++; return { value: op[1], done: false };
-                    case 5: _.label++; y = op[1]; op = [0]; continue;
-                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop(); continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    }
-
-    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-    };
-
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
@@ -5540,6 +5124,380 @@
         sourceFrom["forward"] = "forward";
     })(sourceFrom || (sourceFrom = {}));
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    function loadRemoteScript(url_1) {
+        return __awaiter(this, arguments, void 0, function (url, options) {
+            var _a, timeout, _b, context, _c, useEval, controller_1, timeoutId, response, code, error_1, errorMsg;
+            if (options === void 0) { options = {}; }
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        _a = options.timeout, timeout = _a === void 0 ? 10000 : _a, _b = options.context, context = _b === void 0 ? {} : _b, _c = options.useEval, useEval = _c === void 0 ? false : _c;
+                        _d.label = 1;
+                    case 1:
+                        _d.trys.push([1, 5, , 6]);
+                        controller_1 = new AbortController();
+                        timeoutId = setTimeout(function () { return controller_1.abort(); }, timeout);
+                        return [4 /*yield*/, fetch(url, {
+                                signal: controller_1.signal,
+                            })];
+                    case 2:
+                        response = _d.sent();
+                        if (!response.ok) {
+                            throw new Error("HTTP ".concat(response.status, ": ").concat(response.statusText));
+                        }
+                        return [4 /*yield*/, response.text()];
+                    case 3:
+                        code = _d.sent();
+                        clearTimeout(timeoutId);
+                        // 根据环境选择执行方式
+                        return [4 /*yield*/, executeScript(code, url, { context: context, useEval: useEval })];
+                    case 4:
+                        // 根据环境选择执行方式
+                        _d.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
+                        error_1 = _d.sent();
+                        if ((error_1 === null || error_1 === void 0 ? void 0 : error_1.name) === "AbortError") {
+                            throw new Error("\u52A0\u8F7D\u8FDC\u7A0B\u811A\u672C\u8D85\u65F6 (".concat(timeout, "ms)"));
+                        }
+                        errorMsg = (error_1 === null || error_1 === void 0 ? void 0 : error_1.message) || String(error_1);
+                        throw new Error("\u52A0\u8F7D\u8FDC\u7A0B\u811A\u672C\u5931\u8D25: ".concat(errorMsg));
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    }
+    function executeScript(code, url, options) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, context, _b, useEval, env, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        _a = options.context, context = _a === void 0 ? {} : _a, _b = options.useEval, useEval = _b === void 0 ? false : _b;
+                        env = detectEnvironment();
+                        _c = env;
+                        switch (_c) {
+                            case "bun": return [3 /*break*/, 1];
+                            case "node": return [3 /*break*/, 3];
+                            case "browser": return [3 /*break*/, 5];
+                        }
+                        return [3 /*break*/, 7];
+                    case 1: return [4 /*yield*/, executeInBun(code, url, context)];
+                    case 2:
+                        _d.sent();
+                        return [3 /*break*/, 8];
+                    case 3: return [4 /*yield*/, executeInNode(code, url, context)];
+                    case 4:
+                        _d.sent();
+                        return [3 /*break*/, 8];
+                    case 5: return [4 /*yield*/, executeInBrowser(code, url, context, useEval)];
+                    case 6:
+                        _d.sent();
+                        return [3 /*break*/, 8];
+                    case 7: throw new Error("未知的 JavaScript 环境");
+                    case 8: return [2 /*return*/];
+                }
+            });
+        });
+    }
+    function detectEnvironment() {
+        // 检测 Bun
+        // @ts-ignore
+        if (typeof Bun !== "undefined" && typeof Bun === "object") {
+            return "bun";
+        }
+        // 检测 Node.js
+        if (typeof process !== "undefined" && process.versions && process.versions.node) {
+            return "node";
+        }
+        // 检测浏览器环境
+        if (typeof window !== "undefined" && typeof document !== "undefined") {
+            return "browser";
+        }
+        // 默认为浏览器环境（保守策略）
+        return "browser";
+    }
+    // 安全的 Base64 编码函数（跨环境兼容）
+    function safeBase64Encode(str) {
+        // Node.js 环境
+        if (typeof Buffer !== "undefined") {
+            return Buffer.from(str, "utf-8").toString("base64");
+        }
+        // 浏览器环境
+        if (typeof btoa !== "undefined") {
+            // 处理 Unicode 字符
+            var utf8Bytes_1 = new TextEncoder().encode(str);
+            var binary = "";
+            for (var i = 0; i < utf8Bytes_1.length; i++) {
+                binary += String.fromCharCode(utf8Bytes_1[i]);
+            }
+            return btoa(binary);
+        }
+        // 回退方案：手动实现 Base64 编码
+        var base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        var utf8Bytes = new TextEncoder().encode(str);
+        var result = "";
+        for (var i = 0; i < utf8Bytes.length; i += 3) {
+            var a = utf8Bytes[i];
+            var b = i + 1 < utf8Bytes.length ? utf8Bytes[i + 1] : 0;
+            var c = i + 2 < utf8Bytes.length ? utf8Bytes[i + 2] : 0;
+            var bitmap = (a << 16) | (b << 8) | c;
+            result += base64Chars[(bitmap >> 18) & 63];
+            result += base64Chars[(bitmap >> 12) & 63];
+            result += i + 1 < utf8Bytes.length ? base64Chars[(bitmap >> 6) & 63] : "=";
+            result += i + 2 < utf8Bytes.length ? base64Chars[bitmap & 63] : "=";
+        }
+        return result;
+    }
+    // Bun 环境执行
+    function executeInBun(code, url, context) {
+        return __awaiter(this, void 0, void 0, function () {
+            var base64Code, dataUrl;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 4]);
+                        base64Code = safeBase64Encode(code);
+                        dataUrl = "data:application/javascript;base64,".concat(base64Code);
+                        return [4 /*yield*/, import(/* @vite-ignore */ dataUrl)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 2:
+                        _a.sent();
+                        // 方法2: 使用 VM 回退
+                        return [4 /*yield*/, executeWithVM(code, url, context)];
+                    case 3:
+                        // 方法2: 使用 VM 回退
+                        _a.sent();
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    }
+    // Node.js 环境执行
+    function executeInNode(code, url, context) {
+        return __awaiter(this, void 0, void 0, function () {
+            var error_3, base64Code, dataUrl, importError_1, errorMsg, importErrorMsg;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 7]);
+                        // 方法1: 使用 VM 模块
+                        return [4 /*yield*/, executeWithVM(code, url, context)];
+                    case 1:
+                        // 方法1: 使用 VM 模块
+                        _a.sent();
+                        return [3 /*break*/, 7];
+                    case 2:
+                        error_3 = _a.sent();
+                        _a.label = 3;
+                    case 3:
+                        _a.trys.push([3, 5, , 6]);
+                        base64Code = safeBase64Encode(code);
+                        dataUrl = "data:application/javascript;base64,".concat(base64Code);
+                        return [4 /*yield*/, import(/* @vite-ignore */ dataUrl)];
+                    case 4:
+                        _a.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
+                        importError_1 = _a.sent();
+                        errorMsg = (error_3 === null || error_3 === void 0 ? void 0 : error_3.message) || String(error_3);
+                        importErrorMsg = (importError_1 === null || importError_1 === void 0 ? void 0 : importError_1.message) || String(importError_1);
+                        throw new Error("Node.js \u6267\u884C\u5931\u8D25: ".concat(errorMsg, ", ").concat(importErrorMsg));
+                    case 6: return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    }
+    // 浏览器环境执行
+    function executeInBrowser(code, url, context, useEval) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // 浏览器环境的安全考虑
+                        if (!useEval && isPotentiallyUnsafe(code)) {
+                            throw new Error("代码包含潜在不安全内容，如需执行请设置 useEval: true");
+                        }
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        // 方法1: 使用 script 标签插入 (最安全)
+                        return [4 /*yield*/, executeWithScriptTag(code)];
+                    case 2:
+                        // 方法1: 使用 script 标签插入 (最安全)
+                        _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        _a.sent();
+                        // 方法2: 使用 eval (需要显式启用)
+                        if (useEval) {
+                            executeWithEval(code, context);
+                        }
+                        else {
+                            throw new Error("浏览器执行失败，请启用 useEval 选项或检查 CSP 设置");
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    }
+    // 通用 VM 执行 (Node.js/Bun)
+    function executeWithVM(code, url, context) {
+        return __awaiter(this, void 0, void 0, function () {
+            var vm, sandbox, vmContext, script, error_5, errorMsg;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, import('vm')];
+                    case 1:
+                        vm = _a.sent();
+                        sandbox = __assign(__assign(__assign({ 
+                            // 基础全局变量
+                            console: console, setTimeout: setTimeout, setInterval: setInterval, clearTimeout: clearTimeout, clearInterval: clearInterval, URL: URL, URLSearchParams: URLSearchParams, 
+                            // 内置对象
+                            Object: Object, Array: Array, String: String, Number: Number, Boolean: Boolean, Symbol: Symbol, Date: Date, RegExp: RegExp, Error: Error, TypeError: TypeError, RangeError: RangeError, SyntaxError: SyntaxError, Map: Map, Set: Set, WeakMap: WeakMap, WeakSet: WeakSet, Promise: Promise, JSON: JSON, Math: Math }, (typeof global !== "undefined" ? { global: global } : {})), (typeof process !== "undefined" ? { process: process } : {})), context);
+                        vmContext = vm.createContext(sandbox);
+                        script = new vm.Script(code, {
+                            filename: url,
+                            lineOffset: 0,
+                            columnOffset: 0,
+                        });
+                        script.runInContext(vmContext);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_5 = _a.sent();
+                        errorMsg = (error_5 === null || error_5 === void 0 ? void 0 : error_5.message) || String(error_5);
+                        throw new Error("VM \u6267\u884C\u5931\u8D25: ".concat(errorMsg));
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    }
+    // 浏览器 script 标签执行
+    function executeWithScriptTag(code, url) {
+        // 检查是否在浏览器环境
+        if (typeof document === "undefined") {
+            throw new Error("document 未定义，不在浏览器环境中");
+        }
+        return new Promise(function (resolve, reject) {
+            // 创建 script 元素
+            var script = document.createElement("script");
+            // 使用 Blob URL 避免 CSP 问题
+            var blob = new Blob([code], { type: "application/javascript" });
+            var blobUrl = URL.createObjectURL(blob);
+            script.src = blobUrl;
+            // 清理函数
+            var cleanup = function () {
+                URL.revokeObjectURL(blobUrl);
+                // 从 DOM 中移除 script 标签以防止内存泄漏
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            };
+            // 设置错误处理
+            script.onerror = function () {
+                cleanup();
+                reject(new Error("Script 标签加载失败"));
+            };
+            script.onload = function () {
+                cleanup();
+                resolve();
+            };
+            // 添加到 DOM
+            document.head.appendChild(script);
+        });
+    }
+    // 浏览器 eval 执行
+    function executeWithEval(code, context) {
+        // 在特定上下文中执行
+        var contextKeys = Object.keys(context);
+        var contextValues = Object.values(context);
+        try {
+            // 使用 Function 构造函数比直接 eval 稍安全
+            var func = new (Function.bind.apply(Function, __spreadArray$1(__spreadArray$1([void 0], contextKeys, false), ["\n      \"use strict\";\n      ".concat(code, "\n    ")], false)))();
+            func.apply(void 0, contextValues);
+        }
+        catch (error) {
+            // 回退到间接 eval
+            try {
+                var indirectEval = eval;
+                indirectEval(code);
+            }
+            catch (evalError) {
+                var errorMsg = (evalError === null || evalError === void 0 ? void 0 : evalError.message) || String(evalError);
+                throw new Error("Eval \u6267\u884C\u5931\u8D25: ".concat(errorMsg));
+            }
+        }
+    }
+    // 增强的安全检查
+    function isPotentiallyUnsafe(code) {
+        var unsafePatterns = [
+            // Cookie 和存储访问
+            /document\.cookie/i,
+            /localStorage/i,
+            /sessionStorage/i,
+            /indexedDB/i,
+            // 动态代码执行
+            /\beval\s*\(/i,
+            /Function\s*\(/i,
+            /setTimeout\s*\(\s*["'`]/i, // setTimeout with string
+            /setInterval\s*\(\s*["'`]/i, // setInterval with string
+            // 动态脚本和 DOM 操作
+            /script\.src/i,
+            /\.innerHTML/i,
+            /\.outerHTML/i,
+            /document\.write/i,
+            /document\.writeln/i,
+            // 动态属性访问（可能绕过检查）
+            /\[["'`]eval["'`]\]/i,
+            /\[["'`]cookie["'`]\]/i,
+            /\[["'`]localStorage["'`]\]/i,
+            // import() 动态导入
+            /import\s*\(/i,
+            // 危险的 DOM API
+            /\.insertAdjacentHTML/i,
+            /createContextualFragment/i,
+        ];
+        return unsafePatterns.some(function (pattern) { return pattern.test(code); });
+    }
+    // 安全的 require 函数模拟
+    function createSafeRequire() {
+        if (typeof require !== "undefined") {
+            return require;
+        }
+        // 在浏览器环境中返回一个安全的模拟 require
+        return function (id) {
+            throw new Error("require('".concat(id, "') \u5728\u6D4F\u89C8\u5668\u73AF\u5883\u4E2D\u4E0D\u53EF\u7528"));
+        };
+    }
+    // 增强的模块加载版本（支持导出）
+    function loadRemoteModule(url_1) {
+        return __awaiter(this, arguments, void 0, function (url, options) {
+            var _a, context, moduleExports, moduleContext;
+            if (options === void 0) { options = {}; }
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = options.context, context = _a === void 0 ? {} : _a;
+                        moduleExports = {};
+                        moduleContext = __assign({ exports: moduleExports, module: { exports: moduleExports }, require: createSafeRequire() }, context);
+                        return [4 /*yield*/, loadRemoteScript(url, __assign(__assign({}, options), { context: moduleContext }))];
+                    case 1:
+                        _b.sent();
+                        return [2 /*return*/, moduleContext.module.exports];
+                }
+            });
+        });
+    }
+
     /* eslint-disable @typescript-eslint/no-require-imports */
     var varId = 0;
     var getValidGlobalVarName = function () {
@@ -5549,24 +5507,7 @@
         }
         return varName;
     };
-    var loadScript = function (url) {
-        if (typeof window !== "undefined") {
-            return new Promise(function (resolve, reject) {
-                if (typeof document === "undefined") {
-                    reject(new Error("[@my-react-devtool/hook] document not found, current environment not support"));
-                    return;
-                }
-                var script = document.createElement("script");
-                script.src = url;
-                script.onload = function () { return resolve(); };
-                script.onerror = reject;
-                document.body.appendChild(script);
-            });
-        }
-        else {
-            return Promise.reject(new Error("[@my-react-devtool/hook] current environment not support"));
-        }
-    };
+    var loadScript = function (url) { return loadRemoteModule(url, { context: globalThis }); };
     var loadIframe = function (url, token) {
         return new Promise(function (resolve, reject) {
             if (typeof document === "undefined") {
@@ -5616,17 +5557,17 @@
     // 通过 Iframe 调试 Web 应用
     var initIFRAME_DEV = function (origin, token) { return __awaiter(void 0, void 0, void 0, function () {
         var bridgeUrl, bridgeView, bridgeToken, bridgeIframe, bridgeWindow, viewWindow_1, onMessage;
-        var _a, _b, _c, _d, _e;
-        return __generator(this, function (_f) {
-            switch (_f.label) {
+        var _a, _b, _c, _d, _e, _f;
+        return __generator(this, function (_g) {
+            switch (_g.label) {
                 case 0:
                     if (typeof document === "undefined" || typeof window === "undefined")
                         return [2 /*return*/];
                     if (!(typeof window.__MY_REACT_DEVTOOL_RUNTIME__ !== "function")) return [3 /*break*/, 2];
                     return [4 /*yield*/, loadScript("".concat(origin, "/bundle/hook.js"))];
                 case 1:
-                    _f.sent();
-                    _f.label = 2;
+                    _g.sent();
+                    _g.label = 2;
                 case 2:
                     bridgeUrl = "".concat(origin, "/bridge");
                     bridgeView = "".concat(origin, "/devTool");
@@ -5634,7 +5575,7 @@
                     (_b = (_a = document.querySelectorAll(".my-react-devtool-bridge")) === null || _a === void 0 ? void 0 : _a.forEach) === null || _b === void 0 ? void 0 : _b.call(_a, function (el) { return el.remove(); });
                     return [4 /*yield*/, loadIframe("".concat(bridgeUrl, "?token=").concat(bridgeToken), bridgeToken)];
                 case 3:
-                    bridgeIframe = _f.sent();
+                    bridgeIframe = _g.sent();
                     bridgeWindow = bridgeIframe.contentWindow;
                     if (!bridgeWindow) {
                         console.error("[@my-react-devtool/iframe] iframe contentWindow not found");
@@ -5652,8 +5593,8 @@
                     };
                     window.addEventListener("message", onMessage);
                     closeCBArray.push(function () { return window.removeEventListener("message", onMessage); });
-                    (_c = window["__@my-react/dispatch__"]) === null || _c === void 0 ? void 0 : _c.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
-                    (_e = (_d = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _d === void 0 ? void 0 : _d.init) === null || _e === void 0 ? void 0 : _e.call(_d);
+                    (_d = (_c = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _c === void 0 ? void 0 : _c.prepare) === null || _d === void 0 ? void 0 : _d.call(_c);
+                    (_f = (_e = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _e === void 0 ? void 0 : _e.init) === null || _f === void 0 ? void 0 : _f.call(_e);
                     return [2 /*return*/];
             }
         });
@@ -5662,6 +5603,435 @@
         close();
         core.disconnect();
     };
+
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
+
+    function __spreadArray(to, from, pack) {
+        if (arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+            if (ar || !(i in from)) {
+                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+                ar[i] = from[i];
+            }
+        }
+        return to.concat(ar || Array.prototype.slice.call(from));
+    }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
+    var once = function (action) {
+        var called = false;
+        return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            if (called)
+                return;
+            called = true;
+            if (typeof action === "function")
+                action.call.apply(action, __spreadArray([null], args, false));
+        };
+    };
+
+    var HOOK_TYPE;
+    (function (HOOK_TYPE) {
+        HOOK_TYPE[HOOK_TYPE["useId"] = 0] = "useId";
+        HOOK_TYPE[HOOK_TYPE["useRef"] = 1] = "useRef";
+        HOOK_TYPE[HOOK_TYPE["useMemo"] = 2] = "useMemo";
+        HOOK_TYPE[HOOK_TYPE["useState"] = 3] = "useState";
+        HOOK_TYPE[HOOK_TYPE["useSignal"] = 4] = "useSignal";
+        HOOK_TYPE[HOOK_TYPE["useEffect"] = 5] = "useEffect";
+        HOOK_TYPE[HOOK_TYPE["useContext"] = 6] = "useContext";
+        HOOK_TYPE[HOOK_TYPE["useReducer"] = 7] = "useReducer";
+        HOOK_TYPE[HOOK_TYPE["useCallback"] = 8] = "useCallback";
+        HOOK_TYPE[HOOK_TYPE["useTransition"] = 9] = "useTransition";
+        HOOK_TYPE[HOOK_TYPE["useDebugValue"] = 10] = "useDebugValue";
+        HOOK_TYPE[HOOK_TYPE["useLayoutEffect"] = 11] = "useLayoutEffect";
+        HOOK_TYPE[HOOK_TYPE["useDeferredValue"] = 12] = "useDeferredValue";
+        HOOK_TYPE[HOOK_TYPE["useInsertionEffect"] = 13] = "useInsertionEffect";
+        HOOK_TYPE[HOOK_TYPE["useImperativeHandle"] = 14] = "useImperativeHandle";
+        HOOK_TYPE[HOOK_TYPE["useSyncExternalStore"] = 15] = "useSyncExternalStore";
+        HOOK_TYPE[HOOK_TYPE["useOptimistic"] = 16] = "useOptimistic";
+        HOOK_TYPE[HOOK_TYPE["useEffectEvent"] = 17] = "useEffectEvent";
+    })(HOOK_TYPE || (HOOK_TYPE = {}));
+
+    var UpdateQueueType;
+    (function (UpdateQueueType) {
+        UpdateQueueType[UpdateQueueType["component"] = 1] = "component";
+        UpdateQueueType[UpdateQueueType["hook"] = 2] = "hook";
+        UpdateQueueType[UpdateQueueType["context"] = 3] = "context";
+        UpdateQueueType[UpdateQueueType["hmr"] = 4] = "hmr";
+        UpdateQueueType[UpdateQueueType["trigger"] = 5] = "trigger";
+        UpdateQueueType[UpdateQueueType["suspense"] = 6] = "suspense";
+        UpdateQueueType[UpdateQueueType["lazy"] = 7] = "lazy";
+        UpdateQueueType[UpdateQueueType["promise"] = 8] = "promise";
+    })(UpdateQueueType || (UpdateQueueType = {}));
+
+    var STATE_TYPE;
+    (function (STATE_TYPE) {
+        STATE_TYPE[STATE_TYPE["__initial__"] = 0] = "__initial__";
+        STATE_TYPE[STATE_TYPE["__create__"] = 1] = "__create__";
+        STATE_TYPE[STATE_TYPE["__stable__"] = 2] = "__stable__";
+        STATE_TYPE[STATE_TYPE["__inherit__"] = 4] = "__inherit__";
+        STATE_TYPE[STATE_TYPE["__triggerConcurrent__"] = 8] = "__triggerConcurrent__";
+        STATE_TYPE[STATE_TYPE["__triggerConcurrentForce__"] = 16] = "__triggerConcurrentForce__";
+        STATE_TYPE[STATE_TYPE["__triggerSync__"] = 32] = "__triggerSync__";
+        STATE_TYPE[STATE_TYPE["__triggerSyncForce__"] = 64] = "__triggerSyncForce__";
+        STATE_TYPE[STATE_TYPE["__unmount__"] = 128] = "__unmount__";
+        STATE_TYPE[STATE_TYPE["__hmr__"] = 256] = "__hmr__";
+        STATE_TYPE[STATE_TYPE["__retrigger__"] = 512] = "__retrigger__";
+        STATE_TYPE[STATE_TYPE["__reschedule__"] = 1024] = "__reschedule__";
+        STATE_TYPE[STATE_TYPE["__recreate__"] = 2048] = "__recreate__";
+        STATE_TYPE[STATE_TYPE["__suspense__"] = 4096] = "__suspense__";
+    })(STATE_TYPE || (STATE_TYPE = {}));
+
+    var PATCH_TYPE;
+    (function (PATCH_TYPE) {
+        PATCH_TYPE[PATCH_TYPE["__initial__"] = 0] = "__initial__";
+        PATCH_TYPE[PATCH_TYPE["__create__"] = 1] = "__create__";
+        PATCH_TYPE[PATCH_TYPE["__update__"] = 2] = "__update__";
+        PATCH_TYPE[PATCH_TYPE["__append__"] = 4] = "__append__";
+        PATCH_TYPE[PATCH_TYPE["__position__"] = 8] = "__position__";
+        PATCH_TYPE[PATCH_TYPE["__effect__"] = 16] = "__effect__";
+        PATCH_TYPE[PATCH_TYPE["__layoutEffect__"] = 32] = "__layoutEffect__";
+        PATCH_TYPE[PATCH_TYPE["__insertionEffect__"] = 64] = "__insertionEffect__";
+        PATCH_TYPE[PATCH_TYPE["__unmount__"] = 128] = "__unmount__";
+        PATCH_TYPE[PATCH_TYPE["__ref__"] = 256] = "__ref__";
+    })(PATCH_TYPE || (PATCH_TYPE = {}));
+
+    var Effect_TYPE;
+    (function (Effect_TYPE) {
+        Effect_TYPE[Effect_TYPE["__initial__"] = 0] = "__initial__";
+        Effect_TYPE[Effect_TYPE["__effect__"] = 1] = "__effect__";
+        Effect_TYPE[Effect_TYPE["__unmount__"] = 2] = "__unmount__";
+    })(Effect_TYPE || (Effect_TYPE = {}));
+
+    var ListTreeNode = /** @class */ (function () {
+        function ListTreeNode(value) {
+            this.prev = null;
+            this.next = null;
+            this.value = value;
+        }
+        return ListTreeNode;
+    }());
+    var ListTree = /** @class */ (function () {
+        function ListTree(max) {
+            this.length = 0;
+            this.maxLength = Infinity;
+            this.maxLength = max || Infinity;
+            var _stickyHead = null;
+            Object.defineProperty(this, "stickyHead", {
+                get: function () {
+                    return _stickyHead;
+                },
+                set: function (v) {
+                    _stickyHead = v;
+                },
+            });
+            var _stickyFoot = null;
+            Object.defineProperty(this, "stickyFoot", {
+                get: function () {
+                    return _stickyFoot;
+                },
+                set: function (v) {
+                    _stickyFoot = v;
+                },
+            });
+            var _head = null;
+            Object.defineProperty(this, "head", {
+                get: function () {
+                    return _head;
+                },
+                set: function (v) {
+                    _head = v;
+                },
+            });
+            var _foot = null;
+            Object.defineProperty(this, "foot", {
+                get: function () {
+                    return _foot;
+                },
+                set: function (v) {
+                    _foot = v;
+                },
+            });
+        }
+        ListTree.prototype.push = function (node) {
+            while (this.length >= this.maxLength) {
+                this.pop();
+            }
+            var listNode = new ListTreeNode(node);
+            this.length++;
+            if (!this.foot) {
+                this.head = listNode;
+                this.foot = listNode;
+            }
+            else {
+                this.foot.next = listNode;
+                listNode.prev = this.foot;
+                this.foot = listNode;
+            }
+        };
+        ListTree.prototype.pushToLast = function (node) {
+            if (this.stickyFoot) {
+                var node_1 = this.stickyFoot;
+                this.push(node_1.value);
+                this.stickyFoot = null;
+                this.length--;
+            }
+            else {
+                this.length++;
+            }
+            var listNode = new ListTreeNode(node);
+            this.stickyFoot = listNode;
+        };
+        ListTree.prototype.pushToHead = function (node) {
+            if (this.stickyHead) {
+                var node_2 = this.stickyHead;
+                this.unshift(node_2.value);
+                this.stickyHead = null;
+                this.length--;
+            }
+            else {
+                this.length++;
+            }
+            var listNode = new ListTreeNode(node);
+            this.stickyHead = listNode;
+        };
+        ListTree.prototype.pop = function () {
+            var foot = this.stickyFoot || this.foot || this.stickyHead;
+            if (foot) {
+                this.delete(foot);
+                return foot.value;
+            }
+            else {
+                return null;
+            }
+        };
+        ListTree.prototype.unshift = function (node) {
+            while (this.length >= this.maxLength) {
+                this.shift();
+            }
+            var listNode = new ListTreeNode(node);
+            this.length++;
+            if (!this.head) {
+                this.head = listNode;
+                this.foot = listNode;
+            }
+            else {
+                this.head.prev = listNode;
+                listNode.next = this.head;
+                this.head = listNode;
+            }
+        };
+        ListTree.prototype.unshiftToHead = function (node) {
+            if (this.stickyHead) {
+                var node_3 = this.stickyHead;
+                this.unshift(node_3.value);
+                this.stickyHead = null;
+                this.length--;
+            }
+            else {
+                this.length++;
+            }
+            var listNode = new ListTreeNode(node);
+            this.stickyHead = listNode;
+        };
+        ListTree.prototype.unshiftToFoot = function (node) {
+            if (this.stickyFoot) {
+                var node_4 = this.stickyFoot;
+                this.push(node_4.value);
+                this.stickyFoot = null;
+                this.length--;
+            }
+            else {
+                this.length++;
+            }
+            var listNode = new ListTreeNode(node);
+            this.stickyFoot = listNode;
+        };
+        ListTree.prototype.shift = function () {
+            var head = this.stickyHead || this.head || this.stickyFoot;
+            if (head) {
+                this.delete(head);
+                return head.value;
+            }
+            else {
+                return null;
+            }
+        };
+        ListTree.prototype.pickHead = function () {
+            var _a, _b;
+            return ((_a = this.stickyHead) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.head) === null || _b === void 0 ? void 0 : _b.value);
+        };
+        ListTree.prototype.pickFoot = function () {
+            var _a, _b;
+            return ((_a = this.stickyFoot) === null || _a === void 0 ? void 0 : _a.value) || ((_b = this.foot) === null || _b === void 0 ? void 0 : _b.value);
+        };
+        ListTree.prototype.listToFoot = function (action) {
+            if (this.stickyHead) {
+                action(this.stickyHead.value);
+            }
+            var node = this.head;
+            while (node) {
+                action(node.value);
+                node = node.next;
+            }
+            if (this.stickyFoot) {
+                action(this.stickyFoot.value);
+            }
+        };
+        ListTree.prototype.listToHead = function (action) {
+            if (this.stickyFoot) {
+                action(this.stickyFoot.value);
+            }
+            var node = this.foot;
+            while (node) {
+                action(node.value);
+                node = node.prev;
+            }
+            if (this.stickyHead) {
+                action(this.stickyHead.value);
+            }
+        };
+        ListTree.prototype.toArray = function () {
+            var re = [];
+            this.listToFoot(function (v) { return re.push(v); });
+            return re;
+        };
+        ListTree.prototype.delete = function (node) {
+            if (this.stickyHead === node) {
+                this.stickyHead = null;
+                this.length--;
+            }
+            else if (this.stickyFoot === node) {
+                this.stickyFoot = null;
+                this.length--;
+            }
+            else if (this.head === node) {
+                var next = node.next;
+                node.next = null;
+                if (next) {
+                    this.head = next;
+                    next.prev = null;
+                }
+                else {
+                    this.head = null;
+                    this.foot = null;
+                }
+                this.length--;
+            }
+            else if (this.foot === node) {
+                var prev = node.prev;
+                node.prev = null;
+                if (prev) {
+                    this.foot = prev;
+                    prev.next = null;
+                }
+                else {
+                    this.head = null;
+                    this.foot = null;
+                }
+                this.length--;
+            }
+            else if (this.hasNode(node)) {
+                var prev = node.prev;
+                var next = node.next;
+                node.prev = null;
+                node.next = null;
+                prev.next = next;
+                next.prev = prev;
+                this.length--;
+            }
+        };
+        ListTree.prototype.size = function () {
+            return this.length;
+        };
+        ListTree.prototype.hasNode = function (node) {
+            if (this.stickyHead && Object.is(this.stickyHead, node))
+                return true;
+            if (this.stickyFoot && Object.is(this.stickyFoot, node))
+                return true;
+            var listNode = this.head;
+            while (listNode) {
+                if (Object.is(listNode, node))
+                    return true;
+                listNode = listNode.next;
+            }
+            return false;
+        };
+        ListTree.prototype.hasValue = function (node) {
+            if (this.stickyHead && Object.is(this.stickyHead.value, node))
+                return true;
+            if (this.stickyFoot && Object.is(this.stickyFoot.value, node))
+                return true;
+            var listNode = this.head;
+            while (listNode) {
+                if (Object.is(listNode.value, node))
+                    return true;
+                listNode = listNode.next;
+            }
+            return false;
+        };
+        ListTree.prototype.some = function (iterator) {
+            var re = false;
+            this.listToFoot(function (node) {
+                re = re || iterator(node);
+            });
+            return re;
+        };
+        ListTree.prototype.every = function (iterator) {
+            var re = true;
+            this.listToFoot(function (node) {
+                re = re && iterator(node);
+            });
+            return re;
+        };
+        ListTree.prototype.concat = function (list) {
+            var newList = new ListTree();
+            this.listToFoot(function (node) { return newList.push(node); });
+            list.listToFoot(function (node) { return newList.push(node); });
+            return newList;
+        };
+        ListTree.prototype.clone = function () {
+            var newList = new ListTree(this.maxLength);
+            this.listToFoot(function (v) { return newList.push(v); });
+            return newList;
+        };
+        ListTree.prototype.clear = function () {
+            this.length = 0;
+            this.head = null;
+            this.foot = null;
+            this.stickyHead = null;
+            this.stickyFoot = null;
+        };
+        return ListTree;
+    }());
+    {
+        Object.defineProperty(ListTree.prototype, "_debugToArray", {
+            get: function () {
+                return this.toArray();
+            },
+        });
+    }
 
     var onMessageFromPanelOrWorkerOrDetector = function (data) {
         if (data.source !== coreExports.DevToolSource)
@@ -5783,55 +6153,72 @@
         }
     };
 
-    // support debug more platform
+    var socketClient = function (_a) {
+        var io = _a.io, name = _a.name, url = _a.url, options = _a.options;
+        if (typeof io !== "function")
+            return;
+        // clear the default postMessage subscribe
+        core.clearSubscribe();
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        var socket = io(url, options);
+        var unSubscribe = function () { };
+        socket.on("connect", function () {
+            {
+                console.log("[@my-react-devtool/hook] socket connected");
+            }
+            socket.emit("init", {
+                name: name,
+                type: "client",
+                url: options === null || options === void 0 ? void 0 : options.originalUrl,
+                title: options === null || options === void 0 ? void 0 : options.originalTitle,
+            });
+            unSubscribe = core.subscribe(function (message) {
+                socket.emit("render", message);
+            });
+        });
+        socket.on("disconnect", function () {
+            {
+                console.log("[@my-react-devtool/hook] socket disconnected");
+            }
+            unSubscribe();
+            core.disconnect();
+        });
+        socket.on("action", function (data) {
+            onMessageFromPanelOrWorkerOrDetector(data);
+        });
+        socket.on("duplicate", function () {
+            console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
+            socket === null || socket === void 0 ? void 0 : socket.disconnect();
+        });
+        return socket;
+    };
+
     var connectSocket$1 = null;
     // 通过 Web 端调试 Node.js 应用
     var initNODE_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-        var connectSocket, unSubscribe;
-        var _a, _b, _c;
-        return __generator(this, function (_d) {
+        var _a, _b, _c, _d;
+        return __generator(this, function (_e) {
             if (typeof process !== "object" || typeof globalThis.io !== "function")
                 return [2 /*return*/];
             {
-                console.log("[@my-react-devtool/hook] start a node devtool");
+                console.log("[@my-react-devtool/hook] start a node app devtool");
             }
-            (_a = globalThis["__@my-react/dispatch__"]) === null || _a === void 0 ? void 0 : _a.forEach(function (d) { var _a; return (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(globalThis, d); });
-            (_c = (_b = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.init) === null || _c === void 0 ? void 0 : _c.call(_b);
-            connectSocket = globalThis.io(url, {
-                reconnection: true, // 是否自动重新连接
-                reconnectionAttempts: Infinity, // 重新连接尝试次数
-                reconnectionDelay: 1000, // 初始重新连接延迟(ms)
-                reconnectionDelayMax: 5000, // 最大重新连接延迟(ms)
-                timeout: 8000, // 连接超时时间(ms)
+            (_b = (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.prepare) === null || _b === void 0 ? void 0 : _b.call(_a);
+            (_d = (_c = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _c === void 0 ? void 0 : _c.init) === null || _d === void 0 ? void 0 : _d.call(_c);
+            connectSocket$1 = socketClient({
+                io: globalThis["io"],
+                url: url,
+                name: "node-app-engine",
+                options: {
+                    reconnection: true, // 是否自动重新连接
+                    reconnectionAttempts: Infinity, // 重新连接尝试次数
+                    reconnectionDelay: 1000, // 初始重新连接延迟(ms)
+                    reconnectionDelayMax: 5000, // 最大重新连接延迟(ms)
+                    timeout: 8000, // 连接超时时间(ms)
+                },
             });
-            unSubscribe = function () { };
-            connectSocket.on("connect", function () {
-                {
-                    console.log("[@my-react-devtool/hook] socket connected");
-                }
-                connectSocket.emit("init", {
-                    name: "node-app-engine",
-                    type: "client",
-                });
-                unSubscribe = core.subscribe(function (message) {
-                    connectSocket.emit("render", message);
-                });
-            });
-            connectSocket.on("disconnect", function () {
-                {
-                    console.log("[@my-react-devtool/hook] socket disconnected");
-                }
-                unSubscribe();
-                core.disconnect();
-            });
-            connectSocket.on("action", function (data) {
-                onMessageFromPanelOrWorkerOrDetector(data);
-            });
-            connectSocket.on("duplicate", function () {
-                console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
-                connectSocket === null || connectSocket === void 0 ? void 0 : connectSocket.disconnect();
-            });
-            return [2 /*return*/, connectSocket];
+            return [2 /*return*/];
         });
     }); };
     initNODE_DEV.close = function () {
@@ -5843,62 +6230,30 @@
     var connectSocket = null;
     // 通过 Web 端调试 Web 应用
     var initWEB_DEV = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-        var socket, unSubscribe;
-        var _b, _c, _d;
-        return __generator(this, function (_e) {
-            switch (_e.label) {
+        var _b, _c, _d, _e;
+        return __generator(this, function (_f) {
+            switch (_f.label) {
                 case 0:
                     if (typeof window === "undefined")
                         return [2 /*return*/];
-                    console.log("[@my-react-devtool/hook] start a web ui devtool");
+                    console.log("[@my-react-devtool/hook] start a web app devtool");
                     if (!(!window.io || !globalThis["io"])) return [3 /*break*/, 4];
-                    _e.label = 1;
+                    _f.label = 1;
                 case 1:
-                    _e.trys.push([1, 3, , 4]);
+                    _f.trys.push([1, 3, , 4]);
                     return [4 /*yield*/, loadScript("https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js")];
                 case 2:
-                    _e.sent();
+                    _f.sent();
                     return [3 /*break*/, 4];
                 case 3:
-                    _e.sent();
+                    _f.sent();
                     console.error("[@my-react-devtool/hook] load socket.io-client failed, please add socket.io-client manually");
                     return [3 /*break*/, 4];
                 case 4:
                     window.io = window.io || globalThis["io"];
-                    (_b = window["__@my-react/dispatch__"]) === null || _b === void 0 ? void 0 : _b.forEach(function (d) { var _a; return (_a = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(window, d); });
-                    (_d = (_c = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _c === void 0 ? void 0 : _c.init) === null || _d === void 0 ? void 0 : _d.call(_c);
-                    socket = window.io(url);
-                    connectSocket = socket;
-                    unSubscribe = function () { };
-                    socket.on("connect", function () {
-                        {
-                            console.log("[@my-react-devtool/hook] socket connected");
-                        }
-                        socket.emit("web-dev", { name: window.document.title, url: window.location.href });
-                        socket.emit("init", {
-                            name: "web-app-engine",
-                            type: "client",
-                            url: window.location.href,
-                            title: window.document.title,
-                        });
-                        unSubscribe = core.subscribe(function (message) {
-                            socket.emit("render", message);
-                        });
-                    });
-                    socket.on("disconnect", function () {
-                        {
-                            console.log("[@my-react-devtool/hook] socket disconnected");
-                        }
-                        unSubscribe();
-                        core.disconnect();
-                    });
-                    socket.on("action", function (data) {
-                        onMessageFromPanelOrWorkerOrDetector(data);
-                    });
-                    socket.on("duplicate", function () {
-                        console.warn("[@my-react-devtool/hook] duplicate client detected, disconnecting...");
-                        socket === null || socket === void 0 ? void 0 : socket.disconnect();
-                    });
+                    (_c = (_b = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _b === void 0 ? void 0 : _b.prepare) === null || _c === void 0 ? void 0 : _c.call(_b);
+                    (_e = (_d = window.__MY_REACT_DEVTOOL_RUNTIME__) === null || _d === void 0 ? void 0 : _d.init) === null || _e === void 0 ? void 0 : _e.call(_d);
+                    connectSocket = socketClient({ io: window.io, url: url, name: "web-app-engine" });
                     return [2 /*return*/];
             }
         });
@@ -5909,7 +6264,6 @@
         connectSocket = null;
     };
 
-    var _a;
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
     // default render agentId
     var agentId = core.id;
@@ -5922,6 +6276,7 @@
     var set = new Set();
     var detectorReady = false;
     var forwardMode = false;
+    var env = "hook";
     var idMap = new Map();
     var runWhenDetectorReady = function (fn, count) {
         var id = idMap.get(fn);
@@ -5935,7 +6290,7 @@
                     console.error("[@my-react-devtool/hook] detector not ready");
                 }
             }
-            if (count && count > 18) {
+            if (count && count > 60) {
                 return;
             }
             var newId = setTimeout(function () { return runWhenDetectorReady(fn, count ? count + 1 : 1); }, 1000);
@@ -5943,7 +6298,7 @@
         }
     };
     var onMessage = function (message) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         if (typeof window === "undefined")
             return;
         // allow iframe dev
@@ -5951,31 +6306,24 @@
             return;
         if (((_b = message.data) === null || _b === void 0 ? void 0 : _b.source) !== eventExports.DevToolSource)
             return;
-        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.to) !== sourceFrom.hook)
+        if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.to) !== sourceFrom.hook && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.to) !== sourceFrom.forward)
             return;
-        if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === eventExports.MessageDetectorType.init) {
+        if (forwardMode)
+            return;
+        if (!detectorReady && ((_e = message.data) === null || _e === void 0 ? void 0 : _e.type) === eventExports.MessageDetectorType.init) {
             {
                 console.log("[@my-react-devtool/hook] detector init");
             }
             detectorReady = true;
-            var res = message.data;
-            if (res.forward === sourceFrom.forward) {
-                forwardMode = true;
-            }
-            else {
-                forwardMode = false;
-            }
-            globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = forwardMode;
         }
-        if (message.data.from === sourceFrom.forward) {
-            // 通知forward source端，detector已准备好
-            hookPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook, forward: sourceFrom.forward });
+        if (message.data.from === sourceFrom.forward && env === "hook") {
+            core.clearSubscribe();
             forwardMode = true;
-            globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = forwardMode;
-        }
-        if (message.data.type === eventExports.MessagePanelType.show) {
             hookPostMessageWithSource({ type: eventExports.MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
+            hookPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.forward });
         }
+        if (forwardMode && env === "hook")
+            return;
         onMessageFromPanelOrWorkerOrDetector(message.data);
     };
     if (typeof window !== "undefined") {
@@ -5983,23 +6331,19 @@
     }
     var onceMount = once(function () {
         // current site is render by @my-react
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { forwardMode: forwardMode }, to: sourceFrom.detector });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { forwardMode: env === "forward" }, to: sourceFrom.detector });
     });
     var onceDev = once(function () {
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { mode: "develop", forwardMode: forwardMode }, to: sourceFrom.detector });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { mode: "develop", forwardMode: env === "forward" }, to: sourceFrom.detector });
     });
     var oncePro = once(function () {
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { mode: "product", forwardMode: forwardMode }, to: sourceFrom.detector });
+        hookPostMessageWithSource({ type: eventExports.MessageHookType.mount, data: { mode: "product", forwardMode: env === "forward" }, to: sourceFrom.detector });
     });
     var onceOrigin = once(function () {
-        try {
+        if (typeof window !== "undefined") {
             var origin_1 = window.location.origin;
             core._origin = origin_1;
-            if (origin_1) {
-                hookPostMessageWithSource({ type: eventExports.MessageHookType.origin, data: origin_1, to: sourceFrom.detector });
-            }
-        }
-        catch (_a) {
+            hookPostMessageWithSource({ type: eventExports.MessageHookType.origin, data: origin_1, to: sourceFrom.detector });
         }
     });
     var globalHook = function (dispatch) {
@@ -6016,33 +6360,38 @@
         }
         runWhenDetectorReady(onceOrigin);
     };
-    if (!globalThis["__MY_REACT_DEVTOOL_INTERNAL__"]) {
-        globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
-        globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
-        globalThis["__@my-react/react-devtool-inject__"] = globalHook;
-        globalThis["__MY_REACT_DEVTOOL_FORWARD__"] = false;
-        if (typeof window !== "undefined") {
-            // support web dev
-            globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
-            // support iframe dev, see chrome/src/pages/bridge.tsx
-            globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
-        }
-        if (typeof process !== "undefined") {
-            // support node dev
-            globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
-        }
+    globalHook.prepare = function () {
+        var _a, _b;
         if (typeof globalThis["__@my-react/react-devtool-inject-pending__"] === "function") {
             (_a = globalThis["__@my-react/react-devtool-inject-pending__"]) === null || _a === void 0 ? void 0 : _a.call(globalThis);
         }
         else {
-            if (Array.isArray(globalThis["__@my-react/dispatch__"])) {
-                globalThis["__@my-react/dispatch__"].forEach(function (dispatch) {
-                    globalHook(dispatch);
-                });
-            }
+            (_b = globalThis["__@my-react/dispatch__"]) === null || _b === void 0 ? void 0 : _b.forEach(function (d) { var _a; return (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__) === null || _a === void 0 ? void 0 : _a.call(globalThis, d); });
         }
-        hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector });
-        globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector }); };
+    };
+    globalHook.getForwardMode = function () { return forwardMode; };
+    globalHook.init = function () { return hookPostMessageWithSource({ type: eventExports.MessageHookType.init, to: sourceFrom.detector }); };
+    var getDetectorReady = function () { return detectorReady; };
+    globalHook.getDetectorReady = getDetectorReady;
+    var getForwardMode = function () { return forwardMode; };
+    globalHook.getForwardMode = getForwardMode;
+    var getEnv = function () { return env; };
+    globalHook.getEnv = getEnv;
+
+    var _a, _b, _c, _d;
+    if (!globalThis["__MY_REACT_DEVTOOL_INTERNAL__"]) {
+        globalThis["__MY_REACT_DEVTOOL_INTERNAL__"] = core;
+        globalThis["__MY_REACT_DEVTOOL_RUNTIME__"] = globalHook;
+        globalThis["__@my-react/react-devtool-inject__"] = globalHook;
+        if (typeof window !== "undefined") {
+            globalThis["__MY_REACT_DEVTOOL_WEB__"] = initWEB_DEV;
+            globalThis["__MY_REACT_DEVTOOL_IFRAME__"] = initIFRAME_DEV;
+        }
+        if (typeof process !== "undefined") {
+            globalThis["__MY_REACT_DEVTOOL_NODE__"] = initNODE_DEV;
+        }
+        (_b = (_a = globalThis.__MY_REACT_DEVTOOL_RUNTIME__).prepare) === null || _b === void 0 ? void 0 : _b.call(_a);
+        (_d = (_c = globalThis.__MY_REACT_DEVTOOL_RUNTIME__).init) === null || _d === void 0 ? void 0 : _d.call(_c);
     }
     else {
         {
