@@ -610,10 +610,12 @@
     		};
 
     		var id$1 = 0;
+    		var fiberValueSymbol = "d::f::v";
     		// PlainNode is a simplified version of FiberNode just for show the structure
     		var PlainNode = /** @class */ (function () {
     		    // inspect node
     		    function PlainNode(_id) {
+    		        this.$$S = fiberValueSymbol;
     		        this.i = _id || "".concat(id$1++);
     		        this._r = 0;
     		    }
@@ -1194,7 +1196,7 @@
     		    // full deep to load
     		    if (deep === 0) {
     		        return {
-    		            s: nodeValueSymbol,
+    		            $$s: nodeValueSymbol,
     		            i: currentId,
     		            t: type,
     		            _t: wrapperType,
@@ -1207,7 +1209,7 @@
     		    else {
     		        if (type === "Array") {
     		            return {
-    		                s: nodeValueSymbol,
+    		                $$s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1217,7 +1219,7 @@
     		        }
     		        else if (type === "Iterable") {
     		            return {
-    		                s: nodeValueSymbol,
+    		                $$s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1227,7 +1229,7 @@
     		        }
     		        else if (type === "Map") {
     		            return {
-    		                s: nodeValueSymbol,
+    		                $$s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1244,7 +1246,7 @@
     		        }
     		        else if (type === "Set") {
     		            return {
-    		                s: nodeValueSymbol,
+    		                $$s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1254,7 +1256,7 @@
     		        }
     		        else if (type === "Object") {
     		            return {
-    		                s: nodeValueSymbol,
+    		                $$s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1268,7 +1270,7 @@
     		        }
     		        else if (type === "ReactElement") {
     		            return {
-    		                s: nodeValueSymbol,
+    		                $$s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1282,7 +1284,7 @@
     		        }
     		        else {
     		            return {
-    		                s: nodeValueSymbol,
+    		                $$s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType || "Object",
@@ -1325,7 +1327,7 @@
     		            valueToIdMap.set(value, currentId);
     		            if (type === "Element") {
     		                return {
-    		                    s: nodeValueSymbol,
+    		                    $$s: nodeValueSymbol,
     		                    i: currentId,
     		                    t: type,
     		                    _t: wrapperType,
@@ -1335,7 +1337,7 @@
     		            }
     		            if (type === "Error") {
     		                return {
-    		                    s: nodeValueSymbol,
+    		                    $$s: nodeValueSymbol,
     		                    i: currentId,
     		                    t: type,
     		                    _t: wrapperType,
@@ -1345,7 +1347,7 @@
     		            }
     		            if (typeof value === "object" && value !== null) {
     		                return {
-    		                    s: nodeValueSymbol,
+    		                    $$s: nodeValueSymbol,
     		                    i: currentId,
     		                    t: type,
     		                    _t: wrapperType,
@@ -1355,7 +1357,7 @@
     		            }
     		            else {
     		                return {
-    		                    s: nodeValueSymbol,
+    		                    $$s: nodeValueSymbol,
     		                    i: currentId,
     		                    t: type,
     		                    _t: wrapperType,
@@ -1367,7 +1369,7 @@
     		    }
     		    catch (e) {
     		        return {
-    		            s: nodeValueSymbol,
+    		            $$s: nodeValueSymbol,
     		            i: NaN,
     		            t: "ReadError",
     		            v: "Read data error: " + e.message,
@@ -1376,14 +1378,14 @@
     		    }
     		};
     		var getObj = function (value) {
-    		    var _a = value || {}, t = _a.t, v = _a.v, i = _a.i, s = _a.s;
-    		    if (!s || s !== nodeValueSymbol) {
+    		    var _a = value || {}, t = _a.t, v = _a.v, $$s = _a.$$s;
+    		    if (!$$s || $$s !== nodeValueSymbol) {
     		        return value;
     		    }
     		    // If we have the original object cached, return it
-    		    if (idToValueMap.has(i)) {
-    		        return idToValueMap.get(i);
-    		    }
+    		    // if (idToValueMap.has(i)) {
+    		    //   return idToValueMap.get(i);
+    		    // }
     		    switch (t) {
     		        case "Array":
     		            return v.map(getObj);
@@ -2601,6 +2603,7 @@
     		        var isHook = !subHooks || subHooks.length === 0;
     		        var children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, _p) : undefined;
     		        return {
+    		            $$s: "d::h::v",
     		            k: id === null || id === void 0 ? void 0 : id.toString(),
     		            e: isStateEditable,
     		            i: isHook ? _p.index++ : undefined,
@@ -2662,6 +2665,7 @@
     		        var isRef = hook.type === HOOK_TYPE.useRef;
     		        var isContext = hook.type === HOOK_TYPE.useContext;
     		        final.push({
+    		            $$s: "d::h::v",
     		            k: index.toString(),
     		            i: index,
     		            n: isContext ? getContextName(hook.value) : getHookName(hook.type),
