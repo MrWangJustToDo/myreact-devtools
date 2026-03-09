@@ -32,7 +32,10 @@ const KnownType = {
   Module: true,
 };
 
+const nodeValueSymbol = Symbol.for("devtool-node-value");
+
 export type NodeValue = {
+  s: symbol;
   // id
   i: number;
   // type
@@ -122,6 +125,7 @@ const isObject = (value: NodeValue["t"]) => {
   );
 };
 
+// serialized any obj to devtool protocol obj
 const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue => {
   const existId = valueToIdMap.get(value);
 
@@ -149,6 +153,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
   // full deep to load
   if (deep === 0) {
     return {
+      s: nodeValueSymbol,
       i: currentId,
       t: type,
       _t: wrapperType,
@@ -160,6 +165,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
   } else {
     if (type === "Array") {
       return {
+        s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -168,6 +174,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Iterable") {
       return {
+        s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -176,6 +183,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Map") {
       return {
+        s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -188,6 +196,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Set") {
       return {
+        s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -196,6 +205,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Object") {
       return {
+        s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -208,6 +218,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "ReactElement") {
       return {
+        s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -220,6 +231,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else {
       return {
+        s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType || "Object",
@@ -272,6 +284,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
 
       if (type === "Element") {
         return {
+          s: nodeValueSymbol,
           i: currentId,
           t: type,
           _t: wrapperType,
@@ -281,6 +294,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
       }
       if (type === "Error") {
         return {
+          s: nodeValueSymbol,
           i: currentId,
           t: type,
           _t: wrapperType,
@@ -290,6 +304,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
       }
       if (typeof value === "object" && value !== null) {
         return {
+          s: nodeValueSymbol,
           i: currentId,
           t: type,
           _t: wrapperType,
@@ -298,6 +313,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
         };
       } else {
         return {
+          s: nodeValueSymbol,
           i: currentId,
           t: type,
           _t: wrapperType,
@@ -308,11 +324,99 @@ export const getNode = (value: any, deep = 3): NodeValue => {
     }
   } catch (e) {
     return {
+      s: nodeValueSymbol,
       i: NaN,
       t: "ReadError",
       v: "Read data error: " + e.message,
       e: false,
     };
+  }
+};
+
+export const getObj = (value: NodeValue): any => {
+  const { t, v, i, s } = value || {};
+
+  if (!s || s !== nodeValueSymbol) {
+    return value;
+  }
+
+  // If we have the original object cached, return it
+  if (idToValueMap.has(i)) {
+    return idToValueMap.get(i);
+  }
+
+  switch (t) {
+    case "Array":
+      return (v as NodeValue[]).map(getObj);
+    case "Iterable":
+      return (v as NodeValue[]).map(getObj);
+    case "Map": {
+      const map = new Map();
+      (v as { t: string; v: NodeValue[] }[]).forEach((entry) => {
+        const [key, val] = entry.v;
+        map.set(getObj(key), getObj(val));
+      });
+      return map;
+    }
+    case "Set": {
+      const set = new Set();
+      (v as NodeValue[]).forEach((item) => {
+        set.add(getObj(item));
+      });
+      return set;
+    }
+    case "Object":
+    case "ReactElement":
+    case "Module": {
+      const obj: Record<string, any> = {};
+      Object.keys(v).forEach((key) => {
+        obj[key] = getObj(v[key]);
+      });
+      return obj;
+    }
+    case "String":
+      return v;
+    case "Number":
+      return Number(v);
+    case "Boolean":
+      return v === "true" || v === true;
+    case "Date":
+      return new Date(v);
+    case "Null":
+      return null;
+    case "Undefined":
+      return undefined;
+    case "Function":
+    case "AsyncFunction":
+    case "GeneratorFunction":
+      // Cannot reconstruct functions, return a placeholder or the string representation
+      return v;
+    case "Symbol":
+      return Symbol(v);
+    case "RegExp": {
+      // v is like "/pattern/flags"
+      const match = String(v).match(/^\/(.*)\/([gimsuy]*)$/);
+      if (match) {
+        return new RegExp(match[1], match[2]);
+      }
+      return new RegExp(v);
+    }
+    case "Promise":
+      // Cannot reconstruct promises, return the value representation
+      return v;
+    case "Element":
+      // DOM elements cannot be reconstructed from string, return the string representation
+      return v;
+    case "Error":
+      return new Error(v);
+    case "WeakMap":
+    case "WeakSet":
+      // WeakMap/WeakSet cannot be reconstructed
+      return v;
+    case "ReadError":
+      return new Error(v);
+    default:
+      return v;
   }
 };
 

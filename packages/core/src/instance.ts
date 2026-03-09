@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable max-lines */
 import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource, setHoverStatus, setRetriggerStatus, setUpdateStatus } from "./config";
-import { getNode } from "./data";
+import { getNode, getObj } from "./data";
 import { getChunkDataFromIds, getMapValueLengthObject, getRecord, getTree, getValidTrigger, getValidTriggerStatus, patchEvent, patchRecord } from "./dispatch";
 import { DevToolMessageEnum } from "./event";
 import { updateFiberNode } from "./fiber";
@@ -11,6 +11,7 @@ import { getFiberNodeById, getPlainNodeIdByFiber, getComponentFiberByDom, getEle
 import { debounce } from "./utils";
 import { Select, Highlight } from "./view";
 
+import type { NodeValue } from "./data";
 import type { StackItemType } from "./dispatch";
 import type { HMRStatus } from "./event";
 import type { Tree } from "./tree";
@@ -605,6 +606,14 @@ export class DevToolCore {
 
     this.notifyErrorStatus();
   }, 200);
+
+  getNode(v: any) {
+    return getNode(v);
+  }
+
+  getObj(v: NodeValue) {
+    return getObj(v);
+  }
 
   // TODO support multiple connect agent
   connect() {

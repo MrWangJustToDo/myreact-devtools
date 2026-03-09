@@ -1000,6 +1000,7 @@
     		    return r ? r[ReactiveFlags.IS_REF] === true : false;
     		}
 
+    		var nodeValueSymbol = Symbol.for("devtool-node-value");
     		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
     		var emptyConstructor = {}.constructor;
     		var id = 1;
@@ -1052,6 +1053,7 @@
     		        value !== "WeakMap" &&
     		        value !== "WeakSet");
     		};
+    		// serialized any obj to devtool protocol obj
     		var getTargetNode = function (value, type, deep) {
     		    if (deep === void 0) { deep = 3; }
     		    var existId = valueToIdMap.get(value);
@@ -1072,6 +1074,7 @@
     		    // full deep to load
     		    if (deep === 0) {
     		        return {
+    		            s: nodeValueSymbol,
     		            i: currentId,
     		            t: type,
     		            _t: wrapperType,
@@ -1084,6 +1087,7 @@
     		    else {
     		        if (type === "Array") {
     		            return {
+    		                s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1093,6 +1097,7 @@
     		        }
     		        else if (type === "Iterable") {
     		            return {
+    		                s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1102,6 +1107,7 @@
     		        }
     		        else if (type === "Map") {
     		            return {
+    		                s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1118,6 +1124,7 @@
     		        }
     		        else if (type === "Set") {
     		            return {
+    		                s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1127,6 +1134,7 @@
     		        }
     		        else if (type === "Object") {
     		            return {
+    		                s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1140,6 +1148,7 @@
     		        }
     		        else if (type === "ReactElement") {
     		            return {
+    		                s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType,
@@ -1153,6 +1162,7 @@
     		        }
     		        else {
     		            return {
+    		                s: nodeValueSymbol,
     		                i: currentId,
     		                t: type,
     		                _t: wrapperType || "Object",
@@ -1195,6 +1205,7 @@
     		            valueToIdMap.set(value, currentId);
     		            if (type === "Element") {
     		                return {
+    		                    s: nodeValueSymbol,
     		                    i: currentId,
     		                    t: type,
     		                    _t: wrapperType,
@@ -1204,6 +1215,7 @@
     		            }
     		            if (type === "Error") {
     		                return {
+    		                    s: nodeValueSymbol,
     		                    i: currentId,
     		                    t: type,
     		                    _t: wrapperType,
@@ -1213,6 +1225,7 @@
     		            }
     		            if (typeof value === "object" && value !== null) {
     		                return {
+    		                    s: nodeValueSymbol,
     		                    i: currentId,
     		                    t: type,
     		                    _t: wrapperType,
@@ -1222,6 +1235,7 @@
     		            }
     		            else {
     		                return {
+    		                    s: nodeValueSymbol,
     		                    i: currentId,
     		                    t: type,
     		                    _t: wrapperType,
@@ -1233,11 +1247,95 @@
     		    }
     		    catch (e) {
     		        return {
+    		            s: nodeValueSymbol,
     		            i: NaN,
     		            t: "ReadError",
     		            v: "Read data error: " + e.message,
     		            e: false,
     		        };
+    		    }
+    		};
+    		var getObj = function (value) {
+    		    var _a = value || {}, t = _a.t, v = _a.v, i = _a.i, s = _a.s;
+    		    if (!s || s !== nodeValueSymbol) {
+    		        return value;
+    		    }
+    		    // If we have the original object cached, return it
+    		    if (idToValueMap.has(i)) {
+    		        return idToValueMap.get(i);
+    		    }
+    		    switch (t) {
+    		        case "Array":
+    		            return v.map(getObj);
+    		        case "Iterable":
+    		            return v.map(getObj);
+    		        case "Map": {
+    		            var map_1 = new Map();
+    		            v.forEach(function (entry) {
+    		                var _a = entry.v, key = _a[0], val = _a[1];
+    		                map_1.set(getObj(key), getObj(val));
+    		            });
+    		            return map_1;
+    		        }
+    		        case "Set": {
+    		            var set_1 = new Set();
+    		            v.forEach(function (item) {
+    		                set_1.add(getObj(item));
+    		            });
+    		            return set_1;
+    		        }
+    		        case "Object":
+    		        case "ReactElement":
+    		        case "Module": {
+    		            var obj_1 = {};
+    		            Object.keys(v).forEach(function (key) {
+    		                obj_1[key] = getObj(v[key]);
+    		            });
+    		            return obj_1;
+    		        }
+    		        case "String":
+    		            return v;
+    		        case "Number":
+    		            return Number(v);
+    		        case "Boolean":
+    		            return v === "true" || v === true;
+    		        case "Date":
+    		            return new Date(v);
+    		        case "Null":
+    		            return null;
+    		        case "Undefined":
+    		            return undefined;
+    		        case "Function":
+    		        case "AsyncFunction":
+    		        case "GeneratorFunction":
+    		            // Cannot reconstruct functions, return a placeholder or the string representation
+    		            return v;
+    		        case "Symbol":
+    		            return Symbol(v);
+    		        case "RegExp": {
+    		            // v is like "/pattern/flags"
+    		            var match = String(v).match(/^\/(.*)\/([gimsuy]*)$/);
+    		            if (match) {
+    		                return new RegExp(match[1], match[2]);
+    		            }
+    		            return new RegExp(v);
+    		        }
+    		        case "Promise":
+    		            // Cannot reconstruct promises, return the value representation
+    		            return v;
+    		        case "Element":
+    		            // DOM elements cannot be reconstructed from string, return the string representation
+    		            return v;
+    		        case "Error":
+    		            return new Error(v);
+    		        case "WeakMap":
+    		        case "WeakSet":
+    		            // WeakMap/WeakSet cannot be reconstructed
+    		            return v;
+    		        case "ReadError":
+    		            return new Error(v);
+    		        default:
+    		            return v;
     		    }
     		};
     		var getNodeFromId = function (id) {
@@ -4509,6 +4607,12 @@
     		        data.map(function (item) { return _this._notify({ type: exports.DevToolMessageEnum.record, data: item }); });
     		        this._notify({ type: exports.DevToolMessageEnum.record, data: true });
     		    };
+    		    DevToolCore.prototype.getNode = function (v) {
+    		        return getNode(v);
+    		    };
+    		    DevToolCore.prototype.getObj = function (v) {
+    		        return getObj(v);
+    		    };
     		    // TODO support multiple connect agent
     		    DevToolCore.prototype.connect = function () {
     		        if (this._enabled)
@@ -4584,6 +4688,7 @@
     		exports.getMockFiberFromElement = getMockFiberFromElement;
     		exports.getNode = getNode;
     		exports.getNodeFromId = getNodeFromId;
+    		exports.getObj = getObj;
     		exports.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
     		exports.getProps = getProps;
