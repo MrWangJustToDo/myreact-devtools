@@ -19,6 +19,7 @@ const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, p?: { index: numbe
     const isHook = !subHooks || subHooks.length === 0;
     const children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, _p) : undefined;
     return {
+      $$s: "d::h::v",
       k: id?.toString(),
       e: isStateEditable,
       i: isHook ? _p.index++ : undefined,
@@ -82,6 +83,7 @@ const getHookNormal = (fiber: MyReactFiberNodeDev) => {
     const isRef = hook.type === HOOK_TYPE.useRef;
     const isContext = hook.type === HOOK_TYPE.useContext;
     final.push({
+      $$s: "d::h::v",
       k: index.toString(),
       i: index,
       n: isContext ? getContextName(hook.value) : getHookName(hook.type),

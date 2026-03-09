@@ -35,7 +35,7 @@ const KnownType = {
 const nodeValueSymbol = 'd::n::v';
 
 export type NodeValue = {
-  s: 'd::n::v';
+  $$s: 'd::n::v';
   // id
   i: number;
   // type
@@ -153,7 +153,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
   // full deep to load
   if (deep === 0) {
     return {
-      s: nodeValueSymbol,
+      $$s: nodeValueSymbol,
       i: currentId,
       t: type,
       _t: wrapperType,
@@ -165,7 +165,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
   } else {
     if (type === "Array") {
       return {
-        s: nodeValueSymbol,
+        $$s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -174,7 +174,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Iterable") {
       return {
-        s: nodeValueSymbol,
+        $$s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -183,7 +183,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Map") {
       return {
-        s: nodeValueSymbol,
+        $$s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -196,7 +196,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Set") {
       return {
-        s: nodeValueSymbol,
+        $$s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -205,7 +205,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "Object") {
       return {
-        s: nodeValueSymbol,
+        $$s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -218,7 +218,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else if (type === "ReactElement") {
       return {
-        s: nodeValueSymbol,
+        $$s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType,
@@ -231,7 +231,7 @@ const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue =>
       };
     } else {
       return {
-        s: nodeValueSymbol,
+        $$s: nodeValueSymbol,
         i: currentId,
         t: type,
         _t: wrapperType || "Object",
@@ -284,7 +284,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
 
       if (type === "Element") {
         return {
-          s: nodeValueSymbol,
+          $$s: nodeValueSymbol,
           i: currentId,
           t: type,
           _t: wrapperType,
@@ -294,7 +294,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
       }
       if (type === "Error") {
         return {
-          s: nodeValueSymbol,
+          $$s: nodeValueSymbol,
           i: currentId,
           t: type,
           _t: wrapperType,
@@ -304,7 +304,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
       }
       if (typeof value === "object" && value !== null) {
         return {
-          s: nodeValueSymbol,
+          $$s: nodeValueSymbol,
           i: currentId,
           t: type,
           _t: wrapperType,
@@ -313,7 +313,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
         };
       } else {
         return {
-          s: nodeValueSymbol,
+          $$s: nodeValueSymbol,
           i: currentId,
           t: type,
           _t: wrapperType,
@@ -324,7 +324,7 @@ export const getNode = (value: any, deep = 3): NodeValue => {
     }
   } catch (e) {
     return {
-      s: nodeValueSymbol,
+      $$s: nodeValueSymbol,
       i: NaN,
       t: "ReadError",
       v: "Read data error: " + e.message,
@@ -334,16 +334,16 @@ export const getNode = (value: any, deep = 3): NodeValue => {
 };
 
 export const getObj = (value: NodeValue): any => {
-  const { t, v, i, s } = value || {};
+  const { t, v, $$s } = value || {};
 
-  if (!s || s !== nodeValueSymbol) {
+  if (!$$s || $$s !== nodeValueSymbol) {
     return value;
   }
 
   // If we have the original object cached, return it
-  if (idToValueMap.has(i)) {
-    return idToValueMap.get(i);
-  }
+  // if (idToValueMap.has(i)) {
+  //   return idToValueMap.get(i);
+  // }
 
   switch (t) {
     case "Array":

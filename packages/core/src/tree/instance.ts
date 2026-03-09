@@ -10,7 +10,10 @@ export type HOOK = {
   deps: any;
 };
 
+const fiberValueSymbol = "d::f::v";
+
 export type HOOKTree = {
+  $$s: "d::h::v";
   // key
   k: string;
   // index
@@ -34,6 +37,8 @@ export type HOOKTree = {
 
 // PlainNode is a simplified version of FiberNode just for show the structure
 export class PlainNode {
+  $$S: "d::f::v";
+
   p: NodeValue;
   // props: fiber props;
 
@@ -83,6 +88,8 @@ export class PlainNode {
   // inspect node
 
   constructor(_id?: string) {
+    this.$$S = fiberValueSymbol;
+
     this.i = _id || `${id++}`;
 
     this._r = 0;
