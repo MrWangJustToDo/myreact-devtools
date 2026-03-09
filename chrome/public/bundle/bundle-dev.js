@@ -5965,7 +5965,7 @@
     		    return r ? r[ReactiveFlags.IS_REF] === true : false;
     		}
 
-    		var nodeValueSymbol = Symbol.for("devtool-node-value");
+    		var nodeValueSymbol = 'd::n::v';
     		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
     		var emptyConstructor = {}.constructor;
     		var id = 1;

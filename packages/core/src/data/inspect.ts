@@ -32,10 +32,10 @@ const KnownType = {
   Module: true,
 };
 
-const nodeValueSymbol = Symbol.for("devtool-node-value");
+const nodeValueSymbol = 'd::n::v';
 
 export type NodeValue = {
-  s: symbol;
+  s: 'd::n::v';
   // id
   i: number;
   // type
