@@ -1388,12 +1388,12 @@
     		    // }
     		    switch (t) {
     		        case "Array":
-    		            return v.map(getObj);
+    		            return (v || []).map(getObj);
     		        case "Iterable":
-    		            return v.map(getObj);
+    		            return (v || []).map(getObj);
     		        case "Map": {
     		            var map_1 = new Map();
-    		            v.forEach(function (entry) {
+    		            (v || new Map()).forEach(function (entry) {
     		                var _a = entry.v, key = _a[0], val = _a[1];
     		                map_1.set(getObj(key), getObj(val));
     		            });
@@ -1401,7 +1401,7 @@
     		        }
     		        case "Set": {
     		            var set_1 = new Set();
-    		            v.forEach(function (item) {
+    		            (v || []).forEach(function (item) {
     		                set_1.add(getObj(item));
     		            });
     		            return set_1;
@@ -1410,7 +1410,7 @@
     		        case "ReactElement":
     		        case "Module": {
     		            var obj_1 = {};
-    		            Object.keys(v).forEach(function (key) {
+    		            Object.keys(v || {}).forEach(function (key) {
     		                obj_1[key] = getObj(v[key]);
     		            });
     		            return obj_1;

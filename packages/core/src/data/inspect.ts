@@ -347,12 +347,12 @@ export const getObj = (value: NodeValue): any => {
 
   switch (t) {
     case "Array":
-      return (v as NodeValue[]).map(getObj);
+      return (v as NodeValue[] || []).map(getObj);
     case "Iterable":
-      return (v as NodeValue[]).map(getObj);
+      return (v as NodeValue[] || []).map(getObj);
     case "Map": {
       const map = new Map();
-      (v as { t: string; v: NodeValue[] }[]).forEach((entry) => {
+      (v as { t: string; v: NodeValue[] }[] || new Map()).forEach((entry) => {
         const [key, val] = entry.v;
         map.set(getObj(key), getObj(val));
       });
@@ -360,7 +360,7 @@ export const getObj = (value: NodeValue): any => {
     }
     case "Set": {
       const set = new Set();
-      (v as NodeValue[]).forEach((item) => {
+      (v as NodeValue[] || []).forEach((item) => {
         set.add(getObj(item));
       });
       return set;
@@ -369,7 +369,7 @@ export const getObj = (value: NodeValue): any => {
     case "ReactElement":
     case "Module": {
       const obj: Record<string, any> = {};
-      Object.keys(v).forEach((key) => {
+      Object.keys(v || {}).forEach((key) => {
         obj[key] = getObj(v[key]);
       });
       return obj;
