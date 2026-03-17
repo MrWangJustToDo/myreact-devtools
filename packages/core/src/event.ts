@@ -31,6 +31,7 @@ export enum MessagePanelType {
   nodeTrigger = "panel-trigger",
   nodeInspect = "panel-inspect",
   chunks = "panel-chunks",
+  global = "panel-global",
   clear = "panel-clear",
   clearHMR = "panel-clear-hmr",
   clearMessage = "panel-clear-message",
@@ -73,6 +74,7 @@ export enum DevToolMessageEnum {
   errorStatus = "errorStatus",
 
   chunks = "chunks",
+  global = "global",
   record = "record",
 
   domHover = "dom-hover",

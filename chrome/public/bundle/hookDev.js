@@ -125,6 +125,7 @@
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["chunks"] = "panel-chunks";
+    		    MessagePanelType["global"] = "panel-global";
     		    MessagePanelType["clear"] = "panel-clear";
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
@@ -164,6 +165,7 @@
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["errorStatus"] = "errorStatus";
     		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
@@ -3546,6 +3548,7 @@
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["chunks"] = "panel-chunks";
+    		    MessagePanelType["global"] = "panel-global";
     		    MessagePanelType["clear"] = "panel-clear";
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
@@ -3585,6 +3588,7 @@
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["errorStatus"] = "errorStatus";
     		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
@@ -5024,6 +5028,17 @@
     		        var data = getChunkDataFromIds(ids);
     		        this._notify({ type: exports.DevToolMessageEnum.chunks, data: data });
     		    };
+    		    DevToolCore.prototype.notifyGlobal = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        try {
+    		            var data = getNode(globalThis);
+    		            this._notify({ type: exports.DevToolMessageEnum.global, data: data });
+    		        }
+    		        catch (e) {
+    		            this.notifyMessage("failed transport globalThis to devtool, ".concat(e.message), "error");
+    		        }
+    		    };
     		    DevToolCore.prototype.notifyEditor = function (params) {
     		        if (!this.hasEnable)
     		            return;
@@ -6227,6 +6242,9 @@
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.chunks) {
             core.notifyChunks(data.data);
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.global) {
+            core.notifyGlobal();
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varStore) {
             var id = data.data;

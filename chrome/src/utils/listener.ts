@@ -7,6 +7,7 @@ import { useConnect } from "@/hooks/useConnect";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
+import { useGlobalThis } from "@/hooks/useGlobalThis";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useRecordStack } from "@/hooks/useRecordStack";
@@ -251,6 +252,14 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
           postMessage({ type: MessagePanelType.enableRecord, data: false });
         }
       }
+    )
+  );
+
+  // start load globalthis
+  unSubscribeArray.push(
+    useGlobalThis.subscribe(
+      (s) => s.count,
+      () => postMessage({ type: MessagePanelType.global, data: useGlobalThis.getReadonlyState().count })
     )
   );
 

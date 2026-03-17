@@ -8,6 +8,7 @@ import { useConnect } from "@/hooks/useConnect";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
+import { useGlobalThis } from "@/hooks/useGlobalThis";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
 import { useNodeName } from "@/hooks/useNodeName";
@@ -238,6 +239,16 @@ export const onRender = (data: DevToolMessageType) => {
       const { setChunk } = useChunk.getActions();
 
       setChunk(chunks);
+    });
+  }
+
+  if (data.type === DevToolMessageEnum.global) {
+    const global = data.data as NodeValue;
+
+    safeAction(() => {
+      const { setTarget } = useGlobalThis.getActions();
+
+      setTarget(global);
     });
   }
 

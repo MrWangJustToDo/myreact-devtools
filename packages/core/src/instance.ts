@@ -498,6 +498,18 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.chunks, data });
   }
 
+  notifyGlobal() {
+    if (!this.hasEnable) return;
+
+    try {
+      const data = getNode(globalThis);
+
+      this._notify({ type: DevToolMessageEnum.global, data });
+    } catch (e) {
+      this.notifyMessage(`failed transport globalThis to devtool, ${(e as Error).message}`, "error");
+    }
+  }
+
   notifyEditor(params: {
     id: number | string;
     oldVal: any;

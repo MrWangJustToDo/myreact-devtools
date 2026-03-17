@@ -21,9 +21,12 @@ export const ValueView = ({
   rootItem,
   parentItem,
   prefix,
+  // for edit update on fiber
   editable,
-  hookIndex,
   type,
+  // for hook prev view
+  hookIndex,
+  // for incremental loading
   chunkId,
 }: {
   name: string;
@@ -32,8 +35,8 @@ export const ValueView = ({
   parentItem?: NodeValueType;
   prefix?: ReactNode;
   editable?: boolean;
-  hookIndex?: number;
   type?: string;
+  hookIndex?: number;
   chunkId?: number;
 }) => {
   const [expand, setExpand] = useState(false);
@@ -212,7 +215,7 @@ export const ValueView = ({
     const currentIsEditable = editable && item._t !== "Readonly" && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
 
     return (
-      <div data-id={id} data-chunk={isChunk} className="hook-value-view">
+      <div data-id={id} data-chunk={isChunk} className="node-value-view">
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block shrink-0">{StateIcon}</span>
           {prefix}
@@ -222,7 +225,7 @@ export const ValueView = ({
             </span>
             <span className="flex-shrink-0">:</span>
             {currentIsEditable ? (
-              <span className="hook-value-placeholder relative line-clamp-1 break-all" title={textContent}>
+              <span className="node-value-placeholder relative line-clamp-1 break-all" title={textContent}>
                 <ValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
                   {element}
                 </ValueChange>
@@ -230,7 +233,7 @@ export const ValueView = ({
             ) : (
               <span
                 className={
-                  "hook-value-placeholder flex-grow line-clamp-1 break-all" +
+                  "node-value-placeholder flex-grow line-clamp-1 break-all" +
                   (isFunction || isElement ? " cursor-pointer node-item-hover rounded-[2px] overflow-hidden" : "")
                 }
                 onClick={async () => {
@@ -253,7 +256,7 @@ export const ValueView = ({
   } else {
     return (
       <>
-        <div data-id={id} data-chunk={isChunk} className="hook-value-view">
+        <div data-id={id} data-chunk={isChunk} className="node-value-view">
           <div className="flex w-full my-0.5 items-center">
             <span
               className={"text-gray-400 w-[1.5em] h-[1.5em] cursor-pointer inline-flex justify-center items-center hover:text-gray-700 shrink-0"}
@@ -267,7 +270,7 @@ export const ValueView = ({
                 {name}
               </span>
               <span className="flex-shrink-0 pr-1">:</span>
-              <span className="hook-value-placeholder line-clamp-1 break-all">
+              <span className="node-value-placeholder line-clamp-1 break-all">
                 {data ? text : <Ellipsis className="inline-block font-sm" width="1em" height="1em" />}
               </span>
             </div>

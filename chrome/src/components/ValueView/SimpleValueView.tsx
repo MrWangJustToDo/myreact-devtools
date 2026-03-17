@@ -216,7 +216,7 @@ export const SimpleValueView = ({
     );
 
     return (
-      <div data-id={id} data-chunk={isChunk} className="hook-value-view">
+      <div data-id={id} data-chunk={isChunk} className="node-value-view">
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block shrink-0">{StateIcon}</span>
           {prefix}
@@ -228,7 +228,7 @@ export const SimpleValueView = ({
             <span className="flex-shrink-0">:</span>
             <span
               className={
-                "hook-value-placeholder flex-grow line-clamp-1 break-all" +
+                "node-value-placeholder flex-grow line-clamp-1 break-all" +
                 (isFunction || isElement ? " cursor-pointer node-item-hover rounded-[2px] overflow-hidden" : "")
               }
               onClick={async () => {
@@ -250,7 +250,7 @@ export const SimpleValueView = ({
   } else {
     return (
       <>
-        <div data-id={id} data-chunk={isChunk} className="hook-value-view">
+        <div data-id={id} data-chunk={isChunk} className="node-value-view">
           <div className="flex w-full my-0.5 items-center">
             <span
               className={"text-gray-400 w-[1.5em] h-[1.5em] cursor-pointer inline-flex justify-center items-center hover:text-gray-700 shrink-0"}
@@ -269,7 +269,7 @@ export const SimpleValueView = ({
                 {name}
               </span>
               <span className="flex-shrink-0 pr-1">:</span>
-              <span className="hook-value-placeholder line-clamp-1 break-all">
+              <span className="node-value-placeholder line-clamp-1 break-all">
                 {data ? text : <Ellipsis className="inline-block font-sm" width="1em" height="1em" />}
               </span>
             </div>

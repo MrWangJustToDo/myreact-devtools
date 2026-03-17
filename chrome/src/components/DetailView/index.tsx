@@ -1,6 +1,7 @@
 import { useDetailMode } from "@/hooks/useDetailMode";
 
 import { FlameGraphView } from "../FlameGraphView";
+import { GlobalThisView } from "../GlobalThisView";
 import { NodeView } from "../NodeView";
 
 export const DetailView = () => {
@@ -10,6 +11,7 @@ export const DetailView = () => {
     <div className="detail-view h-full p-1">
       {mode === "node" && <NodeView />}
       {mode === "flameGraph" && <FlameGraphView />}
+      {mode === "global" && <GlobalThisView />}
     </div>
   );
 };

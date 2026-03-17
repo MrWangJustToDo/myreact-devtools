@@ -5,7 +5,8 @@ import type { CustomRenderDispatch, MyReactFiberNode } from "@my-react/react-rec
 
 export interface DevToolRenderDispatch extends CustomRenderDispatch {
   ["$$hasDevToolInject"]?: boolean;
-  ["$$hasDevToolPatch"]?: boolean;
+  ["$$hasDevToolEvent"]?: boolean;
+  ["$$hasDevToolRecord"]?: boolean;
   onDOMUpdate?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMAppend?: (cb: (f: MyReactFiberNode) => void) => void;
   onDOMSetRef?: (cb: (f: MyReactFiberNode) => void) => void;

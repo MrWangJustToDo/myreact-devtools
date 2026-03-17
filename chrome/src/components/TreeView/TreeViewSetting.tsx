@@ -16,9 +16,13 @@ import {
   Radio,
   Divider,
   Code,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
 } from "@heroui/react";
 import { getTypeName, typeKeys } from "@my-react-devtool/core";
-import { BoxIcon, CircleCheck, CircleX, FlameIcon, LetterText, ListFilter, Moon, Settings, Settings2, Sun } from "lucide-react";
+import { BoxIcon, CircleCheck, CircleX, LetterText, ListFilter, Moon, Settings, Settings2, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { memo } from "react";
 
@@ -46,7 +50,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
 
   const { theme, setTheme } = useTheme();
 
-  const { mode, toggleMode } = useDetailMode();
+  const { mode, setMode } = useDetailMode();
 
   const { clearHMR } = useHMRNode.getActions();
 
@@ -82,11 +86,24 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
           <Button isIconOnly onPress={() => setTheme(theme === "dark" ? "light" : "dark")}>
             {theme === "dark" ? <Moon className="text-gray-500 w-[1.2em]" /> : <Sun className="text-orange-500 w-[1.2em]" />}
           </Button>
-          <Tooltip content="Detail mode" showArrow color="foreground">
-            <Button isIconOnly onPress={toggleMode}>
-              {mode === "node" ? <BoxIcon className="text-blue-600 w-[1.2em]" /> : <FlameIcon className="text-yellow-600 w-[1.2em]" />}
-            </Button>
-          </Tooltip>
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly>
+                <BoxIcon className="text-blue-600 w-[1.2em]" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="Change mode"
+              selectionMode="single"
+              selectedKeys={new Set([mode])}
+              onSelectionChange={(l) => setMode(Array.from(l)?.[0] as typeof mode)}
+            >
+              <DropdownItem key="node">Detail mode</DropdownItem>
+              <DropdownItem key="flameGraph">Graph mode</DropdownItem>
+              <DropdownItem key="global">Global mode</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+
           <Tooltip content="Setting" showArrow color="foreground">
             <Button isIconOnly onPress={onOpen}>
               <Settings className={isOpen ? "text-green-500 w-[1.2em]" : "text-gray-500 w-[1.2em]"} />

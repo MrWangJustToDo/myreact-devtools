@@ -80,11 +80,11 @@ svg {
   @apply text-slate-100;
 }
 
-.hook-value-placeholder {
+.node-value-placeholder {
   @apply text-blue-500;
 }
 
-.dark .hook-value-placeholder {
+.dark .node-value-placeholder {
   @apply text-cyan-700;
 }
 

@@ -124,6 +124,10 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessageHookDataType |
     core.notifyChunks(data.data);
   }
 
+  if (data?.type === MessagePanelType.global) {
+    core.notifyGlobal();
+  }
+
   if (data?.type === MessagePanelType.varStore) {
     const id = data.data;
 
