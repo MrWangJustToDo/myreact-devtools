@@ -6233,12 +6233,12 @@
     		    // }
     		    switch (t) {
     		        case "Array":
-    		            return v.map(getObj);
+    		            return (v || []).map(getObj);
     		        case "Iterable":
-    		            return v.map(getObj);
+    		            return (v || []).map(getObj);
     		        case "Map": {
     		            var map_1 = new Map();
-    		            v.forEach(function (entry) {
+    		            (v || new Map()).forEach(function (entry) {
     		                var _a = entry.v, key = _a[0], val = _a[1];
     		                map_1.set(getObj(key), getObj(val));
     		            });
@@ -6246,7 +6246,7 @@
     		        }
     		        case "Set": {
     		            var set_1 = new Set();
-    		            v.forEach(function (item) {
+    		            (v || []).forEach(function (item) {
     		                set_1.add(getObj(item));
     		            });
     		            return set_1;
@@ -6255,7 +6255,7 @@
     		        case "ReactElement":
     		        case "Module": {
     		            var obj_1 = {};
-    		            Object.keys(v).forEach(function (key) {
+    		            Object.keys(v || {}).forEach(function (key) {
     		                obj_1[key] = getObj(v[key]);
     		            });
     		            return obj_1;
@@ -8060,6 +8060,7 @@
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["chunks"] = "panel-chunks";
+    		    MessagePanelType["global"] = "panel-global";
     		    MessagePanelType["clear"] = "panel-clear";
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
@@ -8099,6 +8100,7 @@
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["errorStatus"] = "errorStatus";
     		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
@@ -9526,6 +9528,17 @@
     		        var data = getChunkDataFromIds(ids);
     		        this._notify({ type: exports.DevToolMessageEnum.chunks, data: data });
     		    };
+    		    DevToolCore.prototype.notifyGlobal = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        try {
+    		            var data = getNode(globalThis);
+    		            this._notify({ type: exports.DevToolMessageEnum.global, data: data });
+    		        }
+    		        catch (e) {
+    		            this.notifyMessage("failed transport globalThis to devtool, ".concat(e.message), "error");
+    		        }
+    		    };
     		    DevToolCore.prototype.notifyEditor = function (params) {
     		        if (!this.hasEnable)
     		            return;
@@ -9867,6 +9880,7 @@
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["chunks"] = "panel-chunks";
+    		    MessagePanelType["global"] = "panel-global";
     		    MessagePanelType["clear"] = "panel-clear";
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
@@ -9906,6 +9920,7 @@
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["errorStatus"] = "errorStatus";
     		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
@@ -10048,6 +10063,9 @@
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.chunks) {
             core.notifyChunks(data.data);
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.global) {
+            core.notifyGlobal();
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.varStore) {
             var id = data.data;

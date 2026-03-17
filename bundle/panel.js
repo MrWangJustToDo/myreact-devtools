@@ -115,6 +115,7 @@
     		    MessagePanelType["nodeTrigger"] = "panel-trigger";
     		    MessagePanelType["nodeInspect"] = "panel-inspect";
     		    MessagePanelType["chunks"] = "panel-chunks";
+    		    MessagePanelType["global"] = "panel-global";
     		    MessagePanelType["clear"] = "panel-clear";
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
@@ -154,6 +155,7 @@
     		    DevToolMessageEnum["error"] = "error";
     		    DevToolMessageEnum["errorStatus"] = "errorStatus";
     		    DevToolMessageEnum["chunks"] = "chunks";
+    		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
