@@ -7,13 +7,24 @@ import type { DevToolRenderDispatch } from "../setup";
 import type { MyReactElement } from "@my-react/react/type";
 import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 
+const getValidStackItem = (stack: StackFrame[]) => {
+  while(stack.length) {
+    const item = stack.shift();
+    if (item.fileName.includes('@my-react/react-jsx')) {
+      continue;
+    }
+    return item;
+  }
+}
+
 export const getSource = (fiber: MyReactFiberNodeDev): { type: "stack" | "source"; value: string } => {
   if (fiber._debugElement) {
     const element = fiber._debugElement as MyReactElement & { _debugStack?: Error };
     try {
       if (element._debugStack) {
         const stack = ErrorStackParser.parse(element._debugStack);
-        const currentStack = stack[1];
+        stack.shift();
+        const currentStack = getValidStackItem(stack);
         return {
           type: "stack",
           value: currentStack.fileName + ":" + currentStack.lineNumber + ":" + currentStack.columnNumber,
