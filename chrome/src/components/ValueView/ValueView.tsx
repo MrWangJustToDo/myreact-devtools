@@ -12,7 +12,7 @@ import { ValueChange } from "./ValueChange";
 import type { HOOKTree, NodeValue as NodeValueType } from "@my-react-devtool/core";
 import type { ReactNode } from "react";
 
-const { open: contextOpen, setId, setType, setSource, clear } = useContextMenu.getActions();
+const { open: contextOpen, setId, setType, setSource, clear, setOpenCallback } = useContextMenu.getActions();
 
 // core component to view any typeof data with incremental loading
 export const ValueView = ({
@@ -28,6 +28,8 @@ export const ValueView = ({
   hookIndex,
   // for incremental loading
   chunkId,
+  // auto expand
+  expandCount,
 }: {
   name: string;
   item?: NodeValueType;
@@ -38,8 +40,11 @@ export const ValueView = ({
   type?: string;
   hookIndex?: number;
   chunkId?: number;
+  expandCount?: number;
 }) => {
-  const [expand, setExpand] = useState(false);
+  const [expand, setExpand] = useState(() => !!expandCount);
+
+  const [count, setCount] = useState(0);
 
   const hasOpenRef = useRef(false);
 
@@ -187,7 +192,14 @@ export const ValueView = ({
     setId(item.i);
 
     setType(item.t);
+
+    setOpenCallback(() => {
+      setExpand(true);
+      setCount(4);
+    });
   };
+
+  const finalOpenCount = count || (typeof expandCount === "number" ? expandCount : 0);
 
   if (!item) return null;
 
@@ -276,7 +288,7 @@ export const ValueView = ({
             </div>
           </div>
           {(hasOpenRef.current || expand) && (
-            <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
+            <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`} key={count}>
               {data ? (
                 Array.isArray(data) ? (
                   <>
@@ -291,6 +303,7 @@ export const ValueView = ({
                         chunkId={isChunk ? id : chunkId}
                         parentItem={item}
                         hookIndex={hookIndex}
+                        expandCount={finalOpenCount ? finalOpenCount - 1 : 0}
                       />
                     ))}
                   </>
@@ -310,6 +323,7 @@ export const ValueView = ({
                           editable={editable && _t !== "Readonly" && typeof n !== "string"}
                           chunkId={isChunk ? id : chunkId}
                           hookIndex={hookIndex}
+                          expandCount={finalOpenCount ? finalOpenCount - 1 : 0}
                         />
                       ))}
                   </>

@@ -43,5 +43,8 @@ export const useHighlightNode = createState(
         },
       };
     },
+    withNamespace: {
+      namespace: "useHighlightNode",
+    },
   }
 );

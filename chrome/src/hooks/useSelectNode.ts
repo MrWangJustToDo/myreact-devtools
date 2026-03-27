@@ -118,6 +118,9 @@ export const useSelectNode = createState(
       };
     },
     withDeepSelector: false,
+    withNamespace: {
+      namespace: "useSelectNode",
+    },
     // withNamespace: "useTreeNode",
   }
 );

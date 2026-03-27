@@ -8,25 +8,25 @@
     function requireEvent$1 () {
     	if (hasRequiredEvent$1) return event$1;
     	hasRequiredEvent$1 = 1;
-    	(function (exports) {
+    	(function (exports$1) {
 
-    		exports.MessageHookType = void 0;
+    		exports$1.MessageHookType = void 0;
     		(function (MessageHookType) {
     		    MessageHookType["init"] = "hook-init";
     		    MessageHookType["mount"] = "hook-mount";
     		    MessageHookType["render"] = "hook-render";
     		    MessageHookType["origin"] = "hook-origin";
     		    MessageHookType["clear"] = "hook-clear";
-    		})(exports.MessageHookType || (exports.MessageHookType = {}));
-    		exports.MessageDetectorType = void 0;
+    		})(exports$1.MessageHookType || (exports$1.MessageHookType = {}));
+    		exports$1.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
-    		})(exports.MessageDetectorType || (exports.MessageDetectorType = {}));
-    		exports.MessageProxyType = void 0;
+    		})(exports$1.MessageDetectorType || (exports$1.MessageDetectorType = {}));
+    		exports$1.MessageProxyType = void 0;
     		(function (MessageProxyType) {
     		    MessageProxyType["init"] = "proxy-init";
-    		})(exports.MessageProxyType || (exports.MessageProxyType = {}));
-    		exports.MessagePanelType = void 0;
+    		})(exports$1.MessageProxyType || (exports$1.MessageProxyType = {}));
+    		exports$1.MessagePanelType = void 0;
     		(function (MessagePanelType) {
     		    MessagePanelType["show"] = "panel-show";
     		    MessagePanelType["hide"] = "panel-hide";
@@ -49,13 +49,13 @@
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
     		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
-    		})(exports.MessagePanelType || (exports.MessagePanelType = {}));
-    		exports.MessageWorkerType = void 0;
+    		})(exports$1.MessagePanelType || (exports$1.MessagePanelType = {}));
+    		exports$1.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
     		    MessageWorkerType["init"] = "worker-init";
     		    MessageWorkerType["close"] = "worker-close";
-    		})(exports.MessageWorkerType || (exports.MessageWorkerType = {}));
-    		exports.DevToolMessageEnum = void 0;
+    		})(exports$1.MessageWorkerType || (exports$1.MessageWorkerType = {}));
+    		exports$1.DevToolMessageEnum = void 0;
     		(function (DevToolMessageEnum) {
     		    // 初始化，判断是否用@my-react进行页面渲染
     		    DevToolMessageEnum["init"] = "init";
@@ -87,16 +87,16 @@
     		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
-    		})(exports.DevToolMessageEnum || (exports.DevToolMessageEnum = {}));
-    		exports.HMRStatus = void 0;
+    		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
+    		exports$1.HMRStatus = void 0;
     		(function (HMRStatus) {
     		    HMRStatus[HMRStatus["none"] = 0] = "none";
     		    HMRStatus[HMRStatus["refresh"] = 1] = "refresh";
     		    HMRStatus[HMRStatus["remount"] = 2] = "remount";
-    		})(exports.HMRStatus || (exports.HMRStatus = {}));
+    		})(exports$1.HMRStatus || (exports$1.HMRStatus = {}));
     		var DevToolSource = "@my-react/devtool";
 
-    		exports.DevToolSource = DevToolSource; 
+    		exports$1.DevToolSource = DevToolSource; 
     	} (event$1));
     	return event$1;
     }

@@ -1,6 +1,6 @@
 import { MessageDetectorType, MessageHookType, MessagePanelType, MessageWorkerType } from "@my-react-devtool/core/event";
 
-import type { MessageProxyType} from "@my-react-devtool/core/event";
+import type { MessageProxyType } from "@my-react-devtool/core/event";
 
 export { MessageDetectorType, MessageHookType, MessagePanelType, MessageWorkerType };
 
@@ -50,7 +50,7 @@ export type MessageProxyDataType = {
   source?: string;
   from?: string;
   to?: string;
-}
+};
 
 export enum sourceFrom {
   // message from hook script, `content` dir

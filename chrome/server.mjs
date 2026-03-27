@@ -12,7 +12,7 @@ const handle = app.getRequestHandler();
 /**
  * @type {Set<import('socket.io').Socket>}
  */
-let socketSet = new Set();
+const socketSet = new Set();
 
 let hasClient = false;
 let hasServer = false;

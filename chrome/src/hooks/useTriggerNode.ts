@@ -2,6 +2,7 @@ import { createState } from "reactivity-store";
 
 export const useTriggerNode = createState(() => ({ state: {}, count: 0 }) as { state: Record<string, number>; count: number }, {
   withDeepSelector: false,
+  withNamespace: "useTriggerNode",
   withActions: (s) => {
     return {
       update: (state: Record<string, number>) => {
@@ -15,7 +16,7 @@ export const useTriggerNode = createState(() => ({ state: {}, count: 0 }) as { s
           } else {
             delete s.state[key];
           }
-        })
+        });
       },
       clearTrigger: () => {
         s.count++;

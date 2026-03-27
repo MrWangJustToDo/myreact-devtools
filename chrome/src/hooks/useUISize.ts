@@ -10,5 +10,6 @@ export const useUISize = createState(() => ({ state: "sm" as UISize }), {
   withActions: (s) => ({
     setUISize: (size: UISize) => (s.state = size),
   }),
+  withNamespace: "useUISize",
   withDeepSelector: false,
 });

@@ -2,7 +2,6 @@ import { DevToolSource } from "@my-react-devtool/core/event";
 
 import { loadRemoteModule } from "./polyfill";
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 let varId = 0;
 
 export const getValidGlobalVarName = () => {

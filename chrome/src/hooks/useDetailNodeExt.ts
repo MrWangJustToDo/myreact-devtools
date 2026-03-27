@@ -40,6 +40,9 @@ export const useDetailNodeExt = createState(
         },
       };
     },
+    withNamespace: {
+      namespace: "useDetailNodeExt",
+    },
     withDeepSelector: false,
     withStableSelector: true,
   }

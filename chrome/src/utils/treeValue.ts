@@ -12,7 +12,7 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   const val = item?.v;
   const type = item?.t;
   if (type === "Element") {
-    return createElement('span', { className: "text-teal-600" }, val);
+    return createElement("span", { className: "text-teal-600" }, val);
   }
   if (type === "Date" || type === "Boolean" || type === "Error" || type === "Number" || type === "Symbol") {
     return val;
@@ -40,7 +40,7 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   } else if (typeof val === "object") {
     return Object.keys(val as {}).length > 0 ? "{…}" : "{}";
   } else if (type === "Function") {
-    return createElement('span', { className: "text-teal-600" }, `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`);
+    return createElement("span", { className: "text-teal-600" }, `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`);
     // return `${val.substr(0, 10) + (val.length > 10 ? "…" : "")}`;
   } else if (typeof val === "string") {
     if (type === "String") {
@@ -89,7 +89,7 @@ export function getText(type: string, data: any) {
       }
       eleArr.push(text);
     });
-    
+
     if (data.length > 4) {
       eleArr.push("…");
     }

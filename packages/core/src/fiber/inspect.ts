@@ -8,14 +8,14 @@ import type { MyReactElement } from "@my-react/react/type";
 import type { MyReactFiberNode, MyReactFiberNodeDev } from "@my-react/react-reconciler";
 
 const getValidStackItem = (stack: StackFrame[]) => {
-  while(stack.length) {
+  while (stack.length) {
     const item = stack.shift();
-    if (item.fileName.includes('@my-react/react-jsx')) {
+    if (item.fileName.includes("@my-react/react-jsx")) {
       continue;
     }
     return item;
   }
-}
+};
 
 export const getSource = (fiber: MyReactFiberNodeDev): { type: "stack" | "source"; value: string } => {
   if (fiber._debugElement) {

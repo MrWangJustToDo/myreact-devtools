@@ -2,6 +2,9 @@ import { createState } from "reactivity-store";
 
 export const useHMRNode = createState(() => ({ state: {}, count: 0 }) as { state: Record<string, number>; count: number }, {
   withDeepSelector: false,
+  withNamespace: {
+    namespace: "useHMRNode",
+  },
   withActions: (s) => {
     return {
       update: (state: Record<string, number>) => {

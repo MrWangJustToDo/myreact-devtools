@@ -65,6 +65,9 @@ export const useRecordStack = createState(
         s.state = s.state.filter((i) => i.stack.e);
       },
     }),
+    withNamespace: {
+      namespace: "useRecordStack",
+    },
     withDeepSelector: false,
     withStableSelector: true,
   }

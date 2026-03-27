@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable max-lines */
 import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource, setHoverStatus, setRetriggerStatus, setUpdateStatus } from "./config";
 import { getNode, getObj } from "./data";

@@ -35,6 +35,7 @@ export const useConnect = createState(
         s.cb = cb;
       },
     }),
+    withNamespace: "useConnect",
     withDeepSelector: false,
   }
 );

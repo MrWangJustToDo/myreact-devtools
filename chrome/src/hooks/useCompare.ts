@@ -20,6 +20,7 @@ export const useCompare = createState(() => ({ expand: {} as Expand, lIds: {} as
       s.rIds = {};
     },
   }),
+  withNamespace: "useCompare",
   withDeepSelector: false,
   withStableSelector: true,
 });

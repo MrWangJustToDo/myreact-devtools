@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Bug, Eye, Package } from "lucide-react";
+import { Bug, Eye, FolderOpenIcon, Package } from "lucide-react";
 import { memo } from "react";
 
 import { useContextMenu } from "@/hooks/useContextMenu";
@@ -7,7 +7,7 @@ import { useContextMenu } from "@/hooks/useContextMenu";
 const { close: contextMenuClose, setStore, setSource } = useContextMenu.getActions();
 
 export const ContextMenu = memo(() => {
-  const { state, position, type } = useContextMenu((s) => s);
+  const { state, position, type, onOpenDeep } = useContextMenu((s) => s);
 
   return (
     <>
@@ -65,6 +65,17 @@ export const ContextMenu = memo(() => {
                   )}
                 </div>
               )}
+              <div
+                className="context-menu-item px-2 cursor-pointer select-none flex justify-center items-center node-item-hover"
+                onClick={async () => {
+                  onOpenDeep.current?.();
+                  await new Promise((r) => setTimeout(r, 100));
+                  contextMenuClose();
+                }}
+              >
+                <FolderOpenIcon className="mr-2 w-[1em]" />
+                <span className="flex-grow">Open next 3 Children</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

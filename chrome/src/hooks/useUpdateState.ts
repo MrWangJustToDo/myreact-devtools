@@ -38,6 +38,9 @@ export const useUpdateState = createState(
         state.type = "";
       },
     }),
+    withNamespace: {
+      namespace: "useUpdateState",
+    },
     withDeepSelector: false,
     withStableSelector: true,
   }

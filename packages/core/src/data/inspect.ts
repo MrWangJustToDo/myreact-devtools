@@ -32,10 +32,10 @@ const KnownType = {
   Module: true,
 };
 
-const nodeValueSymbol = 'd::n::v';
+const nodeValueSymbol = "d::n::v";
 
 export type NodeValue = {
-  $$s: 'd::n::v';
+  $$s: "d::n::v";
   // id
   i: number;
   // type
@@ -347,12 +347,12 @@ export const getObj = (value: NodeValue): any => {
 
   switch (t) {
     case "Array":
-      return (v as NodeValue[] || []).map(getObj);
+      return ((v as NodeValue[]) || []).map(getObj);
     case "Iterable":
-      return (v as NodeValue[] || []).map(getObj);
+      return ((v as NodeValue[]) || []).map(getObj);
     case "Map": {
       const map = new Map();
-      (v as { t: string; v: NodeValue[] }[] || new Map()).forEach((entry) => {
+      ((v as { t: string; v: NodeValue[] }[]) || new Map()).forEach((entry) => {
         const [key, val] = entry.v;
         map.set(getObj(key), getObj(val));
       });
@@ -360,7 +360,7 @@ export const getObj = (value: NodeValue): any => {
     }
     case "Set": {
       const set = new Set();
-      (v as NodeValue[] || []).forEach((item) => {
+      ((v as NodeValue[]) || []).forEach((item) => {
         set.add(getObj(item));
       });
       return set;
@@ -392,7 +392,7 @@ export const getObj = (value: NodeValue): any => {
       // Cannot reconstruct functions, return a placeholder or the string representation
       return v;
     case "Symbol":
-      return Symbol(v);
+      return Symbol(v?.substring(7, v.length - 1));
     case "RegExp": {
       // v is like "/pattern/flags"
       const match = String(v).match(/^\/(.*)\/([gimsuy]*)$/);

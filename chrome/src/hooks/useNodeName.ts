@@ -4,14 +4,15 @@ export const useNodeName = createState(() => ({ map: {}, state: {} }) as { map: 
   withDeepSelector: false,
   withActions: (state) => ({
     set: (s: Record<string, string>) => {
-      Object.keys(s).forEach(key => {
+      Object.keys(s).forEach((key) => {
         state.state[key] = s[key];
         state.map[s[key]] = key;
-      })
+      });
     },
     clear: () => {
       state.state = {};
       state.map = {};
-    }
+    },
   }),
+  withNamespace: "useNodeName",
 });

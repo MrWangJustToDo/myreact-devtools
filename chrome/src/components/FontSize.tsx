@@ -22,7 +22,7 @@ export const FontSize = memo(() => {
       .font-lg {
         font-size: ${lgSize};
       }
-      
+
       .font-sm {
         font-size: ${smSize};
       }

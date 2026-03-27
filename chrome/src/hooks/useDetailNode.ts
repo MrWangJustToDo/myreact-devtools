@@ -46,6 +46,9 @@ export const useDetailNode = createState(
         s.prevNode = null;
       },
     }),
+    withNamespace: {
+      namespace: "useDetailNode",
+    },
     withDeepSelector: false,
   }
 );

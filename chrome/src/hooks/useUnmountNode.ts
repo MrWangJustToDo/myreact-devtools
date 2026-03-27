@@ -9,6 +9,9 @@ export const useUnmountNode = createState(() => ({ state: {} as Record<string, b
       s.state = {};
     },
   }),
+  withNamespace: {
+    namespace: "useUnmountNode",
+  },
   withDeepSelector: false,
   withStableSelector: true,
 });

@@ -33,6 +33,9 @@ export const useChunk = createState(
         s.data = {};
       },
     }),
+    withNamespace: {
+      namespace: "useChunk",
+    },
     withDeepSelector: false,
     withStableSelector: true,
   }

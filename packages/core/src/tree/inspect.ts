@@ -225,7 +225,7 @@ const initFiberNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) => {
 
   const prototype = Reflect.getPrototypeOf(_fiber);
 
-  if (prototype['_debugSelectInDevtool']) return;
+  if (prototype["_debugSelectInDevtool"]) return;
 
   Reflect.defineProperty(prototype, "_debugSelectInDevtool", {
     get: function get() {

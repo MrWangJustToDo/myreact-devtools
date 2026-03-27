@@ -10,7 +10,8 @@ const nextConfig = {
   assetPrefix: isProd && isLocal ? "/myreact-devtools/" : undefined,
   basePath: isProd && isLocal ? "/myreact-devtools" : undefined,
   output: "export",
+  reactCompiler: true,
 };
 
-module.exports = withNext(nextConfig);
+module.exports = withNext(nextConfig, { turbopackKey: 'turbopack' });
 // module.exports = nextConfig;

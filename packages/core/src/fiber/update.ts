@@ -5,7 +5,6 @@ import { getValueFromId } from "../data";
 import type { Action, MyReactComponent, Reducer } from "@my-react/react/type";
 import type { MyReactFiberNode } from "@my-react/react-reconciler";
 
-
 const editorReducer: Reducer = (state?: unknown, action?: Action) => {
   return typeof action === "function" ? action(state) : action;
 };

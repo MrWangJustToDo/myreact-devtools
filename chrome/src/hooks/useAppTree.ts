@@ -73,7 +73,9 @@ export const useAppTree = createState(
         // }
       };
     },
-    // withNamespace: "useAppTree",
+    withNamespace: {
+      namespace: "useAppTree",
+    },
   }
 );
 

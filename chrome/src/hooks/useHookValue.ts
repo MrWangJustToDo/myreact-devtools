@@ -35,6 +35,9 @@ export const useHookValue = createState(
         s.open = false;
       },
     }),
+    withNamespace: {
+      namespace: "useHookValue",
+    },
     withDeepSelector: false,
     withStableSelector: true,
   }
