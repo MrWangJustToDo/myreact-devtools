@@ -1,6 +1,8 @@
-import { createState, markRaw } from "reactivity-store";
+import { createState } from "reactivity-store";
 
 import type { NodeValue as NodeValueType } from "@my-react-devtool/core";
+
+const onOpen = { current: () => void 0 };
 
 export const useContextMenu = createState(
   () => ({
@@ -10,7 +12,6 @@ export const useContextMenu = createState(
     store: 0,
     source: 0,
     position: { x: 0, y: 0 },
-    onOpenDeep: markRaw({ current: () => void 0 }),
   }),
   {
     withActions: (s) => ({
@@ -33,9 +34,9 @@ export const useContextMenu = createState(
         s.id = 0;
       },
       setOpenCallback: (f: () => void) => {
-        s.onOpenDeep.current = () => {
+        onOpen.current = () => {
           f?.();
-          s.onOpenDeep.current = () => void 0;
+          onOpen.current = () => void 0;
         };
       },
       close: () => {
@@ -44,7 +45,7 @@ export const useContextMenu = createState(
         s.source = 0;
         s.type = "" as NodeValueType["t"];
         s.state = false;
-        s.onOpenDeep.current = () => void 0;
+        onOpen.current = () => void 0;
       },
       clear: () => {
         s.id = 0;
@@ -53,7 +54,7 @@ export const useContextMenu = createState(
         s.type = "" as NodeValueType["t"];
         s.state = false;
         s.position = { x: 0, y: 0 };
-        s.onOpenDeep.current = () => void 0;
+        onOpen.current = () => void 0;
       },
     }),
     withNamespace: "useContextMenu",
