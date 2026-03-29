@@ -39,6 +39,9 @@ export const useContextMenu = createState(
           onOpen.current = () => void 0;
         };
       },
+      getOpenCallback: () => {
+        return onOpen;
+      },
       close: () => {
         s.id = 0;
         s.store = 0;

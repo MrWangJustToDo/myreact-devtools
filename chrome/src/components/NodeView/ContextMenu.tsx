@@ -7,7 +7,9 @@ import { useContextMenu } from "@/hooks/useContextMenu";
 const { close: contextMenuClose, setStore, setSource } = useContextMenu.getActions();
 
 export const ContextMenu = memo(() => {
-  const { state, position, type, onOpenDeep } = useContextMenu((s) => s);
+  const { state, position, type } = useContextMenu((s) => s);
+
+  const onOpen = useContextMenu.getActions().getOpenCallback();
 
   return (
     <>
@@ -68,7 +70,7 @@ export const ContextMenu = memo(() => {
               <div
                 className="context-menu-item px-2 cursor-pointer select-none flex justify-center items-center node-item-hover"
                 onClick={async () => {
-                  onOpenDeep.current?.();
+                  onOpen.current?.();
                   await new Promise((r) => setTimeout(r, 100));
                   contextMenuClose();
                 }}
