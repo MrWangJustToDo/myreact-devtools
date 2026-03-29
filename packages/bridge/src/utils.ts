@@ -14,7 +14,7 @@ export const getValidGlobalVarName = () => {
   return varName;
 };
 
-export const loadScript = (url: string) => loadRemoteModule(url, { context: globalThis });
+export const loadScript = (url: string) => loadRemoteModule(url, { context: globalThis, useEval: true });
 
 export const loadIframe = (url: string, token: string) => {
   return new Promise<HTMLIFrameElement>((resolve, reject) => {
