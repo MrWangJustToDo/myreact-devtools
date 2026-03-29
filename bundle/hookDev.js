@@ -5639,7 +5639,7 @@
         }
         return varName;
     };
-    var loadScript = function (url) { return loadRemoteModule(url, { context: globalThis }); };
+    var loadScript = function (url) { return loadRemoteModule(url, { context: globalThis, useEval: true }); };
     var loadIframe = function (url, token) {
         return new Promise(function (resolve, reject) {
             if (typeof document === "undefined") {
