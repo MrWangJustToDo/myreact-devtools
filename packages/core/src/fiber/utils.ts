@@ -181,6 +181,8 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
     const typedElementType = fiber.elementType as ReturnType<typeof lazy>;
     const typedRender = typedElementType?.render;
     let name = typedRender?.displayName || typedRender?.name || "";
+    const loader = typedElementType.loader;
+    name = loader["displayName"] || name;
     const element = typedFiber._debugElement as MyReactElement;
     const type = element?.type as MixinMyReactObjectComponent;
     name = type?.displayName || name;
