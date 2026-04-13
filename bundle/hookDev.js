@@ -1233,6 +1233,8 @@
     		        var typedElementType = fiber.elementType;
     		        var typedRender = typedElementType === null || typedElementType === void 0 ? void 0 : typedElementType.render;
     		        var name_4 = (typedRender === null || typedRender === void 0 ? void 0 : typedRender.displayName) || (typedRender === null || typedRender === void 0 ? void 0 : typedRender.name) || "";
+    		        var loader = typedElementType.loader;
+    		        name_4 = loader["displayName"] || name_4;
     		        var element = typedFiber._debugElement;
     		        var type = element === null || element === void 0 ? void 0 : element.type;
     		        name_4 = (type === null || type === void 0 ? void 0 : type.displayName) || name_4;
