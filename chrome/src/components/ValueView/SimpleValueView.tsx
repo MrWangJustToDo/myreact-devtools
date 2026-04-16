@@ -222,7 +222,7 @@ export const SimpleValueView = ({
           {prefix}
           {hasDiff && <DiffIcon size="1em" className="mr-0.5 shrink-0 text-red-400" />}
           <div className={`w-full relative flex pr-2 line-clamp-1 break-all`}>
-            <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
+            <span className="flex-shrink-0 cursor-pointer whitespace-nowrap" onContextMenu={onContextClick}>
               {name}
             </span>
             <span className="flex-shrink-0">:</span>
@@ -261,11 +261,7 @@ export const SimpleValueView = ({
             {prefix}
             {hasDiff && <DiffIcon size="1em" className="mr-0.5 shrink-0 text-red-400" />}
             <div className="max-w-full flex line-clamp-1 break-all">
-              <span
-                className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap"
-                onClick={() => toggleExpand(currentName)}
-                onContextMenu={onContextClick}
-              >
+              <span className="flex-shrink-0 cursor-pointer whitespace-nowrap" onClick={() => toggleExpand(currentName)} onContextMenu={onContextClick}>
                 {name}
               </span>
               <span className="flex-shrink-0 pr-1">:</span>

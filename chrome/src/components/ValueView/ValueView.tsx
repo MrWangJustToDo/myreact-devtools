@@ -232,7 +232,7 @@ export const ValueView = ({
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block shrink-0">{StateIcon}</span>
           {prefix}
           <div className={`w-full relative flex pr-2 line-clamp-1 break-all`}>
-            <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onContextMenu={onContextClick}>
+            <span className="flex-shrink-0 cursor-pointer whitespace-nowrap" onContextMenu={onContextClick}>
               {name}
             </span>
             <span className="flex-shrink-0">:</span>
@@ -278,7 +278,7 @@ export const ValueView = ({
             </span>
             {prefix}
             <div className="max-w-full flex line-clamp-1 break-all">
-              <span className="flex-shrink-0 cursor-pointer select-none whitespace-nowrap" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
+              <span className="flex-shrink-0 cursor-pointer whitespace-nowrap" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
                 {name}
               </span>
               <span className="flex-shrink-0 pr-1">:</span>

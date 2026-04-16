@@ -252,7 +252,7 @@ export const TreeItem = memo(
           }
         }}
         className={
-          "node-item w-full h-full cursor-pointer transition-transform-background rounded-sm select-none " +
+          "node-item w-full h-full cursor-pointer transition-transform-background rounded-sm " +
           (className || "") +
           `${withSelect ? (currentHasSelect ? " node-item-select-hover" : " node-item-hover") : ""}` +
           `${currentHasSelect ? " node-item-select" : ""}` +
@@ -365,7 +365,7 @@ export const TreeItemWithId = ({
 
   if (withFallback) {
     return (
-      <div className="node-item w-full h-full cursor-pointer transition-transform-background rounded-sm select-none">
+      <div className="node-item w-full h-full cursor-pointer transition-transform-background rounded-sm">
         <div className="node-name line-clamp-1">{map[n]}</div>
       </div>
     );
