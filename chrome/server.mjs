@@ -1,78 +1,15 @@
 import cors from "cors";
 import { createServer } from "http";
 import next from "next";
-import { Server } from "socket.io";
 import { parse } from "url";
+
+import { setupSocketIO } from "./lib/socketio-server.mjs";
+import { setupWebSocket } from "./lib/ws-server.mjs";
 
 const port = parseInt(process.env.PORT || "3002", 10);
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
-
-/**
- * @type {Set<import('socket.io').Socket>}
- */
-const socketSet = new Set();
-
-let hasClient = false;
-let hasServer = false;
-
-// support local dev
-/**
- *
- * @param {import('socket.io').Socket} item
- */
-const processSocket = (item) => {
-  item.on("disconnect", () => {
-    socketSet.delete(item);
-
-    if (item.type === "client") {
-      hasClient = false;
-    }
-
-    if (item.type === "server") {
-      hasServer = false;
-    }
-
-    if (item.name) {
-      console.log("socket:", item.name, " disconnected");
-    }
-
-    console.log("disconnect a socket, total:", socketSet.size);
-
-    socketSet.forEach((i) => i.emit("refresh"));
-  });
-
-  item.on("render", (data) => {
-    socketSet.forEach((socket) => {
-      if (socket !== item) {
-        socket.emit("render", data);
-      }
-    });
-  });
-
-  item.on("init", (data) => {
-    item.name = data.name;
-
-    if (item.type === "client") {
-      hasClient = true;
-    }
-
-    if (item.type === "server") {
-      hasServer = true;
-    }
-
-    console.log("socket:", data.name, " connected");
-  });
-
-  item.on("action", (data) => {
-    socketSet.forEach((socket) => {
-      if (socket !== item) {
-        socket.emit("action", data);
-      }
-    });
-  });
-};
 
 app
   .prepare()
@@ -82,7 +19,8 @@ app
 
     const server = createServer(serve);
 
-    const io = new Server(server, { cors: { origin: "*" }, maxHttpBufferSize: 1e8 });
+    setupSocketIO(server);
+    setupWebSocket(server, "/ws");
 
     serve.use(cors());
 
@@ -91,29 +29,8 @@ app
       handle(req, res, parsedUrl);
     });
 
-    io.on("connection", (socket) => {
-      if (socket.type === "client" && hasClient) {
-        socket.emit("duplicate");
-
-        socket.disconnect();
-        return;
-      }
-
-      if (socket.type === "server" && hasServer) {
-        socket.emit("duplicate");
-
-        socket.disconnect();
-        return;
-      }
-
-      socketSet.add(socket);
-
-      console.log("connect a new socket, total:", socketSet.size);
-
-      processSocket(socket);
-    });
-
     server.listen(port, () => {
       console.log(`> Server listening at http://localhost:${port} as ${dev ? "development" : process.env.NODE_ENV}`);
+      console.log(`> WebSocket endpoint: ws://localhost:${port}/ws`);
     });
   });

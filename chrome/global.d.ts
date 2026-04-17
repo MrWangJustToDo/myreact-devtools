@@ -29,7 +29,7 @@ declare global {
 
   namespace NodeJS {
     interface ProcessEnv {
-      NEXT_PUBLIC_MODE?: "web" | "local" | "socket";
+      NEXT_PUBLIC_MODE?: "web" | "local" | "socket" | "websocket";
     }
   }
 }

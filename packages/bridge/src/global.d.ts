@@ -60,6 +60,7 @@ declare global {
   var __MY_REACT_DEVTOOL_IFRAME__: any;
   var __MY_REACT_DEVTOOL_NODE__: any;
   var __MY_REACT_DEVTOOL_BUNDLE__: any;
+  var __MY_REACT_DEVTOOL_BUNDLE_WS__: any;
 }
 
 export {};

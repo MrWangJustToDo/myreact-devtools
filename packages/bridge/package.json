@@ -63,6 +63,19 @@
       ]
     },
     {
+      "input": "./src/content/index-bundle-ws.ts",
+      "pkgName": "bundle-ws-dev",
+      "output": [
+        {
+          "dir": "./dist",
+          "entryFileNames": "iife/bundle-ws-dev.js",
+          "format": "iife",
+          "type": true,
+          "multiple": true
+        }
+      ]
+    },
+    {
       "input": "./src/popover/index.ts",
       "pkgName": "detector",
       "output": [

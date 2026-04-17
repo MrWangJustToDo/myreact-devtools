@@ -10,6 +10,7 @@ import { useBridgeTarget } from "@/hooks/useBridgeTarget";
 import { useConnect } from "@/hooks/useConnect";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { useSocketDev } from "@/hooks/useSocketDev";
+import { useWebSocketDev } from "@/hooks/useWebSocketDev";
 
 import type { AppProps } from "next/app";
 
@@ -25,7 +26,7 @@ import "allotment/dist/style.css";
 //   variable: "--root-font--",
 // });
 
-const source = (str: string, type: "web" | "local" | "socket", token?: string) => `function loadScript(url) {
+const source = (str: string, type: "web" | "local" | "socket" | "websocket", token?: string) => `function loadScript(url) {
   const script = document.createElement("script");
   return new Promise((resolve, reject) => {
     script.src = url;
@@ -35,13 +36,13 @@ const source = (str: string, type: "web" | "local" | "socket", token?: string) =
   }).finally(() => script.remove());
 }
 
-const getFunc = () => ${type === "web" ? "window.__MY_REACT_DEVTOOL_WEB__" : type === "socket" ? "window.__MY_REACT_DEVTOOL_BUNDLE__" : "window.__MY_REACT_DEVTOOL_IFRAME__"};
+const getFunc = () => ${type === "web" ? "window.__MY_REACT_DEVTOOL_WEB__" : type === "websocket" ? "window.__MY_REACT_DEVTOOL_BUNDLE_WS__" : type === "socket" ? "window.__MY_REACT_DEVTOOL_BUNDLE__" : "window.__MY_REACT_DEVTOOL_IFRAME__"};
 
 function init() {
   if (typeof getFunc() === 'function') {
     getFunc()("${str}", "${token}");
   } else {
-    loadScript("${str}/bundle/${type === "web" ? "hookDev" : type === "socket" ? "bundle-dev" : "hook"}.js").then(init);
+    loadScript("${str}/bundle/${type === "web" ? "hookDev" : type === "websocket" ? "bundle-ws-dev" : type === "socket" ? "bundle-dev" : "hook"}.js").then(init);
   }
 }
 
@@ -66,6 +67,9 @@ export default function App({ Component, pageProps, router }: AppProps) {
   // for socket dev mode
   const isSocket = process.env.NEXT_PUBLIC_MODE === "socket";
 
+  // for websocket dev mode
+  const isWebSocket = process.env.NEXT_PUBLIC_MODE === "websocket";
+
   let children = <Component {...pageProps} />;
 
   if (isPanelPage && typeof render !== "boolean") {
@@ -74,13 +78,18 @@ export default function App({ Component, pageProps, router }: AppProps) {
       <div className="flex items-center justify-center w-screen h-screen">
         <div className="flex flex-col items-center">
           <Spinner color="primary" size="lg" />
-          {(isWebDev || isLocalDev) && <div className="text-center text-[1.5rem] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>}
-          {isWebDev || isLocalDev ? <Spacer className="my-2" /> : null}
+          {(isWebDev || isLocalDev || isWebSocket) && (
+            <div className="text-center text-[1.5rem] text-red-300 mt-2">Waiting for a DevTool Engine connect...</div>
+          )}
+          {isWebDev || isLocalDev || isWebSocket ? <Spacer className="my-2" /> : null}
           {isWebDev && (
             <CodePreview code={source(str, "web", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
           )}
           {isSocket && (
             <CodePreview code={source(str, "socket", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
+          )}
+          {isWebSocket && (
+            <CodePreview code={source(str, "websocket", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
           )}
           {isLocalDev && (
             <CodePreview code={source(str, "local", query?.token as string)} title="Please run this code in the console of the page you want to debug" />
@@ -118,6 +127,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
   }
 
   useSocketDev();
+
+  useWebSocketDev();
 
   useBridgeTarget();
 
