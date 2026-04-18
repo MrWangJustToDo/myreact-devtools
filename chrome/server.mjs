@@ -1,12 +1,25 @@
 import cors from "cors";
 import { createServer } from "http";
 import next from "next";
+import { networkInterfaces } from "os";
 import { parse } from "url";
 
 import { setupSocketIO } from "./lib/socketio-server.mjs";
 import { setupWebSocket } from "./lib/ws-server.mjs";
 
 const port = parseInt(process.env.PORT || "3002", 10);
+
+function getLocalIP() {
+  const nets = networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === "IPv4" && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return "localhost";
+}
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
@@ -30,7 +43,12 @@ app
     });
 
     server.listen(port, () => {
-      console.log(`> Server listening at http://localhost:${port} as ${dev ? "development" : process.env.NODE_ENV}`);
-      console.log(`> WebSocket endpoint: ws://localhost:${port}/ws`);
+      const localIP = getLocalIP();
+      console.log(`> Server listening as ${dev ? "development" : process.env.NODE_ENV}`);
+      console.log(`  - Local:   http://localhost:${port}`);
+      console.log(`  - Network: http://${localIP}:${port}`);
+      console.log(`> WebSocket endpoint:`);
+      console.log(`  - Local:   ws://localhost:${port}/ws`);
+      console.log(`  - Network: ws://${localIP}:${port}/ws`);
     });
   });
