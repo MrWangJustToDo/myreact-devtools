@@ -645,6 +645,7 @@
 
     		var TYPEKEY = "$$typeof";
     		var Element$1 = Symbol.for("react.element");
+    		var TRANSITIONAL_ELEMENT = Symbol.for("react.transitional.element");
     		var Memo = Symbol.for("react.memo");
     		var ForwardRef = Symbol.for("react.forward_ref");
     		var Portal = Symbol.for("react.portal");
@@ -1285,7 +1286,10 @@
     		};
     		// SEE @my-react/react-reconciler
     		var isValidElement = function (element) {
-    		    return typeof element === "object" && !Array.isArray(element) && element !== null && (element === null || element === void 0 ? void 0 : element[TYPEKEY]) === Element$1;
+    		    return (typeof element === "object" &&
+    		        !Array.isArray(element) &&
+    		        element !== null &&
+    		        ((element === null || element === void 0 ? void 0 : element[TYPEKEY]) === Element$1 || (element === null || element === void 0 ? void 0 : element[TYPEKEY]) === TRANSITIONAL_ELEMENT));
     		};
     		// SEE @my-react/react-reconciler
     		var getMockFiberFromElement = function (element) {

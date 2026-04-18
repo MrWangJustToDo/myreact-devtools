@@ -19,6 +19,7 @@ import {
   TYPEKEY,
   Comment,
   Element,
+  TRANSITIONAL_ELEMENT,
 } from "@my-react/react-shared";
 
 import { NODE_TYPE } from ".";
@@ -219,7 +220,12 @@ export const getFiberName = (fiber: MyReactFiberNodeDev) => {
 
 // SEE @my-react/react-reconciler
 export const isValidElement = (element?: MyReactElementNode | any): element is MyReactElement => {
-  return typeof element === "object" && !Array.isArray(element) && element !== null && element?.[TYPEKEY] === Element;
+  return (
+    typeof element === "object" &&
+    !Array.isArray(element) &&
+    element !== null &&
+    (element?.[TYPEKEY] === Element || element?.[TYPEKEY] === TRANSITIONAL_ELEMENT)
+  );
 };
 
 // SEE @my-react/react-reconciler
