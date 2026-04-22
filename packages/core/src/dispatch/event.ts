@@ -229,6 +229,17 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
     }
   };
 
+  // global error
+  const onGlobalError = (error: Error) => {
+    if (runtime.hasEnable) {
+      if (error instanceof Error) {
+        runtime.notifyMessage(`global error: ${error?.message} ${error.stack}`, "error");
+      } else {
+        runtime.notifyMessage(`global error: ${error}`, "error");
+      }
+    }
+  };
+
   if (typeof dispatch.onFiberTrigger === "function") {
     if (typeof dispatch.onAfterCommitMount === "function") {
       dispatch.onAfterCommitMount(onLoad);
@@ -293,4 +304,6 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
       onUnmount();
     };
   }
+
+  globalThis.addEventListener("unhandledrejection", (e) => onGlobalError(e.reason));
 };
