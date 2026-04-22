@@ -2727,7 +2727,7 @@
     		        // const nodes = state.nodes?.filter?.((node) => node.type === UpdateQueueType.hook);
     		        // get all the keys from the nodes;
     		        var allHooksArray_1 = ((_b = (_a = fiber.hookList) === null || _a === void 0 ? void 0 : _a.toArray) === null || _b === void 0 ? void 0 : _b.call(_a)) || [];
-    		        var nodes = state.nodes || [];
+    		        var nodes = (state.nodes || []);
     		        var keys = ((_c = nodes.map) === null || _c === void 0 ? void 0 : _c.call(nodes, function (node) {
     		            var _a;
     		            if (node.type !== UpdateQueueType.hook)
@@ -3455,6 +3455,17 @@
     		            runtime.update.addPending(fiber, "setRef");
     		        }
     		    };
+    		    // global error
+    		    var onGlobalError = function (error) {
+    		        if (runtime.hasEnable) {
+    		            if (error instanceof Error) {
+    		                runtime.notifyMessage("global error: ".concat(error === null || error === void 0 ? void 0 : error.message, " ").concat(error.stack), "error");
+    		            }
+    		            else {
+    		                runtime.notifyMessage("global error: ".concat(error), "error");
+    		            }
+    		        }
+    		    };
     		    if (typeof dispatch.onFiberTrigger === "function") {
     		        if (typeof dispatch.onAfterCommitMount === "function") {
     		            dispatch.onAfterCommitMount(onLoad);
@@ -3500,6 +3511,7 @@
     		            onUnmount();
     		        };
     		    }
+    		    globalThis.addEventListener("unhandledrejection", function (e) { return onGlobalError(e.reason); });
     		};
 
     		var checkIsValidDispatchVersion = function (dispatch) {
@@ -3549,7 +3561,7 @@
     		            return {
     		                n: plain ? plain.n : "",
     		                i: plain ? plain.i : "",
-    		                updater: (updater === null || updater === void 0 ? void 0 : updater.toArray()) || [],
+    		                updater: ((updater === null || updater === void 0 ? void 0 : updater.toArray()) || []),
     		            };
     		        });
     		        id = dispatch.id;
