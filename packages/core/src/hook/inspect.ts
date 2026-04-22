@@ -8,7 +8,7 @@ import { getDispatchFromFiber, type HOOKTree } from "../tree";
 import { inspectHooksOfFiber } from "./internal";
 
 import type { DispatcherType, HooksTree } from "./internal";
-import type { CustomRenderDispatch, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNodeDev, UpdateState } from "@my-react/react-reconciler";
+import type { CustomRenderDispatch, MyReactFiberNode, MyReactFiberNodeDev, MyReactHookNodeDev, UpdateQueueDev, UpdateState } from "@my-react/react-reconciler";
 
 const linkStateToHookIndex = new WeakMap<UpdateState, Array<number | string>>();
 
@@ -135,7 +135,7 @@ export const tryLinkStateToHookIndex = (fiber: MyReactFiberNode, state: UpdateSt
     // get all the keys from the nodes;
     const allHooksArray = fiber.hookList?.toArray?.() || [];
 
-    const nodes = state.nodes || [];
+    const nodes = (state.nodes || []) as UpdateQueueDev[];
 
     const keys =
       nodes.map?.((node) => {

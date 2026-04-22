@@ -66,7 +66,7 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
 
   let map = {};
 
-  let trigger: Array<{ n: string; i: string; updater: UpdateQueueDev[] }> = [];
+  let trigger: Array<{ n: string; i: string; updater: Array<UpdateQueueDev> }> = [];
 
   let mode = "legacy" as "legacy" | "concurrent";
 
@@ -97,7 +97,7 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
       return {
         n: plain ? plain.n : "",
         i: plain ? plain.i : "",
-        updater: updater?.toArray() || [],
+        updater: (updater?.toArray() || []) as UpdateQueueDev[],
       };
     });
 
