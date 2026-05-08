@@ -2903,9 +2903,8 @@
     		        get: function get() {
     		            var domArray = getElementNodesFromFiber(this);
     		            var dom = domArray[0];
-    		            if (dom && typeof globalThis["inspect"] === "function") {
-    		                globalThis["inspect"](dom);
-    		            }
+    		            _runtime.setSelectDom(dom);
+    		            _runtime.inspectDom();
     		            return true;
     		        },
     		    });

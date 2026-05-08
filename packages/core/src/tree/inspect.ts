@@ -245,9 +245,9 @@ const initFiberNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) => {
 
       const dom = domArray[0];
 
-      if (dom && typeof globalThis["inspect"] === "function") {
-        globalThis["inspect"](dom);
-      }
+      _runtime.setSelectDom(dom);
+
+      _runtime.inspectDom();
 
       return true;
     },
