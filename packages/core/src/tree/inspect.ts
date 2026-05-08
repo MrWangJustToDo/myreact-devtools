@@ -238,6 +238,20 @@ const initFiberNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) => {
       return true;
     },
   });
+
+  Reflect.defineProperty(prototype, "_debugSelectInDOMTree", {
+    get: function get() {
+      const domArray = getElementNodesFromFiber(this);
+
+      const dom = domArray[0];
+
+      if (dom && typeof globalThis["inspect"] === "function") {
+        globalThis["inspect"](dom);
+      }
+
+      return true;
+    },
+  });
 };
 
 export const getPlainNodeByFiber = (fiber: MyReactFiberNode) => {

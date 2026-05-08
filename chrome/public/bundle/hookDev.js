@@ -3215,6 +3215,16 @@
     		            return true;
     		        },
     		    });
+    		    Reflect.defineProperty(prototype, "_debugSelectInDOMTree", {
+    		        get: function get() {
+    		            var domArray = getElementNodesFromFiber(this);
+    		            var dom = domArray[0];
+    		            if (dom && typeof globalThis["inspect"] === "function") {
+    		                globalThis["inspect"](dom);
+    		            }
+    		            return true;
+    		        },
+    		    });
     		};
     		var getPlainNodeByFiber = function (fiber) {
     		    return treeMap.get(fiber);
