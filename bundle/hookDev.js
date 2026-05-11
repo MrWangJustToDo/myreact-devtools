@@ -3564,7 +3564,7 @@
     		                runtime._console = runtime._console.slice(-keep);
     		                runtime._consoleSentIndex = Math.max(0, runtime._consoleSentIndex - removed);
     		            }
-    		            runtime._console.push({ type: method, args: args });
+    		            runtime._console.push({ type: method, args: args, timestamp: Date.now() });
     		            notifyWithThrottle();
     		            original.apply(console, args);
     		        };
@@ -5020,7 +5020,7 @@
     		        this._consoleSentIndex = this._console.length;
     		        this._notify({
     		            type: exports$1.DevToolMessageEnum.console,
-    		            data: pending.map(function (item) { return ({ type: item.type, args: item.args.map(function (arg) { return getNode(arg); }) }); }),
+    		            data: pending.map(function (item) { return ({ type: item.type, args: item.args.map(function (arg) { return getNode(arg); }), timestamp: item.timestamp }); }),
     		        });
     		    };
     		    // TODO
