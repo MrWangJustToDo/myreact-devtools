@@ -5,6 +5,7 @@ import { useAppTree } from "@/hooks/useAppTree";
 import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
+import { useConsole } from "@/hooks/useConsole";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
@@ -249,6 +250,16 @@ export const onRender = (data: DevToolMessageType) => {
       const { setTarget } = useGlobalThis.getActions();
 
       setTarget(global);
+    });
+  }
+
+  if (data.type === DevToolMessageEnum.console) {
+    safeAction(() => {
+      if (data.data === null) {
+        useConsole.getActions().reset();
+      } else {
+        useConsole.getActions().appendEntries(data.data as Array<{ type: string; args: NodeValue[] }>);
+      }
     });
   }
 

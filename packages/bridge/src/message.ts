@@ -182,4 +182,8 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessageHookDataType |
   if (data?.type === MessagePanelType.clearTrigger) {
     core.clearTrigger();
   }
+
+  if (data?.type === MessagePanelType.clearConsole) {
+    core.clearConsole();
+  }
 };

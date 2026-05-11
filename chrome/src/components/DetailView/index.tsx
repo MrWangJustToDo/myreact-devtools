@@ -1,5 +1,6 @@
 import { useDetailMode } from "@/hooks/useDetailMode";
 
+import { ConsoleView } from "../ConsoleView";
 import { FlameGraphView } from "../FlameGraphView";
 import { GlobalThisView } from "../GlobalThisView";
 import { NodeView } from "../NodeView";
@@ -12,6 +13,7 @@ export const DetailView = () => {
       {mode === "node" && <NodeView />}
       {mode === "flameGraph" && <FlameGraphView />}
       {mode === "global" && <GlobalThisView />}
+      {mode === "console" && <ConsoleView />}
     </div>
   );
 };

@@ -101,6 +101,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               <DropdownItem key="node">Detail mode</DropdownItem>
               <DropdownItem key="flameGraph">Graph mode</DropdownItem>
               <DropdownItem key="global">Global mode</DropdownItem>
+              <DropdownItem key="console">Console mode</DropdownItem>
             </DropdownMenu>
           </Dropdown>
 

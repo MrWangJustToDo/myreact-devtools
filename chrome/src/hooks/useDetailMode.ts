@@ -1,8 +1,8 @@
 import { createState } from "reactivity-store";
 
-export const useDetailMode = createState(() => ({ mode: "node" as "node" | "flameGraph" | "global" }), {
+export const useDetailMode = createState(() => ({ mode: "node" as "node" | "flameGraph" | "global" | "console" }), {
   withActions: (s) => ({
-    setMode: (mode: "node" | "flameGraph" | "global") => {
+    setMode: (mode: "node" | "flameGraph" | "global" | "console") => {
       s.mode = mode;
     },
     toggleMode: () => {

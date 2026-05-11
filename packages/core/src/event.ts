@@ -36,6 +36,7 @@ export enum MessagePanelType {
   clearHMR = "panel-clear-hmr",
   clearMessage = "panel-clear-message",
   clearTrigger = "panel-clear-trigger",
+  clearConsole = "panel-clear-console",
 }
 
 export enum MessageWorkerType {
@@ -76,6 +77,8 @@ export enum DevToolMessageEnum {
   chunks = "chunks",
   global = "global",
   record = "record",
+
+  console = "console",
 
   domHover = "dom-hover",
 }

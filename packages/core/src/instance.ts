@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 import { disableBrowserHover, enableBrowserHover, inspectCom, inspectDom, inspectSource, setHoverStatus, setRetriggerStatus, setUpdateStatus } from "./config";
+import { patchConsole, unpatchConsole } from "./console";
 import { getNode, getObj } from "./data";
 import { getChunkDataFromIds, getMapValueLengthObject, getRecord, getTree, getValidTrigger, getValidTriggerStatus, patchEvent, patchRecord } from "./dispatch";
 import { DevToolMessageEnum } from "./event";
@@ -52,6 +53,10 @@ export class DevToolCore {
   _warn: Record<string | number, any> = {};
 
   _unmount: Record<string | number, any> = {};
+
+  _console: Array<{ type: string; args: any[] }> = [];
+
+  _consoleSentIndex = 0;
 
   _hoverId = "";
 
@@ -367,6 +372,21 @@ export class DevToolCore {
     this._notify({ type: DevToolMessageEnum.errorStatus, data: finalStatus.map((i: any) => getNode(i)) });
   }
 
+  notifyConsole() {
+    if (!this.hasEnable) return;
+
+    if (this._consoleSentIndex >= this._console.length) return;
+
+    const pending = this._console.slice(this._consoleSentIndex);
+
+    this._consoleSentIndex = this._console.length;
+
+    this._notify({
+      type: DevToolMessageEnum.console,
+      data: pending.map((item) => ({ type: item.type, args: item.args.map((arg) => getNode(arg)) })),
+    });
+  }
+
   // TODO
   notifyChanged(list: ListTree<MyReactFiberNode>) {
     if (!this.hasEnable) return;
@@ -616,6 +636,8 @@ export class DevToolCore {
     this.notifyError();
 
     this.notifyErrorStatus();
+
+    this.notifyConsole();
   }, 200);
 
   getNode(v: any) {
@@ -635,6 +657,8 @@ export class DevToolCore {
     }
 
     this._enabled = true;
+
+    patchConsole(this);
   }
 
   disconnect() {
@@ -643,6 +667,8 @@ export class DevToolCore {
     this.select.remove();
 
     this.update.cancelPending();
+
+    unpatchConsole();
 
     if (__DEV__) {
       console.log("[@my-react-devtool/core] disconnect");
@@ -659,6 +685,9 @@ export class DevToolCore {
     this._error = {};
 
     this._hmr = {};
+
+    this._console = [];
+    this._consoleSentIndex = 0;
 
     this._hoverId = "";
 
@@ -713,5 +742,14 @@ export class DevToolCore {
     this.notifyTrigger();
 
     this.notifyTriggerStatus();
+  }
+
+  clearConsole() {
+    this._console = [];
+    this._consoleSentIndex = 0;
+
+    if (!this.hasEnable) return;
+
+    this._notify({ type: DevToolMessageEnum.console, data: null });
   }
 }

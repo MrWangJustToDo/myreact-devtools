@@ -82,6 +82,7 @@
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
     		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
+    		    MessagePanelType["clearConsole"] = "panel-clear-console";
     		})(exports$1.MessagePanelType || (exports$1.MessagePanelType = {}));
     		exports$1.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -119,6 +120,7 @@
     		    DevToolMessageEnum["chunks"] = "chunks";
     		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
+    		    DevToolMessageEnum["console"] = "console";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
     		exports$1.HMRStatus = void 0;

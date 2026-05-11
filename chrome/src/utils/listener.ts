@@ -4,6 +4,7 @@ import { MessagePanelType } from "@my-react-devtool/core";
 import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
+import { useConsole } from "@/hooks/useConsole";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
@@ -260,6 +261,13 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
     useGlobalThis.subscribe(
       (s) => s.count,
       () => postMessage({ type: MessagePanelType.global, data: useGlobalThis.getReadonlyState().count })
+    )
+  );
+
+  unSubscribeArray.push(
+    useConsole.subscribe(
+      (s) => s.count,
+      () => postMessage({ type: MessagePanelType.clearConsole, data: null })
     )
   );
 
