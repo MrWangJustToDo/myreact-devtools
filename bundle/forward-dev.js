@@ -3085,6 +3085,51 @@
     		    core.notifyTriggerStatus();
     		};
 
+    		var CONSOLE_METHODS = ["log", "info", "warn", "error", "debug"];
+    		var MAX_CONSOLE_ENTRIES = 1000;
+    		var originalMethods = null;
+    		var patched = false;
+    		function patchConsole(runtime) {
+    		    if (patched)
+    		        return;
+    		    patched = true;
+    		    originalMethods = {};
+    		    var notifyWithThrottle = throttle(function () { return runtime.notifyConsole(); }, 200);
+    		    var _loop_1 = function (method) {
+    		        var original = console[method];
+    		        originalMethods[method] = original;
+    		        console[method] = function () {
+    		            var args = [];
+    		            for (var _i = 0; _i < arguments.length; _i++) {
+    		                args[_i] = arguments[_i];
+    		            }
+    		            if (runtime._console.length >= MAX_CONSOLE_ENTRIES) {
+    		                var keep = Math.floor(MAX_CONSOLE_ENTRIES / 2);
+    		                var removed = runtime._console.length - keep;
+    		                runtime._console = runtime._console.slice(-keep);
+    		                runtime._consoleSentIndex = Math.max(0, runtime._consoleSentIndex - removed);
+    		            }
+    		            runtime._console.push({ type: method, args: args });
+    		            notifyWithThrottle();
+    		            original.apply(console, args);
+    		        };
+    		    };
+    		    for (var _i = 0, CONSOLE_METHODS_1 = CONSOLE_METHODS; _i < CONSOLE_METHODS_1.length; _i++) {
+    		        var method = CONSOLE_METHODS_1[_i];
+    		        _loop_1(method);
+    		    }
+    		}
+    		function unpatchConsole() {
+    		    if (!patched || !originalMethods)
+    		        return;
+    		    for (var _i = 0, CONSOLE_METHODS_2 = CONSOLE_METHODS; _i < CONSOLE_METHODS_2.length; _i++) {
+    		        var method = CONSOLE_METHODS_2[_i];
+    		        console[method] = originalMethods[method];
+    		    }
+    		    originalMethods = null;
+    		    patched = false;
+    		}
+
     		exports$1.MessageHookType = void 0;
     		(function (MessageHookType) {
     		    MessageHookType["init"] = "hook-init";
@@ -3124,6 +3169,7 @@
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
     		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
+    		    MessagePanelType["clearConsole"] = "panel-clear-console";
     		})(exports$1.MessagePanelType || (exports$1.MessagePanelType = {}));
     		exports$1.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -3161,6 +3207,7 @@
     		    DevToolMessageEnum["chunks"] = "chunks";
     		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
+    		    DevToolMessageEnum["console"] = "console";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
     		exports$1.HMRStatus = void 0;
@@ -4244,6 +4291,8 @@
     		        this._error = {};
     		        this._warn = {};
     		        this._unmount = {};
+    		        this._console = [];
+    		        this._consoleSentIndex = 0;
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._selectDom = null;
@@ -4292,6 +4341,7 @@
     		            _this.notifyWarnStatus();
     		            _this.notifyError();
     		            _this.notifyErrorStatus();
+    		            _this.notifyConsole();
     		        }, 200);
     		        this.update = new Highlight(this);
     		        this.select = new Select(this);
@@ -4497,6 +4547,18 @@
     		        var finalStatus = status.slice(-10);
     		        this._notify({ type: exports$1.DevToolMessageEnum.errorStatus, data: finalStatus.map(function (i) { return getNode(i); }) });
     		    };
+    		    DevToolCore.prototype.notifyConsole = function () {
+    		        if (!this.hasEnable)
+    		            return;
+    		        if (this._consoleSentIndex >= this._console.length)
+    		            return;
+    		        var pending = this._console.slice(this._consoleSentIndex);
+    		        this._consoleSentIndex = this._console.length;
+    		        this._notify({
+    		            type: exports$1.DevToolMessageEnum.console,
+    		            data: pending.map(function (item) { return ({ type: item.type, args: item.args.map(function (arg) { return getNode(arg); }) }); }),
+    		        });
+    		    };
     		    // TODO
     		    DevToolCore.prototype.notifyChanged = function (list) {
     		        if (!this.hasEnable)
@@ -4671,12 +4733,14 @@
     		        if (this._enabled)
     		            return;
     		        this._enabled = true;
+    		        patchConsole(this);
     		    };
     		    DevToolCore.prototype.disconnect = function () {
     		        if (!this._enabled)
     		            return;
     		        this.select.remove();
     		        this.update.cancelPending();
+    		        unpatchConsole();
     		        this._enabled = false;
     		    };
     		    DevToolCore.prototype.startRecord = function () { };
@@ -4684,6 +4748,8 @@
     		    DevToolCore.prototype.clear = function () {
     		        this._error = {};
     		        this._hmr = {};
+    		        this._console = [];
+    		        this._consoleSentIndex = 0;
     		        this._hoverId = "";
     		        this._selectId = "";
     		        this._selectDom = null;
@@ -4714,6 +4780,13 @@
     		        this._trigger = {};
     		        this.notifyTrigger();
     		        this.notifyTriggerStatus();
+    		    };
+    		    DevToolCore.prototype.clearConsole = function () {
+    		        this._console = [];
+    		        this._consoleSentIndex = 0;
+    		        if (!this.hasEnable)
+    		            return;
+    		        this._notify({ type: exports$1.DevToolMessageEnum.console, data: null });
     		    };
     		    return DevToolCore;
     		}());
@@ -4836,6 +4909,7 @@
     		    MessagePanelType["clearHMR"] = "panel-clear-hmr";
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
     		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
+    		    MessagePanelType["clearConsole"] = "panel-clear-console";
     		})(exports$1.MessagePanelType || (exports$1.MessagePanelType = {}));
     		exports$1.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -4873,6 +4947,7 @@
     		    DevToolMessageEnum["chunks"] = "chunks";
     		    DevToolMessageEnum["global"] = "global";
     		    DevToolMessageEnum["record"] = "record";
+    		    DevToolMessageEnum["console"] = "console";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
     		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
     		exports$1.HMRStatus = void 0;
@@ -5206,6 +5281,9 @@
         }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clearTrigger) {
             core.clearTrigger();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.clearConsole) {
+            core.clearConsole();
         }
     };
 
