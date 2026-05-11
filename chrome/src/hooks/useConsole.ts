@@ -5,6 +5,7 @@ import type { NodeValue } from "@my-react-devtool/core";
 export type ConsoleEntry = {
   type: string;
   args: readonly NodeValue[];
+  timestamp: number;
 };
 
 export const useConsole = createState(() => ({ entries: [] as ConsoleEntry[], count: 0 }), {

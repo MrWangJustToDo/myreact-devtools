@@ -21,19 +21,29 @@ const typeBgMap: Record<string, string> = {
   error: "bg-red-500/10",
 };
 
-const ConsoleEntry = ({ entry, index }: { entry: ConsoleEntry; index: number }) => {
+const formatTime = (timestamp: number) => {
+  const d = new Date(timestamp);
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  const s = String(d.getSeconds()).padStart(2, "0");
+  const ms = String(d.getMilliseconds()).padStart(3, "0");
+  return `${h}:${m}:${s}.${ms}`;
+};
+
+const ConsoleEntryItem = ({ entry, index }: { entry: ConsoleEntry; index: number }) => {
   const color = typeColorMap[entry.type] || "text-foreground";
   const bg = typeBgMap[entry.type] || "";
 
   return (
     <div className={`console-entry border-b border-divider px-2 py-1 ${bg}`}>
       <div className="flex items-start gap-2">
-        <span className={`${color} font-code text-xs shrink-0 w-12 pt-0.5`}>[{entry.type}]</span>
+        <span className={`${color} font-code text-xs shrink-0 pt-0.5 w-15`}>[{entry.type}]</span>
         <div className="flex-1 min-w-0 font-code text-sm">
           {entry.args.map((arg, argIndex) => (
             <ValueView key={`${index}-${argIndex}`} name={String(argIndex)} item={arg} />
           ))}
         </div>
+        <span className="font-code text-xs text-foreground-400 shrink-0 whitespace-nowrap pt-0.5">{formatTime(entry.timestamp)}</span>
       </div>
     </div>
   );
@@ -62,7 +72,7 @@ export const ConsoleView = () => {
         {entries.length === 0 ? (
           <div className="flex items-center justify-center h-full text-foreground-400 font-code text-sm">No console output</div>
         ) : (
-          entries.map((entry, index) => <ConsoleEntry key={index} entry={entry} index={index} />)
+          entries.map((entry, index) => <ConsoleEntryItem key={index} entry={entry} index={index} />)
         )}
         <div ref={bottomRef} />
       </div>

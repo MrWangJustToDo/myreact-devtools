@@ -54,7 +54,7 @@ export class DevToolCore {
 
   _unmount: Record<string | number, any> = {};
 
-  _console: Array<{ type: string; args: any[] }> = [];
+  _console: Array<{ type: string; args: any[]; timestamp: number }> = [];
 
   _consoleSentIndex = 0;
 
@@ -383,7 +383,7 @@ export class DevToolCore {
 
     this._notify({
       type: DevToolMessageEnum.console,
-      data: pending.map((item) => ({ type: item.type, args: item.args.map((arg) => getNode(arg)) })),
+      data: pending.map((item) => ({ type: item.type, args: item.args.map((arg) => getNode(arg)), timestamp: item.timestamp })),
     });
   }
 

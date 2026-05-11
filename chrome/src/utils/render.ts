@@ -258,7 +258,7 @@ export const onRender = (data: DevToolMessageType) => {
       if (data.data === null) {
         useConsole.getActions().reset();
       } else {
-        useConsole.getActions().appendEntries(data.data as Array<{ type: string; args: NodeValue[] }>);
+        useConsole.getActions().appendEntries(data.data as Array<{ type: string; args: NodeValue[]; timestamp: number }>);
       }
     });
   }

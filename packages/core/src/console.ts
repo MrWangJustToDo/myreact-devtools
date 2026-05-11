@@ -34,7 +34,7 @@ export function patchConsole(runtime: DevToolCore): void {
         runtime._consoleSentIndex = Math.max(0, runtime._consoleSentIndex - removed);
       }
 
-      runtime._console.push({ type: method, args });
+      runtime._console.push({ type: method, args, timestamp: Date.now() });
 
       notifyWithThrottle();
 
