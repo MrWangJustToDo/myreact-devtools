@@ -15,7 +15,10 @@
     "lint": "next lint",
     "build:extension": "next build --webpack && npm run lint:build",
     "lint:build": "mv out/_next out/assets && gsed -i 's/\\/_next/\\/assets/g' out/**.html && gsed -i 's/\\/_next/\\/assets/g' out/assets/static/chunks/**.js && gsed -i 's/\\/_next/\\/assets/g' out/assets/static/css/**.css",
-    "package": "npm run build:extension && zip -r packages/$(date -u +\"%Y-%m-%dT%H:%M:%SZ\").zip out"
+    "package:chrome": "rm -rf dist/chrome && cp -r out dist/chrome && rm -f dist/chrome/manifest.firefox.json && cd dist/chrome && zip -r ../chrome.zip .",
+    "package:firefox": "rm -rf dist/firefox && cp -r out dist/firefox && mv dist/firefox/manifest.firefox.json dist/firefox/manifest.json && cd dist/firefox && zip -r ../firefox.zip .",
+    "package:all": "npm run build:extension && npm run package:chrome && npm run package:firefox",
+    "package": "npm run package:all"
   },
   "dependencies": {
     "@heroui/react": "^2.7.5",

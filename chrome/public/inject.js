@@ -1,6 +1,8 @@
 const script = document.createElement("script");
 
-script.src = chrome.runtime.getURL("bundle/hook.js");
+const runtime = (typeof browser !== "undefined" && browser.runtime) || chrome.runtime;
+
+script.src = runtime.getURL("bundle/hook.js");
 
 script.onload = () => {
   script.remove();

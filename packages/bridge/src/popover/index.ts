@@ -52,8 +52,9 @@ const onMessageFromHook = (message: MessageEvent<MessageHookDataType>) => {
         console.log("[@my-react-devtool/detector] hook mount:", message.data);
       }
 
-      // to background worker
-      chrome.runtime.sendMessage({
+      const runtime = (globalThis as any).browser?.runtime || (globalThis as any).chrome?.runtime;
+
+      runtime?.sendMessage({
         type: message.data.type,
         source: DevToolSource,
         from: sourceFrom.detector,
