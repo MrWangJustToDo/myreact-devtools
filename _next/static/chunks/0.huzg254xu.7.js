@@ -8,8 +8,8 @@ __turbopack_load_page_chunks__("/_app", [
   "static/chunks/0rryt.zwt1nwq.js",
   "static/chunks/0gb1.2~~tas0j.js",
   "static/chunks/0f~gqrqggk_lc.js",
-  "static/chunks/0uko04pzr2i-o.js",
+  "static/chunks/14r4w~~w0317v.js",
   "static/chunks/0jlskpypeghzc.css",
   "static/chunks/0skfhwqp3el~h.css",
-  "static/chunks/turbopack-0q_c0ow1.hcg~.js"
+  "static/chunks/turbopack-0awpu0fu7~xf3.js"
 ])
