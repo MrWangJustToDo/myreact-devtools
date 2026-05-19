@@ -315,14 +315,14 @@ export const inspectFiber = (fiber: MyReactFiberNode) => {
     console.warn("inspectFiber: inspect node repeated", fiber, plainNode);
   }
 
-  globalThis["$$$$1"] = plainNode;
-
   const exist = detailMap.get(fiber);
 
   if (exist) {
     assignFiber(exist, fiber);
 
     exist._r = plainNode._r;
+
+    globalThis["$$$$1"] = exist;
 
     return exist;
   } else {
@@ -337,6 +337,8 @@ export const inspectFiber = (fiber: MyReactFiberNode) => {
     created._r = plainNode._r;
 
     detailMap.set(fiber, created);
+
+    globalThis["$$$$1"] = created;
 
     return created;
   }

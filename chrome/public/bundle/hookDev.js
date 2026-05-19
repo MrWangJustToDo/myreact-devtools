@@ -3278,11 +3278,11 @@
     		    if (plainNode._$f) {
     		        console.warn("inspectFiber: inspect node repeated", fiber, plainNode);
     		    }
-    		    globalThis["$$$$1"] = plainNode;
     		    var exist = detailMap.get(fiber);
     		    if (exist) {
     		        assignFiber(exist, fiber);
     		        exist._r = plainNode._r;
+    		        globalThis["$$$$1"] = exist;
     		        return exist;
     		    }
     		    else {
@@ -3293,6 +3293,7 @@
     		        // only work for development mode
     		        created._r = plainNode._r;
     		        detailMap.set(fiber, created);
+    		        globalThis["$$$$1"] = created;
     		        return created;
     		    }
     		};
