@@ -307,6 +307,8 @@ export const inspectList = (list: ListTree<MyReactFiberNode>) => {
 export const inspectFiber = (fiber: MyReactFiberNode) => {
   const plainNode = getPlainNodeByFiber(fiber);
 
+  globalThis["$$$$1"] = fiber;
+
   if (!plainNode) {
     throw new Error("plainNode not found, look like a bug for @my-react/devtools");
   }
@@ -322,8 +324,6 @@ export const inspectFiber = (fiber: MyReactFiberNode) => {
 
     exist._r = plainNode._r;
 
-    globalThis["$$$$1"] = exist;
-
     return exist;
   } else {
     const created = new PlainNode(plainNode.i);
@@ -337,8 +337,6 @@ export const inspectFiber = (fiber: MyReactFiberNode) => {
     created._r = plainNode._r;
 
     detailMap.set(fiber, created);
-
-    globalThis["$$$$1"] = created;
 
     return created;
   }
