@@ -315,6 +315,8 @@ export const inspectFiber = (fiber: MyReactFiberNode) => {
     console.warn("inspectFiber: inspect node repeated", fiber, plainNode);
   }
 
+  globalThis["$$$$1"] = plainNode;
+
   const exist = detailMap.get(fiber);
 
   if (exist) {

@@ -2149,6 +2149,9 @@
     		            }
     		            Dispatcher.useSignal(null);
     		            Dispatcher.useId();
+    		            if (typeof Dispatcher.useEffectEvent === "function") {
+    		                Dispatcher.useEffectEvent(function (args) { });
+    		            }
     		        }
     		        finally {
     		            readHookLog = hookLog;
@@ -2703,6 +2706,8 @@
     		    return functionName.slice(startIndex);
     		}
     		function buildTree(rootStack, readHookLog) {
+    		    globalThis["$$$$hookStack"] = rootStack;
+    		    globalThis["$$$$hookLog"] = readHookLog;
     		    var rootChildren = [];
     		    var prevStack = null;
     		    var levelChildren = rootChildren;
@@ -2800,6 +2805,7 @@
     		    }
     		    // Associate custom hook values (useDebugValue() hook entries) with the correct hooks.
     		    processDebugValues(rootChildren, null);
+    		    globalThis["$$$$hookTree"] = rootChildren;
     		    return rootChildren;
     		}
     		// Custom hooks support user-configurable labels (via the special useDebugValue() hook).
@@ -3272,6 +3278,7 @@
     		    if (plainNode._$f) {
     		        console.warn("inspectFiber: inspect node repeated", fiber, plainNode);
     		    }
+    		    globalThis["$$$$1"] = plainNode;
     		    var exist = detailMap.get(fiber);
     		    if (exist) {
     		        assignFiber(exist, fiber);

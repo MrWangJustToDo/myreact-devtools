@@ -73,6 +73,9 @@ function getPrimitiveStackCache(): Map<string, Array<any>> {
       }
       Dispatcher.useSignal(null);
       Dispatcher.useId();
+      if (typeof Dispatcher.useEffectEvent === "function") {
+        Dispatcher.useEffectEvent((args: any) => {});
+      }
     } finally {
       readHookLog = hookLog;
       hookLog = [];
@@ -758,6 +761,10 @@ function parseHookName(functionName: void | string): string {
 }
 
 function buildTree(rootStack: ParsedStackFrame[], readHookLog: Array<HookLogEntry>): HooksTree {
+  globalThis["$$$$hookStack"] = rootStack;
+
+  globalThis["$$$$hookLog"] = readHookLog;
+
   const rootChildren: Array<HooksNode> = [];
   let prevStack = null;
   let levelChildren = rootChildren;
@@ -862,6 +869,8 @@ function buildTree(rootStack: ParsedStackFrame[], readHookLog: Array<HookLogEntr
 
   // Associate custom hook values (useDebugValue() hook entries) with the correct hooks.
   processDebugValues(rootChildren, null);
+
+  globalThis["$$$$hookTree"] = rootChildren;
 
   return rootChildren;
 }

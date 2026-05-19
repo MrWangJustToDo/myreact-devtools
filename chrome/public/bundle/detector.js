@@ -223,13 +223,13 @@
         }
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageHookType.mount) {
             runWhenHookReady(function () {
-                var _a;
-                // to background worker
-                chrome.runtime.sendMessage({
+                var _a, _b, _c;
+                var runtime = ((_a = globalThis.browser) === null || _a === void 0 ? void 0 : _a.runtime) || ((_b = globalThis.chrome) === null || _b === void 0 ? void 0 : _b.runtime);
+                runtime === null || runtime === void 0 ? void 0 : runtime.sendMessage({
                     type: message.data.type,
                     source: eventExports.DevToolSource,
                     from: sourceFrom.detector,
-                    data: (_a = message.data) === null || _a === void 0 ? void 0 : _a.data,
+                    data: (_c = message.data) === null || _c === void 0 ? void 0 : _c.data,
                     to: sourceFrom.worker,
                 });
             });

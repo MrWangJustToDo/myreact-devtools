@@ -6,6 +6,10 @@ declare global {
 
   interface Window {
     $$$$0: any;
+    $$$$1: any;
+    $$$$hookStack: any;
+    $$$$hookLog: any;
+    $$$$hookTree: any;
   }
 
   namespace NodeJS {
