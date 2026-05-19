@@ -1843,7 +1843,8 @@
     		        }
     		        for (var i = 0; i < readHookLog.length; i++) {
     		            var hook = readHookLog[i];
-    		            cache.set(hook.primitive, ErrorStackParser.parse(hook.stackError));
+    		            hook.hookStack = ErrorStackParser.parse(hook.stackError);
+    		            cache.set(hook.primitive, hook.hookStack);
     		        }
     		        primitiveStackCache = cache;
     		    }
@@ -2320,6 +2321,7 @@
     		function findPrimitiveIndex(hookStack, hook) {
     		    var stackCache = getPrimitiveStackCache();
     		    var primitiveStack = stackCache.get(hook.primitive);
+    		    hook.primitiveStack = primitiveStack;
     		    if (primitiveStack === undefined) {
     		        return -1;
     		    }
@@ -2344,6 +2346,8 @@
     		    // Get the stack trace between the primitive hook function and
     		    // the root function call. I.e. the stack frames of custom hooks.
     		    var hookStack = ErrorStackParser.parse(hook.stackError);
+    		    hook.hookStack = hookStack;
+    		    hook.rootStack = rootStack;
     		    var rootIndex = findCommonAncestorIndex(rootStack, hookStack);
     		    var primitiveIndex = findPrimitiveIndex(hookStack, hook);
     		    if (rootIndex === -1 || primitiveIndex === -1 || rootIndex - primitiveIndex < 2) {

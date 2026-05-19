@@ -17,6 +17,9 @@ type HookLogEntry = {
   displayName: string | null;
   primitive: string;
   stackError: Error;
+  hookStack?: ParsedStackFrame[];
+  rootStack?: ParsedStackFrame[];
+  primitiveStack?: ParsedStackFrame[];
   value: any;
   dispatcherHookName: string;
 };
@@ -27,14 +30,14 @@ type Dispatch<A> = (p: A) => void;
 
 let hookLog: Array<HookLogEntry> = [];
 
-let primitiveStackCache: null | Map<string, Array<any>> = null;
+let primitiveStackCache: null | Map<string, Array<ParsedStackFrame>> = null;
 
-function getPrimitiveStackCache(): Map<string, Array<any>> {
+function getPrimitiveStackCache(): Map<string, Array<ParsedStackFrame>> {
   // This initializes a cache of all primitive hooks so that the top
   // most stack frames added by calling the primitive hook can be removed.
   if (primitiveStackCache === null) {
-    const cache = new Map<string, Array<any>>();
-    let readHookLog;
+    const cache = new Map<string, Array<ParsedStackFrame>>();
+    let readHookLog: HookLogEntry[];
     try {
       // Use all hooks here to add them to the hook log.
       Dispatcher.useContext({ [TYPEKEY]: Context, Provider: { value: null } });
@@ -82,7 +85,8 @@ function getPrimitiveStackCache(): Map<string, Array<any>> {
     }
     for (let i = 0; i < readHookLog.length; i++) {
       const hook = readHookLog[i];
-      cache.set(hook.primitive, ErrorStackParser.parse(hook.stackError));
+      hook.hookStack = ErrorStackParser.parse(hook.stackError);
+      cache.set(hook.primitive, hook.hookStack);
     }
     primitiveStackCache = cache;
   }
@@ -685,6 +689,7 @@ function isReactWrapper(functionName: void | string, wrapperName: string) {
 function findPrimitiveIndex(hookStack: ParsedStackFrame[], hook: HookLogEntry) {
   const stackCache = getPrimitiveStackCache();
   const primitiveStack = stackCache.get(hook.primitive);
+  hook.primitiveStack = primitiveStack;
   if (primitiveStack === undefined) {
     return -1;
   }
@@ -711,6 +716,8 @@ function parseTrimmedStack(rootStack: ParsedStackFrame[], hook: HookLogEntry) {
   // Get the stack trace between the primitive hook function and
   // the root function call. I.e. the stack frames of custom hooks.
   const hookStack = ErrorStackParser.parse(hook.stackError);
+  hook.hookStack = hookStack;
+  hook.rootStack = rootStack;
   const rootIndex = findCommonAncestorIndex(rootStack, hookStack);
   const primitiveIndex = findPrimitiveIndex(hookStack, hook);
   if (rootIndex === -1 || primitiveIndex === -1 || rootIndex - primitiveIndex < 2) {
