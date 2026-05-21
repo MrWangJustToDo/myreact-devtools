@@ -61,6 +61,8 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
   dataRef.current = data;
 
+  console.log(data);
+
   const render = (index: number, _: unknown) => {
     const node = data[index];
 

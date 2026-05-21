@@ -1,5 +1,6 @@
 import {
   Button,
+  Chip,
   Modal,
   useDisclosure,
   ModalContent,
@@ -24,7 +25,7 @@ import {
 import { getTypeName, typeKeys } from "@my-react-devtool/core";
 import { BoxIcon, CircleCheck, CircleX, LetterText, ListFilter, Moon, Settings, Settings2, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { memo } from "react";
+import { memo, useState } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
@@ -38,10 +39,11 @@ import { UISize, useUISize } from "@/hooks/useUISize";
 
 import { TreeViewSearch } from "./TreeViewSearch";
 
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, KeyboardEvent } from "react";
 import type { VirtuosoHandle } from "react-virtuoso";
 
 const onChange = useFilterNode.getActions().onChange;
+const { addNameFilter, removeNameFilter } = useFilterNode.getActions();
 
 const onToggle = useDetailNodeExt.getActions().toggleEnable;
 
@@ -68,8 +70,24 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
 
   const values = useFilterNode((s) => s.filter);
 
+  const nameFilters = useFilterNode((s) => s.nameFilters);
+
+  const [nameInput, setNameInput] = useState("");
+
   const handleSelectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
     onChange(new Set(e.target.value.split(",")));
+  };
+
+  const handleNameKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && nameInput.trim()) {
+      e.preventDefault();
+      addNameFilter(nameInput);
+      setNameInput("");
+    }
+    if (e.key === "Backspace" && !nameInput && nameFilters.size > 0) {
+      const last = Array.from(nameFilters).pop();
+      if (last) removeNameFilter(last);
+    }
   };
 
   return (
@@ -141,6 +159,20 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                       <SelectItem key={type}>{getTypeName(type)}</SelectItem>
                     ))}
                   </Select>
+                </div>
+                <div className="flex flex-wrap items-center gap-1 p-2 min-h-10 rounded-medium border-2 border-default-200 hover:border-default-400 transition-colors">
+                  {Array.from(nameFilters).map((name) => (
+                    <Chip key={name} size="sm" variant="flat" color="danger" onClose={() => removeNameFilter(name)}>
+                      {name}
+                    </Chip>
+                  ))}
+                  <input
+                    className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-foreground-400"
+                    placeholder={nameFilters.size === 0 ? "Type name and press Enter to hide" : ""}
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onKeyDown={handleNameKeyDown}
+                  />
                 </div>
               </div>
               <Divider />
