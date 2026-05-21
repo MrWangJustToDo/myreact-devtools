@@ -11,11 +11,18 @@ function isNumeric(str: string) {
 }
 
 const installProxy = (tabId: number) => {
-  chrome.scripting.executeScript({ target: { tabId }, files: ["bundle/proxy.js"] }).then((res) => {
-    if (res && __DEV__) {
-      console.log(`[@my-react-devtool/worker] install proxy success for tab: ${tabId}`);
-    }
-  });
+  chrome.scripting
+    .executeScript({ target: { tabId }, files: ["bundle/proxy.js"] })
+    .then((res) => {
+      if (res && __DEV__) {
+        console.log(`[@my-react-devtool/worker] install proxy success for tab: ${tabId}`);
+      }
+    })
+    .catch((err) => {
+      if (__DEV__) {
+        console.warn(`[@my-react-devtool/worker] install proxy failed for tab: ${tabId}`, err);
+      }
+    });
 };
 
 const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.Port) => {
@@ -26,7 +33,7 @@ const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.P
       console.log(`[@my-react-devtool/worker] message from hook: ${id}`, message);
     }
 
-    port2.postMessage({ ...message, forward: message.forward ? `${message.forward}->${sourceFrom.worker}` : sourceFrom.worker });
+    port2.postMessage({ ...message });
   };
 
   const onMessagePort2 = (message: MessagePanelDataType) => {
@@ -36,14 +43,35 @@ const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.P
       console.log(`[@my-react-devtool/worker] message from panel: ${id}`, message);
     }
 
-    port1.postMessage({ ...message, forward: message.forward ? `${message.forward}->${sourceFrom.worker}` : sourceFrom.worker });
+    port1.postMessage({ ...message });
   };
 
+  let isShutdown = false;
+
   function shutdown() {
-    port1.onMessage.removeListener(onMessagePort1);
-    port2.onMessage.removeListener(onMessagePort2);
-    port1.disconnect();
-    port2.disconnect();
+    if (isShutdown) return;
+    isShutdown = true;
+
+    try {
+      port1.onMessage.removeListener(onMessagePort1);
+    } catch {
+      /* already disconnected */
+    }
+    try {
+      port2.onMessage.removeListener(onMessagePort2);
+    } catch {
+      /* already disconnected */
+    }
+    try {
+      port1.disconnect();
+    } catch {
+      /* already disconnected */
+    }
+    try {
+      port2.disconnect();
+    } catch {
+      /* already disconnected */
+    }
     hub[id] = null;
   }
 
@@ -57,7 +85,7 @@ const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.P
 
   port1.postMessage({ type: MessageWorkerType.init, from: sourceFrom.worker, to: sourceFrom.hook, source: DevToolSource });
 
-  port2.postMessage({ type: MessageWorkerType.init, form: sourceFrom.worker, to: sourceFrom.panel, source: DevToolSource });
+  port2.postMessage({ type: MessageWorkerType.init, from: sourceFrom.worker, to: sourceFrom.panel, source: DevToolSource });
 
   if (__DEV__) {
     console.log(`[@my-react-devtool/worker] connected: ${id}`);
@@ -94,6 +122,28 @@ chrome.runtime.onConnect.addListener((port) => {
   }
 });
 
+// Reset the icon to default (disabled) state when a tab navigates,
+// before the detector has a chance to re-detect @my-react on the new page.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === "loading") {
+    try {
+      chrome.action.setPopup({
+        tabId,
+        popup: chrome.runtime.getURL("disablePopup.html"),
+      });
+      chrome.action.setIcon({
+        tabId,
+        path: {
+          48: chrome.runtime.getURL("icons/48.png"),
+          128: chrome.runtime.getURL("icons/128.png"),
+        },
+      });
+    } catch {
+      // tab may have been closed
+    }
+  }
+});
+
 // from detector, change the extension icon and popup page
 chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender) => {
   if (message.from !== sourceFrom.detector) return;
@@ -106,13 +156,11 @@ chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender) => {
   }
 
   if (sender.tab?.id && message.type === MessageHookType.mount) {
-    const type = typeof message.data === "string" ? message.data : message.data.mode;
+    const type = typeof message.data === "string" ? message.data : message.data?.mode;
 
-    const forwardMode = typeof message.data === "object" ? message.data.forwardMode : false;
+    const icon_48 = type === "develop" ? "icons/48-s-d.png" : "icons/48-s.png";
 
-    const icon_48 = forwardMode ? "icons/48-s-f.png" : type === "develop" ? "icons/48-s-d.png" : "icons/48-s.png";
-
-    const icon_128 = forwardMode ? "icons/128-s-f.png" : type === "develop" ? "icons/128-s-d.png" : "icons/128-s.png";
+    const icon_128 = type === "develop" ? "icons/128-s-d.png" : "icons/128-s.png";
 
     if (type === "develop") {
       chrome.action.setPopup({

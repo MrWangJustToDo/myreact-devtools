@@ -22,7 +22,7 @@ const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {
 
   if (message.data.to === sourceFrom.panel) {
     try {
-      port.postMessage({ ...message.data, forward: message.data.forward ? `${message.data.forward}->${sourceFrom.proxy}` : sourceFrom.proxy });
+      port.postMessage({ ...message.data });
     } catch (error) {
       port.postMessage({
         type: DevToolMessageEnum.message,

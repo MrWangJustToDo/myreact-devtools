@@ -6,6 +6,8 @@ import type { MessageHookDataType, MessageWorkerDataType } from "../type";
 
 let port: chrome.runtime.Port | null = null;
 
+let currentOnDisconnect: (() => void) | null = null;
+
 // TODO avoid using window
 let panelWindow: Window = window;
 
@@ -17,6 +19,8 @@ let workerConnecting = false;
 let messageId = 0;
 
 let id = null;
+
+let navigationTimerId: ReturnType<typeof setTimeout> | null = null;
 
 let hasShow = false;
 
@@ -90,6 +94,27 @@ const initPort = () => {
 
     return;
   }
+
+  // Disconnect the old port before creating a new one (e.g. after navigation).
+  // Remove the onDisconnect listener first to prevent it from triggering
+  // a UI disconnect flash during intentional reconnection.
+  if (port) {
+    if (currentOnDisconnect) {
+      try {
+        port.onDisconnect.removeListener(currentOnDisconnect);
+      } catch {
+        /* */
+      }
+      currentOnDisconnect = null;
+    }
+    try {
+      port.disconnect();
+    } catch {
+      /* port may already be disconnected */
+    }
+    port = null;
+  }
+
   workerConnecting = true;
 
   const { disconnect, setConnectHandler } = panelWindow.useConnect.getActions();
@@ -136,6 +161,12 @@ const initPort = () => {
 
       if (currentAgentId && message.data.agentId !== currentAgentId) return;
 
+      // Got a valid render message — cancel the "not detected" fallback timer
+      if (navigationTimerId) {
+        clearTimeout(navigationTimerId);
+        navigationTimerId = null;
+      }
+
       onRender(message.data, panelWindow);
     }
   };
@@ -147,6 +178,8 @@ const initPort = () => {
 
     port?.onMessage?.removeListener?.(onMessage);
 
+    currentOnDisconnect = null;
+
     disconnect();
 
     port = null;
@@ -155,6 +188,8 @@ const initPort = () => {
 
     workerConnecting = false;
   };
+
+  currentOnDisconnect = onDisconnect;
 
   sendMessage({ type: MessagePanelType.show }, false);
 
@@ -206,20 +241,53 @@ const clear = () => {
 
 init(getTabId());
 
-chrome.devtools.network.onNavigated.addListener(() => {
+let isHandlingNavigation = false;
+
+const handleNavigation = () => {
+  // Deduplicate — onNavigated and tabs.onUpdated can both fire for the same navigation
+  if (isHandlingNavigation) return;
+  isHandlingNavigation = true;
+  setTimeout(() => (isHandlingNavigation = false), 200);
+
   if (__DEV__) {
-    console.log("[@my-react-devtool/panel] onNavigated");
+    console.log("[@my-react-devtool/panel] handleNavigation");
   }
 
   clear();
 
-  // 不会触发onShow事件 ？
-  init(getTabId());
+  agentIdMap.delete(getTabId());
 
-  // TODO! fix this
+  if (panelWindow?.useConnect) {
+    panelWindow.useConnect.getActions().setRender(undefined);
+  }
+
+  workerReady = false;
+  workerConnecting = false;
+
+  if (navigationTimerId) {
+    clearTimeout(navigationTimerId);
+  }
+
   setTimeout(() => {
-    sendMessage({ type: MessagePanelType.clear });
+    initPort();
+  }, 100);
 
-    if (hasShow) sendMessage({ type: MessagePanelType.show }, false);
-  }, 60);
+  navigationTimerId = setTimeout(() => {
+    navigationTimerId = null;
+    if (panelWindow?.useConnect) {
+      const render = panelWindow.useConnect.getReadonlyState?.()?.render;
+      if (render === undefined) {
+        panelWindow.useConnect.getActions().setRender(false);
+      }
+    }
+  }, 2000);
+};
+
+chrome.devtools.network.onNavigated.addListener(handleNavigation);
+
+// Backup for bfcache restores where onNavigated may not fire
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (tabId === getTabId() && changeInfo.status === "loading") {
+    handleNavigation();
+  }
 });

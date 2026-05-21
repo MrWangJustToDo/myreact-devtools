@@ -54,7 +54,6 @@ declare global {
     io: typeof io;
   }
 
-  var __MY_REACT_DEVTOOL_FORWARD__: any;
   var __MY_REACT_DEVTOOL_INTERNAL__: any;
   var __MY_REACT_DEVTOOL_WEB__: any;
   var __MY_REACT_DEVTOOL_IFRAME__: any;

@@ -57,13 +57,7 @@ export const generatePostMessageWithSource =
 
     const _message = { ...message } as any;
 
-    if (_message.from && _message.forward) {
-      _message.forward += `->${from}`;
-    } else if (_message.from) {
-      if (_message.from !== from) {
-        _message.forward = from;
-      }
-    } else {
+    if (!_message.from) {
       _message.from = from;
     }
 

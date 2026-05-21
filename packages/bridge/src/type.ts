@@ -15,7 +15,6 @@ export type MessageHookDataType = {
   source?: string;
   from?: string;
   to?: string;
-  forward?: string;
 };
 
 export type MessagePanelDataType = {
@@ -25,7 +24,6 @@ export type MessagePanelDataType = {
   source?: string;
   from?: string;
   to?: string;
-  forward?: string;
   agentId?: string;
 };
 
@@ -34,7 +32,6 @@ export type MessageWorkerDataType = {
   source?: string;
   from?: string;
   to?: string;
-  forward?: string;
 };
 
 export type MessageDetectorDataType = {
@@ -61,13 +58,10 @@ export enum sourceFrom {
   panel = "panel",
   // message from background worker, `background` dir
   worker = "worker",
-  // message from iframe, chrome/src/hooks/useBridgeForward.ts
+  // message from iframe, chrome/src/hooks/useBridgeForward.ts (local dev bridge)
   iframe = "iframe",
   // message from socket, chrome/src/hooks/useWebDev.ts
   socket = "socket",
   // message from detector, `popover` dir
   detector = "detector",
-
-  // message from another runtime engine
-  forward = "forward",
 }

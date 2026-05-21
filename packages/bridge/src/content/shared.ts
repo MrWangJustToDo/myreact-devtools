@@ -11,9 +11,6 @@ import type { CustomRenderDispatch } from "@my-react/react-reconciler";
 
 const hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
 
-// default render agentId
-const agentId = core.id;
-
 core.subscribe((message) => {
   if (__DEV__) {
     console.log("[@my-react-devtool/hook] core message", message);
@@ -25,10 +22,6 @@ core.subscribe((message) => {
 const set = new Set<CustomRenderDispatch>();
 
 let detectorReady = false;
-
-let forwardMode = false;
-
-let env = "hook" as "hook" | "forward";
 
 const idMap = new Map<() => void, NodeJS.Timeout>();
 
@@ -64,9 +57,7 @@ const onMessage = (message: MessageEvent<MessageHookDataType | MessagePanelDataT
 
   if (message.data?.source !== DevToolSource) return;
 
-  if (message.data?.to !== sourceFrom.hook && message.data?.to !== sourceFrom.forward) return;
-
-  if (forwardMode) return;
+  if (message.data?.to !== sourceFrom.hook) return;
 
   if (!detectorReady && message.data?.type === MessageDetectorType.init) {
     if (__DEV__) {
@@ -76,18 +67,6 @@ const onMessage = (message: MessageEvent<MessageHookDataType | MessagePanelDataT
     detectorReady = true;
   }
 
-  if (message.data.from === sourceFrom.forward && env === "hook") {
-    core.clearSubscribe();
-
-    forwardMode = true;
-
-    hookPostMessageWithSource({ type: MessageHookType.clear, to: sourceFrom.panel, data: { agentId: agentId } });
-
-    hookPostMessageWithSource({ type: MessageDetectorType.init, to: sourceFrom.forward });
-  }
-
-  if (forwardMode && env === "hook") return;
-
   onMessageFromPanelOrWorkerOrDetector(message.data);
 };
 
@@ -96,16 +75,15 @@ if (typeof window !== "undefined") {
 }
 
 const onceMount = once(() => {
-  // current site is render by @my-react
-  hookPostMessageWithSource({ type: MessageHookType.mount, data: { forwardMode: env === "forward" }, to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, to: sourceFrom.detector });
 });
 
 const onceDev = once(() => {
-  hookPostMessageWithSource({ type: MessageHookType.mount, data: { mode: "develop", forwardMode: env === "forward" }, to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: { mode: "develop" }, to: sourceFrom.detector });
 });
 
 const oncePro = once(() => {
-  hookPostMessageWithSource({ type: MessageHookType.mount, data: { mode: "product", forwardMode: env === "forward" }, to: sourceFrom.detector });
+  hookPostMessageWithSource({ type: MessageHookType.mount, data: { mode: "product" }, to: sourceFrom.detector });
 });
 
 const onceOrigin = once(() => {
@@ -142,24 +120,27 @@ globalHook.prepare = () => {
   }
 };
 
-globalHook.getForwardMode = () => forwardMode;
-
 globalHook.init = () => hookPostMessageWithSource({ type: MessageHookType.init, to: sourceFrom.detector });
 
 export const getDetectorReady = () => detectorReady;
 
 globalHook.getDetectorReady = getDetectorReady;
 
-export const getForwardMode = () => forwardMode;
-
-globalHook.getForwardMode = getForwardMode;
-
-export const setForwardMode = (b: boolean) => (forwardMode = b);
-
-export const getEnv = () => env;
-
-globalHook.getEnv = getEnv;
-
-export const setEnv = (e: "hook" | "forward") => (env = e);
+// Re-send mount message when the page is restored from bfcache,
+// since the once() guards prevent the initial mount handlers from firing again.
+if (typeof window !== "undefined") {
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && set.size > 0) {
+      const dispatch = Array.from(set)[0];
+      const data: any = {};
+      if (dispatch?.mode === "development") {
+        data.mode = "develop";
+      } else if (dispatch?.mode === "production") {
+        data.mode = "product";
+      }
+      hookPostMessageWithSource({ type: MessageHookType.mount, data, to: sourceFrom.detector });
+    }
+  });
+}
 
 export { core };
