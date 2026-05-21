@@ -276,7 +276,7 @@
                 try {
                     port.onDisconnect.removeListener(currentOnDisconnect);
                 }
-                catch (e) {
+                catch (_a) {
                     /* */
                 }
                 currentOnDisconnect = null;
@@ -284,13 +284,13 @@
             try {
                 port.disconnect();
             }
-            catch (e) {
+            catch (_b) {
                 /* port may already be disconnected */
             }
             port = null;
         }
         workerConnecting = true;
-        var _a = panelWindow.useConnect.getActions(), disconnect = _a.disconnect, setConnectHandler = _a.setConnectHandler;
+        var _c = panelWindow.useConnect.getActions(), disconnect = _c.disconnect, setConnectHandler = _c.setConnectHandler;
         setConnectHandler(function () { return initPort(); });
         port = chrome.runtime.connect({ name: getTabId().toString() });
         var onMessage = function (message) {

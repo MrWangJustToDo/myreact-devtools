@@ -10334,8 +10334,6 @@
     })(sourceFrom || (sourceFrom = {}));
 
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
-    // default render agentId
-    core.id;
     core.subscribe(function (message) {
         hookPostMessageWithSource({ type: eventExports.MessageHookType.render, data: message, to: sourceFrom.panel });
     });

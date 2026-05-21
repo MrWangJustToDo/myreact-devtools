@@ -202,25 +202,25 @@
             try {
                 port1.onMessage.removeListener(onMessagePort1);
             }
-            catch (e) {
+            catch (_a) {
                 /* already disconnected */
             }
             try {
                 port2.onMessage.removeListener(onMessagePort2);
             }
-            catch (e) {
+            catch (_b) {
                 /* already disconnected */
             }
             try {
                 port1.disconnect();
             }
-            catch (e) {
+            catch (_c) {
                 /* already disconnected */
             }
             try {
                 port2.disconnect();
             }
-            catch (e) {
+            catch (_d) {
                 /* already disconnected */
             }
             hub[id] = null;
@@ -271,7 +271,7 @@
                     },
                 });
             }
-            catch (e) {
+            catch (_a) {
                 // tab may have been closed
             }
         }

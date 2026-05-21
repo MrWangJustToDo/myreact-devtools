@@ -6544,8 +6544,6 @@
     };
 
     var hookPostMessageWithSource = generatePostMessageWithSource(sourceFrom.hook);
-    // default render agentId
-    core.id;
     core.subscribe(function (message) {
         {
             console.log("[@my-react-devtool/hook] core message", message);
