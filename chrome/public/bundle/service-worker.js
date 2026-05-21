@@ -151,7 +151,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -185,13 +184,9 @@
     };
     var portPip = function (id, port1, port2) {
         var onMessagePort1 = function (message) {
-            if (message.to !== sourceFrom.panel)
-                return;
             port2.postMessage(__assign({}, message));
         };
         var onMessagePort2 = function (message) {
-            if (message.to !== sourceFrom.hook)
-                return;
             port1.postMessage(__assign({}, message));
         };
         var isShutdown = false;

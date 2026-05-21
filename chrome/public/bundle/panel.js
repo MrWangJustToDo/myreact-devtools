@@ -189,7 +189,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -215,8 +214,6 @@
     var panelWindow = window;
     var workerReady = false;
     var workerConnecting = false;
-    // TODO use messageId to sync message
-    var messageId = 0;
     var id = null;
     var navigationTimerId = null;
     var hasShow = false;
@@ -255,7 +252,7 @@
     var sendMessage = function (data, withAgentId) {
         if (withAgentId === void 0) { withAgentId = true; }
         runWhenWorkerReady(function () {
-            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++, from: sourceFrom.panel, to: sourceFrom.hook, agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined }));
+            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { from: sourceFrom.panel, to: sourceFrom.hook, agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined }));
         });
     };
     var onRender = function (data, _window) {
@@ -337,7 +334,6 @@
             workerConnecting = false;
         };
         currentOnDisconnect = onDisconnect;
-        sendMessage({ type: eventExports.MessagePanelType.show }, false);
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);
     };

@@ -118,7 +118,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -185,17 +184,13 @@
 
     var hookReady = false;
     var detectorPostMessageWithSource = generatePostMessageWithSource(sourceFrom.detector);
-    var id = null;
-    var runWhenHookReady = function (fn, count) {
-        clearTimeout(id);
+    var pendingHookCallbacks = [];
+    var runWhenHookReady = function (fn) {
         if (hookReady) {
             fn();
         }
         else {
-            if (count && count > 10) {
-                return;
-            }
-            id = setTimeout(function () { return runWhenHookReady(fn, count ? count + 1 : 1); }, 1000);
+            pendingHookCallbacks.push(fn);
         }
     };
     // message from hook
@@ -210,6 +205,11 @@
         if (!hookReady && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === eventExports.MessageHookType.init) {
             hookReady = true;
             detectorPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook });
+            for (var _i = 0, pendingHookCallbacks_1 = pendingHookCallbacks; _i < pendingHookCallbacks_1.length; _i++) {
+                var cb = pendingHookCallbacks_1[_i];
+                cb();
+            }
+            pendingHookCallbacks.length = 0;
         }
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageHookType.mount) {
             runWhenHookReady(function () {

@@ -5209,9 +5209,6 @@
                 core.notifyMessage("current id: ".concat(id, " of fiber not exist"), "error");
             }
         }
-        // if (data?.type === MessagePanelType.nodeInspect) {
-        //   core.inspectDom();
-        // }
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.nodeHover) {
             core.setHover(data.data);
             core.showHover();
@@ -5423,7 +5420,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -5449,19 +5445,13 @@
     });
     var set = new Set();
     var detectorReady = false;
-    var idMap = new Map();
-    var runWhenDetectorReady = function (fn, count) {
-        var id = idMap.get(fn);
-        clearTimeout(id);
+    var pendingDetectorCallbacks = [];
+    var runWhenDetectorReady = function (fn) {
         if (detectorReady) {
             fn();
         }
         else {
-            if (count && count > 60) {
-                return;
-            }
-            var newId = setTimeout(function () { return runWhenDetectorReady(fn, count ? count + 1 : 1); }, 1000);
-            idMap.set(fn, newId);
+            pendingDetectorCallbacks.push(fn);
         }
     };
     var onMessage = function (message) {
@@ -5477,6 +5467,11 @@
             return;
         if (!detectorReady && ((_d = message.data) === null || _d === void 0 ? void 0 : _d.type) === eventExports.MessageDetectorType.init) {
             detectorReady = true;
+            for (var _i = 0, pendingDetectorCallbacks_1 = pendingDetectorCallbacks; _i < pendingDetectorCallbacks_1.length; _i++) {
+                var cb = pendingDetectorCallbacks_1[_i];
+                cb();
+            }
+            pendingDetectorCallbacks.length = 0;
         }
         onMessageFromPanelOrWorkerOrDetector(message.data);
     };

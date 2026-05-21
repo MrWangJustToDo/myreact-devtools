@@ -15,9 +15,6 @@ let workerReady = false;
 
 let workerConnecting = false;
 
-// TODO use messageId to sync message
-let messageId = 0;
-
 let id = null;
 
 let navigationTimerId: ReturnType<typeof setTimeout> | null = null;
@@ -72,7 +69,6 @@ const sendMessage = <T = any>(data: T, withAgentId = true) => {
   runWhenWorkerReady(() => {
     port?.postMessage({
       ...data,
-      _messageId: messageId++,
       from: sourceFrom.panel,
       to: sourceFrom.hook,
       agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined,
@@ -190,8 +186,6 @@ const initPort = () => {
   };
 
   currentOnDisconnect = onDisconnect;
-
-  sendMessage({ type: MessagePanelType.show }, false);
 
   port.onMessage.addListener(onMessage);
 

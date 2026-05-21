@@ -27,8 +27,6 @@ const installProxy = (tabId: number) => {
 
 const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.Port) => {
   const onMessagePort1 = (message: MessageHookDataType) => {
-    if (message.to !== sourceFrom.panel) return;
-
     if (__DEV__) {
       console.log(`[@my-react-devtool/worker] message from hook: ${id}`, message);
     }
@@ -37,8 +35,6 @@ const portPip = (id: string, port1: chrome.runtime.Port, port2: chrome.runtime.P
   };
 
   const onMessagePort2 = (message: MessagePanelDataType) => {
-    if (message.to !== sourceFrom.hook) return;
-
     if (__DEV__) {
       console.log(`[@my-react-devtool/worker] message from panel: ${id}`, message);
     }

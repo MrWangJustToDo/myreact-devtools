@@ -6,7 +6,6 @@ export { MessageDetectorType, MessageHookType, MessagePanelType, MessageWorkerTy
 
 export enum PortName {
   proxy = "dev-tool/proxy",
-  panel = "dev-tool/panel",
 }
 
 export type MessageHookDataType = {

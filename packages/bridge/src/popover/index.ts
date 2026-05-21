@@ -9,22 +9,13 @@ let hookReady = false;
 
 const detectorPostMessageWithSource = generatePostMessageWithSource(sourceFrom.detector);
 
-let id = null;
+const pendingHookCallbacks: Array<() => void> = [];
 
-const runWhenHookReady = (fn: () => void, count?: number) => {
-  clearTimeout(id);
+const runWhenHookReady = (fn: () => void) => {
   if (hookReady) {
     fn();
   } else {
-    if (count && count > 10) {
-      if (__DEV__) {
-        console.error("[@my-react-devtool/detector] hook not ready");
-      }
-
-      return;
-    }
-
-    id = setTimeout(() => runWhenHookReady(fn, count ? count + 1 : 1), 1000);
+    pendingHookCallbacks.push(fn);
   }
 };
 
@@ -44,6 +35,11 @@ const onMessageFromHook = (message: MessageEvent<MessageHookDataType>) => {
     hookReady = true;
 
     detectorPostMessageWithSource({ type: MessageDetectorType.init, to: sourceFrom.hook });
+
+    for (const cb of pendingHookCallbacks) {
+      cb();
+    }
+    pendingHookCallbacks.length = 0;
   }
 
   if (message.data?.type === MessageHookType.mount) {

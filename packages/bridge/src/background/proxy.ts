@@ -10,9 +10,7 @@ const port = chrome.runtime.connect({ name: PortName.proxy });
 const proxyPostMessageWithSource = generatePostMessageWithSource(sourceFrom.proxy);
 
 const sendMessageToContent = (message: MessagePanelDataType | MessageWorkerDataType) => {
-  if (message.to === sourceFrom.hook) {
-    proxyPostMessageWithSource(message);
-  }
+  proxyPostMessageWithSource(message);
 };
 
 const sendMessageToPanel = (message: MessageEvent<MessageHookDataType>) => {

@@ -23,29 +23,13 @@ const set = new Set<CustomRenderDispatch>();
 
 let detectorReady = false;
 
-const idMap = new Map<() => void, NodeJS.Timeout>();
+const pendingDetectorCallbacks: Array<() => void> = [];
 
-const runWhenDetectorReady = (fn: () => void, count?: number) => {
-  const id = idMap.get(fn);
-
-  clearTimeout(id);
-
+const runWhenDetectorReady = (fn: () => void) => {
   if (detectorReady) {
     fn();
   } else {
-    if (count && count > 10) {
-      if (__DEV__) {
-        console.error("[@my-react-devtool/hook] detector not ready");
-      }
-    }
-
-    if (count && count > 60) {
-      return;
-    }
-
-    const newId = setTimeout(() => runWhenDetectorReady(fn, count ? count + 1 : 1), 1000);
-
-    idMap.set(fn, newId);
+    pendingDetectorCallbacks.push(fn);
   }
 };
 
@@ -65,6 +49,11 @@ const onMessage = (message: MessageEvent<MessageHookDataType | MessagePanelDataT
     }
 
     detectorReady = true;
+
+    for (const cb of pendingDetectorCallbacks) {
+      cb();
+    }
+    pendingDetectorCallbacks.length = 0;
   }
 
   onMessageFromPanelOrWorkerOrDetector(message.data);

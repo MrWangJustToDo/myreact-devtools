@@ -151,7 +151,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -186,9 +185,7 @@
     var port = chrome.runtime.connect({ name: PortName.proxy });
     var proxyPostMessageWithSource = generatePostMessageWithSource(sourceFrom.proxy);
     var sendMessageToContent = function (message) {
-        if (message.to === sourceFrom.hook) {
-            proxyPostMessageWithSource(message);
-        }
+        proxyPostMessageWithSource(message);
     };
     var sendMessageToPanel = function (message) {
         if (message.source !== window)
