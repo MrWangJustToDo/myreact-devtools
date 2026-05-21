@@ -39,9 +39,11 @@ export type HOOKTree = {
 export class PlainNode {
   $$S: "d::f::v";
 
+  // only for detail node, not for tree indexing
   p: NodeValue;
   // props: fiber props;
 
+  // only for detail node, not for tree indexing
   s: NodeValue;
   // state: fiber state
 
@@ -57,8 +59,12 @@ export class PlainNode {
   r: PlainNode | null;
   // parent: PlainNode | null;
 
+  /**
+   * @deprecated
+   */
   d?: number;
-  // deep?: number;
+  // deep?: number; for flatten base deep count
+  // no need this for weight based tree indexing
 
   t: NODE_TYPE;
   // type: NODE_TYPE;
@@ -76,13 +82,17 @@ export class PlainNode {
   // source: MyReactElement["_source"];
 
   _d?: number;
-  // deep?: number;
+  // final deep?: number; rewrite for node filter
 
+  // only for detail node, not for tree indexing
   _h: HOOKTree[];
   // hooks: HOOKTree[];
 
   _r: number;
   // running count for fiber node
+
+  _w?: number;
+  // weight of node, for weight based tree indexing
 
   _$f?: boolean;
   // inspect node

@@ -1,12 +1,10 @@
 import { Divider, Spacer } from "@heroui/react";
 import { useMemo } from "react";
-// import { Virtuoso } from "react-virtuoso";
 
-import { useAppTree } from "@/hooks/useAppTree";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useFilterNode } from "@/hooks/useFilterNode";
 import { useSelectNode } from "@/hooks/useSelectNode";
-import { checkHasInclude } from "@/utils/node";
+import { checkHasInclude, getNodeById } from "@/utils/node";
 
 import { TreeItem } from "../TreeView/TreeItem";
 
@@ -24,8 +22,6 @@ export const RenderView = ({ node }: { node?: PlainNode }) => {
   const filterType = useFilterNode((s) => s.filter);
 
   const typeArray = useMemo(() => Array.from(filterType).map((i) => +i), [filterType]);
-
-  const allTreeNode = useAppTree((s) => s.list);
 
   let pkg = renderTree?.[renderTree?.length - 1];
 
@@ -45,7 +41,7 @@ export const RenderView = ({ node }: { node?: PlainNode }) => {
     mode = undefined;
   }
 
-  const renderTreeNode = useMemo(() => renderTree?.map((item) => allTreeNode.find((i) => i.i === item)), [allTreeNode, renderTree]) as PlainNode[];
+  const renderTreeNode = useMemo(() => renderTree?.map((item) => getNodeById(item)).filter(Boolean), [renderTree]) as PlainNode[];
 
   const data = useMemo(() => renderTreeNode?.filter((item) => !checkHasInclude(item, typeArray)), [typeArray, renderTreeNode]);
 

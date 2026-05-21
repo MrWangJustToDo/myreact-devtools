@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { useAppTree } from "./useAppTree";
+import { getTreeElementAtIndex, getTreeIndexOfElement } from "./useAppTree";
 import { useSelectNode } from "./useSelectNode";
 
 export const useKeyboardSelect = () => {
@@ -13,30 +13,28 @@ export const useKeyboardSelect = () => {
       if (!select) return null;
 
       if (e.key === "ArrowDown") {
-        const list = useAppTree.getReadonlyState().list;
+        const index = getTreeIndexOfElement(select);
 
-        const index = list.findIndex((i) => i.i === select);
-
-        if (index !== -1 && index < list.length - 1) {
-          nextRef.current = list[index + 1].i;
-
-          e.preventDefault();
-
-          e.stopPropagation();
+        if (index !== -1) {
+          const next = getTreeElementAtIndex(index + 1);
+          if (next) {
+            nextRef.current = next.i;
+            e.preventDefault();
+            e.stopPropagation();
+          }
         }
 
         return false;
       } else if (e.key === "ArrowUp") {
-        const list = useAppTree.getReadonlyState().list;
-
-        const index = list.findIndex((i) => i.i === select);
+        const index = getTreeIndexOfElement(select);
 
         if (index > 0) {
-          nextRef.current = list[index - 1].i;
-
-          e.preventDefault();
-
-          e.stopPropagation();
+          const prev = getTreeElementAtIndex(index - 1);
+          if (prev) {
+            nextRef.current = prev.i;
+            e.preventDefault();
+            e.stopPropagation();
+          }
         }
 
         return false;

@@ -1,7 +1,7 @@
 import { debounce, type PlainNode } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
 
-import { flattenNode } from "@/utils/node";
+import { flattenNode, getNodeById } from "@/utils/node";
 
 import { useAppTree } from "./useAppTree";
 import { useDetailNode } from "./useDetailNode";
@@ -23,7 +23,8 @@ export const useSelectNode = createState(
   {
     withActions: (s) => {
       const updateSelectList = debounce(() => {
-        const plainNode = useAppTree.getReactiveState().list.find((i) => i.i === s.select) as PlainNode;
+        if (!s.select) return;
+        const plainNode = getNodeById(s.select) as PlainNode;
         if (!plainNode) return;
         s.selectList = flattenNode(
           plainNode,

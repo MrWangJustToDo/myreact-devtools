@@ -1,9 +1,8 @@
-import { debounce, type PlainNode } from "@my-react-devtool/core";
+import { debounce } from "@my-react-devtool/core";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
-import { useAppTree } from "@/hooks/useAppTree";
-// import { useCallbackRef } from "@/hooks/useCallbackRef";
+import { useAppTree, getTreeElementAtIndex, getTreeIndexOfElement } from "@/hooks/useAppTree";
 import { useKeyboardSelect } from "@/hooks/useKeyboardSelect";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useDomSize } from "@/hooks/useSize";
@@ -50,26 +49,24 @@ const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndent
   container.style.opacity = "1";
 }, 16);
 
-const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; data: PlainNode[]; onMount: (s?: VirtuosoHandle) => void }) => {
+const TreeViewImpl = memo(({ onScroll, totalCount, onMount }: { onScroll: () => void; totalCount: number; onMount: (s?: VirtuosoHandle) => void }) => {
   const ref = useRef<VirtuosoHandle>(null);
 
   const [index, setIndex] = useState(0);
 
   const mountRef = useRef(false);
 
-  const dataRef = useRef(data);
+  const totalCountRef = useRef(totalCount);
 
-  dataRef.current = data;
+  totalCountRef.current = totalCount;
 
-  console.log(data);
+  const render = useCallback((index: number) => {
+    const node = getTreeElementAtIndex(index);
 
-  const render = (index: number, _: unknown) => {
-    const node = data[index];
-
-    if (!node) return null;
+    if (!node) return <div style={{ height: 20 }} />;
 
     return <TreeItem node={node} />;
-  };
+  }, []);
 
   useEffect(() => {
     const scrollToCurrent = () => {
@@ -77,26 +74,26 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
 
       if (select === null || select === undefined) return;
 
-      const index = dataRef.current?.findIndex((item) => item.i === select);
+      const idx = getTreeIndexOfElement(select);
 
-      if (index !== -1) {
+      if (idx !== -1) {
         if (!mountRef.current) {
           mountRef.current = true;
-          setIndex(index);
+          setIndex(idx);
         } else {
-          ref.current?.scrollIntoView({ index, align: "center", done: onScroll });
+          ref.current?.scrollIntoView({ index: idx, align: "center", done: onScroll });
         }
       }
     };
 
     const cb = useSelectNode.subscribe((s) => s.scroll, scrollToCurrent);
 
-    if (data.length) {
+    if (totalCount > 0) {
       scrollToCurrent();
     }
 
     return cb;
-  }, [onScroll, data.length]);
+  }, [onScroll, totalCount]);
 
   useEffect(() => {
     const id = setTimeout(() => (mountRef.current = true), 1000);
@@ -118,7 +115,7 @@ const TreeViewImpl = memo(({ onScroll, data, onMount }: { onScroll: () => void; 
       onScroll={onScroll}
       key={index}
       initialTopMostItemIndex={{ index, align: "center" }}
-      totalCount={data.length}
+      totalCount={totalCount}
       itemContent={render}
     />
   );
@@ -129,7 +126,7 @@ TreeViewImpl.displayName = "TreeViewImpl";
 export const TreeView = memo(() => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const nodes = useAppTree.useShallowStableSelector((s) => s.list) as PlainNode[];
+  const totalWeight = useAppTree.useShallowStableSelector((s) => s.totalWeight) as number;
 
   const { width, height } = useDomSize({ ref });
 
@@ -149,13 +146,13 @@ export const TreeView = memo(() => {
 
   useEffect(() => {
     onScroll();
-  }, [onScroll, width, height, nodes.length]);
+  }, [onScroll, width, height, totalWeight]);
 
   return (
     <div className="tree-view h-full p-1">
       <div className="group h-full transform-gpu" ref={ref} style={{ opacity: 0 }}>
         <TreeViewHover />
-        {nodes.length > 0 && <TreeViewImpl onScroll={onScroll} data={nodes} onMount={setR} />}
+        {totalWeight > 0 && <TreeViewImpl onScroll={onScroll} totalCount={totalWeight} onMount={setR} />}
         <TreeViewSetting handle={r} />
       </div>
     </div>
