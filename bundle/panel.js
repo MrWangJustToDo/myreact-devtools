@@ -189,7 +189,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -201,24 +200,22 @@
         sourceFrom["panel"] = "panel";
         // message from background worker, `background` dir
         sourceFrom["worker"] = "worker";
-        // message from iframe, chrome/src/hooks/useBridgeForward.ts
+        // message from iframe, chrome/src/hooks/useBridgeForward.ts (local dev bridge)
         sourceFrom["iframe"] = "iframe";
         // message from socket, chrome/src/hooks/useWebDev.ts
         sourceFrom["socket"] = "socket";
         // message from detector, `popover` dir
         sourceFrom["detector"] = "detector";
-        // message from another runtime engine
-        sourceFrom["forward"] = "forward";
     })(sourceFrom || (sourceFrom = {}));
 
     var port = null;
+    var currentOnDisconnect = null;
     // TODO avoid using window
     var panelWindow = window;
     var workerReady = false;
     var workerConnecting = false;
-    // TODO use messageId to sync message
-    var messageId = 0;
     var id = null;
+    var navigationTimerId = null;
     var hasShow = false;
     var getTabId = function () { return chrome.devtools.inspectedWindow.tabId; };
     var agentIdMap = new Map();
@@ -255,7 +252,7 @@
     var sendMessage = function (data, withAgentId) {
         if (withAgentId === void 0) { withAgentId = true; }
         runWhenWorkerReady(function () {
-            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { _messageId: messageId++, from: sourceFrom.panel, to: sourceFrom.hook, agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined }));
+            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { from: sourceFrom.panel, to: sourceFrom.hook, agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined }));
         });
     };
     var onRender = function (data, _window) {
@@ -268,8 +265,29 @@
         if (!panelWindow || !panelWindow.useConnect || typeof panelWindow.useConnect.getActions !== "function") {
             return;
         }
+        // Disconnect the old port before creating a new one (e.g. after navigation).
+        // Remove the onDisconnect listener first to prevent it from triggering
+        // a UI disconnect flash during intentional reconnection.
+        if (port) {
+            if (currentOnDisconnect) {
+                try {
+                    port.onDisconnect.removeListener(currentOnDisconnect);
+                }
+                catch (_a) {
+                    /* */
+                }
+                currentOnDisconnect = null;
+            }
+            try {
+                port.disconnect();
+            }
+            catch (_b) {
+                /* port may already be disconnected */
+            }
+            port = null;
+        }
         workerConnecting = true;
-        var _a = panelWindow.useConnect.getActions(), disconnect = _a.disconnect, setConnectHandler = _a.setConnectHandler;
+        var _c = panelWindow.useConnect.getActions(), disconnect = _c.disconnect, setConnectHandler = _c.setConnectHandler;
         setConnectHandler(function () { return initPort(); });
         port = chrome.runtime.connect({ name: getTabId().toString() });
         var onMessage = function (message) {
@@ -298,18 +316,24 @@
                 }
                 if (currentAgentId && message.data.agentId !== currentAgentId)
                     return;
+                // Got a valid render message — cancel the "not detected" fallback timer
+                if (navigationTimerId) {
+                    clearTimeout(navigationTimerId);
+                    navigationTimerId = null;
+                }
                 onRender(message.data, panelWindow);
             }
         };
         var onDisconnect = function () {
             var _a, _b;
             (_b = (_a = port === null || port === void 0 ? void 0 : port.onMessage) === null || _a === void 0 ? void 0 : _a.removeListener) === null || _b === void 0 ? void 0 : _b.call(_a, onMessage);
+            currentOnDisconnect = null;
             disconnect();
             port = null;
             workerReady = false;
             workerConnecting = false;
         };
-        sendMessage({ type: eventExports.MessagePanelType.show }, false);
+        currentOnDisconnect = onDisconnect;
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);
     };
@@ -344,16 +368,43 @@
         (_a = panelWindow === null || panelWindow === void 0 ? void 0 : panelWindow.onClear) === null || _a === void 0 ? void 0 : _a.call(panelWindow);
     };
     init(getTabId());
-    chrome.devtools.network.onNavigated.addListener(function () {
+    var isHandlingNavigation = false;
+    var handleNavigation = function () {
+        // Deduplicate — onNavigated and tabs.onUpdated can both fire for the same navigation
+        if (isHandlingNavigation)
+            return;
+        isHandlingNavigation = true;
+        setTimeout(function () { return (isHandlingNavigation = false); }, 200);
         clear();
-        // 不会触发onShow事件 ？
-        init(getTabId());
-        // TODO! fix this
+        agentIdMap.delete(getTabId());
+        if (panelWindow === null || panelWindow === void 0 ? void 0 : panelWindow.useConnect) {
+            panelWindow.useConnect.getActions().setRender(undefined);
+        }
+        workerReady = false;
+        workerConnecting = false;
+        if (navigationTimerId) {
+            clearTimeout(navigationTimerId);
+        }
         setTimeout(function () {
-            sendMessage({ type: eventExports.MessagePanelType.clear });
-            if (hasShow)
-                sendMessage({ type: eventExports.MessagePanelType.show }, false);
-        }, 60);
+            initPort();
+        }, 100);
+        navigationTimerId = setTimeout(function () {
+            var _a, _b, _c;
+            navigationTimerId = null;
+            if (panelWindow === null || panelWindow === void 0 ? void 0 : panelWindow.useConnect) {
+                var render = (_c = (_b = (_a = panelWindow.useConnect).getReadonlyState) === null || _b === void 0 ? void 0 : _b.call(_a)) === null || _c === void 0 ? void 0 : _c.render;
+                if (render === undefined) {
+                    panelWindow.useConnect.getActions().setRender(false);
+                }
+            }
+        }, 2000);
+    };
+    chrome.devtools.network.onNavigated.addListener(handleNavigation);
+    // Backup for bfcache restores where onNavigated may not fire
+    chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
+        if (tabId === getTabId() && changeInfo.status === "loading") {
+            handleNavigation();
+        }
     });
 
 })();

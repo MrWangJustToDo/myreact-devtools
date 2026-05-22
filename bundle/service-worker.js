@@ -151,7 +151,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -163,14 +162,12 @@
         sourceFrom["panel"] = "panel";
         // message from background worker, `background` dir
         sourceFrom["worker"] = "worker";
-        // message from iframe, chrome/src/hooks/useBridgeForward.ts
+        // message from iframe, chrome/src/hooks/useBridgeForward.ts (local dev bridge)
         sourceFrom["iframe"] = "iframe";
         // message from socket, chrome/src/hooks/useWebDev.ts
         sourceFrom["socket"] = "socket";
         // message from detector, `popover` dir
         sourceFrom["detector"] = "detector";
-        // message from another runtime engine
-        sourceFrom["forward"] = "forward";
     })(sourceFrom || (sourceFrom = {}));
 
     var hub = {};
@@ -178,25 +175,49 @@
         return "".concat(+str) === str;
     }
     var installProxy = function (tabId) {
-        chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["bundle/proxy.js"] }).then(function (res) {
+        chrome.scripting
+            .executeScript({ target: { tabId: tabId }, files: ["bundle/proxy.js"] })
+            .then(function (res) {
+        })
+            .catch(function (err) {
         });
     };
     var portPip = function (id, port1, port2) {
         var onMessagePort1 = function (message) {
-            if (message.to !== sourceFrom.panel)
-                return;
-            port2.postMessage(__assign(__assign({}, message), { forward: message.forward ? "".concat(message.forward, "->").concat(sourceFrom.worker) : sourceFrom.worker }));
+            port2.postMessage(__assign({}, message));
         };
         var onMessagePort2 = function (message) {
-            if (message.to !== sourceFrom.hook)
-                return;
-            port1.postMessage(__assign(__assign({}, message), { forward: message.forward ? "".concat(message.forward, "->").concat(sourceFrom.worker) : sourceFrom.worker }));
+            port1.postMessage(__assign({}, message));
         };
+        var isShutdown = false;
         function shutdown() {
-            port1.onMessage.removeListener(onMessagePort1);
-            port2.onMessage.removeListener(onMessagePort2);
-            port1.disconnect();
-            port2.disconnect();
+            if (isShutdown)
+                return;
+            isShutdown = true;
+            try {
+                port1.onMessage.removeListener(onMessagePort1);
+            }
+            catch (_a) {
+                /* already disconnected */
+            }
+            try {
+                port2.onMessage.removeListener(onMessagePort2);
+            }
+            catch (_b) {
+                /* already disconnected */
+            }
+            try {
+                port1.disconnect();
+            }
+            catch (_c) {
+                /* already disconnected */
+            }
+            try {
+                port2.disconnect();
+            }
+            catch (_d) {
+                /* already disconnected */
+            }
             hub[id] = null;
         }
         port1.onMessage.addListener(onMessagePort1);
@@ -204,7 +225,7 @@
         port1.onDisconnect.addListener(shutdown);
         port2.onDisconnect.addListener(shutdown);
         port1.postMessage({ type: eventExports.MessageWorkerType.init, from: sourceFrom.worker, to: sourceFrom.hook, source: eventExports.DevToolSource });
-        port2.postMessage({ type: eventExports.MessageWorkerType.init, form: sourceFrom.worker, to: sourceFrom.panel, source: eventExports.DevToolSource });
+        port2.postMessage({ type: eventExports.MessageWorkerType.init, from: sourceFrom.worker, to: sourceFrom.panel, source: eventExports.DevToolSource });
     };
     // forward message devtool -> worker -> proxy -> page
     // or page -> proxy -> worker -> devtool
@@ -228,19 +249,40 @@
             portPip(portName, hub[portName].proxy, hub[portName].devtool);
         }
     });
+    // Reset the icon to default (disabled) state when a tab navigates,
+    // before the detector has a chance to re-detect @my-react on the new page.
+    chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
+        if (changeInfo.status === "loading") {
+            try {
+                chrome.action.setPopup({
+                    tabId: tabId,
+                    popup: chrome.runtime.getURL("disablePopup.html"),
+                });
+                chrome.action.setIcon({
+                    tabId: tabId,
+                    path: {
+                        48: chrome.runtime.getURL("icons/48.png"),
+                        128: chrome.runtime.getURL("icons/128.png"),
+                    },
+                });
+            }
+            catch (_a) {
+                // tab may have been closed
+            }
+        }
+    });
     // from detector, change the extension icon and popup page
     chrome.runtime.onMessage.addListener(function (message, sender) {
-        var _a;
+        var _a, _b;
         if (message.from !== sourceFrom.detector)
             return;
         if (message.to !== sourceFrom.worker) {
             return;
         }
         if (((_a = sender.tab) === null || _a === void 0 ? void 0 : _a.id) && message.type === eventExports.MessageHookType.mount) {
-            var type = typeof message.data === "string" ? message.data : message.data.mode;
-            var forwardMode = typeof message.data === "object" ? message.data.forwardMode : false;
-            var icon_48 = forwardMode ? "icons/48-s-f.png" : type === "develop" ? "icons/48-s-d.png" : "icons/48-s.png";
-            var icon_128 = forwardMode ? "icons/128-s-f.png" : type === "develop" ? "icons/128-s-d.png" : "icons/128-s.png";
+            var type = typeof message.data === "string" ? message.data : (_b = message.data) === null || _b === void 0 ? void 0 : _b.mode;
+            var icon_48 = type === "develop" ? "icons/48-s-d.png" : "icons/48-s.png";
+            var icon_128 = type === "develop" ? "icons/128-s-d.png" : "icons/128-s.png";
             if (type === "develop") {
                 chrome.action.setPopup({
                     tabId: sender.tab.id,

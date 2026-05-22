@@ -151,7 +151,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -163,14 +162,12 @@
         sourceFrom["panel"] = "panel";
         // message from background worker, `background` dir
         sourceFrom["worker"] = "worker";
-        // message from iframe, chrome/src/hooks/useBridgeForward.ts
+        // message from iframe, chrome/src/hooks/useBridgeForward.ts (local dev bridge)
         sourceFrom["iframe"] = "iframe";
         // message from socket, chrome/src/hooks/useWebDev.ts
         sourceFrom["socket"] = "socket";
         // message from detector, `popover` dir
         sourceFrom["detector"] = "detector";
-        // message from another runtime engine
-        sourceFrom["forward"] = "forward";
     })(sourceFrom || (sourceFrom = {}));
 
     var generatePostMessageWithSource = function (from) {
@@ -178,15 +175,7 @@
             if (typeof window === "undefined")
                 return;
             var _message = __assign({}, message);
-            if (_message.from && _message.forward) {
-                _message.forward += "->".concat(from);
-            }
-            else if (_message.from) {
-                if (_message.from !== from) {
-                    _message.forward = from;
-                }
-            }
-            else {
+            if (!_message.from) {
                 _message.from = from;
             }
             window.postMessage(__assign(__assign({}, _message), { source: eventExports.DevToolSource }), "*");
@@ -196,9 +185,7 @@
     var port = chrome.runtime.connect({ name: PortName.proxy });
     var proxyPostMessageWithSource = generatePostMessageWithSource(sourceFrom.proxy);
     var sendMessageToContent = function (message) {
-        if (message.to === sourceFrom.hook) {
-            proxyPostMessageWithSource(message);
-        }
+        proxyPostMessageWithSource(message);
     };
     var sendMessageToPanel = function (message) {
         if (message.source !== window)
@@ -207,7 +194,7 @@
             return;
         if (message.data.to === sourceFrom.panel) {
             try {
-                port.postMessage(__assign(__assign({}, message.data), { forward: message.data.forward ? "".concat(message.data.forward, "->").concat(sourceFrom.proxy) : sourceFrom.proxy }));
+                port.postMessage(__assign({}, message.data));
             }
             catch (error) {
                 port.postMessage({

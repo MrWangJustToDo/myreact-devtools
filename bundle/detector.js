@@ -118,7 +118,6 @@
     var PortName;
     (function (PortName) {
         PortName["proxy"] = "dev-tool/proxy";
-        PortName["panel"] = "dev-tool/panel";
     })(PortName || (PortName = {}));
     var sourceFrom;
     (function (sourceFrom) {
@@ -130,14 +129,12 @@
         sourceFrom["panel"] = "panel";
         // message from background worker, `background` dir
         sourceFrom["worker"] = "worker";
-        // message from iframe, chrome/src/hooks/useBridgeForward.ts
+        // message from iframe, chrome/src/hooks/useBridgeForward.ts (local dev bridge)
         sourceFrom["iframe"] = "iframe";
         // message from socket, chrome/src/hooks/useWebDev.ts
         sourceFrom["socket"] = "socket";
         // message from detector, `popover` dir
         sourceFrom["detector"] = "detector";
-        // message from another runtime engine
-        sourceFrom["forward"] = "forward";
     })(sourceFrom || (sourceFrom = {}));
 
     /******************************************************************************
@@ -178,15 +175,7 @@
             if (typeof window === "undefined")
                 return;
             var _message = __assign({}, message);
-            if (_message.from && _message.forward) {
-                _message.forward += "->".concat(from);
-            }
-            else if (_message.from) {
-                if (_message.from !== from) {
-                    _message.forward = from;
-                }
-            }
-            else {
+            if (!_message.from) {
                 _message.from = from;
             }
             window.postMessage(__assign(__assign({}, _message), { source: eventExports.DevToolSource }), "*");
@@ -195,17 +184,13 @@
 
     var hookReady = false;
     var detectorPostMessageWithSource = generatePostMessageWithSource(sourceFrom.detector);
-    var id = null;
-    var runWhenHookReady = function (fn, count) {
-        clearTimeout(id);
+    var pendingHookCallbacks = [];
+    var runWhenHookReady = function (fn) {
         if (hookReady) {
             fn();
         }
         else {
-            if (count && count > 10) {
-                return;
-            }
-            id = setTimeout(function () { return runWhenHookReady(fn, count ? count + 1 : 1); }, 1000);
+            pendingHookCallbacks.push(fn);
         }
     };
     // message from hook
@@ -220,6 +205,11 @@
         if (!hookReady && ((_b = message.data) === null || _b === void 0 ? void 0 : _b.type) === eventExports.MessageHookType.init) {
             hookReady = true;
             detectorPostMessageWithSource({ type: eventExports.MessageDetectorType.init, to: sourceFrom.hook });
+            for (var _i = 0, pendingHookCallbacks_1 = pendingHookCallbacks; _i < pendingHookCallbacks_1.length; _i++) {
+                var cb = pendingHookCallbacks_1[_i];
+                cb();
+            }
+            pendingHookCallbacks.length = 0;
         }
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageHookType.mount) {
             runWhenHookReady(function () {
