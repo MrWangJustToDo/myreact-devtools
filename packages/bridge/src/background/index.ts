@@ -2,6 +2,8 @@ import { DevToolSource } from "@my-react-devtool/core/event";
 
 import { MessageHookType, MessageWorkerType, sourceFrom } from "../type";
 
+import { setExtensionIconForTab } from "./icon";
+
 import type { MessageHookDataType, MessagePanelDataType } from "../type";
 
 const hub: Record<string, { proxy: chrome.runtime.Port | null; devtool: chrome.runtime.Port | null }> = {};
@@ -141,7 +143,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 });
 
 // from detector, change the extension icon and popup page
-chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender) => {
+chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender, sendResponse) => {
   if (message.from !== sourceFrom.detector) return;
 
   if (message.to !== sourceFrom.worker) {
@@ -152,48 +154,8 @@ chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender) => {
   }
 
   if (sender.tab?.id && message.type === MessageHookType.mount) {
-    const type = typeof message.data === "string" ? message.data : message.data?.mode;
-
-    const icon_48 = type === "develop" ? "icons/48-s-d.png" : "icons/48-s.png";
-
-    const icon_128 = type === "develop" ? "icons/128-s-d.png" : "icons/128-s.png";
-
-    if (type === "develop") {
-      chrome.action.setPopup({
-        tabId: sender.tab.id,
-        popup: chrome.runtime.getURL("enablePopupDev.html"),
-      });
-      chrome.action.setIcon({
-        tabId: sender.tab.id,
-        path: {
-          48: chrome.runtime.getURL(icon_48),
-          128: chrome.runtime.getURL(icon_128),
-        },
-      });
-    } else if (type === "product") {
-      chrome.action.setPopup({
-        tabId: sender.tab.id,
-        popup: chrome.runtime.getURL("enablePopupPro.html"),
-      });
-      chrome.action.setIcon({
-        tabId: sender.tab.id,
-        path: {
-          48: chrome.runtime.getURL(icon_48),
-          128: chrome.runtime.getURL(icon_128),
-        },
-      });
-    } else {
-      chrome.action.setPopup({
-        tabId: sender.tab.id,
-        popup: chrome.runtime.getURL("enablePopup.html"),
-      });
-      chrome.action.setIcon({
-        tabId: sender.tab.id,
-        path: {
-          48: chrome.runtime.getURL(icon_48),
-          128: chrome.runtime.getURL(icon_128),
-        },
-      });
-    }
+    setExtensionIconForTab(sender.tab.id, message.data);
   }
+
+  sendResponse({ ok: true });
 });

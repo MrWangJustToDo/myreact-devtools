@@ -3,6 +3,8 @@ import { memo } from "react";
 import { UISize, useUISize } from "@/hooks/useUISize";
 
 export const FontSize = memo(() => {
+  "use no memo";
+
   const state = useUISize((s) => s.state);
 
   const size = state === UISize.sm ? "13px" : state === UISize.md ? "14.5px" : "16px";

@@ -9,14 +9,14 @@ importers:
   .:
     devDependencies:
       '@my-react/react':
-        specifier: ^0.3.24
-        version: 0.3.24(react@18.3.1)
+        specifier: ^0.3.27
+        version: 0.3.27(react@18.3.1)
       '@my-react/react-dom':
-        specifier: ^0.3.24
-        version: 0.3.24(@my-react/react@0.3.24(react@18.3.1))(react-dom@18.3.1(react@18.3.1))
+        specifier: ^0.3.27
+        version: 0.3.27(@my-react/react@0.3.27(react@18.3.1))(react-dom@18.3.1(react@18.3.1))
       '@my-react/react-reconciler':
-        specifier: ^0.3.24
-        version: 0.3.24(@my-react/react@0.3.24(react@18.3.1))
+        specifier: ^0.3.27
+        version: 0.3.27(@my-react/react@0.3.27(react@18.3.1))
       '@types/node':
         specifier: ^22.19.15
         version: 22.19.15
@@ -54,14 +54,11 @@ importers:
         specifier: workspace:*
         version: link:../packages/core
       '@my-react/react':
-        specifier: ^0.3.24
-        version: 0.3.24(react@18.3.1)
+        specifier: ^0.3.27
+        version: 0.3.27(react@18.3.1)
       '@my-react/react-dom':
-        specifier: ^0.3.24
-        version: 0.3.24(@my-react/react@0.3.24(react@18.3.1))(react-dom@18.3.1(react@18.3.1))
-      '@my-react/react-reconciler':
-        specifier: ^0.3.24
-        version: 0.3.24(@my-react/react@0.3.24(react@18.3.1))
+        specifier: ^0.3.27
+        version: 0.3.27(@my-react/react@0.3.27(react@18.3.1))(react-dom@18.3.1(react@18.3.1))
       allotment:
         specifier: ^1.20.5
         version: 1.20.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -72,8 +69,8 @@ importers:
         specifier: ^0.545.0
         version: 0.545.0(react@18.3.1)
       next:
-        specifier: ^16.2.4
-        version: 16.2.4(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^16.2.6
+        version: 16.2.6(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -84,8 +81,8 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       react-virtuoso:
-        specifier: ^4.18.3
-        version: 4.18.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^4.18.7
+        version: 4.18.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       reactivity-store:
         specifier: ^0.4.0
         version: 0.4.0(react@18.3.1)
@@ -94,11 +91,11 @@ importers:
         version: 1.29.2
     devDependencies:
       '@my-react/react-refresh':
-        specifier: ^0.3.24
-        version: 0.3.24(@my-react/react@0.3.24(react@18.3.1))
+        specifier: ^0.3.27
+        version: 0.3.27(@my-react/react@0.3.27(react@18.3.1))
       '@my-react/react-refresh-tools':
-        specifier: ^0.0.35
-        version: 0.0.35(@my-react/react-refresh@0.3.24(@my-react/react@0.3.24(react@18.3.1)))
+        specifier: ^0.0.38
+        version: 0.0.38(@my-react/react-refresh@0.3.27(@my-react/react@0.3.27(react@18.3.1)))
       '@types/chrome':
         specifier: ^0.0.304
         version: 0.0.304
@@ -130,8 +127,8 @@ importers:
         specifier: ^9
         version: 9.39.4(jiti@1.21.7)
       eslint-config-next:
-        specifier: ^16.2.4
-        version: 16.2.4(@typescript-eslint/parser@8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3)
+        specifier: ^16.2.6
+        version: 16.2.6(@typescript-eslint/parser@8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3)
       express:
         specifier: ^4.22.1
         version: 4.22.1
@@ -167,14 +164,14 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@my-react/react':
-        specifier: ^0.3.24
-        version: 0.3.24(react@18.3.1)
+        specifier: ^0.3.27
+        version: 0.3.27(react@18.3.1)
       '@my-react/react-reconciler':
-        specifier: ^0.3.24
-        version: 0.3.24(@my-react/react@0.3.24(react@18.3.1))
+        specifier: ^0.3.27
+        version: 0.3.27(@my-react/react@0.3.27(react@18.3.1))
       '@my-react/react-shared':
-        specifier: ^0.3.24
-        version: 0.3.24
+        specifier: ^0.3.27
+        version: 0.3.27
       '@types/node':
         specifier: ^22.19.15
         version: 22.19.15
@@ -198,14 +195,14 @@ importers:
         version: 0.4.0(react@18.3.1)
     devDependencies:
       '@my-react/react':
-        specifier: ^0.3.24
-        version: 0.3.24(react@18.3.1)
+        specifier: ^0.3.27
+        version: 0.3.27(react@18.3.1)
       '@my-react/react-reconciler':
-        specifier: ^0.3.24
-        version: 0.3.24(@my-react/react@0.3.24(react@18.3.1))
+        specifier: ^0.3.27
+        version: 0.3.27(@my-react/react@0.3.27(react@18.3.1))
       '@my-react/react-shared':
-        specifier: ^0.3.24
-        version: 0.3.24
+        specifier: ^0.3.27
+        version: 0.3.27
       '@types/lodash':
         specifier: ^4.17.24
         version: 4.17.24
@@ -1168,97 +1165,97 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@my-react/react-dom@0.3.24':
-    resolution: {integrity: sha512-gPODJUXOaJuSpaCe4XKvoFsw0HLttp1q0k2jkU4MtVsbw46lhY/QRrAqeeUbqvsqIeL38BtFfDvofIt4UmZosA==}
+  '@my-react/react-dom@0.3.27':
+    resolution: {integrity: sha512-LeGXcvBrX2f1iUk8XLzKLOwEy12qglvn2QFOXLQKMnXHDhpwqK78M6ySV2+QtwRa08c5S/PpvSLqudnvhWIItQ==}
     peerDependencies:
-      '@my-react/react': '>=0.3.24'
+      '@my-react/react': '>=0.3.27'
       react-dom: ^17 || ^18 || ^19
 
-  '@my-react/react-jsx@0.3.24':
-    resolution: {integrity: sha512-RgviSVFhgpTEvzQml0OZGZ9ib0fB4MaWauskhVOxhMtaBnXQ0OkeY58iksjg1B5qafOiHY5qDmQ8Lep3gPDtJg==}
+  '@my-react/react-jsx@0.3.27':
+    resolution: {integrity: sha512-8TNFD8+KpPOc8ZgRWSBavTIgXNRSg39+rEtS6oGv+BZzvMTKiColtOvqES+kxi6Rb8PGc/KipWScPnTTorlEHA==}
     peerDependencies:
-      '@my-react/react': '>=0.3.24'
+      '@my-react/react': '>=0.3.27'
 
-  '@my-react/react-reconciler@0.3.24':
-    resolution: {integrity: sha512-hTReA3w7JJKBcSL7nTYtWKiLvguzkL4pTYuKHYIHBM5w72Wsbv6nQ/on30zwlsoomaLUlRZY+/OF3IDiOnyU/g==}
+  '@my-react/react-reconciler@0.3.27':
+    resolution: {integrity: sha512-8x2JLXYDdqNkW9SaDYZOx7e5l4j8UlGQBQxtxQHLppRfl+i8YxtZv2K0pivruVM3agkYXrjC3OVqh5GuiQoqDg==}
     peerDependencies:
-      '@my-react/react': '>=0.3.24'
+      '@my-react/react': '>=0.3.27'
 
-  '@my-react/react-refresh-tools@0.0.35':
-    resolution: {integrity: sha512-3Ic0FAd6lnTe9Go6RZjyJy/xY28ZIXFjNfRhoFxBv1DEg+J0BKNzhTlLAH0PorpS2eXuRParL1E6kuyMbjZi+w==}
+  '@my-react/react-refresh-tools@0.0.38':
+    resolution: {integrity: sha512-/3XrLidALFURwjeDmVlXqE41JjAfQvR2JUOmqImemcpOzzA0qXVYm9QmsZx/rxjYpXXikrUw1QPZkNvi8E+w/Q==}
     peerDependencies:
-      '@my-react/react-refresh': '>=0.3.24'
+      '@my-react/react-refresh': '>=0.3.27'
       webpack: ^4 || ^5
     peerDependenciesMeta:
       webpack:
         optional: true
 
-  '@my-react/react-refresh@0.3.24':
-    resolution: {integrity: sha512-tPlgxfZvDJBtQyJnUbSpT/DmvD6y2sRw86OTND0pD3wcwHco1jl5gy40hvEmIRhM2ER5Sfzp6UKwb1ZR6Ks4Dw==}
+  '@my-react/react-refresh@0.3.27':
+    resolution: {integrity: sha512-vh4x4GPj0jrXBZpFsoLWYZ5qzX/hvlZOGKbEkVIxmuNdQX8Zmk8pXKNADrDL/Z/sm1ocdBvXttSvUoSNQn+KWg==}
     peerDependencies:
-      '@my-react/react': '>=0.3.24'
+      '@my-react/react': '>=0.3.27'
 
-  '@my-react/react-shared@0.3.24':
-    resolution: {integrity: sha512-TKPHIOO5pDmCQNMTaCXFbHNjbjspp/syJMQwAd5sGxthuu5S/xv1UlhpXXsgenavDlNP7/s7szJYZm47EtgnkA==}
+  '@my-react/react-shared@0.3.27':
+    resolution: {integrity: sha512-kd6/Uau2X09OfsFGKrNpUlDJ5tAONytMMwAOh6qYlwEseYI1OGV0LjZGHbfQmT+RvK1935Pg9/Y7bKYEbf4Jyw==}
 
-  '@my-react/react@0.3.24':
-    resolution: {integrity: sha512-U2gWlzBNuiKTRtKLOOpvfCupddNSB+CmN6NjspPC/AOVTezsPhV02DfeiheRFL2BG1xqFKjUVOMfy8HXleZPTg==}
+  '@my-react/react@0.3.27':
+    resolution: {integrity: sha512-d0UirX8PE1G1i8aQ1lDAZ9HX+K7bxaLs49IP7e8jwu7UDRp49Deh0wRR+nEfvvsI1eY5OOWCq+axz3lGgWHlnQ==}
     peerDependencies:
       react: ^17 || ^18 || ^19
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
 
-  '@next/env@16.2.4':
-    resolution: {integrity: sha512-dKkkOzOSwFYe5RX6y26fZgkSpVAlIOJKQHIiydQcrWH6y/97+RceSOAdjZ14Qa3zLduVUy0TXcn+EiM6t4rPgw==}
+  '@next/env@16.2.6':
+    resolution: {integrity: sha512-gd8HoHN4ufj73WmR3JmVolrpJR47ILK6LouP5xElPglaVxir6e1a7VzvTvDWkOoPXT9rkkTzyCxBu4yeZfZwcw==}
 
-  '@next/eslint-plugin-next@16.2.4':
-    resolution: {integrity: sha512-tOX826JJ96gYK/go18sPUgMq9FK1tqxBFfUCEufJb5XIkWFFmpgU7mahJANKGkHs7F41ir3tReJ3Lv5La0RvhA==}
+  '@next/eslint-plugin-next@16.2.6':
+    resolution: {integrity: sha512-Z8l6o4JWKUl755x4R+wogD86KPeU+Ckw4K+SYG4kHeOJtRenDeK+OSbGcqZpDtbwn9DsJVdir2UxmwXuinUbUw==}
 
-  '@next/swc-darwin-arm64@16.2.4':
-    resolution: {integrity: sha512-OXTFFox5EKN1Ym08vfrz+OXxmCcEjT4SFMbNRsWZE99dMqt2Kcusl5MqPXcW232RYkMLQTy0hqgAMEsfEd/l2A==}
+  '@next/swc-darwin-arm64@16.2.6':
+    resolution: {integrity: sha512-ZJGkkcNfYgrrMkqOdZ7zoLa1TOy0qpcMfk/z4Mh/FKUz40gVO+HNQWqmLxf67Z5WB64DRp0dhEbyHfel+6sJUg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@next/swc-darwin-x64@16.2.4':
-    resolution: {integrity: sha512-XhpVnUfmYWvD3YrXu55XdcAkQtOnvaI6wtQa8fuF5fGoKoxIUZ0kWPtcOfqJEWngFF/lOS9l3+O9CcownhiQxQ==}
+  '@next/swc-darwin-x64@16.2.6':
+    resolution: {integrity: sha512-v/YLBHIY132Ced3puBJ7YJKw1lqsCrgcNo2aRJlCEyQrrCeRJlvGlnmxhPxNQI3KE3N1DN5r9TPNPvka3nq5RQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@next/swc-linux-arm64-gnu@16.2.4':
-    resolution: {integrity: sha512-Mx/tjlNA3G8kg14QvuGAJ4xBwPk1tUHq56JxZ8CXnZwz1Etz714soCEzGQQzVMz4bEnGPowzkV6Xrp6wAkEWOQ==}
+  '@next/swc-linux-arm64-gnu@16.2.6':
+    resolution: {integrity: sha512-RPOvqlYBbcQjkz9VQQDZ2T2bARIjXZV1KFlt+V2Mr6SW/e4I9fcKsaA0hdyf2FHoTlsV2xnBd5Y912rP/1Ce6w==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@next/swc-linux-arm64-musl@16.2.4':
-    resolution: {integrity: sha512-iVMMp14514u7Nup2umQS03nT/bN9HurK8ufylC3FZNykrwjtx7V1A7+4kvhbDSCeonTVqV3Txnv0Lu+m2oDXNg==}
+  '@next/swc-linux-arm64-musl@16.2.6':
+    resolution: {integrity: sha512-URUTu1+dMkxJsPFgm+OeEvq9wf5sujw0EvgYy80TDGHTSLTnIHeqb0Eu8A3sC95IRgjejQL+kC4mw+4yPxiAXA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@next/swc-linux-x64-gnu@16.2.4':
-    resolution: {integrity: sha512-EZOvm1aQWgnI/N/xcWOlnS3RQBk0VtVav5Zo7n4p0A7UKyTDx047k8opDbXgBpHl4CulRqRfbw3QrX2w5UOXMQ==}
+  '@next/swc-linux-x64-gnu@16.2.6':
+    resolution: {integrity: sha512-DOj182mPV8G3UkrayLoREM5YEYI+Dk5wv7Ox9xl1fFibAELEsFD0lDPfHIeILlutMMfdyhlzYPELG3peuKaurw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@next/swc-linux-x64-musl@16.2.4':
-    resolution: {integrity: sha512-h9FxsngCm9cTBf71AR4fGznDEDx1hS7+kSEiIRjq5kO1oXWm07DxVGZjCvk0SGx7TSjlUqhI8oOyz7NfwAdPoA==}
+  '@next/swc-linux-x64-musl@16.2.6':
+    resolution: {integrity: sha512-HKQ5SP/V/ub73UvF7n/zeJlxk2kLmtL7Wzrg4WfmkjmNos5onJ2tKu7yZOPdL18A6Svfn3max29ym+ry7NkK4g==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@next/swc-win32-arm64-msvc@16.2.4':
-    resolution: {integrity: sha512-3NdJV5OXMSOeJYijX+bjaLge3mJBlh4ybydbT4GFoB/2hAojWHtMhl3CYlYoMrjPuodp0nzFVi4Tj2+WaMg+Ow==}
+  '@next/swc-win32-arm64-msvc@16.2.6':
+    resolution: {integrity: sha512-LZXpTlPyS5v7HhSmnvsLGP3iIYgYOBnc8r8ArlT55sGHV89bR2HlDdBjWQ+PY6SJMmk8TuVGFuxalnP3k/0Dwg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@next/swc-win32-x64-msvc@16.2.4':
-    resolution: {integrity: sha512-kMVGgsqhO5YTYODD9IPGGhA6iprWidQckK3LmPeW08PIFENRmgfb4MjXHO+p//d+ts2rpjvK5gXWzXSMrPl9cw==}
+  '@next/swc-win32-x64-msvc@16.2.6':
+    resolution: {integrity: sha512-F0+4i0h9J6C4eE3EAPWsoCk7UW/dbzOjyzxY0qnDUOYFu6FFmdZ6l97/XdV3/Nz3VYyO7UWjyEJUXkGqcoXfMA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -2915,8 +2912,8 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  eslint-config-next@16.2.4:
-    resolution: {integrity: sha512-A6ekXYFj/YQxBPMl45g3e+U8zJo+X2+ZQwcz34pPKjpc/3S4roBA2Rd9xWB4FKuSxhofo1/95WjzmUY+wHrOhg==}
+  eslint-config-next@16.2.6:
+    resolution: {integrity: sha512-z2ELYSkyrrJ6cuunTU8vhsT/RpouPkjaSah06nVW6Rg2Hpg0Vs8s497/e5s8G8qtdp4ccsiovz5P1rv+5VSW2Q==}
     peerDependencies:
       eslint: '>=9.0.0'
       typescript: '>=3.3.1'
@@ -3817,8 +3814,8 @@ packages:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
 
-  next@16.2.4:
-    resolution: {integrity: sha512-kPvz56wF5frc+FxlHI5qnklCzbq53HTwORaWBGdT0vNoKh1Aya9XC8aPauH4NJxqtzbWsS5mAbctm4cr+EkQ2Q==}
+  next@16.2.6:
+    resolution: {integrity: sha512-qOVgKJg1+At15NpeUP+eJgCHvTCgXsogweq87Ri/Ix7PkqQHg4sdaXmSFqKlgaIXE4kW0g25LE68W87UANlHtw==}
     engines: {node: '>=20.9.0'}
     hasBin: true
     peerDependencies:
@@ -4163,8 +4160,8 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react-virtuoso@4.18.3:
-    resolution: {integrity: sha512-fLz/peHAx4Eu0DLHurFEEI7Y6n5CqEoxBh04rgJM9yMuOJah2a9zWg/MUOmZLcp7zuWYorXq5+5bf3IRgkNvWg==}
+  react-virtuoso@4.18.7:
+    resolution: {integrity: sha512-xNF5zDGEEIMB7cKwcen/pLig0YDf6OnfFrVgKFa7sHPf9fRem0CaLshyObbBcP88jzn0enavL39EgplgdyT21g==}
     peerDependencies:
       react: '>=16 || >=17 || >= 18 || >= 19'
       react-dom: '>=16 || >=17 || >= 18 || >=19'
@@ -6447,32 +6444,32 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@my-react/react-dom@0.3.24(@my-react/react@0.3.24(react@18.3.1))(react-dom@18.3.1(react@18.3.1))':
+  '@my-react/react-dom@0.3.27(@my-react/react@0.3.27(react@18.3.1))(react-dom@18.3.1(react@18.3.1))':
     dependencies:
-      '@my-react/react': 0.3.24(react@18.3.1)
+      '@my-react/react': 0.3.27(react@18.3.1)
       react-dom: 18.3.1(react@18.3.1)
 
-  '@my-react/react-jsx@0.3.24(@my-react/react@0.3.24(react@18.3.1))':
+  '@my-react/react-jsx@0.3.27(@my-react/react@0.3.27(react@18.3.1))':
     dependencies:
-      '@my-react/react': 0.3.24(react@18.3.1)
+      '@my-react/react': 0.3.27(react@18.3.1)
 
-  '@my-react/react-reconciler@0.3.24(@my-react/react@0.3.24(react@18.3.1))':
+  '@my-react/react-reconciler@0.3.27(@my-react/react@0.3.27(react@18.3.1))':
     dependencies:
-      '@my-react/react': 0.3.24(react@18.3.1)
+      '@my-react/react': 0.3.27(react@18.3.1)
 
-  '@my-react/react-refresh-tools@0.0.35(@my-react/react-refresh@0.3.24(@my-react/react@0.3.24(react@18.3.1)))':
+  '@my-react/react-refresh-tools@0.0.38(@my-react/react-refresh@0.3.27(@my-react/react@0.3.27(react@18.3.1)))':
     dependencies:
-      '@my-react/react-refresh': 0.3.24(@my-react/react@0.3.24(react@18.3.1))
+      '@my-react/react-refresh': 0.3.27(@my-react/react@0.3.27(react@18.3.1))
 
-  '@my-react/react-refresh@0.3.24(@my-react/react@0.3.24(react@18.3.1))':
+  '@my-react/react-refresh@0.3.27(@my-react/react@0.3.27(react@18.3.1))':
     dependencies:
-      '@my-react/react': 0.3.24(react@18.3.1)
+      '@my-react/react': 0.3.27(react@18.3.1)
 
-  '@my-react/react-shared@0.3.24': {}
+  '@my-react/react-shared@0.3.27': {}
 
-  '@my-react/react@0.3.24(react@18.3.1)':
+  '@my-react/react@0.3.27(react@18.3.1)':
     dependencies:
-      '@my-react/react-jsx': 0.3.24(@my-react/react@0.3.24(react@18.3.1))
+      '@my-react/react-jsx': 0.3.27(@my-react/react@0.3.27(react@18.3.1))
       react: 18.3.1
       react-compiler-runtime: 1.0.0(react@18.3.1)
 
@@ -6483,34 +6480,34 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@next/env@16.2.4': {}
+  '@next/env@16.2.6': {}
 
-  '@next/eslint-plugin-next@16.2.4':
+  '@next/eslint-plugin-next@16.2.6':
     dependencies:
       fast-glob: 3.3.1
 
-  '@next/swc-darwin-arm64@16.2.4':
+  '@next/swc-darwin-arm64@16.2.6':
     optional: true
 
-  '@next/swc-darwin-x64@16.2.4':
+  '@next/swc-darwin-x64@16.2.6':
     optional: true
 
-  '@next/swc-linux-arm64-gnu@16.2.4':
+  '@next/swc-linux-arm64-gnu@16.2.6':
     optional: true
 
-  '@next/swc-linux-arm64-musl@16.2.4':
+  '@next/swc-linux-arm64-musl@16.2.6':
     optional: true
 
-  '@next/swc-linux-x64-gnu@16.2.4':
+  '@next/swc-linux-x64-gnu@16.2.6':
     optional: true
 
-  '@next/swc-linux-x64-musl@16.2.4':
+  '@next/swc-linux-x64-musl@16.2.6':
     optional: true
 
-  '@next/swc-win32-arm64-msvc@16.2.4':
+  '@next/swc-win32-arm64-msvc@16.2.6':
     optional: true
 
-  '@next/swc-win32-x64-msvc@16.2.4':
+  '@next/swc-win32-x64-msvc@16.2.6':
     optional: true
 
   '@nodelib/fs.scandir@2.1.5':
@@ -8593,9 +8590,9 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-config-next@16.2.4(@typescript-eslint/parser@8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3):
+  eslint-config-next@16.2.6(@typescript-eslint/parser@8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3):
     dependencies:
-      '@next/eslint-plugin-next': 16.2.4
+      '@next/eslint-plugin-next': 16.2.6
       eslint: 9.39.4(jiti@1.21.7)
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.4(jiti@1.21.7))(typescript@5.7.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))
@@ -9608,9 +9605,9 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  next@16.2.4(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  next@16.2.6(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@next/env': 16.2.4
+      '@next/env': 16.2.6
       '@swc/helpers': 0.5.15
       baseline-browser-mapping: 2.10.11
       caniuse-lite: 1.0.30001781
@@ -9619,14 +9616,14 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       styled-jsx: 5.1.6(@babel/core@7.29.0)(react@18.3.1)
     optionalDependencies:
-      '@next/swc-darwin-arm64': 16.2.4
-      '@next/swc-darwin-x64': 16.2.4
-      '@next/swc-linux-arm64-gnu': 16.2.4
-      '@next/swc-linux-arm64-musl': 16.2.4
-      '@next/swc-linux-x64-gnu': 16.2.4
-      '@next/swc-linux-x64-musl': 16.2.4
-      '@next/swc-win32-arm64-msvc': 16.2.4
-      '@next/swc-win32-x64-msvc': 16.2.4
+      '@next/swc-darwin-arm64': 16.2.6
+      '@next/swc-darwin-x64': 16.2.6
+      '@next/swc-linux-arm64-gnu': 16.2.6
+      '@next/swc-linux-arm64-musl': 16.2.6
+      '@next/swc-linux-x64-gnu': 16.2.6
+      '@next/swc-linux-x64-musl': 16.2.6
+      '@next/swc-win32-arm64-msvc': 16.2.6
+      '@next/swc-win32-x64-msvc': 16.2.6
       babel-plugin-react-compiler: 1.0.0
       sharp: 0.34.5
     transitivePeerDependencies:
@@ -10012,7 +10009,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  react-virtuoso@4.18.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-virtuoso@4.18.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)

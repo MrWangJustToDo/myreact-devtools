@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useSelectNode } from "@/hooks/useSelectNode";
 
 export const FlameGraphSelect = () => {
+  "use no memo";
+
   const select = useSelectNode((s) => s.select);
 
   useEffect(() => {

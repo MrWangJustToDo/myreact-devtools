@@ -1,6 +1,8 @@
 import { useSelectNode } from "@/hooks/useSelectNode";
 
 export const TreeViewHover = () => {
+  "use no memo";
+
   const hover = useSelectNode((s) => s.hover);
 
   return (

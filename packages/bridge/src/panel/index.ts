@@ -1,6 +1,7 @@
 import { type DevToolMessageType } from "@my-react-devtool/core";
 
 import { MessageHookType, MessagePanelType, MessageWorkerType, sourceFrom } from "../type";
+import { consumeRuntimeLastError } from "../utils";
 
 import type { MessageHookDataType, MessageWorkerDataType } from "../type";
 
@@ -67,12 +68,18 @@ const showPanel = (onShow: (_window: Window) => void, onHide: () => void): Promi
 
 const sendMessage = <T = any>(data: T, withAgentId = true) => {
   runWhenWorkerReady(() => {
-    port?.postMessage({
-      ...data,
-      from: sourceFrom.panel,
-      to: sourceFrom.hook,
-      agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined,
-    });
+    if (!port) return;
+
+    try {
+      port.postMessage({
+        ...data,
+        from: sourceFrom.panel,
+        to: sourceFrom.hook,
+        agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined,
+      });
+    } catch {
+      consumeRuntimeLastError();
+    }
   });
 };
 
@@ -117,7 +124,14 @@ const initPort = () => {
 
   setConnectHandler(() => initPort());
 
-  port = chrome.runtime.connect({ name: getTabId().toString() });
+  try {
+    port = chrome.runtime.connect({ name: getTabId().toString() });
+    consumeRuntimeLastError();
+  } catch {
+    consumeRuntimeLastError();
+    workerConnecting = false;
+    return;
+  }
 
   const onMessage = (message: MessageHookDataType | MessageWorkerDataType) => {
     if (!hasShow) return;
@@ -168,6 +182,8 @@ const initPort = () => {
   };
 
   const onDisconnect = () => {
+    consumeRuntimeLastError();
+
     if (__DEV__) {
       console.log("[@my-react-devtool/panel] disconnect");
     }
@@ -205,6 +221,8 @@ const init = async (id: number) => {
         hasShow = true;
 
         panelWindow = window;
+
+        initPort();
 
         sendMessage({ type: MessagePanelType.show }, false);
 

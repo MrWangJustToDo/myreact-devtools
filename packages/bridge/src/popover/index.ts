@@ -1,7 +1,7 @@
 import { DevToolSource } from "@my-react-devtool/core/event";
 
 import { MessageDetectorType, MessageHookType, sourceFrom } from "../type";
-import { generatePostMessageWithSource } from "../utils";
+import { generatePostMessageWithSource, safeRuntimeSendMessage, updateExtensionIconForCurrentTab } from "../utils";
 
 import type { MessageHookDataType } from "../type";
 
@@ -17,6 +17,16 @@ const runWhenHookReady = (fn: () => void) => {
   } else {
     pendingHookCallbacks.push(fn);
   }
+};
+
+const notifyBackgroundIcon = (data: MessageHookDataType["data"]) => {
+  safeRuntimeSendMessage({
+    type: MessageHookType.mount,
+    source: DevToolSource,
+    from: sourceFrom.detector,
+    data,
+    to: sourceFrom.worker,
+  });
 };
 
 // message from hook
@@ -48,21 +58,7 @@ const onMessageFromHook = (message: MessageEvent<MessageHookDataType>) => {
         console.log("[@my-react-devtool/detector] hook mount:", message.data);
       }
 
-      const runtime = (globalThis as any).browser?.runtime || (globalThis as any).chrome?.runtime;
-
-      try {
-        runtime
-          ?.sendMessage({
-            type: message.data.type,
-            source: DevToolSource,
-            from: sourceFrom.detector,
-            data: message.data?.data,
-            to: sourceFrom.worker,
-          })
-          ?.catch?.(() => {});
-      } catch {
-        /* background service worker may be inactive */
-      }
+      updateExtensionIconForCurrentTab(message.data?.data, () => notifyBackgroundIcon(message.data?.data));
     });
   }
 };

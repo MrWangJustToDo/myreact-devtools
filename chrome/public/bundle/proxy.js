@@ -182,9 +182,41 @@
             window.postMessage(__assign(__assign({}, _message), { source: eventExports.DevToolSource }), "*");
         };
     };
+    var getExtensionRuntime = function () {
+        var _a, _b, _c;
+        var g = globalThis;
+        return (_b = (_a = g.chrome) === null || _a === void 0 ? void 0 : _a.runtime) !== null && _b !== void 0 ? _b : (_c = g.browser) === null || _c === void 0 ? void 0 : _c.runtime;
+    };
+    /** Consume chrome.runtime.lastError after a port disconnect (required by Chrome). */
+    var consumeRuntimeLastError = function () {
+        var _a;
+        void ((_a = getExtensionRuntime()) === null || _a === void 0 ? void 0 : _a.lastError);
+    };
 
-    var port = chrome.runtime.connect({ name: PortName.proxy });
     var proxyPostMessageWithSource = generatePostMessageWithSource(sourceFrom.proxy);
+    var port = null;
+    var connectPort = function () {
+        if (port)
+            return port;
+        try {
+            var next = chrome.runtime.connect({ name: PortName.proxy });
+            if (chrome.runtime.lastError) {
+                consumeRuntimeLastError();
+                return null;
+            }
+            if (!next) {
+                return null;
+            }
+            port = next;
+            port.onDisconnect.addListener(handleDisconnect);
+            port.onMessage.addListener(sendMessageToContent);
+        }
+        catch (_a) {
+            consumeRuntimeLastError();
+            port = null;
+        }
+        return port;
+    };
     var sendMessageToContent = function (message) {
         proxyPostMessageWithSource(message);
     };
@@ -194,29 +226,53 @@
         if (message.data.source !== eventExports.DevToolSource)
             return;
         if (message.data.to === sourceFrom.panel) {
+            var activePort = connectPort();
+            if (!activePort)
+                return;
             try {
-                port.postMessage(__assign({}, message.data));
+                activePort.postMessage(__assign({}, message.data));
             }
             catch (error) {
-                port.postMessage({
-                    type: eventExports.DevToolMessageEnum.message,
-                    source: eventExports.DevToolSource,
-                    data: { type: "error", message: "Failed to send message to panel. ".concat(error.message) },
-                    from: sourceFrom.proxy,
-                    to: sourceFrom.panel,
-                });
+                consumeRuntimeLastError();
+                try {
+                    activePort.postMessage({
+                        type: eventExports.DevToolMessageEnum.message,
+                        source: eventExports.DevToolSource,
+                        data: { type: "error", message: "Failed to send message to panel. ".concat(error.message) },
+                        from: sourceFrom.proxy,
+                        to: sourceFrom.panel,
+                    });
+                }
+                catch (_a) {
+                    consumeRuntimeLastError();
+                }
             }
         }
     };
-    var handleDisconnect = function () {
-        port.onMessage.removeListener(sendMessageToContent);
-        sendMessageToContent({ type: eventExports.MessageWorkerType.close, to: sourceFrom.hook });
-        window.removeEventListener("message", sendMessageToPanel);
-    };
-    // listen message from background worker, then forward to page hook
-    port.onMessage.addListener(sendMessageToContent);
-    port.onDisconnect.addListener(handleDisconnect);
-    // listen message from hook, then forward to worker -> panel
+    function handleDisconnect() {
+        consumeRuntimeLastError();
+        if (port) {
+            try {
+                port.onMessage.removeListener(sendMessageToContent);
+                port.onDisconnect.removeListener(handleDisconnect);
+            }
+            catch (_a) {
+                consumeRuntimeLastError();
+            }
+            port = null;
+        }
+        try {
+            sendMessageToContent({ type: eventExports.MessageWorkerType.close, to: sourceFrom.hook });
+        }
+        catch (_b) {
+            consumeRuntimeLastError();
+        }
+        // Reconnect after transient disconnect — keep the window listener alive.
+        setTimeout(function () { return connectPort(); }, 100);
+    }
+    // Eager connect when proxy is injected so background can pair proxy + devtool ports
+    // before the panel sends its first message (required for portPip / workerReady).
+    setTimeout(function () { return connectPort(); }, 0);
     window.addEventListener("message", sendMessageToPanel);
 
 })();
