@@ -97,12 +97,32 @@ export class PlainNode {
   _$f?: boolean;
   // inspect node
 
+  _$n?: string;
+  // real name of fiber node, debug only
+
+  _ci: string[];
+  // snapshot: children ids
+
+  _pi: string | null;
+  // snapshot: parent id
+
   constructor(_id?: string) {
     this.$$S = fiberValueSymbol;
 
     this.i = _id || `${id++}`;
 
     this._r = 0;
+  }
+
+  clone(parentId: string | null): PlainNode {
+    const cloned = new PlainNode(this.i);
+    cloned.n = this.n;
+    cloned.t = this.t;
+    cloned.k = this.k;
+    cloned.m = this.m;
+    cloned._ci = this.c ? this.c.map((c) => c.i) : [];
+    cloned._pi = parentId;
+    return cloned;
   }
 }
 

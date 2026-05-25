@@ -14,7 +14,7 @@ import { Select, Highlight } from "./view";
 import type { NodeValue } from "./data";
 import type { StackItemType } from "./dispatch";
 import type { HMRStatus } from "./event";
-import type { Tree } from "./tree";
+import type { Tree, TreeOp } from "./tree";
 import type { MyReactFiberNode, UpdateQueueDev, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
@@ -387,13 +387,25 @@ export class DevToolCore {
     });
   }
 
-  // TODO
+  /**
+   * @deprecated use notifyOperations instead
+   * @param list
+   * @returns
+   */
   notifyChanged(list: ListTree<MyReactFiberNode>) {
     if (!this.hasEnable) return;
 
     const tree = getRootTreeByFiber(list.head.value);
 
     this._notify({ type: DevToolMessageEnum.changed, data: tree });
+  }
+
+  notifyOperations(ops: TreeOp[]) {
+    if (!this.hasEnable) return;
+
+    if (ops.length === 0) return;
+
+    this._notify({ type: DevToolMessageEnum.operations, data: ops });
   }
 
   notifyHMR() {

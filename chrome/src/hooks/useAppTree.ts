@@ -1,8 +1,8 @@
-import { type PlainNode, type Tree } from "@my-react-devtool/core";
+import { type PlainNode, type Tree, type TreeOp } from "@my-react-devtool/core";
 import { createState } from "reactivity-store";
 
 import { isServer } from "@/utils/isServer";
-import { computeWeights, getElementAtIndex, getIndexOfElement, getNodeById, collectVisibleNodes } from "@/utils/node";
+import { computeWeights, getElementAtIndex, getIndexOfElement, getNodeById, collectVisibleNodes, applyTreeOperations } from "@/utils/node";
 
 import { useFilterNode } from "./useFilterNode";
 import { useNodeName } from "./useNodeName";
@@ -58,6 +58,13 @@ export const useAppTree = createState(
           state.totalWeight = recomputeWeights(state.nodes);
           useSelectNode.getActions().updateSelectList();
         },
+        applyOperations: (ops: TreeOp[]) => {
+          const modified = applyTreeOperations(state.nodes, ops);
+          if (modified) {
+            state.totalWeight = recomputeWeights(state.nodes);
+            useSelectNode.getActions().updateSelectList();
+          }
+        },
         update: () => {
           state.totalWeight = recomputeWeights(state.nodes);
           useSelectNode.getActions().updateSelectList();
@@ -106,16 +113,6 @@ export function getVisibleNodeList(): PlainNode[] {
 }
 
 // --- Future optimization plans ---
-//
-// Phase 2: Incremental tree mutations (requires bridge/core changes)
-//   Instead of sending a full PlainNode tree snapshot on every commit via DevToolMessageEnum.changed,
-//   the backend should send compact delta operations (ADD / REMOVE / REORDER) like React DevTools does.
-//   - Add a `diffTree` function in packages/core/src/tree/inspect.ts that compares the previous
-//     and current tree, emitting numeric opcodes instead of a full serialized tree.
-//   - Add a new DevToolMessageEnum.operations message type to carry the deltas.
-//   - Add an `applyOperations(ops)` action here that mutates the existing tree in place and
-//     only recomputes weights for affected subtrees.
-//   This eliminates the biggest bottleneck: serializing/deserializing the entire tree on every commit.
 //
 // Phase 3: Backend filtering
 //   Currently type/name filters are applied on the frontend during weight computation.

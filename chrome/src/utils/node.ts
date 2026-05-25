@@ -1,4 +1,4 @@
-import { PlainNode } from "@my-react-devtool/core";
+import { PlainNode, TreeOpType, type TreeOp, type Tree } from "@my-react-devtool/core";
 
 const getParentIsNotHide = (node: PlainNode, isHide: (node: PlainNode) => boolean) => {
   let parent = node.r;
@@ -287,4 +287,111 @@ function collectFromNode(node: PlainNode, list: PlainNode[]): void {
       collectFromNode(node.c[i], list);
     }
   }
+}
+
+// --- Incremental tree patching ---
+
+function buildFullIdMap(roots: Tree[]): Map<string, PlainNode> {
+  const map = new Map<string, PlainNode>();
+  const stack: PlainNode[] = [];
+  for (let i = roots.length - 1; i >= 0; i--) {
+    stack.push(roots[i]);
+  }
+  while (stack.length) {
+    const node = stack.pop()!;
+    map.set(node.i, node);
+    if (node.c) {
+      for (let i = node.c.length - 1; i >= 0; i--) {
+        stack.push(node.c[i]);
+      }
+    }
+  }
+  return map;
+}
+
+let fullMap: Map<string, PlainNode> | null = null;
+
+/**
+ * Apply incremental tree operations in place.
+ * Returns true if any modification was made.
+ */
+export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
+  if (ops.length === 0) return false;
+
+  fullMap = buildFullIdMap(roots);
+  let modified = false;
+
+  for (let i = 0; i < ops.length; i++) {
+    const op = ops[i];
+
+    switch (op.op) {
+      case TreeOpType.ADD: {
+        if (fullMap.has(op.id)) break;
+
+        const newNode = op.node;
+        newNode.c = null as any;
+        newNode.r = null;
+
+        if (op.parentId) {
+          const parent = fullMap.get(op.parentId);
+          if (parent) {
+            if (!parent.c) parent.c = [];
+            if (op.afterId) {
+              const afterIdx = parent.c.findIndex((c) => c.i === op.afterId);
+              if (afterIdx !== -1) {
+                parent.c.splice(afterIdx + 1, 0, newNode);
+              } else {
+                parent.c.push(newNode);
+              }
+            } else {
+              parent.c.unshift(newNode);
+            }
+            newNode.r = parent;
+          }
+        } else {
+          roots.push(newNode);
+          newNode.r = null;
+        }
+
+        fullMap.set(op.id, newNode);
+        modified = true;
+        break;
+      }
+
+      case TreeOpType.REMOVE: {
+        const node = fullMap.get(op.id);
+        if (!node) break;
+
+        if (node.r && node.r.c) {
+          const idx = node.r.c.indexOf(node);
+          if (idx !== -1) {
+            node.r.c.splice(idx, 1);
+          }
+        } else {
+          const rootIdx = roots.findIndex((r) => r.i === op.id);
+          if (rootIdx !== -1) {
+            roots.splice(rootIdx, 1);
+          }
+        }
+
+        fullMap.delete(op.id);
+        modified = true;
+        break;
+      }
+
+      case TreeOpType.UPDATE_META: {
+        const node = fullMap.get(op.id);
+        if (!node) break;
+
+        if (op.n !== undefined) node.n = op.n;
+        if (op.t !== undefined) node.t = op.t;
+        if (op.k !== undefined) node.k = op.k;
+        if (op.m !== undefined) node.m = op.m;
+        modified = true;
+        break;
+      }
+    }
+  }
+
+  return modified;
 }

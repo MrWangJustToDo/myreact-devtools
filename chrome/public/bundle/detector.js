@@ -89,6 +89,7 @@
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["console"] = "console";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
+    		    DevToolMessageEnum["operations"] = "operations";
     		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
     		exports$1.HMRStatus = void 0;
     		(function (HMRStatus) {

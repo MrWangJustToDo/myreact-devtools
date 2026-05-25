@@ -2,12 +2,13 @@ import { isNormalEquals } from "@my-react/react-shared";
 
 import { HMRStatus } from "../event";
 import { deleteLinkState, tryLinkStateToHookIndex } from "../hook";
-import { getPlainNodeByFiber, getPlainNodeIdByFiber, inspectList } from "../tree";
+import { getPlainNodeByFiber, getPlainNodeIdByFiber, inspectList, snapshotBeforeChange } from "../tree";
+import { diffTree } from "../tree/diff";
 import { debounce, throttle } from "../utils";
 
 import type { DevToolCore } from "../instance";
 import type { DevToolRenderDispatch } from "../setup";
-import type { PlainNode } from "../tree";
+import type { PlainNode, TreeOp } from "../tree";
 import type { MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
@@ -42,12 +43,21 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
     runtime.update.flushPending();
   };
 
-  const notifyChangedWithDebounce = debounce((list: ListTree<MyReactFiberNode>) => runtime.notifyChanged(list), 100);
+  let pendingOps: TreeOp[] = [];
+
+  const flushOperations = debounce(() => {
+    if (pendingOps.length > 0) {
+      runtime.notifyOperations(pendingOps);
+      pendingOps = [];
+    }
+  }, 100);
 
   const onChange = (list: ListTree<MyReactFiberNode>) => {
     if (!runtime.hasEnable) return;
 
-    const { directory } = inspectList(list);
+    const snapshot = snapshotBeforeChange(list);
+
+    const { result, directory } = inspectList(list);
 
     if (!isNormalEquals(runtime._dir, directory)) {
       runtime._dir = { ...directory };
@@ -55,7 +65,12 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
       runtime.notifyDir();
     }
 
-    notifyChangedWithDebounce(list);
+    const ops = diffTree(snapshot, result);
+
+    if (ops.length > 0) {
+      pendingOps = pendingOps.concat(ops);
+      flushOperations();
+    }
   };
 
   const onUnmount = () => {

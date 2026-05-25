@@ -20,6 +20,8 @@ const domToFiber = new WeakMap<HTMLElement, MyReactFiberNode>();
 
 const plainStore = new Map<string, PlainNode>();
 
+const parentIdMap = new Map<string, string>();
+
 const directory: Record<string, string> = {};
 
 let count = 0;
@@ -93,12 +95,10 @@ export const loopTree = (fiber: MyReactFiberNode, parent?: PlainNode): { current
 
     parent.c.push(current);
 
-    current.d = parent.d! + 1;
+    parentIdMap.set(current.i, parent.i);
   } else {
-    current.d = 0;
+    parentIdMap.delete(current.i);
   }
-
-  current._d = current.d;
 
   shallowAssignFiber(current, fiber);
 
@@ -146,10 +146,8 @@ export const loopChangedTree = (
 
     parent.c.push(current);
 
-    current.d = parent.d! + 1;
+    parentIdMap.set(current.i, parent.i);
   }
-
-  current._d = current.d;
 
   shallowAssignFiber(current, fiber);
 
@@ -200,6 +198,10 @@ export const unmountPlainNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore
   treeMap.delete(_fiber);
 
   detailMap.delete(_fiber);
+
+  if (plain) {
+    parentIdMap.delete(plain.i);
+  }
 };
 
 export const initPlainNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) => {
@@ -209,6 +211,10 @@ export const initPlainNode = (_fiber: MyReactFiberNode, _runtime: DevToolCore) =
 
   if (!plain) {
     const newPlain = new PlainNode();
+
+    if (__DEV__) {
+      newPlain._$n = getFiberName(_fiber as MyReactFiberNodeDev);
+    }
 
     treeMap.set(_fiber, newPlain);
 
@@ -280,6 +286,49 @@ export const inspectDispatch = (dispatch: CustomRenderDispatch) => {
   const map = loopTree(rootFiber);
 
   return map;
+};
+
+export const getTreeMap = () => treeMap;
+
+export const getPlainStore = () => plainStore;
+
+export const getParentIdMap = () => parentIdMap;
+
+/**
+ * Snapshot old children ids and meta for nodes that will be affected by inspectList.
+ * Must be called BEFORE inspectList since it mutates treeMap in place.
+ */
+export const snapshotBeforeChange = (list: ListTree<MyReactFiberNode>): Map<string, PlainNode> => {
+  const snapshot = new Map<string, PlainNode>();
+  const visited = new WeakSet<MyReactFiberNode>();
+
+  const roots: Array<{ node: PlainNode; parentId: string | null }> = [];
+
+  list.listToFoot((fiber) => {
+    const loopFiber = fiber.parent || fiber;
+    if (visited.has(loopFiber)) return;
+    visited.add(loopFiber);
+
+    const existing = treeMap.get(loopFiber);
+    if (existing) {
+      roots.push({ node: existing, parentId: parentIdMap.get(existing.i) || null });
+    }
+  });
+
+  const stack: Array<{ node: PlainNode; parentId: string | null }> = roots;
+
+  while (stack.length) {
+    const { node, parentId } = stack.pop()!;
+    if (snapshot.has(node.i)) continue;
+    snapshot.set(node.i, node.clone(parentId));
+    if (node.c) {
+      for (let i = node.c.length - 1; i >= 0; i--) {
+        stack.push({ node: node.c[i], parentId: node.i });
+      }
+    }
+  }
+
+  return snapshot;
 };
 
 export const inspectList = (list: ListTree<MyReactFiberNode>) => {

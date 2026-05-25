@@ -493,12 +493,22 @@
     		var fiberValueSymbol = "d::f::v";
     		// PlainNode is a simplified version of FiberNode just for show the structure
     		var PlainNode = /** @class */ (function () {
-    		    // inspect node
+    		    // snapshot: parent id
     		    function PlainNode(_id) {
     		        this.$$S = fiberValueSymbol;
     		        this.i = _id || "".concat(id$1++);
     		        this._r = 0;
     		    }
+    		    PlainNode.prototype.clone = function (parentId) {
+    		        var cloned = new PlainNode(this.i);
+    		        cloned.n = this.n;
+    		        cloned.t = this.t;
+    		        cloned.k = this.k;
+    		        cloned.m = this.m;
+    		        cloned._ci = this.c ? this.c.map(function (c) { return c.i; }) : [];
+    		        cloned._pi = parentId;
+    		        return cloned;
+    		    };
     		    return PlainNode;
     		}());
 
@@ -2682,6 +2692,7 @@
     		var fiberStore = new Map();
     		var domToFiber = new WeakMap();
     		var plainStore = new Map();
+    		var parentIdMap = new Map();
     		var directory = {};
     		var count = 0;
     		var shallowAssignFiber = function (plain, fiber) {
@@ -2730,12 +2741,11 @@
     		    if (parent) {
     		        parent.c = parent.c || [];
     		        parent.c.push(current);
-    		        current.d = parent.d + 1;
+    		        parentIdMap.set(current.i, parent.i);
     		    }
     		    else {
-    		        current.d = 0;
+    		        parentIdMap.delete(current.i);
     		    }
-    		    current._d = current.d;
     		    shallowAssignFiber(current, fiber);
     		    if (!exist) {
     		        treeMap.set(fiber, current);
@@ -2765,9 +2775,8 @@
     		    if (parent) {
     		        parent.c = parent.c || [];
     		        parent.c.push(current);
-    		        current.d = parent.d + 1;
+    		        parentIdMap.set(current.i, parent.i);
     		    }
-    		    current._d = current.d;
     		    shallowAssignFiber(current, fiber);
     		    if (!exist) {
     		        treeMap.set(fiber, current);
@@ -2798,6 +2807,9 @@
     		    }
     		    treeMap.delete(_fiber);
     		    detailMap.delete(_fiber);
+    		    if (plain) {
+    		        parentIdMap.delete(plain.i);
+    		    }
     		};
     		var initPlainNode = function (_fiber, _runtime) {
     		    if (!_fiber)
@@ -2856,6 +2868,41 @@
     		    var rootFiber = dispatch.rootFiber;
     		    var map = loopTree(rootFiber);
     		    return map;
+    		};
+    		var getTreeMap = function () { return treeMap; };
+    		var getPlainStore = function () { return plainStore; };
+    		var getParentIdMap = function () { return parentIdMap; };
+    		/**
+    		 * Snapshot old children ids and meta for nodes that will be affected by inspectList.
+    		 * Must be called BEFORE inspectList since it mutates treeMap in place.
+    		 */
+    		var snapshotBeforeChange = function (list) {
+    		    var snapshot = new Map();
+    		    var visited = new WeakSet();
+    		    var roots = [];
+    		    list.listToFoot(function (fiber) {
+    		        var loopFiber = fiber.parent || fiber;
+    		        if (visited.has(loopFiber))
+    		            return;
+    		        visited.add(loopFiber);
+    		        var existing = treeMap.get(loopFiber);
+    		        if (existing) {
+    		            roots.push({ node: existing, parentId: parentIdMap.get(existing.i) || null });
+    		        }
+    		    });
+    		    var stack = roots;
+    		    while (stack.length) {
+    		        var _a = stack.pop(), node = _a.node, parentId = _a.parentId;
+    		        if (snapshot.has(node.i))
+    		            continue;
+    		        snapshot.set(node.i, node.clone(parentId));
+    		        if (node.c) {
+    		            for (var i = node.c.length - 1; i >= 0; i--) {
+    		                stack.push({ node: node.c[i], parentId: node.i });
+    		            }
+    		        }
+    		    }
+    		    return snapshot;
     		};
     		var inspectList = function (list) {
     		    var hasViewList = new WeakSet();
@@ -2964,6 +3011,98 @@
     		    var name = getFiberName(fiber);
     		    return directory[name];
     		};
+
+    		exports$1.TreeOpType = void 0;
+    		(function (TreeOpType) {
+    		    TreeOpType[TreeOpType["ADD"] = 1] = "ADD";
+    		    TreeOpType[TreeOpType["REMOVE"] = 2] = "REMOVE";
+    		    TreeOpType[TreeOpType["UPDATE_META"] = 3] = "UPDATE_META";
+    		})(exports$1.TreeOpType || (exports$1.TreeOpType = {}));
+
+    		/**
+    		 * Compute delta operations by comparing a pre-change snapshot against
+    		 * the current treeMap state (which has already been mutated by inspectList).
+    		 *
+    		 * @param snapshot - Map of nodeId -> cloned PlainNode captured BEFORE inspectList ran
+    		 * @param changedRoots - The PlainNode roots returned by inspectList (the subtrees that were rebuilt)
+    		 */
+    		function diffTree(snapshot, changedRoots) {
+    		    var ops = [];
+    		    var plainStore = getPlainStore();
+    		    var parentIdMap = getParentIdMap();
+    		    var visited = new Set();
+    		    var stack = [];
+    		    for (var i = changedRoots.length - 1; i >= 0; i--) {
+    		        stack.push(changedRoots[i]);
+    		    }
+    		    while (stack.length) {
+    		        var node = stack.pop();
+    		        if (visited.has(node.i))
+    		            continue;
+    		        visited.add(node.i);
+    		        var old = snapshot.get(node.i);
+    		        var newParentId = parentIdMap.get(node.i) || null;
+    		        if (!old) {
+    		            emitAdd(node, plainStore, parentIdMap, ops);
+    		        }
+    		        else {
+    		            var parentChanged = old._pi !== newParentId;
+    		            if (parentChanged) {
+    		                ops.push({ op: exports$1.TreeOpType.REMOVE, id: node.i });
+    		                emitAdd(node, plainStore, parentIdMap, ops);
+    		            }
+    		            else if (old.n !== node.n || old.t !== node.t || old.k !== node.k || old.m !== node.m) {
+    		                var metaOp = { op: exports$1.TreeOpType.UPDATE_META, id: node.i };
+    		                if (old.n !== node.n)
+    		                    metaOp.n = node.n;
+    		                if (old.t !== node.t)
+    		                    metaOp.t = node.t;
+    		                if (old.k !== node.k)
+    		                    metaOp.k = node.k;
+    		                if (old.m !== node.m)
+    		                    metaOp.m = node.m;
+    		                ops.push(metaOp);
+    		            }
+    		            // Detect removed children
+    		            var newChildren = node.c ? node.c.map(function (c) { return c.i; }) : [];
+    		            var newChildSet = new Set(newChildren);
+    		            for (var i = 0; i < old._ci.length; i++) {
+    		                if (!newChildSet.has(old._ci[i])) {
+    		                    if (!plainStore.has(old._ci[i])) {
+    		                        ops.push({ op: exports$1.TreeOpType.REMOVE, id: old._ci[i] });
+    		                    }
+    		                }
+    		            }
+    		        }
+    		        // Push children onto stack (reverse order for correct processing order)
+    		        if (node.c) {
+    		            for (var i = node.c.length - 1; i >= 0; i--) {
+    		                stack.push(node.c[i]);
+    		            }
+    		        }
+    		    }
+    		    return ops;
+    		}
+    		function emitAdd(node, plainStore, parentIdMap, ops) {
+    		    var parentId = parentIdMap.get(node.i) || null;
+    		    var afterId = null;
+    		    if (parentId) {
+    		        var parentNode = plainStore.get(parentId);
+    		        if (parentNode && parentNode.c) {
+    		            var idx = parentNode.c.indexOf(node);
+    		            if (idx > 0) {
+    		                afterId = parentNode.c[idx - 1].i;
+    		            }
+    		        }
+    		    }
+    		    ops.push({
+    		        op: exports$1.TreeOpType.ADD,
+    		        id: node.i,
+    		        parentId: parentId,
+    		        afterId: afterId,
+    		        node: node,
+    		    });
+    		}
 
     		// browser platform inspect
     		var inspectSource = function (core) {
@@ -3258,6 +3397,7 @@
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["console"] = "console";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
+    		    DevToolMessageEnum["operations"] = "operations";
     		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
     		exports$1.HMRStatus = void 0;
     		(function (HMRStatus) {
@@ -3290,16 +3430,27 @@
     		            return;
     		        runtime.update.flushPending();
     		    };
-    		    var notifyChangedWithDebounce = debounce(function (list) { return runtime.notifyChanged(list); }, 100);
+    		    var pendingOps = [];
+    		    var flushOperations = debounce(function () {
+    		        if (pendingOps.length > 0) {
+    		            runtime.notifyOperations(pendingOps);
+    		            pendingOps = [];
+    		        }
+    		    }, 100);
     		    var onChange = function (list) {
     		        if (!runtime.hasEnable)
     		            return;
-    		        var directory = inspectList(list).directory;
+    		        var snapshot = snapshotBeforeChange(list);
+    		        var _a = inspectList(list), result = _a.result, directory = _a.directory;
     		        if (!isNormalEquals(runtime._dir, directory)) {
     		            runtime._dir = __assign({}, directory);
     		            runtime.notifyDir();
     		        }
-    		        notifyChangedWithDebounce(list);
+    		        var ops = diffTree(snapshot, result);
+    		        if (ops.length > 0) {
+    		            pendingOps = pendingOps.concat(ops);
+    		            flushOperations();
+    		        }
     		    };
     		    var onUnmount = function () {
     		        // if (!runtime.hasEnable) return;
@@ -4608,12 +4759,23 @@
     		            data: pending.map(function (item) { return ({ type: item.type, args: item.args.map(function (arg) { return getNode(arg); }), timestamp: item.timestamp }); }),
     		        });
     		    };
-    		    // TODO
+    		    /**
+    		     * @deprecated use notifyOperations instead
+    		     * @param list
+    		     * @returns
+    		     */
     		    DevToolCore.prototype.notifyChanged = function (list) {
     		        if (!this.hasEnable)
     		            return;
     		        var tree = getRootTreeByFiber(list.head.value);
     		        this._notify({ type: exports$1.DevToolMessageEnum.changed, data: tree });
+    		    };
+    		    DevToolCore.prototype.notifyOperations = function (ops) {
+    		        if (!this.hasEnable)
+    		            return;
+    		        if (ops.length === 0)
+    		            return;
+    		        this._notify({ type: exports$1.DevToolMessageEnum.operations, data: ops });
     		    };
     		    DevToolCore.prototype.notifyHMR = function () {
     		        if (!this.hasEnable)
@@ -4845,6 +5007,7 @@
     		exports$1.PlainNode = PlainNode;
     		exports$1.assignFiber = assignFiber;
     		exports$1.debounce = debounce;
+    		exports$1.diffTree = diffTree;
     		exports$1.getComponentFiberByDom = getComponentFiberByDom;
     		exports$1.getComponentFiberByFiber = getComponentFiberByFiber;
     		exports$1.getContextName = getContextName;
@@ -4864,13 +5027,16 @@
     		exports$1.getNode = getNode;
     		exports$1.getNodeFromId = getNodeFromId;
     		exports$1.getObj = getObj;
+    		exports$1.getParentIdMap = getParentIdMap;
     		exports$1.getPlainNodeByFiber = getPlainNodeByFiber;
     		exports$1.getPlainNodeIdByFiber = getPlainNodeIdByFiber;
+    		exports$1.getPlainStore = getPlainStore;
     		exports$1.getProps = getProps;
     		exports$1.getRootTreeByFiber = getRootTreeByFiber;
     		exports$1.getSource = getSource;
     		exports$1.getState = getState;
     		exports$1.getTree = getTree$1;
+    		exports$1.getTreeMap = getTreeMap;
     		exports$1.getTypeName = getTypeName;
     		exports$1.getValueFromId = getValueFromId;
     		exports$1.initPlainNode = initPlainNode;
@@ -4886,6 +5052,7 @@
     		exports$1.loopChangedTree = loopChangedTree;
     		exports$1.loopTree = loopTree;
     		exports$1.shallowAssignFiber = shallowAssignFiber;
+    		exports$1.snapshotBeforeChange = snapshotBeforeChange;
     		exports$1.throttle = throttle;
     		exports$1.typeKeys = typeKeys;
     		exports$1.unmountPlainNode = unmountPlainNode;
@@ -5118,6 +5285,7 @@
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["console"] = "console";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
+    		    DevToolMessageEnum["operations"] = "operations";
     		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
     		exports$1.HMRStatus = void 0;
     		(function (HMRStatus) {

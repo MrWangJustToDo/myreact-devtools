@@ -83,6 +83,14 @@ export const onRender = (data: DevToolMessageType) => {
     });
   }
 
+  if (data.type === DevToolMessageEnum.operations) {
+    safeAction(() => {
+      const { applyOperations } = useAppTree.getActions();
+
+      applyOperations(data.data);
+    });
+  }
+
   if (data.type === DevToolMessageEnum.unmount) {
     safeAction(() => {
       useChunk.getActions().clear();

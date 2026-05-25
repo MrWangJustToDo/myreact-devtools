@@ -81,6 +81,8 @@ export enum DevToolMessageEnum {
   console = "console",
 
   domHover = "dom-hover",
+
+  operations = "operations",
 }
 
 export enum HMRStatus {
