@@ -213,15 +213,20 @@
         }
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageHookType.mount) {
             runWhenHookReady(function () {
-                var _a, _b, _c;
+                var _a, _b, _c, _d, _e;
                 var runtime = ((_a = globalThis.browser) === null || _a === void 0 ? void 0 : _a.runtime) || ((_b = globalThis.chrome) === null || _b === void 0 ? void 0 : _b.runtime);
-                runtime === null || runtime === void 0 ? void 0 : runtime.sendMessage({
-                    type: message.data.type,
-                    source: eventExports.DevToolSource,
-                    from: sourceFrom.detector,
-                    data: (_c = message.data) === null || _c === void 0 ? void 0 : _c.data,
-                    to: sourceFrom.worker,
-                });
+                try {
+                    (_e = (_d = runtime === null || runtime === void 0 ? void 0 : runtime.sendMessage({
+                        type: message.data.type,
+                        source: eventExports.DevToolSource,
+                        from: sourceFrom.detector,
+                        data: (_c = message.data) === null || _c === void 0 ? void 0 : _c.data,
+                        to: sourceFrom.worker,
+                    })) === null || _d === void 0 ? void 0 : _d.catch) === null || _e === void 0 ? void 0 : _e.call(_d, function () { });
+                }
+                catch (_f) {
+                    /* background service worker may be inactive */
+                }
             });
         }
     };

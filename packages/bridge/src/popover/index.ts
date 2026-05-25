@@ -50,13 +50,19 @@ const onMessageFromHook = (message: MessageEvent<MessageHookDataType>) => {
 
       const runtime = (globalThis as any).browser?.runtime || (globalThis as any).chrome?.runtime;
 
-      runtime?.sendMessage({
-        type: message.data.type,
-        source: DevToolSource,
-        from: sourceFrom.detector,
-        data: message.data?.data,
-        to: sourceFrom.worker,
-      });
+      try {
+        runtime
+          ?.sendMessage({
+            type: message.data.type,
+            source: DevToolSource,
+            from: sourceFrom.detector,
+            data: message.data?.data,
+            to: sourceFrom.worker,
+          })
+          ?.catch?.(() => {});
+      } catch {
+        /* background service worker may be inactive */
+      }
     });
   }
 };
