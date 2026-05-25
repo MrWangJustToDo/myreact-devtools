@@ -20,7 +20,7 @@ declare global {
   var onClear: () => void;
 
   var useConnect: UseSelectorWithState<
-    { state: boolean },
+    { state: boolean, render?: boolean },
     {
       connect: () => void;
       disconnect: () => void;
