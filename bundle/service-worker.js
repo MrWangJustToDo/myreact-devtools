@@ -122,6 +122,7 @@
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["console"] = "console";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
+    		    DevToolMessageEnum["operations"] = "operations";
     		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
     		exports$1.HMRStatus = void 0;
     		(function (HMRStatus) {
@@ -169,6 +170,49 @@
         // message from detector, `popover` dir
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
+
+    var resolveIconAssets = function (data) {
+        var mode = typeof data === "string" ? data : data === null || data === void 0 ? void 0 : data.mode;
+        var popup = "enablePopup.html";
+        var icon48 = "icons/48-s.png";
+        var icon128 = "icons/128-s.png";
+        if (mode === "develop") {
+            popup = "enablePopupDev.html";
+            icon48 = "icons/48-s-d.png";
+            icon128 = "icons/128-s-d.png";
+        }
+        else if (mode === "product") {
+            popup = "enablePopupPro.html";
+        }
+        return { popup: popup, icon48: icon48, icon128: icon128 };
+    };
+    var applyExtensionIconForTab = function (tabId, data, getURL, action, onCallback) {
+        var _a = resolveIconAssets(data), popup = _a.popup, icon48 = _a.icon48, icon128 = _a.icon128;
+        var done = onCallback !== null && onCallback !== void 0 ? onCallback : (function () { });
+        action.setPopup({ tabId: tabId, popup: getURL(popup) }, done);
+        action.setIcon({
+            tabId: tabId,
+            path: {
+                48: getURL(icon48),
+                128: getURL(icon128),
+            },
+        }, done);
+    };
+
+    var getExtensionRuntime = function () {
+        var _a, _b, _c;
+        var g = globalThis;
+        return (_b = (_a = g.chrome) === null || _a === void 0 ? void 0 : _a.runtime) !== null && _b !== void 0 ? _b : (_c = g.browser) === null || _c === void 0 ? void 0 : _c.runtime;
+    };
+    /** Consume chrome.runtime.lastError after a port disconnect (required by Chrome). */
+    var consumeRuntimeLastError = function () {
+        var _a;
+        void ((_a = getExtensionRuntime()) === null || _a === void 0 ? void 0 : _a.lastError);
+    };
+
+    var setExtensionIconForTab = function (tabId, data) {
+        applyExtensionIconForTab(tabId, data, chrome.runtime.getURL, chrome.action, consumeRuntimeLastError);
+    };
 
     var hub = {};
     function isNumeric(str) {
@@ -272,57 +316,17 @@
         }
     });
     // from detector, change the extension icon and popup page
-    chrome.runtime.onMessage.addListener(function (message, sender) {
-        var _a, _b;
+    chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+        var _a;
         if (message.from !== sourceFrom.detector)
             return;
         if (message.to !== sourceFrom.worker) {
             return;
         }
         if (((_a = sender.tab) === null || _a === void 0 ? void 0 : _a.id) && message.type === eventExports.MessageHookType.mount) {
-            var type = typeof message.data === "string" ? message.data : (_b = message.data) === null || _b === void 0 ? void 0 : _b.mode;
-            var icon_48 = type === "develop" ? "icons/48-s-d.png" : "icons/48-s.png";
-            var icon_128 = type === "develop" ? "icons/128-s-d.png" : "icons/128-s.png";
-            if (type === "develop") {
-                chrome.action.setPopup({
-                    tabId: sender.tab.id,
-                    popup: chrome.runtime.getURL("enablePopupDev.html"),
-                });
-                chrome.action.setIcon({
-                    tabId: sender.tab.id,
-                    path: {
-                        48: chrome.runtime.getURL(icon_48),
-                        128: chrome.runtime.getURL(icon_128),
-                    },
-                });
-            }
-            else if (type === "product") {
-                chrome.action.setPopup({
-                    tabId: sender.tab.id,
-                    popup: chrome.runtime.getURL("enablePopupPro.html"),
-                });
-                chrome.action.setIcon({
-                    tabId: sender.tab.id,
-                    path: {
-                        48: chrome.runtime.getURL(icon_48),
-                        128: chrome.runtime.getURL(icon_128),
-                    },
-                });
-            }
-            else {
-                chrome.action.setPopup({
-                    tabId: sender.tab.id,
-                    popup: chrome.runtime.getURL("enablePopup.html"),
-                });
-                chrome.action.setIcon({
-                    tabId: sender.tab.id,
-                    path: {
-                        48: chrome.runtime.getURL(icon_48),
-                        128: chrome.runtime.getURL(icon_128),
-                    },
-                });
-            }
+            setExtensionIconForTab(sender.tab.id, message.data);
         }
+        sendResponse({ ok: true });
     });
 
 })();

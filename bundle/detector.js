@@ -89,6 +89,7 @@
     		    DevToolMessageEnum["record"] = "record";
     		    DevToolMessageEnum["console"] = "console";
     		    DevToolMessageEnum["domHover"] = "dom-hover";
+    		    DevToolMessageEnum["operations"] = "operations";
     		})(exports$1.DevToolMessageEnum || (exports$1.DevToolMessageEnum = {}));
     		exports$1.HMRStatus = void 0;
     		(function (HMRStatus) {
@@ -170,6 +171,34 @@
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
 
+    var resolveIconAssets = function (data) {
+        var mode = typeof data === "string" ? data : data === null || data === void 0 ? void 0 : data.mode;
+        var popup = "enablePopup.html";
+        var icon48 = "icons/48-s.png";
+        var icon128 = "icons/128-s.png";
+        if (mode === "develop") {
+            popup = "enablePopupDev.html";
+            icon48 = "icons/48-s-d.png";
+            icon128 = "icons/128-s-d.png";
+        }
+        else if (mode === "product") {
+            popup = "enablePopupPro.html";
+        }
+        return { popup: popup, icon48: icon48, icon128: icon128 };
+    };
+    var applyExtensionIconForTab = function (tabId, data, getURL, action, onCallback) {
+        var _a = resolveIconAssets(data), popup = _a.popup, icon48 = _a.icon48, icon128 = _a.icon128;
+        var done = onCallback !== null && onCallback !== void 0 ? onCallback : (function () { });
+        action.setPopup({ tabId: tabId, popup: getURL(popup) }, done);
+        action.setIcon({
+            tabId: tabId,
+            path: {
+                48: getURL(icon48),
+                128: getURL(icon128),
+            },
+        }, done);
+    };
+
     var generatePostMessageWithSource = function (from) {
         return function (message) {
             if (typeof window === "undefined")
@@ -180,6 +209,69 @@
             }
             window.postMessage(__assign(__assign({}, _message), { source: eventExports.DevToolSource }), "*");
         };
+    };
+    var getExtensionRuntime = function () {
+        var _a, _b, _c;
+        var g = globalThis;
+        return (_b = (_a = g.chrome) === null || _a === void 0 ? void 0 : _a.runtime) !== null && _b !== void 0 ? _b : (_c = g.browser) === null || _c === void 0 ? void 0 : _c.runtime;
+    };
+    /**
+     * Send a one-shot message to the extension background without leaving
+     * "Unchecked runtime.lastError" in the console when the receiver is missing
+     * (e.g. MV3 service worker still waking up after navigation / HMR).
+     */
+    var safeRuntimeSendMessage = function (message) {
+        var runtime = getExtensionRuntime();
+        // Skip when extension context is invalidated (e.g. extension reload during HMR).
+        if (!(runtime === null || runtime === void 0 ? void 0 : runtime.sendMessage) || !runtime.id)
+            return;
+        try {
+            // Callback form only — Chrome requires reading runtime.lastError in the callback.
+            // Do not chain .catch() on the returned promise; that can still log unchecked lastError.
+            runtime.sendMessage(message, function () {
+                if (runtime.lastError) {
+                    /* consumed — receiver may be unavailable while the service worker is starting */
+                }
+            });
+        }
+        catch (_a) {
+            if (runtime.lastError) ;
+        }
+    };
+    /** Consume chrome.runtime.lastError after a port disconnect (required by Chrome). */
+    var consumeRuntimeLastError = function () {
+        var _a;
+        void ((_a = getExtensionRuntime()) === null || _a === void 0 ? void 0 : _a.lastError);
+    };
+    /**
+     * Update extension icon for the tab this content script runs in.
+     * Uses chrome.action directly when available (Chrome 121+), otherwise falls back
+     * to messaging the background (reliable in all extension contexts).
+     */
+    var updateExtensionIconForCurrentTab = function (data, onFallback) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+        var g = globalThis;
+        var runtime = (_b = (_a = g.chrome) === null || _a === void 0 ? void 0 : _a.runtime) !== null && _b !== void 0 ? _b : (_c = g.browser) === null || _c === void 0 ? void 0 : _c.runtime;
+        var tabs = (_e = (_d = g.chrome) === null || _d === void 0 ? void 0 : _d.tabs) !== null && _e !== void 0 ? _e : (_f = g.browser) === null || _f === void 0 ? void 0 : _f.tabs;
+        var action = (_k = (_h = (_g = g.chrome) === null || _g === void 0 ? void 0 : _g.action) !== null && _h !== void 0 ? _h : (_j = g.browser) === null || _j === void 0 ? void 0 : _j.action) !== null && _k !== void 0 ? _k : (_l = g.browser) === null || _l === void 0 ? void 0 : _l.browserAction;
+        if (!(runtime === null || runtime === void 0 ? void 0 : runtime.getURL)) {
+            onFallback === null || onFallback === void 0 ? void 0 : onFallback();
+            return;
+        }
+        // chrome.action is often unavailable in content scripts — use background fallback.
+        if (!(action === null || action === void 0 ? void 0 : action.setPopup) || !(action === null || action === void 0 ? void 0 : action.setIcon) || !(tabs === null || tabs === void 0 ? void 0 : tabs.getCurrent)) {
+            onFallback === null || onFallback === void 0 ? void 0 : onFallback();
+            return;
+        }
+        tabs.getCurrent(function (tab) {
+            if (runtime.lastError) ;
+            if (tab === null || tab === void 0 ? void 0 : tab.id) {
+                applyExtensionIconForTab(tab.id, data, runtime.getURL, action, consumeRuntimeLastError);
+            }
+            else {
+                onFallback === null || onFallback === void 0 ? void 0 : onFallback();
+            }
+        });
     };
 
     var hookReady = false;
@@ -192,6 +284,15 @@
         else {
             pendingHookCallbacks.push(fn);
         }
+    };
+    var notifyBackgroundIcon = function (data) {
+        safeRuntimeSendMessage({
+            type: eventExports.MessageHookType.mount,
+            source: eventExports.DevToolSource,
+            from: sourceFrom.detector,
+            data: data,
+            to: sourceFrom.worker,
+        });
     };
     // message from hook
     var onMessageFromHook = function (message) {
@@ -213,15 +314,8 @@
         }
         if (((_c = message.data) === null || _c === void 0 ? void 0 : _c.type) === eventExports.MessageHookType.mount) {
             runWhenHookReady(function () {
-                var _a, _b, _c;
-                var runtime = ((_a = globalThis.browser) === null || _a === void 0 ? void 0 : _a.runtime) || ((_b = globalThis.chrome) === null || _b === void 0 ? void 0 : _b.runtime);
-                runtime === null || runtime === void 0 ? void 0 : runtime.sendMessage({
-                    type: message.data.type,
-                    source: eventExports.DevToolSource,
-                    from: sourceFrom.detector,
-                    data: (_c = message.data) === null || _c === void 0 ? void 0 : _c.data,
-                    to: sourceFrom.worker,
-                });
+                var _a;
+                updateExtensionIconForCurrentTab((_a = message.data) === null || _a === void 0 ? void 0 : _a.data, function () { var _a; return notifyBackgroundIcon((_a = message.data) === null || _a === void 0 ? void 0 : _a.data); });
             });
         }
     };
