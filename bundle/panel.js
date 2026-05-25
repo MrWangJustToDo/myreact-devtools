@@ -209,17 +209,6 @@
         sourceFrom["detector"] = "detector";
     })(sourceFrom || (sourceFrom = {}));
 
-    var getExtensionRuntime = function () {
-        var _a, _b, _c;
-        var g = globalThis;
-        return (_b = (_a = g.chrome) === null || _a === void 0 ? void 0 : _a.runtime) !== null && _b !== void 0 ? _b : (_c = g.browser) === null || _c === void 0 ? void 0 : _c.runtime;
-    };
-    /** Consume chrome.runtime.lastError after a port disconnect (required by Chrome). */
-    var consumeRuntimeLastError = function () {
-        var _a;
-        void ((_a = getExtensionRuntime()) === null || _a === void 0 ? void 0 : _a.lastError);
-    };
-
     var port = null;
     var currentOnDisconnect = null;
     // TODO avoid using window
@@ -264,14 +253,7 @@
     var sendMessage = function (data, withAgentId) {
         if (withAgentId === void 0) { withAgentId = true; }
         runWhenWorkerReady(function () {
-            if (!port)
-                return;
-            try {
-                port.postMessage(__assign(__assign({}, data), { from: sourceFrom.panel, to: sourceFrom.hook, agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined }));
-            }
-            catch (_a) {
-                consumeRuntimeLastError();
-            }
+            port === null || port === void 0 ? void 0 : port.postMessage(__assign(__assign({}, data), { from: sourceFrom.panel, to: sourceFrom.hook, agentId: withAgentId ? agentIdMap.get(getTabId()) : undefined }));
         });
     };
     var onRender = function (data, _window) {
@@ -308,15 +290,7 @@
         workerConnecting = true;
         var _c = panelWindow.useConnect.getActions(), disconnect = _c.disconnect, setConnectHandler = _c.setConnectHandler;
         setConnectHandler(function () { return initPort(); });
-        try {
-            port = chrome.runtime.connect({ name: getTabId().toString() });
-            consumeRuntimeLastError();
-        }
-        catch (_d) {
-            consumeRuntimeLastError();
-            workerConnecting = false;
-            return;
-        }
+        port = chrome.runtime.connect({ name: getTabId().toString() });
         var onMessage = function (message) {
             var _a, _b;
             if (!hasShow)
@@ -353,7 +327,6 @@
         };
         var onDisconnect = function () {
             var _a, _b;
-            consumeRuntimeLastError();
             (_b = (_a = port === null || port === void 0 ? void 0 : port.onMessage) === null || _a === void 0 ? void 0 : _a.removeListener) === null || _b === void 0 ? void 0 : _b.call(_a, onMessage);
             currentOnDisconnect = null;
             disconnect();
@@ -362,6 +335,7 @@
             workerConnecting = false;
         };
         currentOnDisconnect = onDisconnect;
+        // sendMessage({ type: MessagePanelType.show }, false);
         port.onMessage.addListener(onMessage);
         port.onDisconnect.addListener(onDisconnect);
     };
@@ -375,7 +349,6 @@
                     return [4 /*yield*/, showPanel(function (window) {
                             hasShow = true;
                             panelWindow = window;
-                            initPort();
                             sendMessage({ type: eventExports.MessagePanelType.show }, false);
                             unsubscribe_1 = panelWindow.onListener(sendMessage);
                         }, function () {

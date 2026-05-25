@@ -8073,7 +8073,10 @@
     		var inspectSource = function (core) {
     		    if (!core.hasEnable)
     		        return;
+    		    if (!core._source)
+    		        return;
     		    if (typeof globalThis["inspect"] !== "function") {
+    		        console.warn("current platform not support inspect", core._source);
     		        core.notifyMessage("current platform not support inspect", "warning");
     		        return;
     		    }
@@ -8090,6 +8093,7 @@
     		        window["$$$$0"] = s;
     		        return;
     		    }
+    		    console.warn("can not view source for current item", core._source);
     		    core.notifyMessage("can not view source for current item", "warning");
     		};
     		var inspectCom = function (core) {
