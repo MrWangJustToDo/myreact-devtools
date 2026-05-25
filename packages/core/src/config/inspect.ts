@@ -7,7 +7,11 @@ import type { DevToolCore } from "../instance";
 export const inspectSource = (core: DevToolCore) => {
   if (!core.hasEnable) return;
 
+  if (!core._source) return;
+
   if (typeof globalThis["inspect"] !== "function") {
+    console.warn(`current platform not support inspect`, core._source);
+
     core.notifyMessage(`current platform not support inspect`, "warning");
 
     return;
@@ -34,6 +38,8 @@ export const inspectSource = (core: DevToolCore) => {
 
     return;
   }
+
+  console.warn(`can not view source for current item`, core._source);
 
   core.notifyMessage(`can not view source for current item`, "warning");
 };
