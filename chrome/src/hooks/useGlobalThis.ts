@@ -9,6 +9,10 @@ export const useGlobalThis = createState(() => ({ target: null as null | NodeVal
       state.target = n || null;
     },
     forceLoad: () => state.count++,
+    clear: () => {
+      state.target = null;
+      state.count = 0;
+    },
   }),
   withDeepSelector: false,
   withStableSelector: true,

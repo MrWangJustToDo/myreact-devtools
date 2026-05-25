@@ -3,8 +3,10 @@ import { useChunk } from "@/hooks/useChunk";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
+import { useGlobalThis } from "@/hooks/useGlobalThis";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
+import { useHookValue } from "@/hooks/useHookValue";
 import { useNodeName } from "@/hooks/useNodeName";
 import { useRunningCount } from "@/hooks/useRunningCount";
 import { useSelectNode } from "@/hooks/useSelectNode";
@@ -28,6 +30,8 @@ export const onClear = () => {
   useDetailNodeExt?.getActions?.()?.clear?.();
   useUnmountNode?.getActions?.()?.onClear?.();
   useRunningCount?.getActions?.()?.clear?.();
+  useHookValue.getActions?.()?.clear?.();
+  useGlobalThis.getActions?.()?.clear?.();
 };
 
 if (!isServer) {

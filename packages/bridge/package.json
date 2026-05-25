@@ -136,7 +136,7 @@
     "@my-react/react-reconciler": "^0.3.24",
     "@my-react/react-shared": "^0.3.24",
     "@types/node": "^22.19.15",
-    "reactivity-store": "^0.0.4",
+    "reactivity-store": "^0.4.0",
     "socket.io-client": "^4.8.3"
   }
 }

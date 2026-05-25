@@ -179,8 +179,8 @@ importers:
         specifier: ^22.19.15
         version: 22.19.15
       reactivity-store:
-        specifier: ^0.0.4
-        version: 0.0.4(react@18.3.1)
+        specifier: ^0.4.0
+        version: 0.4.0(react@18.3.1)
       socket.io-client:
         specifier: ^4.8.3
         version: 4.8.3
@@ -194,8 +194,8 @@ importers:
         specifier: ^4.17.23
         version: 4.17.23
       reactivity-store:
-        specifier: ^0.0.4
-        version: 0.0.4(react@18.3.1)
+        specifier: ^0.4.0
+        version: 0.4.0(react@18.3.1)
     devDependencies:
       '@my-react/react':
         specifier: ^0.3.24
@@ -4172,11 +4172,6 @@ packages:
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
-
-  reactivity-store@0.0.4:
-    resolution: {integrity: sha512-AtI43l2fXtoEnFNvtCkG+1b2aqxAJCXTaCPBmyxge1EivvOei6OkJIZg6wpUnmTXL9uO7dAamQ/ozIluIHygNg==}
-    peerDependencies:
-      react: ^17.0.2 || ^18.2.0
 
   reactivity-store@0.4.0:
     resolution: {integrity: sha512-uL9uoREOBg2o4zUa8vMU0AbvAOk0osPloizscmyZqMvJzcuuKX3ELFYYr1DX8gAcfvlhPduz4QuLZn1eChCu4Q==}
@@ -10025,12 +10020,6 @@ snapshots:
   react@18.3.1:
     dependencies:
       loose-envify: 1.4.0
-
-  reactivity-store@0.0.4(react@18.3.1):
-    dependencies:
-      '@vue/reactivity': 3.5.31
-      '@vue/shared': 3.5.31
-      react: 18.3.1
 
   reactivity-store@0.4.0(react@18.3.1):
     dependencies:
