@@ -7,6 +7,7 @@ export const useChunk = createState(
   {
     withActions: (s) => ({
       setLoading: (id: number | string) => {
+        if (s.ids.includes(id)) return;
         s.length++;
         s.ids.push(id);
       },
