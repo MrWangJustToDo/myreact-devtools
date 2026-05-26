@@ -1,7 +1,18 @@
-import { parse } from "url";
 import { WebSocketServer } from "ws";
 import { SocketWrapper } from "./socket-wrapper.mjs";
 import { handleConnection } from "./socket-manager.mjs";
+
+/**
+ * Parse request URL using WHATWG URL API
+ * @param {import('http').IncomingMessage} request
+ */
+const getUrlInfo = (request) => {
+  const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
+  return {
+    pathname: url.pathname,
+    searchParams: url.searchParams,
+  };
+};
 
 /**
  * Setup WebSocket server
@@ -12,7 +23,7 @@ export const setupWebSocket = (server, path = "/ws") => {
   const wss = new WebSocketServer({ noServer: true });
 
   server.on("upgrade", (request, socket, head) => {
-    const { pathname } = parse(request.url, true);
+    const { pathname } = getUrlInfo(request);
 
     if (pathname === path) {
       wss.handleUpgrade(request, socket, head, (ws) => {
@@ -22,9 +33,9 @@ export const setupWebSocket = (server, path = "/ws") => {
   });
 
   wss.on("connection", (ws, request) => {
-    const { query } = parse(request.url, true);
+    const { searchParams } = getUrlInfo(request);
     const wrapper = new SocketWrapper(ws, "ws");
-    wrapper.type = query.type || null;
+    wrapper.type = searchParams.get("type") || null;
 
     ws.on("message", (message) => {
       wrapper._handleMessage(message.toString());

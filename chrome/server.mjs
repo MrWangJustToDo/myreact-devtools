@@ -2,7 +2,6 @@ import cors from "cors";
 import { createServer } from "http";
 import next from "next";
 import { networkInterfaces } from "os";
-import { parse } from "url";
 
 import { setupSocketIO } from "./lib/socketio-server.mjs";
 import { setupWebSocket } from "./lib/ws-server.mjs";
@@ -38,8 +37,9 @@ app
     serve.use(cors());
 
     serve.use((req, res) => {
-      const parsedUrl = parse(req.url, true);
-      handle(req, res, parsedUrl);
+      const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+      const query = Object.fromEntries(url.searchParams.entries());
+      handle(req, res, { pathname: url.pathname, query });
     });
 
     server.listen(port, () => {
