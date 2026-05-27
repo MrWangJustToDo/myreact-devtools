@@ -497,7 +497,6 @@
     		    function PlainNode(_id) {
     		        this.$$S = fiberValueSymbol;
     		        this.i = _id || "".concat(id$1++);
-    		        this._r = 0;
     		    }
     		    PlainNode.prototype.clone = function (parentId) {
     		        var cloned = new PlainNode(this.i);
@@ -988,6 +987,34 @@
     		    return value.displayName || "Context";
     		};
 
+    		var KnownType = {
+    		    Object: true,
+    		    Error: true,
+    		    WeakMap: true,
+    		    WeakSet: true,
+    		    Array: true,
+    		    Iterable: true,
+    		    Map: true,
+    		    Set: true,
+    		    String: true,
+    		    Number: true,
+    		    Boolean: true,
+    		    Date: true,
+    		    Null: true,
+    		    Undefined: true,
+    		    Function: true,
+    		    AsyncFunction: true,
+    		    GeneratorFunction: true,
+    		    Symbol: true,
+    		    Promise: true,
+    		    RegExp: true,
+    		    Element: true,
+    		    ReadError: true,
+    		    ReactElement: true,
+    		    Module: true,
+    		};
+    		var nodeValueSymbol = "d::n::v";
+
     		// SEE https://github.com/MrWangJustToDo/reactivity-store
     		// -- reactivity-store utils --
     		var ReactiveFlags;
@@ -1018,7 +1045,6 @@
     		    return r ? r[ReactiveFlags.IS_REF] === true : false;
     		}
 
-    		var nodeValueSymbol = "d::n::v";
     		var isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
     		var emptyConstructor = {}.constructor;
     		var id = 1;
@@ -1670,6 +1696,8 @@
     		        console.error("disabledDepth fell below zero. " + "This is a bug in React. Please file an issue.");
     		    }
     		}
+
+    		var hookValueSymbol = "d::h::v";
 
     		// https://github.com/facebook/react/blob/main/packages/react-debug-tools/src/ReactDebugHooks.js
     		/* eslint-disable @typescript-eslint/no-unused-vars */
@@ -2556,7 +2584,7 @@
     		        var isHook = !subHooks || subHooks.length === 0;
     		        var children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, _p) : undefined;
     		        return {
-    		            $$s: "d::h::v",
+    		            $$s: hookValueSymbol,
     		            k: id === null || id === void 0 ? void 0 : id.toString(),
     		            e: isStateEditable,
     		            i: isHook ? _p.index++ : undefined,
@@ -2618,7 +2646,7 @@
     		        var isRef = hook.type === HOOK_TYPE.useRef;
     		        var isContext = hook.type === HOOK_TYPE.useContext;
     		        final.push({
-    		            $$s: "d::h::v",
+    		            $$s: hookValueSymbol,
     		            k: index.toString(),
     		            i: index,
     		            n: isContext ? getContextName(hook.value) : getHookName(hook.type),
@@ -2928,7 +2956,9 @@
     		    var exist = detailMap.get(fiber);
     		    if (exist) {
     		        assignFiber(exist, fiber);
-    		        exist._r = plainNode._r;
+    		        if (plainNode._r) {
+    		            exist._r = plainNode._r;
+    		        }
     		        return exist;
     		    }
     		    else {
@@ -2937,7 +2967,9 @@
     		        created._$f = true;
     		        // sync running count, it is a marker to make use know whether the fiber has been re-rendered
     		        // only work for development mode
-    		        created._r = plainNode._r;
+    		        if (plainNode._r) {
+    		            created._r = plainNode._r;
+    		        }
     		        detailMap.set(fiber, created);
     		        return created;
     		    }
@@ -3565,8 +3597,14 @@
     		        var selectTree = runtime._selectNode._t || [];
     		        if (id !== runtime._selectId && !selectTree.includes(id))
     		            return;
-    		        if (id === runtime._selectId)
-    		            node._r++;
+    		        if (id === runtime._selectId) {
+    		            if (node._r) {
+    		                node._r++;
+    		            }
+    		            else {
+    		                node._r = 1;
+    		            }
+    		        }
     		        runtime.notifyRunning(id);
     		    };
     		    var onPerformanceWarn = function (fiber) {
@@ -3832,9 +3870,16 @@
     		function overridePatchToFiberUnmount(dispatch, runtime) {
     		    if (typeof dispatch.onFiberUnmount === "function") {
     		        dispatch.onFiberUnmount(function (f) { return unmountPlainNode(f, runtime); });
-    		        dispatch.onAfterCommitMount(function () { return runtime.notifyUnmountNode(); });
-    		        dispatch.onAfterCommitUpdate(function () { return runtime.notifyUnmountNode(); });
-    		        dispatch.onAfterCommitUnmount(function () { return runtime.notifyUnmountNode(); });
+    		        if (dispatch.onAfterCommitMount) {
+    		            dispatch.onAfterCommitMount(function () { return runtime.notifyUnmountNode(); });
+    		            dispatch.onAfterCommitUpdate(function () { return runtime.notifyUnmountNode(); });
+    		            dispatch.onAfterCommitUnmount(function () { return runtime.notifyUnmountNode(); });
+    		        }
+    		        else {
+    		            dispatch.onAfterCommit(function () { return runtime.notifyUnmountNode(); });
+    		            dispatch.onAfterUpdate(function () { return runtime.notifyUnmountNode(); });
+    		            dispatch.onAfterUnmount(function () { return runtime.notifyUnmountNode(); });
+    		        }
     		    }
     		    else {
     		        var originalPatchUnmount_1 = dispatch.patchToFiberUnmount;
@@ -5008,9 +5053,11 @@
 
     		exports$1.DevToolCore = DevToolCore;
     		exports$1.DevToolSource = DevToolSource;
+    		exports$1.KnownType = KnownType;
     		exports$1.PlainNode = PlainNode;
     		exports$1.assignFiber = assignFiber;
     		exports$1.debounce = debounce;
+    		exports$1.deleteLinkState = deleteLinkState;
     		exports$1.diffTree = diffTree;
     		exports$1.getComponentFiberByDom = getComponentFiberByDom;
     		exports$1.getComponentFiberByFiber = getComponentFiberByFiber;
@@ -5027,6 +5074,8 @@
     		exports$1.getHMRInternal = getHMRInternal;
     		exports$1.getHMRInternalFromId = getHMRInternalFromId;
     		exports$1.getHMRState = getHMRState;
+    		exports$1.getHook = getHook;
+    		exports$1.getHookIndexFromState = getHookIndexFromState;
     		exports$1.getMockFiberFromElement = getMockFiberFromElement;
     		exports$1.getNode = getNode;
     		exports$1.getNodeFromId = getNodeFromId;
@@ -5043,6 +5092,7 @@
     		exports$1.getTreeMap = getTreeMap;
     		exports$1.getTypeName = getTypeName;
     		exports$1.getValueFromId = getValueFromId;
+    		exports$1.hookValueSymbol = hookValueSymbol;
     		exports$1.initPlainNode = initPlainNode;
     		exports$1.inspectDispatch = inspectDispatch;
     		exports$1.inspectFiber = inspectFiber;
@@ -5055,9 +5105,11 @@
     		exports$1.isValidElement = isValidElement;
     		exports$1.loopChangedTree = loopChangedTree;
     		exports$1.loopTree = loopTree;
+    		exports$1.nodeValueSymbol = nodeValueSymbol;
     		exports$1.shallowAssignFiber = shallowAssignFiber;
     		exports$1.snapshotBeforeChange = snapshotBeforeChange;
     		exports$1.throttle = throttle;
+    		exports$1.tryLinkStateToHookIndex = tryLinkStateToHookIndex;
     		exports$1.typeKeys = typeKeys;
     		exports$1.unmountPlainNode = unmountPlainNode;
     		exports$1.updateFiberNode = updateFiberNode; 
