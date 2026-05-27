@@ -1,59 +1,9 @@
 import { getElementName, isValidElement } from "../fiber";
 
+import { nodeValueSymbol, type NodeValue } from "./instance";
 import { isReactive, isReadonly, isRef, isShallow } from "./reactive";
 
 import type { PromiseWithState } from "@my-react/react-reconciler";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const KnownType = {
-  Object: true,
-  Error: true,
-  WeakMap: true,
-  WeakSet: true,
-  Array: true,
-  Iterable: true,
-  Map: true,
-  Set: true,
-  String: true,
-  Number: true,
-  Boolean: true,
-  Date: true,
-  Null: true,
-  Undefined: true,
-  Function: true,
-  AsyncFunction: true,
-  GeneratorFunction: true,
-  Symbol: true,
-  Promise: true,
-  RegExp: true,
-  Element: true,
-  ReadError: true,
-  ReactElement: true,
-  Module: true,
-};
-
-const nodeValueSymbol = "d::n::v";
-
-export type NodeValue = {
-  $$s: "d::n::v";
-  // id
-  i: number;
-  // type
-  t: keyof typeof KnownType;
-  // wrapper
-  _t?: "Reactive" | "Readonly" | "Shallow" | "Ref" | "Object";
-  // value
-  v: any;
-  // expandable
-  e: boolean;
-  // loaded
-  l?: boolean;
-  // name
-  n?: string;
-
-  // extend props;
-  [p: string]: any;
-};
 
 const isInBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
 

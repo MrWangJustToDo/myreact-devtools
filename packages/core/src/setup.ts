@@ -32,9 +32,15 @@ export interface DevToolRenderDispatch extends CustomRenderDispatch {
 function overridePatchToFiberUnmount(dispatch: DevToolRenderDispatch, runtime: DevToolCore) {
   if (typeof dispatch.onFiberUnmount === "function") {
     dispatch.onFiberUnmount((f) => unmountPlainNode(f, runtime));
-    dispatch.onAfterCommitMount(() => runtime.notifyUnmountNode());
-    dispatch.onAfterCommitUpdate(() => runtime.notifyUnmountNode());
-    dispatch.onAfterCommitUnmount(() => runtime.notifyUnmountNode());
+    if (dispatch.onAfterCommitMount) {
+      dispatch.onAfterCommitMount(() => runtime.notifyUnmountNode());
+      dispatch.onAfterCommitUpdate(() => runtime.notifyUnmountNode());
+      dispatch.onAfterCommitUnmount(() => runtime.notifyUnmountNode());
+    } else {
+      dispatch.onAfterCommit(() => runtime.notifyUnmountNode());
+      dispatch.onAfterUpdate(() => runtime.notifyUnmountNode());
+      dispatch.onAfterUnmount(() => runtime.notifyUnmountNode());
+    }
   } else {
     if (__DEV__) {
       console.warn("[@my-react-devtool/core] current version of @my-react will deprecate in next update, please upgrade to latest version");

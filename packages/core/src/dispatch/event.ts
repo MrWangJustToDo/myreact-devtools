@@ -209,7 +209,13 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
 
     if (id !== runtime._selectId && !selectTree.includes(id)) return;
 
-    if (id === runtime._selectId) node._r++;
+    if (id === runtime._selectId) {
+      if (node._r) {
+        node._r++;
+      } else {
+        node._r = 1;
+      }
+    }
 
     runtime.notifyRunning(id);
   };

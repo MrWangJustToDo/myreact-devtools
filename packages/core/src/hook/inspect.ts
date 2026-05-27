@@ -3,8 +3,9 @@ import { HOOK_TYPE, UpdateQueueType } from "@my-react/react-shared";
 import { getNode } from "../data";
 import { getContextName } from "../fiber";
 import { disableLogs, reenableLogs } from "../log";
-import { getDispatchFromFiber, type HOOKTree } from "../tree";
+import { getDispatchFromFiber } from "../tree";
 
+import { hookValueSymbol, type HOOKTree } from "./instance";
 import { inspectHooksOfFiber } from "./internal";
 
 import type { DispatcherType, HooksTree } from "./internal";
@@ -19,7 +20,7 @@ const parseHooksTreeToHOOKTree = (node: HooksTree, d: number, p?: { index: numbe
     const isHook = !subHooks || subHooks.length === 0;
     const children = subHooks ? parseHooksTreeToHOOKTree(subHooks, d + 1, _p) : undefined;
     return {
-      $$s: "d::h::v",
+      $$s: hookValueSymbol,
       k: id?.toString(),
       e: isStateEditable,
       i: isHook ? _p.index++ : undefined,
@@ -83,7 +84,7 @@ const getHookNormal = (fiber: MyReactFiberNodeDev) => {
     const isRef = hook.type === HOOK_TYPE.useRef;
     const isContext = hook.type === HOOK_TYPE.useContext;
     final.push({
-      $$s: "d::h::v",
+      $$s: hookValueSymbol,
       k: index.toString(),
       i: index,
       n: isContext ? getContextName(hook.value) : getHookName(hook.type),

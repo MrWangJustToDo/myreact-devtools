@@ -371,7 +371,9 @@ export const inspectFiber = (fiber: MyReactFiberNode) => {
   if (exist) {
     assignFiber(exist, fiber);
 
-    exist._r = plainNode._r;
+    if (plainNode._r) {
+      exist._r = plainNode._r;
+    }
 
     return exist;
   } else {
@@ -383,7 +385,9 @@ export const inspectFiber = (fiber: MyReactFiberNode) => {
 
     // sync running count, it is a marker to make use know whether the fiber has been re-rendered
     // only work for development mode
-    created._r = plainNode._r;
+    if (plainNode._r) {
+      created._r = plainNode._r;
+    }
 
     detailMap.set(fiber, created);
 
