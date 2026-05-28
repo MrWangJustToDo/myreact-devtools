@@ -326,5 +326,5 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
     };
   }
 
-  globalThis.addEventListener("unhandledrejection", (e) => onGlobalError(e.reason));
+  globalThis.addEventListener?.("unhandledrejection", (e) => onGlobalError(e.reason));
 };
