@@ -6,6 +6,6 @@ __turbopack_load_page_chunks__("/bridge", [
   "static/chunks/0q46~~-3ne308.js",
   "static/chunks/0xkdn0lbm~l8f.js",
   "static/chunks/0w1u1z-20ymdr.js",
-  "static/chunks/08w1_gvti~txk.js",
-  "static/chunks/turbopack-07jg144f2fdy2.js"
+  "static/chunks/011_0x7v94uav.js",
+  "static/chunks/turbopack-02-a04or26-dh.js"
 ])

@@ -8409,7 +8409,7 @@
     		var DevToolSource = "@my-react/devtool";
 
     		var patchEvent = function (dispatch, runtime) {
-    		    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+    		    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
     		    if (dispatch["$$hasDevToolEvent"])
     		        return;
     		    dispatch["$$hasDevToolEvent"] = true;
@@ -8652,7 +8652,7 @@
     		            onUnmount();
     		        };
     		    }
-    		    globalThis.addEventListener("unhandledrejection", function (e) { return onGlobalError(e.reason); });
+    		    (_p = globalThis.addEventListener) === null || _p === void 0 ? void 0 : _p.call(globalThis, "unhandledrejection", function (e) { return onGlobalError(e.reason); });
     		};
 
     		var checkIsValidDispatchVersion = function (dispatch) {
