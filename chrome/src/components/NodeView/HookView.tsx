@@ -8,7 +8,7 @@ import { useDetailNodeExt } from "@/hooks/useDetailNodeExt";
 import { useTriggerHover, useTriggerLayout } from "@/hooks/useTriggerState";
 
 import { AutoHeightLayout } from "../AutoHeightLayout";
-import { SimpleValueView, ValueView } from "../ValueView";
+import { CompareValueView, ValueView } from "../ValueView";
 
 import { TriggerView } from "./ExtendView";
 
@@ -91,7 +91,7 @@ const ControlHookViewTree = ({ prevName, item, side }: { prevName: string; item:
 
   if (currentIsHookNode) {
     return (
-      <SimpleValueView
+      <CompareValueView
         name={item.n}
         prevName={currentName}
         item={item.v}

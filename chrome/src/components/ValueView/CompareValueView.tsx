@@ -1,53 +1,58 @@
 import { Spinner } from "@heroui/react";
-import { Ellipsis, Play } from "lucide-react";
-import { useState, useRef, type ReactNode } from "react";
+import { DiffIcon, Ellipsis, Play } from "lucide-react";
+import { useEffect, useRef, type ReactNode } from "react";
 
+import { useCompare } from "@/hooks/useCompare";
 import { useContextMenu } from "@/hooks/useContextMenu";
 
-import { ValueChange } from "./ValueChange";
-import { useChunkExpandEffects, useNodeValueData, usePagedChildEntries, ValueHiddenItemsRow } from "./valueViewShared";
+import { buildValuePathKey, useChunkExpandEffects, useNodeValueData, usePagedChildEntries, ValueHiddenItemsRow } from "./valueViewShared";
 
 import type { NodeValue as NodeValueType } from "@my-react-devtool/core";
 
-const { open: contextOpen, setId, setType, setSource, clear, setOpenCallback } = useContextMenu.getActions();
+const { open: contextOpen, setId, setType, setSource, clear } = useContextMenu.getActions();
 
-// core component to view any typeof data with incremental loading
-export const ValueView = ({
+const { toggleExpand, setLId, setRId } = useCompare.getActions();
+
+export const CompareValueView = ({
+  prevName,
   name,
   item,
-  rootItem,
-  parentItem,
+  side,
   prefix,
-  // for edit update on fiber
-  editable,
-  type,
-  // for hook prev view
-  hookIndex,
-  // for incremental loading
   chunkId,
-  // auto expand
-  expandCount,
 }: {
+  prevName: string;
   name: string;
+  side: "l" | "r";
   item?: NodeValueType;
-  rootItem?: NodeValueType;
-  parentItem?: NodeValueType;
   prefix?: ReactNode;
-  editable?: boolean;
-  type?: string;
-  hookIndex?: number;
   chunkId?: number;
-  expandCount?: number;
 }) => {
-  const [expand, setExpand] = useState(() => !!expandCount);
-  const [count, setCount] = useState(0);
+  const pathKey = buildValuePathKey(prevName, name);
+
+  const { expand, lId, rId } = useCompare.useShallowSelector((s) => ({
+    expand: !!s.expand[pathKey],
+    lId: s.lIds[pathKey],
+    rId: s.rIds[pathKey],
+  }));
+
   const hasOpenRef = useRef(false);
 
-  const { chunkData, cData, data, n, _t, id, text } = useNodeValueData(item);
+  const { chunkData, cData, data, id, text } = useNodeValueData(item);
 
   const { entries, hiddenCount, showMore, visibleCount } = usePagedChildEntries(data, id);
 
   useChunkExpandEffects({ expand, item, chunkData, cData, hasOpenRef, visibleCount });
+
+  useEffect(() => {
+    if (!id) return;
+
+    if (side === "l") {
+      setLId(pathKey, id);
+    } else {
+      setRId(pathKey, id);
+    }
+  }, [id, side, pathKey]);
 
   const onContextClick = (e: React.MouseEvent) => {
     // if the data not loaded, do not show context menu
@@ -60,16 +65,11 @@ export const ValueView = ({
     setId(item.i);
 
     setType(item.t);
-
-    setOpenCallback(() => {
-      setExpand(true);
-      setCount(4);
-    });
   };
 
-  const finalOpenCount = count || (typeof expandCount === "number" ? expandCount : 0);
+  const hasDiff = !!(lId && rId && lId !== rId);
 
-  if (!item) return null;
+  if (!item || !id) return null;
 
   const isChunk = item.l === false;
   const currentIsExpandable = item.e;
@@ -85,43 +85,34 @@ export const ValueView = ({
       <span className={`hook-${item.t} pl-1 ${isReadError ? "text-red-300" : ""} ${isElement || isFunction ? "text-teal-600" : ""}`}>{textContent}</span>
     );
 
-    const currentIsEditable = editable && item._t !== "Readonly" && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
-
     return (
       <div data-id={id} data-chunk={isChunk} className="node-value-view">
         <div className="flex w-full my-0.5 items-center">
           <span className="text-transparent w-[1.5em] h-[1.5em] inline-block shrink-0">{StateIcon}</span>
           {prefix}
+          {hasDiff && <DiffIcon size="1em" className="mr-0.5 shrink-0 text-red-400" />}
           <div className={`w-full relative flex pr-2 line-clamp-1 break-all`}>
             <span className="flex-shrink-0 cursor-pointer whitespace-nowrap" onContextMenu={onContextClick}>
               {name}
             </span>
             <span className="flex-shrink-0">:</span>
-            {currentIsEditable ? (
-              <span className="node-value-placeholder relative line-clamp-1 break-all" title={textContent}>
-                <ValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
-                  {element}
-                </ValueChange>
-              </span>
-            ) : (
-              <span
-                className={
-                  "node-value-placeholder flex-grow line-clamp-1 break-all" +
-                  (isFunction || isElement ? " cursor-pointer node-item-hover rounded-[2px] overflow-hidden" : "")
+            <span
+              className={
+                "node-value-placeholder flex-grow line-clamp-1 break-all" +
+                (isFunction || isElement ? " cursor-pointer node-item-hover rounded-[2px] overflow-hidden" : "")
+              }
+              onClick={async () => {
+                if ((isFunction || isElement) && id) {
+                  setId(id);
+                  setSource();
+                  await new Promise((r) => setTimeout(r, 100));
+                  clear();
                 }
-                onClick={async () => {
-                  if ((isFunction || isElement) && id) {
-                    setId(id);
-                    setSource();
-                    await new Promise((r) => setTimeout(r, 100));
-                    clear();
-                  }
-                }}
-                title={textContent}
-              >
-                {element}
-              </span>
-            )}
+              }}
+              title={textContent}
+            >
+              {element}
+            </span>
           </div>
         </div>
       </div>
@@ -134,13 +125,14 @@ export const ValueView = ({
         <div className="flex w-full my-0.5 items-center">
           <span
             className={"text-gray-400 w-[1.5em] h-[1.5em] cursor-pointer inline-flex justify-center items-center hover:text-gray-700 shrink-0"}
-            onClick={() => setExpand(!expand)}
+            onClick={() => toggleExpand(pathKey)}
           >
             {StateIcon}
           </span>
           {prefix}
+          {hasDiff && <DiffIcon size="1em" className="mr-0.5 shrink-0 text-red-400" />}
           <div className="max-w-full flex line-clamp-1 break-all">
-            <span className="flex-shrink-0 cursor-pointer whitespace-nowrap" onClick={() => setExpand(!expand)} onContextMenu={onContextClick}>
+            <span className="flex-shrink-0 cursor-pointer whitespace-nowrap" onClick={() => toggleExpand(pathKey)} onContextMenu={onContextClick}>
               {name}
             </span>
             <span className="flex-shrink-0 pr-1">:</span>
@@ -150,22 +142,11 @@ export const ValueView = ({
           </div>
         </div>
         {(hasOpenRef.current || expand) && (
-          <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`} key={count}>
+          <div className={`${expand ? "block" : "hidden"} ml-6 my-0.5`}>
             {data ? (
               <>
                 {entries.map(({ name: childName, item: childItem }) => (
-                  <ValueView
-                    key={childName}
-                    name={childName}
-                    item={childItem}
-                    type={type}
-                    rootItem={rootItem || item}
-                    editable={editable && _t !== "Readonly" && typeof n !== "string"}
-                    chunkId={isChunk ? id : chunkId}
-                    parentItem={item}
-                    hookIndex={hookIndex}
-                    expandCount={finalOpenCount ? finalOpenCount - 1 : 0}
-                  />
+                  <CompareValueView key={childName} side={side} prevName={pathKey} name={childName} item={childItem} chunkId={isChunk ? id : chunkId} />
                 ))}
                 <ValueHiddenItemsRow hiddenCount={hiddenCount} onShowMore={showMore} />
               </>

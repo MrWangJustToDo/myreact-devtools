@@ -3,7 +3,7 @@ import { Divider, Spacer } from "@heroui/react";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { useConfig } from "@/hooks/useConfig";
 
-import { SimpleValueView, ValueView } from "../ValueView";
+import { CompareValueView, ValueView } from "../ValueView";
 
 import type { PlainNode } from "@my-react-devtool/core";
 
@@ -62,7 +62,7 @@ export const ControlStateView = ({ node, side }: { node?: PlainNode; side: "l" |
     const key = stateKeys[index];
     return (
       <div className={`tree-wrapper`} key={id + "-" + index}>
-        <SimpleValueView name={key} side={side} prevName="state" item={currentSelectDetail?.s?.v?.[key]} />
+        <CompareValueView name={key} side={side} prevName="state" item={currentSelectDetail?.s?.v?.[key]} />
       </div>
     );
   });
