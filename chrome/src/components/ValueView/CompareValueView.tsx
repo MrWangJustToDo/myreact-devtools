@@ -76,7 +76,8 @@ export const CompareValueView = ({
   const StateIcon = <Play fill="currentColor" className={`origin-center ${expand ? "rotate-90" : ""}`} width="0.6em" height="0.6em" />;
 
   if (!currentIsExpandable) {
-    const textContent = item.t === "String" ? `"${String(item.v)}"` : String(item.v);
+    const textContent =
+      item.t === "String" ? `"${String(item.v)}"` : item.t === "BigInt" && typeof item.v === "string" && !item.v.endsWith("n") ? `${item.v}n` : String(item.v);
     const isReadError = item.t === "ReadError";
     const isElement = item.t === "Element";
     const isFunction = item.t === "Function" || item.t === "AsyncFunction" || item.t === "GeneratorFunction";

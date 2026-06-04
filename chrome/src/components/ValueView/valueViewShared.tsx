@@ -1,11 +1,10 @@
+import { type NodeValue as NodeValueType } from "@my-react-devtool/core";
 import { MinusCircleIcon, PlusCircleIcon } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState, type MutableRefObject, type ReactNode } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
 import { usePrevious } from "@/hooks/usePrevious";
 import { getText } from "@/utils/treeValue";
-
-import type { NodeValue as NodeValueType } from "@my-react-devtool/core";
 
 /** Max children rendered per expand level (Chrome DevTools-style paging). */
 export const VALUE_CHILD_PAGE_SIZE = 120;
@@ -62,7 +61,7 @@ export function formatNodeValueText({ n, t, _t, data }: FormatNodeValueTextParam
       }
       return `[${re}]`;
     }
-    if (t === "Iterable" || t === "Object" || _t === "Object") {
+    if (t === "Iterable" || t === "Object" || t === "Promise" || t === "DataView" || _t === "Object") {
       const re = getText("Object", data ?? {});
       if (Array.isArray(re)) {
         return (

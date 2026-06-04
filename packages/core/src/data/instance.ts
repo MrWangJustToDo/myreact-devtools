@@ -10,6 +10,7 @@ export const KnownType = {
   String: true,
   Number: true,
   Boolean: true,
+  BigInt: true,
   Date: true,
   Null: true,
   Undefined: true,
@@ -23,7 +24,7 @@ export const KnownType = {
   ReadError: true,
   ReactElement: true,
   Module: true,
-};
+} as const;
 
 export const nodeValueSymbol = "d::n::v" as const;
 

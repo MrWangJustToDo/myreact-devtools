@@ -14,17 +14,17 @@ const getShortTextFromHookValue = (item: HOOKTree["v"]) => {
   if (type === "Element") {
     return createElement("span", { className: "text-teal-600" }, val);
   }
-  if (type === "Date" || type === "Boolean" || type === "Error" || type === "Number" || type === "Symbol") {
+  if (type === "Date" || type === "Boolean" || type === "Error" || type === "Number" || type === "BigInt" || type === "Symbol" || type === "Promise") {
     return val;
   }
   if (item?.n) {
     return item.n;
   }
   if (item?.l === false) {
-    if (item.t === "Array" || item.t === "Set") {
+    if (item.t === "Array" || item.t === "Set" || item.t?.endsWith("Array")) {
       return "[…]";
     }
-    if (item.t === "Map" || item.t === "Object") {
+    if (item.t === "Map" || item.t === "Object" || item.t === "Promise") {
       return "{…}";
     }
     return "…";

@@ -75,6 +75,16 @@ const isObject = (value: NodeValue["t"]) => {
   );
 };
 
+const readPromiseState = (promise: PromiseWithState<any> & Record<string, any>) => {
+  const status = promise.status ?? "pending";
+
+  return {
+    status,
+    value: promise.value ?? promise._value,
+    reason: promise.reason ?? promise._reason,
+  };
+};
+
 // serialized any obj to devtool protocol obj
 const getTargetNode = (value: any, type: NodeValue["t"], deep = 3): NodeValue => {
   const existId = valueToIdMap.get(value);
@@ -212,6 +222,8 @@ export const getNode = (value: any, deep = 3): NodeValue => {
   try {
     const type = getType(value);
 
+    const promise = type === "Promise" ? (value as PromiseWithState<any>) : null;
+
     let expandable = isObject(type);
 
     if (type === "Promise" && ((value as PromiseWithState<any>).status === "fulfilled" || (value as PromiseWithState<any>).status === "rejected")) {
@@ -250,6 +262,48 @@ export const getNode = (value: any, deep = 3): NodeValue => {
           _t: wrapperType,
           v: value.message,
           e: expandable,
+        };
+      }
+      if (type === "BigInt") {
+        return {
+          $$s: nodeValueSymbol,
+          i: currentId,
+          t: type,
+          _t: wrapperType,
+          v: `${value.toString()}n`,
+          e: false,
+        };
+      }
+      if (type === "Date") {
+        return {
+          $$s: nodeValueSymbol,
+          i: currentId,
+          t: type,
+          _t: wrapperType,
+          v: value.toISOString(),
+          e: false,
+        };
+      }
+      if (type === "WeakMap" || type === "WeakSet") {
+        return {
+          $$s: nodeValueSymbol,
+          i: currentId,
+          t: type,
+          _t: wrapperType,
+          v: `${type} { [entries not enumerable] }`,
+          e: false,
+        };
+      }
+      if (type === "Promise") {
+        const status = promise ? readPromiseState(promise as PromiseWithState<any> & Record<string, any>).status : "pending";
+
+        return {
+          $$s: nodeValueSymbol,
+          i: currentId,
+          t: type,
+          _t: wrapperType,
+          v: `Promise { <${status}> }`,
+          e: false,
         };
       }
       if (typeof value === "object" && value !== null) {
@@ -328,6 +382,8 @@ export const getObj = (value: NodeValue): any => {
       return v;
     case "Number":
       return Number(v);
+    case "BigInt":
+      return BigInt(String(v).replace(/n$/, "") || "0");
     case "Boolean":
       return v === "true" || v === true;
     case "Date":
