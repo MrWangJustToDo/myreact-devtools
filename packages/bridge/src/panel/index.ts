@@ -157,6 +157,9 @@ const initPort = () => {
 
       if (currentAgentId && message.data.agentId !== currentAgentId) return;
 
+      // Hook is still alive — cancel a pending page-reload reset (SPA navigation).
+      cancelPendingPageReload();
+
       // Got a valid render message — cancel the "not detected" fallback timer
       if (navigationTimerId) {
         clearTimeout(navigationTimerId);
@@ -237,16 +240,20 @@ const clear = () => {
 
 init(getTabId());
 
-let isHandlingNavigation = false;
+let pageReloadTimer: ReturnType<typeof setTimeout> | null = null;
 
-const handleNavigation = () => {
-  // Deduplicate — onNavigated and tabs.onUpdated can both fire for the same navigation
-  if (isHandlingNavigation) return;
-  isHandlingNavigation = true;
-  setTimeout(() => (isHandlingNavigation = false), 200);
+const cancelPendingPageReload = () => {
+  if (pageReloadTimer) {
+    clearTimeout(pageReloadTimer);
+    pageReloadTimer = null;
+  }
+};
+
+const performPageReload = () => {
+  pageReloadTimer = null;
 
   if (__DEV__) {
-    console.log("[@my-react-devtool/panel] handleNavigation");
+    console.log("[@my-react-devtool/panel] performPageReload");
   }
 
   clear();
@@ -279,11 +286,11 @@ const handleNavigation = () => {
   }, 2000);
 };
 
-chrome.devtools.network.onNavigated.addListener(handleNavigation);
-
-// Backup for bfcache restores where onNavigated may not fire
+// Some apps emit status=loading on soft navigation. Defer the reset and cancel
+// if render messages keep arriving (hook still alive = not a real reload).
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (tabId === getTabId() && changeInfo.status === "loading") {
-    handleNavigation();
+    cancelPendingPageReload();
+    pageReloadTimer = setTimeout(performPageReload, 500);
   }
 });

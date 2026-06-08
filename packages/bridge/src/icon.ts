@@ -45,3 +45,19 @@ export const applyExtensionIconForTab = (
     done
   );
 };
+
+export const resetExtensionIconForTab = (tabId: number, getURL: (path: string) => string, action: ExtensionActionApi, onCallback?: () => void) => {
+  const done = onCallback ?? (() => {});
+
+  action.setPopup({ tabId, popup: getURL("disablePopup.html") }, done);
+  action.setIcon(
+    {
+      tabId,
+      path: {
+        48: getURL("icons/48.png"),
+        128: getURL("icons/128.png"),
+      },
+    },
+    done
+  );
+};

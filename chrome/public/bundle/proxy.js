@@ -54,6 +54,7 @@
     		exports$1.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
+    		    MessageDetectorType["unload"] = "detector-unload";
     		})(exports$1.MessageDetectorType || (exports$1.MessageDetectorType = {}));
     		exports$1.MessageProxyType = void 0;
     		(function (MessageProxyType) {

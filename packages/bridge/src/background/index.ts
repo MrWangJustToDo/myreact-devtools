@@ -1,10 +1,10 @@
 import { DevToolSource } from "@my-react-devtool/core/event";
 
-import { MessageHookType, MessageWorkerType, sourceFrom } from "../type";
+import { MessageDetectorType, MessageHookType, MessageWorkerType, sourceFrom } from "../type";
 
-import { setExtensionIconForTab } from "./icon";
+import { resetExtensionIconForTab, setExtensionIconForTab } from "./icon";
 
-import type { MessageHookDataType, MessagePanelDataType } from "../type";
+import type { MessageDetectorDataType, MessageHookDataType, MessagePanelDataType } from "../type";
 
 const hub: Record<string, { proxy: chrome.runtime.Port | null; devtool: chrome.runtime.Port | null }> = {};
 
@@ -120,42 +120,26 @@ chrome.runtime.onConnect.addListener((port) => {
   }
 });
 
-// Reset the icon to default (disabled) state when a tab navigates,
-// before the detector has a chance to re-detect @my-react on the new page.
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-  if (changeInfo.status === "loading") {
-    try {
-      chrome.action.setPopup({
-        tabId,
-        popup: chrome.runtime.getURL("disablePopup.html"),
-      });
-      chrome.action.setIcon({
-        tabId,
-        path: {
-          48: chrome.runtime.getURL("icons/48.png"),
-          128: chrome.runtime.getURL("icons/128.png"),
-        },
-      });
-    } catch {
-      // tab may have been closed
-    }
-  }
-});
-
 // from detector, change the extension icon and popup page
-chrome.runtime.onMessage.addListener((message: MessageHookDataType, sender, sendResponse) => {
-  if (message.from !== sourceFrom.detector) return;
+chrome.runtime.onMessage.addListener(
+  (message: (MessageHookDataType | MessageDetectorDataType) & { data?: MessageHookDataType["data"] }, sender, sendResponse) => {
+    if (message.from !== sourceFrom.detector) return;
 
-  if (message.to !== sourceFrom.worker) {
-    if (__DEV__) {
-      console.log("[@my-react-devtool/worker] invalid message to change icon from detector", message);
+    if (message.to !== sourceFrom.worker) {
+      if (__DEV__) {
+        console.log("[@my-react-devtool/worker] invalid message to change icon from detector", message);
+      }
+      return;
     }
-    return;
-  }
 
-  if (sender.tab?.id && message.type === MessageHookType.mount) {
-    setExtensionIconForTab(sender.tab.id, message.data);
-  }
+    if (sender.tab?.id) {
+      if (message.type === MessageHookType.mount) {
+        setExtensionIconForTab(sender.tab.id, message.data);
+      } else if (message.type === MessageDetectorType.unload) {
+        resetExtensionIconForTab(sender.tab.id);
+      }
+    }
 
-  sendResponse({ ok: true });
-});
+    sendResponse({ ok: true });
+  }
+);

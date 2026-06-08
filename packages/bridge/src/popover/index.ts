@@ -29,6 +29,15 @@ const notifyBackgroundIcon = (data: MessageHookDataType["data"]) => {
   });
 };
 
+const notifyBackgroundUnload = () => {
+  safeRuntimeSendMessage({
+    type: MessageDetectorType.unload,
+    source: DevToolSource,
+    from: sourceFrom.detector,
+    to: sourceFrom.worker,
+  });
+};
+
 // message from hook
 const onMessageFromHook = (message: MessageEvent<MessageHookDataType>) => {
   if (message.source !== window) return;
@@ -65,4 +74,11 @@ const onMessageFromHook = (message: MessageEvent<MessageHookDataType>) => {
 
 if (typeof window !== "undefined") {
   window.addEventListener("message", onMessageFromHook);
+
+  // Real page unload only. pushState / hash routing stay on the same document.
+  window.addEventListener("pagehide", (event) => {
+    if (event.persisted) return;
+
+    notifyBackgroundUnload();
+  });
 }

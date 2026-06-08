@@ -8,6 +8,7 @@ export enum MessageHookType {
 
 export enum MessageDetectorType {
   init = "detector-init",
+  unload = "detector-unload",
 }
 
 export enum MessageProxyType {
