@@ -54,6 +54,7 @@
     		exports$1.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
+    		    MessageDetectorType["unload"] = "detector-unload";
     		})(exports$1.MessageDetectorType || (exports$1.MessageDetectorType = {}));
     		exports$1.MessageProxyType = void 0;
     		(function (MessageProxyType) {
@@ -198,6 +199,17 @@
             },
         }, done);
     };
+    var resetExtensionIconForTab$1 = function (tabId, getURL, action, onCallback) {
+        var done = onCallback !== null && onCallback !== void 0 ? onCallback : (function () { });
+        action.setPopup({ tabId: tabId, popup: getURL("disablePopup.html") }, done);
+        action.setIcon({
+            tabId: tabId,
+            path: {
+                48: getURL("icons/48.png"),
+                128: getURL("icons/128.png"),
+            },
+        }, done);
+    };
 
     var getExtensionRuntime = function () {
         var _a, _b, _c;
@@ -212,6 +224,9 @@
 
     var setExtensionIconForTab = function (tabId, data) {
         applyExtensionIconForTab(tabId, data, chrome.runtime.getURL, chrome.action, consumeRuntimeLastError);
+    };
+    var resetExtensionIconForTab = function (tabId) {
+        resetExtensionIconForTab$1(tabId, chrome.runtime.getURL, chrome.action, consumeRuntimeLastError);
     };
 
     var hub = {};
@@ -293,28 +308,6 @@
             portPip(portName, hub[portName].proxy, hub[portName].devtool);
         }
     });
-    // Reset the icon to default (disabled) state when a tab navigates,
-    // before the detector has a chance to re-detect @my-react on the new page.
-    chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
-        if (changeInfo.status === "loading") {
-            try {
-                chrome.action.setPopup({
-                    tabId: tabId,
-                    popup: chrome.runtime.getURL("disablePopup.html"),
-                });
-                chrome.action.setIcon({
-                    tabId: tabId,
-                    path: {
-                        48: chrome.runtime.getURL("icons/48.png"),
-                        128: chrome.runtime.getURL("icons/128.png"),
-                    },
-                });
-            }
-            catch (_a) {
-                // tab may have been closed
-            }
-        }
-    });
     // from detector, change the extension icon and popup page
     chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         var _a;
@@ -323,8 +316,13 @@
         if (message.to !== sourceFrom.worker) {
             return;
         }
-        if (((_a = sender.tab) === null || _a === void 0 ? void 0 : _a.id) && message.type === eventExports.MessageHookType.mount) {
-            setExtensionIconForTab(sender.tab.id, message.data);
+        if ((_a = sender.tab) === null || _a === void 0 ? void 0 : _a.id) {
+            if (message.type === eventExports.MessageHookType.mount) {
+                setExtensionIconForTab(sender.tab.id, message.data);
+            }
+            else if (message.type === eventExports.MessageDetectorType.unload) {
+                resetExtensionIconForTab(sender.tab.id);
+            }
         }
         sendResponse({ ok: true });
     });

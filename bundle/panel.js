@@ -92,6 +92,7 @@
     		exports$1.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
+    		    MessageDetectorType["unload"] = "detector-unload";
     		})(exports$1.MessageDetectorType || (exports$1.MessageDetectorType = {}));
     		exports$1.MessageProxyType = void 0;
     		(function (MessageProxyType) {
@@ -317,6 +318,8 @@
                 }
                 if (currentAgentId && message.data.agentId !== currentAgentId)
                     return;
+                // Hook is still alive — cancel a pending page-reload reset (SPA navigation).
+                cancelPendingPageReload();
                 // Got a valid render message — cancel the "not detected" fallback timer
                 if (navigationTimerId) {
                     clearTimeout(navigationTimerId);
@@ -370,13 +373,15 @@
         (_a = panelWindow === null || panelWindow === void 0 ? void 0 : panelWindow.onClear) === null || _a === void 0 ? void 0 : _a.call(panelWindow);
     };
     init(getTabId());
-    var isHandlingNavigation = false;
-    var handleNavigation = function () {
-        // Deduplicate — onNavigated and tabs.onUpdated can both fire for the same navigation
-        if (isHandlingNavigation)
-            return;
-        isHandlingNavigation = true;
-        setTimeout(function () { return (isHandlingNavigation = false); }, 200);
+    var pageReloadTimer = null;
+    var cancelPendingPageReload = function () {
+        if (pageReloadTimer) {
+            clearTimeout(pageReloadTimer);
+            pageReloadTimer = null;
+        }
+    };
+    var performPageReload = function () {
+        pageReloadTimer = null;
         clear();
         agentIdMap.delete(getTabId());
         if (panelWindow === null || panelWindow === void 0 ? void 0 : panelWindow.useConnect) {
@@ -401,11 +406,12 @@
             }
         }, 2000);
     };
-    chrome.devtools.network.onNavigated.addListener(handleNavigation);
-    // Backup for bfcache restores where onNavigated may not fire
+    // Some apps emit status=loading on soft navigation. Defer the reset and cancel
+    // if render messages keep arriving (hook still alive = not a real reload).
     chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
         if (tabId === getTabId() && changeInfo.status === "loading") {
-            handleNavigation();
+            cancelPendingPageReload();
+            pageReloadTimer = setTimeout(performPageReload, 500);
         }
     });
 

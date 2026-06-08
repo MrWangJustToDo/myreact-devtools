@@ -6,10 +6,10 @@ self.__BUILD_MANIFEST = {
     "static/chunks/0m.45uf08_9e..js"
   ],
   "/bridge": [
-    "static/chunks/0agtxjjgu1b~v.js"
+    "static/chunks/0iue~5tv4p52-.js"
   ],
   "/devTool": [
-    "static/chunks/0z6zqhd8fptjc.js"
+    "static/chunks/10r2tu8xopwhw.js"
   ],
   "/disablePopup": [
     "static/chunks/0paa6p48-78pz.js"

@@ -21,6 +21,7 @@
     		exports$1.MessageDetectorType = void 0;
     		(function (MessageDetectorType) {
     		    MessageDetectorType["init"] = "detector-init";
+    		    MessageDetectorType["unload"] = "detector-unload";
     		})(exports$1.MessageDetectorType || (exports$1.MessageDetectorType = {}));
     		exports$1.MessageProxyType = void 0;
     		(function (MessageProxyType) {
@@ -294,6 +295,14 @@
             to: sourceFrom.worker,
         });
     };
+    var notifyBackgroundUnload = function () {
+        safeRuntimeSendMessage({
+            type: eventExports.MessageDetectorType.unload,
+            source: eventExports.DevToolSource,
+            from: sourceFrom.detector,
+            to: sourceFrom.worker,
+        });
+    };
     // message from hook
     var onMessageFromHook = function (message) {
         var _a, _b, _c;
@@ -321,6 +330,12 @@
     };
     if (typeof window !== "undefined") {
         window.addEventListener("message", onMessageFromHook);
+        // Real page unload only. pushState / hash routing stay on the same document.
+        window.addEventListener("pagehide", function (event) {
+            if (event.persisted)
+                return;
+            notifyBackgroundUnload();
+        });
     }
 
 })();
