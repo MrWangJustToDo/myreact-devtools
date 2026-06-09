@@ -456,7 +456,8 @@ export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
 
     if (queue.length === 0) break;
     if (queue.length === pendingRemove.length) {
-      console.log("pending node not remove", pendingRemove.slice(0));
+      // maybe we need warn or error here, react devtool will throw error when id not found
+      // console.log("pending node not remove", pendingRemove.slice(0));
       break;
     }
 
@@ -477,7 +478,7 @@ export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
 
     if (queue.length === 0) break;
     if (queue.length === pending.length) {
-      console.log("pending node not applied", pending.slice(0));
+      // console.log("pending node not applied", pending.slice(0));
       break;
     }
 
