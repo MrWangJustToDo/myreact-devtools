@@ -1,4 +1,6 @@
-import { PlainNode, TreeOpType, type TreeOp, type Tree } from "@my-react-devtool/core";
+import { PlainNode, TreeOpType } from "@my-react-devtool/core";
+
+import type { TreeOpRemove, TreeOp, Tree } from "@my-react-devtool/core";
 
 const getParentIsNotHide = (node: PlainNode, isHide: (node: PlainNode) => boolean) => {
   let parent = node.r;
@@ -382,6 +384,42 @@ const tryApplyTreeOp = (roots: Tree[], op: TreeOp): ApplyOpResult => {
       return { applied: true, modified: true };
     }
 
+    case TreeOpType.MOVE: {
+      const node = fullMap.get(op.id);
+      if (!node) return { applied: false, modified: false };
+      if (!fullMap.has(op.parentId)) return { applied: false, modified: false };
+
+      const parent = fullMap.get(op.parentId)!;
+      if (!parent.c) parent.c = [];
+
+      const targetIdx = op.afterId ? parent.c.findIndex((c) => c.i === op.afterId) + 1 : 0;
+      if (op.afterId && targetIdx === 0) return { applied: false, modified: false };
+
+      const currentParent = node.r;
+      const currentIdx = currentParent?.c ? currentParent.c.indexOf(node) : roots.findIndex((r) => r.i === op.id);
+      const alreadyInPlace = currentParent === parent && currentIdx === targetIdx;
+      if (alreadyInPlace) return { applied: true, modified: false };
+
+      if (node.r?.c) {
+        const idx = node.r.c.indexOf(node);
+        if (idx !== -1) node.r.c.splice(idx, 1);
+      } else {
+        const rootIdx = roots.findIndex((r) => r.i === op.id);
+        if (rootIdx !== -1) roots.splice(rootIdx, 1);
+      }
+
+      if (op.afterId) {
+        const afterIdx = parent.c.findIndex((c) => c.i === op.afterId);
+        if (afterIdx === -1) return { applied: false, modified: false };
+        parent.c.splice(afterIdx + 1, 0, node);
+      } else {
+        parent.c.unshift(node);
+      }
+
+      node.r = parent;
+      return { applied: true, modified: true };
+    }
+
     default:
       return { applied: true, modified: false };
   }
@@ -398,7 +436,32 @@ export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
 
   fullMap = buildFullIdMap(roots);
   let modified = false;
-  let pending = ops.slice();
+  const allPending = ops.slice();
+
+  let pendingRemove = allPending.filter((op) => op.op === TreeOpType.REMOVE);
+
+  let pending: TreeOp[] = allPending.filter((op) => op.op !== TreeOpType.REMOVE);
+
+  while (pendingRemove.length > 0) {
+    const queue: TreeOpRemove[] = [];
+
+    for (let i = 0; i < pendingRemove.length; i++) {
+      const { applied, modified: opModified } = tryApplyTreeOp(roots, pendingRemove[i]);
+      if (applied) {
+        if (opModified) modified = true;
+      } else {
+        queue.push(pendingRemove[i]);
+      }
+    }
+
+    if (queue.length === 0) break;
+    if (queue.length === pendingRemove.length) {
+      console.log("pending node not remove", pendingRemove.slice(0));
+      break;
+    }
+
+    pendingRemove = queue;
+  }
 
   while (pending.length > 0) {
     const queue: TreeOp[] = [];
@@ -413,7 +476,10 @@ export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
     }
 
     if (queue.length === 0) break;
-    if (queue.length === pending.length) break;
+    if (queue.length === pending.length) {
+      console.log("pending node not applied", pending.slice(0));
+      break;
+    }
 
     pending = queue;
   }

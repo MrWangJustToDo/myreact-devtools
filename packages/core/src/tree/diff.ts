@@ -48,16 +48,21 @@ export function diffTree(snapshot: Map<string, PlainNode>, changedRoots: PlainNo
         ops.push(metaOp);
       }
 
-      // Detect removed children
       const newChildren = node.c ? node.c.map((c) => c.i) : [];
       const newChildSet = new Set(newChildren);
 
+      // Detect removed children
       for (let i = 0; i < old._ci.length; i++) {
         if (!newChildSet.has(old._ci[i])) {
           if (!plainStore.has(old._ci[i])) {
             ops.push({ op: TreeOpType.REMOVE, id: old._ci[i] });
           }
         }
+      }
+
+      // Detect keyed child reorder (same children, different order)
+      if (!parentChanged) {
+        emitChildReorders(node.i, old._ci, newChildren, ops);
       }
     }
 
@@ -70,6 +75,26 @@ export function diffTree(snapshot: Map<string, PlainNode>, changedRoots: PlainNo
   }
 
   return ops;
+}
+
+function emitChildReorders(parentId: string, oldCi: string[], newCi: string[], ops: TreeOp[]): void {
+  if (oldCi.length !== newCi.length) return;
+
+  const oldSet = new Set(oldCi);
+  for (let i = 0; i < newCi.length; i++) {
+    if (!oldSet.has(newCi[i])) return;
+  }
+
+  for (let i = 0; i < newCi.length; i++) {
+    if (oldCi[i] === newCi[i]) continue;
+
+    ops.push({
+      op: TreeOpType.MOVE,
+      id: newCi[i],
+      parentId,
+      afterId: i > 0 ? newCi[i - 1] : null,
+    });
+  }
 }
 
 function emitAdd(node: PlainNode, plainStore: Map<string, PlainNode>, parentIdMap: Map<string, string>, ops: TreeOp[]): void {

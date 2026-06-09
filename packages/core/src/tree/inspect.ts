@@ -302,9 +302,18 @@ export const snapshotBeforeChange = (list: ListTree<MyReactFiberNode>): Map<stri
   const snapshot = new Map<string, PlainNode>();
   const visited = new WeakSet<MyReactFiberNode>();
 
+  const tempFiberSet = new Set<MyReactFiberNode>();
+
+  list.listToFoot((fiber) => {
+    tempFiberSet.add(fiber);
+  });
+
   const roots: Array<{ node: PlainNode; parentId: string | null }> = [];
 
   list.listToFoot((fiber) => {
+    // only snapshot the shared parent fiber
+    if (tempFiberSet.has(fiber.parent)) return;
+
     const loopFiber = fiber.parent || fiber;
     if (visited.has(loopFiber)) return;
     visited.add(loopFiber);
@@ -314,6 +323,8 @@ export const snapshotBeforeChange = (list: ListTree<MyReactFiberNode>): Map<stri
       roots.push({ node: existing, parentId: parentIdMap.get(existing.i) || null });
     }
   });
+
+  tempFiberSet.clear();
 
   const stack: Array<{ node: PlainNode; parentId: string | null }> = roots;
 

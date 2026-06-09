@@ -49,6 +49,16 @@ const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndent
   container.style.opacity = "1";
 }, 16);
 
+const NodeItem = ({ index }: { index: number }) => {
+  const node = getTreeElementAtIndex(index);
+
+  useAppTree.useShallowSelector((s) => s.updateCount);
+
+  if (!node) return <div style={{ height: 20 }} />;
+
+  return <TreeItem node={node} />;
+};
+
 const TreeViewImpl = memo(({ onScroll, totalCount, onMount }: { onScroll: () => void; totalCount: number; onMount: (s?: VirtuosoHandle) => void }) => {
   const ref = useRef<VirtuosoHandle>(null);
 
@@ -60,13 +70,7 @@ const TreeViewImpl = memo(({ onScroll, totalCount, onMount }: { onScroll: () => 
 
   totalCountRef.current = totalCount;
 
-  const render = useCallback((index: number) => {
-    const node = getTreeElementAtIndex(index);
-
-    if (!node) return <div style={{ height: 20 }} />;
-
-    return <TreeItem node={node} />;
-  }, []);
+  const render = useCallback((index: number) => <NodeItem index={index} />, []);
 
   useEffect(() => {
     const scrollToCurrent = () => {
