@@ -1,6 +1,6 @@
 import { Button } from "@heroui/react";
 import { Trash2 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 import { useConsole } from "@/hooks/useConsole";
 
@@ -36,11 +36,11 @@ const ConsoleEntryItem = ({ entry, index }: { entry: ConsoleEntry; index: number
 
   return (
     <div className={`console-entry border-b border-divider px-2 py-1 ${bg}`}>
-      <div className="flex items-start gap-2">
-        <span className={`${color} font-code text-xs shrink-0 pt-0.5 w-15`}>[{entry.type}]</span>
+      <div className="flex items-center gap-2">
+        <span className={`${color} font-code text-xs shrink-0 pt-0.5 w-[3.8em]`}>[{entry.type}]</span>
         <div className="flex-1 min-w-0 font-code text-sm">
           {entry.args.map((arg, argIndex) => (
-            <ValueView key={`${index}-${argIndex}`} name={String(argIndex)} item={arg} />
+            <ValueView key={`${index}-${argIndex}`} name={""} item={arg} />
           ))}
         </div>
         <span className="font-code text-xs text-foreground-400 shrink-0 whitespace-nowrap pt-0.5">{formatTime(entry.timestamp)}</span>
@@ -55,10 +55,6 @@ export const ConsoleView = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { clear } = useConsole.getActions();
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [entries.length]);
 
   return (
     <div className="console-view h-full flex flex-col">

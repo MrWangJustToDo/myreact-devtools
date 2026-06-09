@@ -8,7 +8,7 @@ import { useFilterNode } from "./useFilterNode";
 import { useNodeName } from "./useNodeName";
 import { useSelectNode } from "./useSelectNode";
 
-type AppTreeType = { nodes: Tree[]; totalWeight: number };
+type AppTreeType = { nodes: Tree[]; totalWeight: number; updateCount: number };
 
 function getIsCollapsed() {
   const closeList = useSelectNode.getReadonlyState().closeList;
@@ -42,7 +42,7 @@ function recomputeWeights(nodes: Tree[]): number {
 
 export const useAppTree = createState(
   () => {
-    return { nodes: [], totalWeight: 0 } as AppTreeType;
+    return { nodes: [], totalWeight: 0, updateCount: 0 } as AppTreeType;
   },
   {
     withDeepSelector: false,
@@ -62,6 +62,7 @@ export const useAppTree = createState(
           const modified = applyTreeOperations(state.nodes, ops);
           if (modified) {
             state.totalWeight = recomputeWeights(state.nodes);
+            state.updateCount++;
             useSelectNode.getActions().updateSelectList();
           }
         },

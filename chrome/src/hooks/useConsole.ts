@@ -23,6 +23,7 @@ export const useConsole = createState(() => ({ entries: [] as ConsoleEntry[], co
       state.count++;
     },
   }),
+  withNamespace: "useConsole",
   withDeepSelector: false,
   withStableSelector: true,
 });
