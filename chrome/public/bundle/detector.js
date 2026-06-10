@@ -51,6 +51,7 @@
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
     		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
     		    MessagePanelType["clearConsole"] = "panel-clear-console";
+    		    MessagePanelType["refresh"] = "panel-refresh";
     		})(exports$1.MessagePanelType || (exports$1.MessagePanelType = {}));
     		exports$1.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {

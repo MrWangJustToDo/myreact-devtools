@@ -3,6 +3,7 @@ import { getFiberTag } from "@my-react-devtool/core";
 import { Play } from "lucide-react";
 import { memo, useCallback, useMemo } from "react";
 
+import { getTreeNodeById } from "@/hooks/useAppTree";
 import { useDetailNode } from "@/hooks/useDetailNode";
 import { useHighlightNode } from "@/hooks/useHighlightNode";
 import { useHMRNode } from "@/hooks/useHMRNode";
@@ -146,34 +147,18 @@ const RenderHighlightType = memo(({ node }: { node: PlainNode }) => {
 
 RenderHighlightType.displayName = "RenderHighlightType";
 
-// const RenderIndent = memo(({ node }: { node: PlainNode }) => {
-//   const ele: ReactNode[] = [];
-//   let p = node.r;
+const RenderIndent = memo(() => {
+  const selectNode = useSelectNode((s) => getTreeNodeById(s.select!));
 
-//   while (p && p._d && p._d >= 0) {
-//     const n = p.l;
+  return (
+    <div
+      className="absolute top-[50%] z-[1] h-[110%] translate-y-[-50%] border-l border-gray-400 opacity-50"
+      style={{ left: `calc(calc(var(--indentation-size) * ${selectNode?._d ?? 0}) + 6px)` }}
+    />
+  );
+});
 
-//     if (n) {
-//       ele.unshift(
-//         <div
-//           key={n.i}
-//           data-indent={p.i}
-//           data-indent-next={n.i}
-//           className={`absolute top-[50%] hidden z-[1] h-[110%] translate-y-[-50%] border-l border-gray-400`}
-//           style={{
-//             left: `calc(calc(var(--indentation-size) * ${p._d ?? 0}) + 6px)`,
-//           }}
-//         />
-//       );
-//     }
-
-//     p = p.r;
-//   }
-
-//   return <>{Children.map(ele, (v) => v)}</>;
-// });
-
-// RenderIndent.displayName = "RenderIndent";
+RenderIndent.displayName = "RenderIndent";
 
 export const TreeItem = memo(
   ({
@@ -261,7 +246,7 @@ export const TreeItem = memo(
       >
         <div className="flex items-center h-full w-full px-[2px] relative">
           {currentIsSelect && <div className="absolute top-0 left-[1px] h-full border-l-2 border-blue-400 rounded-sm pointer-events-none" />}
-          {/* {withIndent && <RenderIndent node={current} />} */}
+          {!currentIsSelect && currentHasSelect && <RenderIndent />}
           <div
             className="flex-grow"
             style={{

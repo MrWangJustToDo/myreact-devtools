@@ -62,7 +62,7 @@ export const useRecordStack = createState(
         s.root = undefined;
       },
       processStack() {
-        s.state = s.state.filter((i) => i.stack.e);
+        s.state = s.state.filter((i) => i.stack.e2);
       },
     }),
     withNamespace: {

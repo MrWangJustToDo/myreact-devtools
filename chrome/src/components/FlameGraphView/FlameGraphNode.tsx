@@ -36,9 +36,9 @@ export const FlameGraphNode = ({
 
   const prev = previous || parent;
 
-  let width = Math.floor(current.e - current.s);
+  let width = Math.floor(current.e2 - current.s);
 
-  let left = Math.floor(previous ? current.s - previous.e : parent ? current.s - parent.s : 0);
+  let left = Math.floor(previous ? current.s - previous.e2 : parent ? current.s - parent.s : 0);
 
   left = width === 0 ? left - 1 : left;
 
@@ -78,17 +78,17 @@ export const FlameGraphNode = ({
             setRecordNode(current);
             setRootNode(rootStack);
           }}
-          title={`${name}${current.r ? ` +${current.r}` : ""}${isLegacy ? ` | Legacy update` : ""}${isConCurrent ? ` | Concurrent update` : ""} | Duration: ${Math.ceil(current.e - current.s) / 1000} ms`}
+          title={`${name}${current.r ? ` +${current.r}` : ""}${isLegacy ? ` | Legacy update` : ""}${isConCurrent ? ` | Concurrent update` : ""} | Duration: ${Math.ceil(current.e2 - current.s) / 1000} ms`}
           className={`flameGraph-node-view py-0.5 rounded-sm opacity-50 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-ssm bg-blue-200 dark:bg-blue-950 ${isLegacy ? "bg-orange-200 dark:bg-orange-800" : ""} ${hasUnmount ? "bg-red-200 dark:bg-red-950" : ""}`}
         >
-          {name} {isRoot && <small>{Math.ceil(current.e - current.s) / 1000}ms</small>}
+          {name} {isRoot && <small>{Math.ceil(current.e1 - current.s) / 1000}ms</small>}
           {current.r ? ` +${current.r}` : ""}
         </div>
         <div className="flex">
           {current.c &&
             current.c.length > 0 &&
             current.c.map((child, index) => {
-              if (!child || !child.e) return;
+              if (!child || !child.e2) return;
               const previousChild = index > 0 ? current.c[index - 1] : undefined;
               return (
                 <FlameGraphNode

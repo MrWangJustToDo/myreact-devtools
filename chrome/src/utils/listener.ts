@@ -1,6 +1,7 @@
 import { addToast } from "@heroui/react";
 import { MessagePanelType } from "@my-react-devtool/core";
 
+import { useAppTree } from "@/hooks/useAppTree";
 import { useChunk } from "@/hooks/useChunk";
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
@@ -261,6 +262,13 @@ export const onListener = (postMessage: (data: MessageDataType) => void) => {
     useGlobalThis.subscribe(
       (s) => s.count,
       () => postMessage({ type: MessagePanelType.global, data: useGlobalThis.getReadonlyState().count })
+    )
+  );
+
+  unSubscribeArray.push(
+    useAppTree.subscribe(
+      (s) => s.refreshCount,
+      () => postMessage({ type: MessagePanelType.refresh, data: null })
     )
   );
 

@@ -132,6 +132,8 @@ export const TreeView = memo(() => {
 
   const totalWeight = useAppTree.useShallowStableSelector((s) => s.totalWeight) as number;
 
+  const refreshKey = useAppTree.useShallowStableSelector((s) => s.refreshKey) as number;
+
   const { width, height } = useDomSize({ ref });
 
   const [r, setR] = useState<VirtuosoHandle>();
@@ -156,7 +158,7 @@ export const TreeView = memo(() => {
     <div className="tree-view h-full p-1">
       <div className="group h-full transform-gpu" ref={ref} style={{ opacity: 0 }}>
         <TreeViewHover />
-        {totalWeight > 0 && <TreeViewImpl onScroll={onScroll} totalCount={totalWeight} onMount={setR} />}
+        {totalWeight > 0 && <TreeViewImpl key={refreshKey} onScroll={onScroll} totalCount={totalWeight} onMount={setR} />}
         <TreeViewSetting handle={r} />
       </div>
     </div>

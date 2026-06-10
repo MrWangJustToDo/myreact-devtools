@@ -55,7 +55,7 @@ export const FlameGraphContainer = () => {
 
   const totalStackTime = Math.ceil(
     useMemo(
-      () => (record ? record.e - record.s : currentPageStack.reduce((p, c) => p + (c?.stack?.e || 0) - (c?.stack?.s || 0), 0)),
+      () => (record ? record.e2 - record.s : currentPageStack.reduce((p, c) => p + (c?.stack?.e2 || 0) - (c?.stack?.s || 0), 0)),
       [currentPageStack, record]
     )
   );

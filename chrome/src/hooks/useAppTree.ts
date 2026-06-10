@@ -8,7 +8,17 @@ import { useFilterNode } from "./useFilterNode";
 import { useNodeName } from "./useNodeName";
 import { useSelectNode } from "./useSelectNode";
 
-type AppTreeType = { nodes: Tree[]; totalWeight: number; updateCount: number };
+type AppTreeType = {
+  nodes: Tree[];
+  totalWeight: number;
+  updateCount: number;
+  /** Bumped on force refresh to remount Virtuoso even when totalWeight is unchanged. */
+  refreshKey: number;
+  /** Per-root refresh keys — one entry per root node id. */
+  rootRefreshKeys: Record<string, number>;
+  /** Bumped to request a full data sync from the bridge. */
+  refreshCount: number;
+};
 
 function getIsCollapsed() {
   const closeList = useSelectNode.getReadonlyState().closeList;
@@ -42,7 +52,7 @@ function recomputeWeights(nodes: Tree[]): number {
 
 export const useAppTree = createState(
   () => {
-    return { nodes: [], totalWeight: 0, updateCount: 0 } as AppTreeType;
+    return { nodes: [], totalWeight: 0, updateCount: 0, refreshKey: 0, rootRefreshKeys: {}, refreshCount: 0 } as AppTreeType;
   },
   {
     withDeepSelector: false,
@@ -54,6 +64,9 @@ export const useAppTree = createState(
             state.nodes = state.nodes.map((n) => (n.i === node.i ? node : n));
           } else {
             state.nodes = [...state.nodes, node];
+            if (state.rootRefreshKeys[node.i] === undefined) {
+              state.rootRefreshKeys = { ...state.rootRefreshKeys, [node.i]: 0 };
+            }
           }
           state.totalWeight = recomputeWeights(state.nodes);
           useSelectNode.getActions().updateSelectList();
@@ -70,9 +83,24 @@ export const useAppTree = createState(
           state.totalWeight = recomputeWeights(state.nodes);
           useSelectNode.getActions().updateSelectList();
         },
+        forceRefresh: () => {
+          const nextRootKeys = { ...state.rootRefreshKeys };
+          for (const root of state.nodes) {
+            nextRootKeys[root.i] = (nextRootKeys[root.i] ?? 0) + 1;
+          }
+          state.rootRefreshKeys = nextRootKeys;
+          state.refreshKey++;
+          state.refreshCount++;
+          state.totalWeight = recomputeWeights(state.nodes);
+          state.updateCount++;
+          useSelectNode.getActions().updateSelectList();
+        },
         clear: () => {
           state.nodes = [];
           state.totalWeight = 0;
+          state.refreshKey = 0;
+          state.rootRefreshKeys = {};
+          state.refreshCount = 0;
         },
       };
     },

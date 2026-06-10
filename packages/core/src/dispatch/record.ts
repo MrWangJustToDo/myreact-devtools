@@ -15,12 +15,16 @@ type TreeItemType = {
   n: string;
   // start time
   s: number;
-  // end time
-  e: number;
+  // run end time
+  e1: number;
+  // all end time (include children)
+  e2: number;
   // rerun count
   r?: number;
-  // duration time
-  d: number;
+  // run duration time
+  d1: number;
+  // all duration time (include children)
+  d2: number;
   // children
   c: TreeItemType[];
 };
@@ -137,6 +141,26 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
     current = node;
   });
 
+  dispatch.onAfterFiberRun((fiber: MyReactFiberNodeDev) => {
+    if (!runtime._enableRecord) return;
+
+    if (!checkIsComponent(fiber)) return;
+
+    const nodeId = getPlainNodeIdByFiber(fiber);
+
+    if (nodeId === null) return;
+
+    if (!map[nodeId]) return;
+
+    const item = stack.find((s) => s.i === nodeId);
+
+    if (!item) return;
+
+    item.e1 = getCurrent();
+
+    item.d1 = Math.max(Math.floor((item.e1 as number) - (item.s as number)), 1);
+  });
+
   dispatch.onAfterFiberDone((fiber: MyReactFiberNodeDev) => {
     if (!runtime._enableRecord) return;
 
@@ -161,9 +185,9 @@ export const patchRecord = (dispatch: DevToolRenderDispatch, runtime: DevToolCor
 
     if (!stackTop) return;
 
-    stackTop.e = getCurrent();
+    stackTop.e2 = getCurrent();
 
-    stackTop.d = Math.max(Math.floor((stackTop.e as number) - (stackTop.s as number)), 1);
+    stackTop.d2 = Math.max(Math.floor((stackTop.e2 as number) - (stackTop.s as number)), 1);
 
     current = stack[stack.length - 1] || null;
 

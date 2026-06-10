@@ -38,6 +38,7 @@ export enum MessagePanelType {
   clearMessage = "panel-clear-message",
   clearTrigger = "panel-clear-trigger",
   clearConsole = "panel-clear-console",
+  refresh = "panel-refresh",
 }
 
 export enum MessageWorkerType {

@@ -18,6 +18,12 @@ export const onMessageFromPanelOrWorkerOrDetector = (data: MessageHookDataType |
     core.notifyAll();
   }
 
+  if (data?.type === MessagePanelType.refresh) {
+    core.connect();
+
+    core.notifyAll();
+  }
+
   // 主动关闭panel / 或者worker失活
   if (data?.type === MessagePanelType.hide || data?.type === MessageWorkerType.close) {
     core.disconnect();

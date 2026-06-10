@@ -132,6 +132,7 @@
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
     		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
     		    MessagePanelType["clearConsole"] = "panel-clear-console";
+    		    MessagePanelType["refresh"] = "panel-refresh";
     		})(exports$1.MessagePanelType || (exports$1.MessagePanelType = {}));
     		exports$1.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -3607,6 +3608,7 @@
     		    MessagePanelType["clearMessage"] = "panel-clear-message";
     		    MessagePanelType["clearTrigger"] = "panel-clear-trigger";
     		    MessagePanelType["clearConsole"] = "panel-clear-console";
+    		    MessagePanelType["refresh"] = "panel-refresh";
     		})(exports$1.MessagePanelType || (exports$1.MessagePanelType = {}));
     		exports$1.MessageWorkerType = void 0;
     		(function (MessageWorkerType) {
@@ -3981,6 +3983,22 @@
     		        stack.push(node);
     		        current = node;
     		    });
+    		    dispatch.onAfterFiberRun(function (fiber) {
+    		        if (!runtime._enableRecord)
+    		            return;
+    		        if (!checkIsComponent(fiber))
+    		            return;
+    		        var nodeId = getPlainNodeIdByFiber(fiber);
+    		        if (nodeId === null)
+    		            return;
+    		        if (!map[nodeId])
+    		            return;
+    		        var item = stack.find(function (s) { return s.i === nodeId; });
+    		        if (!item)
+    		            return;
+    		        item.e1 = getCurrent();
+    		        item.d1 = Math.max(Math.floor(item.e1 - item.s), 1);
+    		    });
     		    dispatch.onAfterFiberDone(function (fiber) {
     		        if (!runtime._enableRecord)
     		            return;
@@ -3998,8 +4016,8 @@
     		        }
     		        if (!stackTop)
     		            return;
-    		        stackTop.e = getCurrent();
-    		        stackTop.d = Math.max(Math.floor(stackTop.e - stackTop.s), 1);
+    		        stackTop.e2 = getCurrent();
+    		        stackTop.d2 = Math.max(Math.floor(stackTop.e2 - stackTop.s), 1);
     		        current = stack[stack.length - 1] || null;
     		        if (!current) {
     		            runtime._stack.push({ stack: stackTop, id: id, mode: mode, list: trigger });
@@ -5966,6 +5984,10 @@
         if (typedData.agentId && typedData.agentId !== core.id)
             return;
         if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessageWorkerType.init || (data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.show) {
+            core.connect();
+            core.notifyAll();
+        }
+        if ((data === null || data === void 0 ? void 0 : data.type) === coreExports.MessagePanelType.refresh) {
             core.connect();
             core.notifyAll();
         }

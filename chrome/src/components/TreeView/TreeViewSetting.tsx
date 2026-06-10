@@ -23,10 +23,11 @@ import {
   DropdownTrigger,
 } from "@heroui/react";
 import { getTypeName, typeKeys } from "@my-react-devtool/core";
-import { BoxIcon, CircleCheck, CircleX, LetterText, ListFilter, Moon, Settings, Settings2, Sun } from "lucide-react";
+import { BoxIcon, CircleCheck, CircleX, LetterText, ListFilter, Moon, RefreshCw, Settings, Settings2, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { memo, useState } from "react";
 
+import { useAppTree } from "@/hooks/useAppTree";
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
 import { useDetailMode } from "@/hooks/useDetailMode";
@@ -59,6 +60,8 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
   const { clearTrigger } = useTriggerNode.getActions();
 
   const { clearMessage } = useHighlightNode.getActions();
+
+  const { forceRefresh } = useAppTree.getActions();
 
   const { state: configState, setEnableHover, setEnableUpdate, toggleEnableRetrigger, setEnableEdit } = useConfig();
 
@@ -96,6 +99,11 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
         <TreeViewSearch handle={handle} />
         <Spacer x={2} />
         <ButtonGroup variant="flat">
+          <Tooltip content="Refresh tree" showArrow color="foreground">
+            <Button isIconOnly onPress={() => forceRefresh()}>
+              <RefreshCw className="text-gray-500 w-[1.2em]" />
+            </Button>
+          </Tooltip>
           <Tooltip content={<p className={state ? "text-green-400" : "text-red-400"}>{state ? "DevTool Connect" : "DevTool DisConnect"}</p>} showArrow>
             <Button isIconOnly onPress={() => cb?.()} disabled={state}>
               {state ? <CircleCheck className="text-green-500 w-[1.2em]" /> : <CircleX className=" text-red-500 w-[1.2em]" />}
