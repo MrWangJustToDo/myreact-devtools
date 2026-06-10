@@ -5,7 +5,7 @@ import { useRecordStack } from "@/hooks/useRecordStack";
 
 import { FlameGraphNode } from "./FlameGraphNode";
 
-import type { RootStack, SafeStackItemType } from "./FlameGraphContainer";
+import type { RootStack, SafeStackItemType } from "./types";
 
 export const FlameGraphNodeRender = memo(({ list, item }: { list: RootStack; item: SafeStackItemType }) => {
   const itemFull = list.find((i) => i.stack === item);

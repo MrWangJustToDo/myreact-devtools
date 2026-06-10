@@ -5,7 +5,7 @@ import { useRecordStack } from "@/hooks/useRecordStack";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useUnmountNode } from "@/hooks/useUnmountNode";
 
-import type { RootStack, SafeStackItemType } from "./FlameGraphContainer";
+import type { RootStack, SafeStackItemType } from "./types";
 
 export const FlameGraphNode = ({
   parent,
@@ -30,7 +30,7 @@ export const FlameGraphNode = ({
 
   const { setSelect: setRecordNode, setRoot: setRootNode } = useRecordStack.getActions();
 
-  const name = useMemo(() => useNodeName.getReadonlyState().map[current.n], [current.n]);
+  const name = useMemo(() => useNodeName.getReadonlyState().map[current.n] || "", [current.n]);
 
   const hasUnmount = useMemo(() => useUnmountNode.getReadonlyState().state[current.i], [current.i]);
 
@@ -58,7 +58,6 @@ export const FlameGraphNode = ({
         className={`flameGraph-node-container cursor-pointer ${isRoot && isSelect && 'relative after:content-[""] after:absolute after:top-0 after:left-0 after:w-full after:h-full after:border-2 after:border-blue-400 after:rounded-sm after:pointer-events-none'}`}
         style={{
           width: `calc(calc(var(--flameGraph-width-step)*${width}))`,
-          // height: `var(--flameGraph-height-step)`,
         }}
         onMouseEnter={() => {
           setHover(current.i);
@@ -79,9 +78,10 @@ export const FlameGraphNode = ({
             setRootNode(rootStack);
           }}
           title={`${name}${current.r ? ` +${current.r}` : ""}${isLegacy ? ` | Legacy update` : ""}${isConCurrent ? ` | Concurrent update` : ""} | Duration: ${Math.ceil(current.e2 - current.s) / 1000} ms`}
-          className={`flameGraph-node-view py-0.5 rounded-sm opacity-50 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-ssm bg-blue-200 dark:bg-blue-950 ${isLegacy ? "bg-orange-200 dark:bg-orange-800" : ""} ${hasUnmount ? "bg-red-200 dark:bg-red-950" : ""}`}
+          className={`flameGraph-node-view py-0.5 rounded-sm opacity-50 hover:opacity-100 shadow-[inset_0_0_0_1px_rgb(142,192,254)] dark:shadow-[inset_0_0_0_1px_rgb(52,80,164)] line-clamp-1 font-code font-ssm bg-blue-200 dark:bg-blue-950 ${isLegacy ? "bg-orange-200 dark:bg-orange-800" : ""} ${hasUnmount ? "bg-red-200 dark:bg-red-950" : ""}`}
         >
           {name} {isRoot && <small>{Math.ceil(current.e1 - current.s) / 1000}ms</small>}
+          {!name && <span className="opacity-0">unmount</span>}
           {current.r ? ` +${current.r}` : ""}
         </div>
         <div className="flex">

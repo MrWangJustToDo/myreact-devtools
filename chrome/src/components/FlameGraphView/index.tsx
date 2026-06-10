@@ -2,10 +2,12 @@ import { Button } from "@heroui/react";
 import { FileChartColumnIcon } from "lucide-react";
 
 import { useConfig } from "@/hooks/useConfig";
+import { useFlameGraphViewMode } from "@/hooks/useFlameGraphViewMode";
 import { useRecordStack } from "@/hooks/useRecordStack";
 import { useTimeCount } from "@/hooks/useTimeCount";
 
-import { FlameGraphContainer } from "./FlameGraphContainer";
+import { FlameGraphContainerV1 } from "./FlameGraphContainerV1";
+import { FlameGraphContainerV2 } from "./FlameGraphContainerV2";
 import { FlameGraphSelect } from "./FlameGraphSelect";
 
 const { startLoading, stopLoading, startProcessing, clearStack } = useRecordStack.getActions();
@@ -16,6 +18,8 @@ export const FlameGraphView = () => {
   const { loading, processing, state } = useRecordStack((s) => ({ loading: s.loading, processing: s.processing, state: s.state }));
 
   const { count, onStart, onStop } = useTimeCount();
+
+  const viewMode = useFlameGraphViewMode((s) => s.mode);
 
   if (!supportRecord) {
     return (
@@ -54,7 +58,7 @@ export const FlameGraphView = () => {
   return (
     <div className="flameGraph-view h-full">
       <FlameGraphSelect />
-      <FlameGraphContainer />
+      {viewMode === "v1" ? <FlameGraphContainerV1 /> : <FlameGraphContainerV2 />}
     </div>
   );
 };

@@ -8,19 +8,11 @@ import { useDomSize } from "@/hooks/useSize";
 import { FlameGraphName } from "./FlameGraphName";
 import { FlameGraphNodeRender } from "./FlameGraphNodeRender";
 import { FlameGraphTrigger } from "./FlameGraphTrigger";
+import { FlameGraphViewModeSwitch } from "./FlameGraphViewModeSwitch";
 
-import type { StackRecordItem } from "@/hooks/useRecordStack";
-import type { StackItemType } from "@my-react-devtool/core";
+import type { RootStack, SafeStackItemType } from "./types";
 
-type DeepRequired<T> = {
-  [P in keyof T]-?: T[P] extends object ? DeepRequired<T[P]> : T[P];
-};
-
-export type SafeStackItemType = DeepRequired<StackItemType>;
-
-export type RootStack = Array<StackRecordItem>;
-
-export const FlameGraphContainer = () => {
+export const FlameGraphContainerV1 = () => {
   const { index, state, record } = useRecordStack((s) => ({ state: s.state, record: s.select, index: s.index })) as {
     index: number;
     state: RootStack;
@@ -75,6 +67,7 @@ export const FlameGraphContainer = () => {
         <div className="flex node-name p-2 pb-0 font-lg font-code bg-content1 transition-transform-background">
           <FlameGraphName />
           <div className="ml-auto flex gap-x-2 absolute right-4 top-0">
+            <FlameGraphViewModeSwitch />
             {(hasPrevPage || hasNextPage) && (
               <ButtonGroup size="sm">
                 {hasPrevPage && (
