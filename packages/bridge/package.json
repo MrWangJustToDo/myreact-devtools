@@ -132,9 +132,9 @@
   },
   "devDependencies": {
     "@my-react-devtool/core": "workspace:*",
-    "@my-react/react": "^0.3.27",
-    "@my-react/react-reconciler": "^0.3.27",
-    "@my-react/react-shared": "^0.3.27",
+    "@my-react/react": "^0.3.28",
+    "@my-react/react-reconciler": "^0.3.28",
+    "@my-react/react-shared": "^0.3.28",
     "@types/node": "^22.19.15",
     "reactivity-store": "^0.4.0",
     "socket.io-client": "^4.8.3"

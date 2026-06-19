@@ -1,6 +1,11 @@
+/* eslint-disable max-lines */
 import { PlainNode, TreeOpType } from "@my-react-devtool/core";
 
 import type { TreeOpRemove, TreeOp, Tree } from "@my-react-devtool/core";
+
+// ────────────────────────────────────────────────────────────────────────────
+// Tree display helpers (hide/collapse filtering, weight-based indexing)
+// ────────────────────────────────────────────────────────────────────────────
 
 const getParentIsNotHide = (node: PlainNode, isHide: (node: PlainNode) => boolean) => {
   let parent = node.r;
@@ -17,6 +22,12 @@ export const checkHasInclude = (node: PlainNode, typeArray: number[]) => {
   return typeArray.some((i) => node?.t & i);
 };
 
+/**
+ * Copy all enumerable own properties from `inComing` onto `exist`.
+ * Used to update a cached PlainNode in-place so that reference-equal
+ * checks in React.memo still work (we keep the same object identity
+ * when display-relevant fields haven't changed).
+ */
 const assignNode = (exist: PlainNode, inComing: PlainNode) => {
   for (const key in inComing) {
     if (Object.prototype.hasOwnProperty.call(inComing, key)) {
@@ -26,13 +37,19 @@ const assignNode = (exist: PlainNode, inComing: PlainNode) => {
   }
 };
 
+/**
+ * Node identity cache — keyed by node id.
+ *
+ * When display-relevant properties (_d, _r, n, t, k, m) haven't changed,
+ * we reuse the same object so React.memo in TreeItem can skip re-rendering.
+ * When they DO change, we create a fresh PlainNode so the memo sees a new
+ * reference and re-renders.
+ */
 const nodeMap = new Map<string | number, PlainNode>();
 
 const getCacheNode = (node: PlainNode) => {
   const prev = nodeMap.get(node.i);
 
-  // When display-relevant properties change (_d, _r, etc.), create a new object
-  // so React.memo detects the change and re-renders the TreeItem.
   if (prev && prev._d === node._d && prev._r === node._r && prev.n === node.n && prev.t === node.t && prev.k === node.k && prev.m === node.m) {
     assignNode(prev, node);
     return prev;
@@ -44,6 +61,11 @@ const getCacheNode = (node: PlainNode) => {
   return cacheNode;
 };
 
+/**
+ * Flatten the tree into a visible node list.
+ * Respects collapse (skip children of collapsed nodes) and hide (skip the
+ * node itself but still visit its children — "depth collapsing").
+ */
 export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => boolean, isHide: (node: PlainNode) => boolean, withDeepReWrite = true) => {
   const list: PlainNode[] = [];
 
@@ -60,8 +82,6 @@ export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => b
 
     const _d = currentIsHide && withDeepReWrite ? (getParentIsNotHide(currentNode, isHide)?._d ?? -1) : currentNode._d;
 
-    // let pre: PlainNode | null = null;
-
     if (currentNode.c && !isCollapsed(currentNode)) {
       for (let i = currentNode.c.length - 1; i >= 0; i--) {
         const childNode = currentNode.c[i];
@@ -73,7 +93,6 @@ export const flattenNode = (node: PlainNode, isCollapsed: (node: PlainNode) => b
       for (let i = 0; i < currentNode.c.length; i++) {
         const childNode = currentNode.c[i];
 
-        // link parent
         childNode.r = currentNode;
       }
     }
@@ -107,27 +126,28 @@ export function getLastChild(nodes: PlainNode[], node: PlainNode): PlainNode {
 
 export const clearNodeCache = () => nodeMap.clear();
 
-// --- Weight-based tree indexing (React DevTools pattern) ---
-// Each node gets a `_w` (weight) = number of visible nodes in its subtree (including itself).
-// This enables O(depth) row lookups without materializing a flat array.
+// ────────────────────────────────────────────────────────────────────────────
+// Weight-based tree indexing (React DevTools pattern)
+// ────────────────────────────────────────────────────────────────────────────
+//
+// Each node gets a `_w` (weight) = number of visible nodes in its subtree
+// (including itself). This enables O(depth) row lookups for virtualized
+// rendering without materializing a full flat array on every update.
 
 type IsCollapsed = (node: PlainNode) => boolean;
 type IsHide = (node: PlainNode) => boolean;
 
-// idMap is rebuilt on each computeWeights call, providing O(1) id->node lookup
 const idMap = new Map<string | number, PlainNode>();
 
-// Snapshot of the isCollapsed/isHide used during the last computeWeights call.
-// getElementAtIndex/getIndexOfElement reuse these to guarantee consistency
-// between the stored _w values and the walk logic.
 let _lastIsCollapsed: IsCollapsed = () => false;
 let _lastIsHide: IsHide = () => false;
 let _lastRoots: PlainNode[] = [];
 
 /**
- * Compute visible weight for every node in the tree and populate the id lookup map.
- * Also rewrites `_d` (display depth) and `r` (parent link) for hidden-node depth collapsing.
- * Returns the total visible weight across all roots.
+ * Compute visible weight for every node in the tree and populate the id→node
+ * lookup map. Also rewrites `_d` (display depth) and `r` (parent link) for
+ * hidden-node depth collapsing. Returns the total visible weight across all
+ * roots.
  */
 export function computeWeights(roots: PlainNode[], isCollapsed: IsCollapsed, isHide: IsHide): number {
   idMap.clear();
@@ -140,8 +160,6 @@ export function computeWeights(roots: PlainNode[], isCollapsed: IsCollapsed, isH
     total += roots[i]._w || 0;
   }
 
-  // Store a snapshot of the roots array (not a reference to the reactive proxy)
-  // so getElementAtIndex/getIndexOfElement always walk the same tree that was weighted.
   _lastRoots = roots.slice();
 
   return total;
@@ -181,9 +199,8 @@ function computeNodeWeight(node: PlainNode, isCollapsed: IsCollapsed, isHide: Is
 }
 
 /**
- * Get the PlainNode at the given visible row index.
- * Reuses the isCollapsed/isHide from the last computeWeights call
- * to guarantee consistency with stored _w values.
+ * Get the PlainNode at a given visible row index.
+ * Uses the stored weights for O(depth) lookup.
  */
 export function getElementAtIndex(targetIndex: number): PlainNode | null {
   let remaining = targetIndex;
@@ -224,7 +241,6 @@ function findByIndex(node: PlainNode, targetIndex: number): PlainNode | null {
 
 /**
  * Get the visible row index of a node by its id.
- * Reuses the isCollapsed/isHide from the last computeWeights call.
  */
 export function getIndexOfElement(id: string | number): number {
   let offset = 0;
@@ -257,17 +273,13 @@ function findIndexInSubtree(node: PlainNode, id: string | number): number {
   return -1;
 }
 
-/**
- * Get a node by its id from the cached map (populated by computeWeights).
- */
 export function getNodeById(id: string | number): PlainNode | null {
   return idMap.get(id) || null;
 }
 
 /**
- * Collect all visible nodes as a flat list. Used by search which needs
- * the full list to find matches by name. This is intentionally lazy —
- * only called on search submit, not on every tree update.
+ * Collect all visible nodes as a flat list. Used by search (intentionally
+ * lazy — only called on search submit, not on every tree update).
  */
 export function collectVisibleNodes(): PlainNode[] {
   const list: PlainNode[] = [];
@@ -291,8 +303,45 @@ function collectFromNode(node: PlainNode, list: PlainNode[]): void {
   }
 }
 
-// --- Incremental tree patching ---
+// ────────────────────────────────────────────────────────────────────────────
+// Incremental tree patching
+// ────────────────────────────────────────────────────────────────────────────
+//
+// The backend (core) sends TreeOp[] deltas after each reconciler commit.
+// `applyTreeOperations()` applies these ops to the frontend's mirror tree
+// (an array of root PlainNodes with nested `.c` children arrays).
+//
+// ── Processing order ──
+//
+//   1. REMOVE ops are extracted and processed first. This ensures stale nodes
+//      are cleaned up before new nodes are added (avoids id collisions and
+//      dangling references).
+//
+//   2. Remaining ops (ADD, UPDATE_META, REORDER_CHILDREN) are processed with
+//      a retry loop. Ops that fail (e.g. child ADD before parent ADD) are
+//      deferred and retried until the queue is empty or makes no progress.
+//
+// ── REORDER_CHILDREN (React DevTools pattern) ──
+//
+//   The backend sends a single REORDER_CHILDREN per parent with the complete
+//   new child id list. The frontend replaces the parent's `.c` array
+//   atomically. This works because:
+//     - REMOVE has already removed deleted children
+//     - ADD has already created new children
+//     - REORDER_CHILDREN runs last and sets the final order
+//
+// ── Retry loop for out-of-order ops ──
+//
+//   Ops within a batch may arrive out of order (e.g. child ADD before parent
+//   ADD, or REORDER_CHILDREN before its children's ADD). The retry loop
+//   handles this: failed ops are deferred and retried after other ops
+//   succeed. The loop terminates when the queue is empty or no progress is
+//   made (stuck ops are silently dropped with a warning).
 
+/**
+ * Build a flat id→node map from the current tree roots.
+ * This is rebuilt at the start of each `applyTreeOperations` call.
+ */
 function buildFullIdMap(roots: Tree[]): Map<string, PlainNode> {
   const map = new Map<string, PlainNode>();
   const stack: PlainNode[] = [];
@@ -311,14 +360,53 @@ function buildFullIdMap(roots: Tree[]): Map<string, PlainNode> {
   return map;
 }
 
+/**
+ * Recursively remove a node and all its descendants from the id map.
+ *
+ * React DevTools enforces children-first removal order (throws if a parent
+ * is removed before its children). Our backend doesn't guarantee that order,
+ * so we clean up the entire subtree here to prevent orphan nodes from
+ * accumulating in fullMap and causing stale lookups.
+ */
+function removeSubtreeFromMap(node: PlainNode, map: Map<string, PlainNode>): void {
+  map.delete(node.i);
+  if (node.c) {
+    for (let i = 0; i < node.c.length; i++) {
+      removeSubtreeFromMap(node.c[i], map);
+    }
+  }
+}
+
+/** Module-level map rebuilt per applyTreeOperations call. */
 let fullMap: Map<string, PlainNode> | null = null;
 
 type ApplyOpResult = { applied: boolean; modified: boolean };
 
+/**
+ * Try to apply a single tree operation.
+ *
+ * Returns:
+ *   - applied: true if the op was handled (successfully or as a no-op)
+ *   - modified: true if the tree was actually changed
+ *
+ * When `applied` is false, the op should be retried later (its dependencies
+ * haven't been satisfied yet, e.g. parent not yet added).
+ */
 const tryApplyTreeOp = (roots: Tree[], op: TreeOp): ApplyOpResult => {
   if (!fullMap) return { applied: false, modified: false };
 
   switch (op.op) {
+    // ── ADD: insert a new node into the tree ──
+    //
+    // If parentId is set, insert as child of that parent.
+    // Position is determined by afterId:
+    //   - afterId = null → prepend as first child
+    //   - afterId = "xyz" → insert after sibling "xyz"
+    //   - afterId sibling not found → append at end (fallback)
+    //
+    // If parentId is null, this is a root node.
+    //
+    // Deferred if parentId is set but parent doesn't exist yet.
     case TreeOpType.ADD: {
       if (fullMap.has(op.id)) return { applied: true, modified: false };
 
@@ -353,6 +441,14 @@ const tryApplyTreeOp = (roots: Tree[], op: TreeOp): ApplyOpResult => {
       return { applied: true, modified: true };
     }
 
+    // ── REMOVE: delete a node and its subtree from the tree ──
+    //
+    // Detaches the node from its parent's `.c` array (or from roots),
+    // then recursively removes the entire subtree from fullMap so
+    // descendants don't become orphans.
+    //
+    // Deferred if the node doesn't exist (might be removed by a
+    // previous subtree removal, or not yet added).
     case TreeOpType.REMOVE: {
       const node = fullMap.get(op.id);
       if (!node) return { applied: false, modified: false };
@@ -369,10 +465,14 @@ const tryApplyTreeOp = (roots: Tree[], op: TreeOp): ApplyOpResult => {
         }
       }
 
-      fullMap.delete(op.id);
+      removeSubtreeFromMap(node, fullMap);
       return { applied: true, modified: true };
     }
 
+    // ── UPDATE_META: patch display fields on an existing node ──
+    //
+    // Only updates fields that are present in the op (sparse update).
+    // Deferred if the node doesn't exist yet.
     case TreeOpType.UPDATE_META: {
       const node = fullMap.get(op.id);
       if (!node) return { applied: false, modified: false };
@@ -384,39 +484,36 @@ const tryApplyTreeOp = (roots: Tree[], op: TreeOp): ApplyOpResult => {
       return { applied: true, modified: true };
     }
 
-    case TreeOpType.MOVE: {
-      const node = fullMap.get(op.id);
-      if (!node) return { applied: false, modified: false };
-      if (!fullMap.has(op.parentId)) return { applied: false, modified: false };
+    // ── REORDER_CHILDREN: atomically replace a parent's child list ──
+    //
+    // Modeled after React DevTools' TREE_OPERATION_REORDER_CHILDREN.
+    // The op carries the complete new child id list. We look up each
+    // child by id, build a new array, and replace the parent's `.c`.
+    //
+    // This is processed AFTER ADD ops, so all referenced children
+    // should exist. Deferred if the parent or any child is missing.
+    //
+    // This is atomic — no sequential splice issues, no stale afterId
+    // references.
+    case TreeOpType.REORDER_CHILDREN: {
+      const parent = fullMap.get(op.id);
+      if (!parent) return { applied: false, modified: false };
 
-      const parent = fullMap.get(op.parentId)!;
-      if (!parent.c) parent.c = [];
-
-      const targetIdx = op.afterId ? parent.c.findIndex((c) => c.i === op.afterId) + 1 : 0;
-      if (op.afterId && targetIdx === 0) return { applied: false, modified: false };
-
-      const currentParent = node.r;
-      const currentIdx = currentParent?.c ? currentParent.c.indexOf(node) : roots.findIndex((r) => r.i === op.id);
-      const alreadyInPlace = currentParent === parent && currentIdx === targetIdx;
-      if (alreadyInPlace) return { applied: true, modified: false };
-
-      if (node.r?.c) {
-        const idx = node.r.c.indexOf(node);
-        if (idx !== -1) node.r.c.splice(idx, 1);
-      } else {
-        const rootIdx = roots.findIndex((r) => r.i === op.id);
-        if (rootIdx !== -1) roots.splice(rootIdx, 1);
+      const newChildren: PlainNode[] = [];
+      for (let i = 0; i < op.children.length; i++) {
+        const child = fullMap.get(op.children[i]);
+        if (!child) {
+          // A referenced child doesn't exist yet — defer this op.
+          // It will be retried after ADD ops create the missing child.
+          return { applied: false, modified: false };
+        }
+        newChildren.push(child);
       }
 
-      if (op.afterId) {
-        const afterIdx = parent.c.findIndex((c) => c.i === op.afterId);
-        if (afterIdx === -1) return { applied: false, modified: false };
-        parent.c.splice(afterIdx + 1, 0, node);
-      } else {
-        parent.c.unshift(node);
+      parent.c = newChildren;
+      for (let i = 0; i < newChildren.length; i++) {
+        newChildren[i].r = parent;
       }
-
-      node.r = parent;
       return { applied: true, modified: true };
     }
 
@@ -426,10 +523,17 @@ const tryApplyTreeOp = (roots: Tree[], op: TreeOp): ApplyOpResult => {
 };
 
 /**
- * Apply incremental tree operations in place.
- * Ops may arrive out of order within a batch (e.g. child before parent).
- * Retries deferred ops until the queue is empty or makes no progress.
- * Returns true if any modification was made.
+ * Apply incremental tree operations to the mirror tree.
+ *
+ * Two-phase processing:
+ *   Phase 1: REMOVE ops (drain stale nodes before adding new ones)
+ *   Phase 2: ADD, UPDATE_META, REORDER_CHILDREN (with retry for ordering)
+ *
+ * Each phase uses a retry loop: failed ops are deferred and retried until
+ * the queue is empty or makes no progress (stuck). This handles out-of-order
+ * dependencies (e.g. child ADD arriving before parent ADD in the same batch).
+ *
+ * Returns true if any modification was made to the tree.
  */
 export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
   if (ops.length === 0) return false;
@@ -438,8 +542,10 @@ export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
   let modified = false;
   const allPending = ops.slice();
 
+  // ── Phase 1: process all REMOVE ops first ──
+  // Removing before adding prevents id collisions (a node removed then
+  // re-added with the same id) and ensures parent.c doesn't have stale refs.
   let pendingRemove = allPending.filter((op) => op.op === TreeOpType.REMOVE);
-
   let pending: TreeOp[] = allPending.filter((op) => op.op !== TreeOpType.REMOVE);
 
   while (pendingRemove.length > 0) {
@@ -456,14 +562,20 @@ export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
 
     if (queue.length === 0) break;
     if (queue.length === pendingRemove.length) {
-      // maybe we need warn or error here, react devtool will throw error when id not found
-      // console.log("pending node not remove", pendingRemove.slice(0));
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          "[@my-react-devtool] REMOVE ops stuck — nodes not found:",
+          queue.map((q) => q.id)
+        );
+      }
       break;
     }
 
     pendingRemove = queue;
   }
 
+  // ── Phase 2: process ADD, UPDATE_META, REORDER_CHILDREN ──
+  // Retry loop handles out-of-order dependencies.
   while (pending.length > 0) {
     const queue: TreeOp[] = [];
 
@@ -478,7 +590,12 @@ export function applyTreeOperations(roots: Tree[], ops: TreeOp[]): boolean {
 
     if (queue.length === 0) break;
     if (queue.length === pending.length) {
-      // console.log("pending node not applied", pending.slice(0));
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          "[@my-react-devtool] ops stuck — dependencies not satisfied:",
+          queue.map((q) => ({ op: q.op, id: (q as any).id }))
+        );
+      }
       break;
     }
 

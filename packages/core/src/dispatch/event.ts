@@ -4,11 +4,11 @@ import { HMRStatus } from "../event";
 import { deleteLinkState, tryLinkStateToHookIndex } from "../hook";
 import { getPlainNodeByFiber, getPlainNodeIdByFiber, inspectList, snapshotBeforeChange } from "../tree";
 import { diffTree } from "../tree/diff";
-import { debounce, throttle } from "../utils";
+import { throttle } from "../utils";
 
 import type { DevToolCore } from "../instance";
 import type { DevToolRenderDispatch } from "../setup";
-import type { PlainNode, TreeOp } from "../tree";
+import type { PlainNode } from "../tree";
 import type { MyReactFiberNode, UpdateState } from "@my-react/react-reconciler";
 import type { ListTree } from "@my-react/react-shared";
 
@@ -43,15 +43,22 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
     runtime.update.flushPending();
   };
 
-  let pendingOps: TreeOp[] = [];
+  // When ops exceed this threshold, send the full tree instead of
+  // individual ops. For large changes (page navigation, big subtree swap)
+  // full-tree replacement is cheaper than serializing/applying hundreds
+  // of ops through the retry loop.
+  const FULL_TREE_OPS_THRESHOLD = 300;
 
-  const flushOperations = debounce(() => {
-    if (pendingOps.length > 0) {
-      runtime.notifyOperations(pendingOps);
-      pendingOps = [];
-    }
-  }, 100);
-
+  // Flush ops synchronously per commit — not debounced.
+  //
+  // React DevTools flushes at the end of each commitFiberRoot call.
+  // Debouncing across commits merges ops from different commits into one
+  // batch, which can cause ordering bugs:
+  //   Commit 1: ADD X (parent=P)  →  queued
+  //   Commit 2: REMOVE P          →  merged
+  //   UI: REMOVE P first → P gone → ADD X stuck (parent missing)
+  //
+  // Each commit should produce and send its own isolated ops batch.
   const onChange = (list: ListTree<MyReactFiberNode>) => {
     if (!runtime.hasEnable) return;
 
@@ -68,8 +75,11 @@ export const patchEvent = (dispatch: DevToolRenderDispatch, runtime: DevToolCore
     const ops = diffTree(snapshot, result);
 
     if (ops.length > 0) {
-      pendingOps = pendingOps.concat(ops);
-      flushOperations();
+      if (ops.length > FULL_TREE_OPS_THRESHOLD) {
+        runtime.notifyDispatch(dispatch, true);
+      } else {
+        runtime.notifyOperations(ops);
+      }
     }
   };
 
