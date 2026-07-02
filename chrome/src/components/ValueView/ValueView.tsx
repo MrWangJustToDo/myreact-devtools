@@ -5,6 +5,7 @@ import { useState, useRef, type ReactNode } from "react";
 import { useContextMenu } from "@/hooks/useContextMenu";
 
 import { ValueChange } from "./ValueChange";
+import { ValuePreview } from "./ValuePreview";
 import { useChunkExpandEffects, useNodeValueData, usePagedChildEntries, ValueHiddenItemsRow } from "./valueViewShared";
 
 import type { NodeValue as NodeValueType } from "@my-react-devtool/core";
@@ -40,7 +41,9 @@ export const ValueView = ({
   expandCount?: number;
 }) => {
   const [expand, setExpand] = useState(() => !!expandCount);
+
   const [count, setCount] = useState(0);
+
   const hasOpenRef = useRef(false);
 
   const { chunkData, cData, data, n, _t, id, text } = useNodeValueData(item);
@@ -88,6 +91,8 @@ export const ValueView = ({
 
     const currentIsEditable = editable && item._t !== "Readonly" && (item?.t === "String" || item?.t === "Number" || item?.t === "Boolean");
 
+    const currentIsStable = !currentIsEditable && !isFunction && !isElement;
+
     return (
       <div data-id={id} data-chunk={isChunk} className="node-value-view">
         <div className="flex w-full my-0.5 items-center">
@@ -107,6 +112,10 @@ export const ValueView = ({
                 <ValueChange item={item} chunkId={chunkId} hookIndex={hookIndex} path={name} type={type || ""} rootItem={rootItem} parentItem={parentItem}>
                   {element}
                 </ValueChange>
+              </span>
+            ) : currentIsStable ? (
+              <span className="node-value-placeholder relative line-clamp-1 break-all" title={textContent}>
+                <ValuePreview item={item}>{element}</ValuePreview>
               </span>
             ) : (
               <span

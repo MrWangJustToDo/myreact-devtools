@@ -1,4 +1,5 @@
-import { Button, Divider, NumberInput, Popover, PopoverContent, PopoverTrigger, Switch, Textarea, useDisclosure } from "@heroui/react";
+import { Button, Chip, NumberInput, Popover, PopoverContent, PopoverTrigger, Switch, Textarea, useDisclosure } from "@heroui/react";
+import { Check, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
@@ -39,7 +40,7 @@ export const ValueChange = ({
   useEffect(() => {
     if (isOpen) {
       setVal(String(item.v));
-      setWidth(ref.current?.offsetWidth || 0);
+      setWidth(ref.current?.offsetWidth ? ref.current.offsetWidth + 40 : 0);
     }
   }, [isOpen, item.v]);
 
@@ -60,34 +61,64 @@ export const ValueChange = ({
 
   return (
     <>
-      <span className="cursor-pointer">✨ {children}</span>
+      <span className="cursor-pointer inline-flex items-center gap-1.5 relative">
+        <Chip size="sm" variant="flat" color="primary" classNames={{ content: "p-0" }} className="h-[1.3em] min-w-0 !px-1 rounded-sm">
+          <Pencil className="w-[0.65em] h-[0.65em]" />
+        </Chip>
+        {children}
+      </span>
       <Popover placement="bottom" isOpen={isOpen} backdrop="opaque" triggerScaleOnOpen={false} onOpenChange={onOpenChange}>
         <PopoverTrigger>
           <div ref={ref} className="absolute w-full h-full left-0 top-0 cursor-pointer" />
         </PopoverTrigger>
-        <PopoverContent>
-          <div className="p-2 min-w-[200px]" style={{ minWidth: width ?? 200 }}>
-            {item.t === "Boolean" && <Switch size="sm" isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />}
-            {item.t === "Number" && <NumberInput variant="bordered" disableAnimation size="sm" value={+val} onValueChange={(l) => setVal(l.toString())} />}
-            {item.t === "String" && (
-              <Textarea
-                classNames={{ input: "resize-y min-h-[40px]" }}
-                className="font-code"
-                variant="bordered"
-                disableAnimation
-                disableAutosize
-                size="sm"
-                value={val}
-                onValueChange={(l) => setVal(l)}
-              />
-            )}
-            <Divider className="my-3" />
-            <div className="flex justify-end">
-              <Button size="sm" color="danger" onPress={onClose}>
+        <PopoverContent className="p-0 shadow-lg">
+          <div className="flex flex-col min-w-[250px]" style={{ minWidth: width ?? 250 }}>
+            <div className="px-4 pt-3 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-foreground">Edit Value</span>
+                <Chip size="sm" variant="flat" color="primary" classNames={{ content: "px-1" }} className="rounded-sm h-[1.3em] min-w-0">
+                  {item.t}
+                </Chip>
+              </div>
+            </div>
+            <div className="px-4 pb-3">
+              {item.t === "Boolean" && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground-600">Value</span>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`text-xs font-mono font-medium tabular-nums transition-colors ${val === "true" ? "text-foreground-400" : "text-foreground"}`}
+                    >
+                      false
+                    </span>
+                    <Switch size="sm" color="success" isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />
+                    <span
+                      className={`text-xs font-mono font-medium tabular-nums transition-colors ${val === "true" ? "text-foreground" : "text-foreground-400"}`}
+                    >
+                      true
+                    </span>
+                  </div>
+                </div>
+              )}
+              {item.t === "Number" && <NumberInput variant="bordered" disableAnimation size="sm" value={+val} onValueChange={(l) => setVal(l.toString())} />}
+              {item.t === "String" && (
+                <Textarea
+                  classNames={{ input: "resize-y min-h-[60px] font-code text-sm" }}
+                  variant="bordered"
+                  disableAnimation
+                  disableAutosize
+                  size="sm"
+                  value={val}
+                  onValueChange={(l) => setVal(l)}
+                />
+              )}
+            </div>
+            <div className="flex justify-end gap-2 border-t border-divider px-4 py-3">
+              <Button size="sm" variant="light" startContent={<X className="w-[0.85em]" />} onPress={onClose}>
                 Cancel
               </Button>
-              <Button size="sm" className="ml-2" color="primary" onPress={onUpdate}>
-                Confirm
+              <Button size="sm" color="primary" startContent={<Check className="w-[0.85em]" />} onPress={onUpdate}>
+                Save
               </Button>
             </div>
           </div>

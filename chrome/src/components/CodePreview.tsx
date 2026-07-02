@@ -5,7 +5,7 @@ import { codeToHtml } from "shiki";
 
 import { CopyButton } from "./CopyButton";
 
-export const CodePreview = ({ code, title }: { code: string; title: string }) => {
+export const CodePreview = ({ code, title }: { code: string; title?: string }) => {
   const [html, setHTML] = useState<string>();
 
   const { theme } = useTheme();
@@ -18,12 +18,16 @@ export const CodePreview = ({ code, title }: { code: string; title: string }) =>
 
   return (
     <Card>
-      <CardHeader>
-        <Code>{title}</Code>
-        <div className="flex-1" />
-        <CopyButton code={code} />
-      </CardHeader>
-      <Divider />
+      {title && (
+        <>
+          <CardHeader>
+            <Code>{title}</Code>
+            <div className="flex-1" />
+            <CopyButton code={code} />
+          </CardHeader>
+          <Divider />
+        </>
+      )}
       <CardBody>{html ? <div className="max-h-[40vh] overflow-auto" dangerouslySetInnerHTML={{ __html: html }} /> : <Spinner />}</CardBody>
     </Card>
   );

@@ -1,6 +1,7 @@
 import {
   Button,
   Chip,
+  Input,
   Modal,
   useDisclosure,
   ModalContent,
@@ -12,10 +13,11 @@ import {
   ButtonGroup,
   Tooltip,
   Spacer,
-  Checkbox,
+  Switch,
+  Tab,
+  Tabs,
   RadioGroup,
   Radio,
-  Divider,
   Code,
   Dropdown,
   DropdownItem,
@@ -23,7 +25,24 @@ import {
   DropdownTrigger,
 } from "@heroui/react";
 import { getTypeName, typeKeys } from "@my-react-devtool/core";
-import { BoxIcon, CircleCheck, CircleX, LetterText, ListFilter, Moon, RefreshCw, Settings, Settings2, Sun } from "lucide-react";
+import {
+  BoxIcon,
+  CircleCheck,
+  CircleX,
+  Eraser,
+  Eye,
+  EyeOff,
+  Gauge,
+  Moon,
+  Paintbrush,
+  RefreshCw,
+  SearchX,
+  Settings,
+  Sun,
+  ToggleLeft,
+  Trash2,
+  Type,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { memo, useState } from "react";
 
@@ -101,21 +120,21 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
         <ButtonGroup variant="flat">
           <Tooltip content="Refresh tree" showArrow color="foreground">
             <Button isIconOnly onPress={() => forceRefresh()}>
-              <RefreshCw className="text-gray-500 w-[1.2em]" />
+              <RefreshCw className="text-foreground-500 w-[1.2em]" />
             </Button>
           </Tooltip>
           <Tooltip content={<p className={state ? "text-green-400" : "text-red-400"}>{state ? "DevTool Connect" : "DevTool DisConnect"}</p>} showArrow>
             <Button isIconOnly onPress={() => cb?.()} disabled={state}>
-              {state ? <CircleCheck className="text-green-500 w-[1.2em]" /> : <CircleX className=" text-red-500 w-[1.2em]" />}
+              {state ? <CircleCheck className="text-green-500 w-[1.2em]" /> : <CircleX className="text-red-500 w-[1.2em]" />}
             </Button>
           </Tooltip>
           <Button isIconOnly onPress={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            {theme === "dark" ? <Moon className="text-gray-500 w-[1.2em]" /> : <Sun className="text-orange-500 w-[1.2em]" />}
+            {theme === "dark" ? <Moon className="text-foreground-500 w-[1.2em]" /> : <Sun className="text-warning-500 w-[1.2em]" />}
           </Button>
           <Dropdown>
             <DropdownTrigger>
               <Button isIconOnly>
-                <BoxIcon className="text-blue-600 w-[1.2em]" />
+                <BoxIcon className="text-primary-500 w-[1.2em]" />
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -124,116 +143,186 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               selectedKeys={new Set([mode])}
               onSelectionChange={(l) => setMode(Array.from(l)?.[0] as typeof mode)}
             >
-              <DropdownItem key="node">Detail mode</DropdownItem>
-              <DropdownItem key="flameGraph">Graph mode</DropdownItem>
-              <DropdownItem key="global">Global mode</DropdownItem>
-              <DropdownItem key="console">Console mode</DropdownItem>
+              <DropdownItem key="node" startContent={<Type className="w-[1em]" />}>
+                Detail mode
+              </DropdownItem>
+              <DropdownItem key="flameGraph" startContent={<Gauge className="w-[1em]" />}>
+                Graph mode
+              </DropdownItem>
+              <DropdownItem key="global" startContent={<Eye className="w-[1em]" />}>
+                Global mode
+              </DropdownItem>
+              <DropdownItem key="console" startContent={<EyeOff className="w-[1em]" />}>
+                Console mode
+              </DropdownItem>
             </DropdownMenu>
           </Dropdown>
 
           <Tooltip content="Setting" showArrow color="foreground">
             <Button isIconOnly onPress={onOpen}>
-              <Settings className={isOpen ? "text-green-500 w-[1.2em]" : "text-gray-500 w-[1.2em]"} />
+              <Settings className={isOpen ? "text-success-500 w-[1.2em]" : "text-foreground-500 w-[1.2em]"} />
             </Button>
           </Tooltip>
         </ButtonGroup>
       </div>
 
-      <Modal isOpen={isOpen} backdrop="blur" size="2xl" onClose={onClose} onOpenChange={onOpenChange} placement="top">
+      <Modal isOpen={isOpen} backdrop="blur" size="lg" onClose={onClose} onOpenChange={onOpenChange} placement="top">
         <ModalContent>
-          <ModalHeader>
-            <h3 className="font-lg">
-              Setting - <Code>@my-react/devtool</Code>
-            </h3>
-          </ModalHeader>
-          <ModalBody>
-            <div className="flex flex-col gap-y-4">
-              <div className="flex flex-col gap-y-2">
-                <p className="whitespace-nowrap flex items-center text-foreground-500">
-                  <ListFilter className="w-[1.2em] mr-2" />
-                  Filter Node:
-                </p>
-                <div className="flex items-center">
-                  <Select
-                    selectionMode="multiple"
-                    placeholder="Select a Type"
-                    variant="bordered"
-                    selectedKeys={values}
-                    aria-label="Filter Node"
-                    className="flex items-center"
-                    onChange={handleSelectionChange}
-                  >
-                    {typeKeys.map((type) => (
-                      <SelectItem key={type}>{getTypeName(type)}</SelectItem>
-                    ))}
-                  </Select>
-                </div>
-                <div className="flex flex-wrap items-center gap-1 p-2 min-h-10 rounded-medium border-2 border-default-200 hover:border-default-400 transition-colors">
-                  {Array.from(nameFilters).map((name) => (
-                    <Chip key={name} size="sm" variant="flat" color="danger" onClose={() => removeNameFilter(name)}>
-                      {name}
-                    </Chip>
-                  ))}
-                  <input
-                    className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-foreground placeholder:text-foreground-400"
-                    placeholder={nameFilters.size === 0 ? "Type name and press Enter to hide" : ""}
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    onKeyDown={handleNameKeyDown}
-                  />
-                </div>
-              </div>
-              <Divider />
-              <div className="flex flex-col gap-y-2">
-                <p className="whitespace-nowrap flex items-center text-foreground-500">
-                  <LetterText className="w-[1.2em] mr-2" />
-                  UI Size:
-                </p>
-                <RadioGroup value={size} onValueChange={(l) => setUISize(l as UISize)} orientation="horizontal" classNames={{ wrapper: "gap-x-6" }}>
-                  <Radio value={UISize.sm}>Small Size</Radio>
-                  <Radio value={UISize.md}>Medium Size</Radio>
-                  <Radio value={UISize.lg}>Large Size</Radio>
-                </RadioGroup>
-              </div>
-              <Divider />
-              <div className="flex flex-col gap-y-2">
-                <p className="whitespace-nowrap flex items-center  text-foreground-500">
-                  <Settings2 className="w-[1.2em] mr-2" />
-                  Config:
-                </p>
-                <Checkbox isSelected={configState.enableUpdate} radius="full" onValueChange={setEnableUpdate} color="primary">
-                  Highlight Update
-                </Checkbox>
-                <Checkbox isSelected={configState.enableHover} radius="full" onValueChange={setEnableHover} color="secondary">
-                  Hover Overlay
-                </Checkbox>
-                <Checkbox isSelected={configState.enableRetrigger} radius="full" onValueChange={toggleEnableRetrigger} color="warning">
-                  Retrigger Status
-                </Checkbox>
-                <Checkbox isSelected={enable} radius="full" onValueChange={onToggle} color="default">
-                  Extend Node Detail
-                </Checkbox>
-                <Checkbox isSelected={configState.enableEdit} radius="full" onValueChange={setEnableEdit} color="success">
-                  Edit Update
-                </Checkbox>
-              </div>
-              <Divider />
-              <div className="flex gap-x-2">
-                <Button size="sm" color="default" variant="bordered" onPress={clearHMR}>
-                  Clear All HMR
-                </Button>
-                <Button size="sm" color="default" variant="bordered" onPress={clearTrigger}>
-                  Clear All Trigger
-                </Button>
-                <Button size="sm" color="default" variant="bordered" onPress={clearMessage}>
-                  Clear All Message
-                </Button>
-              </div>
+          <ModalHeader className="flex flex-col gap-1 pb-0">
+            <div className="flex items-center gap-2">
+              <Settings className="w-[1.1em] text-foreground-500" />
+              <span className="text-medium font-semibold">Settings</span>
+              <Code size="sm">@my-react/devtool</Code>
             </div>
-            <Spacer y={4} />
+          </ModalHeader>
+          <ModalBody className="pt-2">
+            <Tabs aria-label="Settings" variant="underlined" color="primary" classNames={{ tabList: "gap-0", tab: "h-10", panel: "pt-3 pb-1" }}>
+              <Tab
+                key="filter"
+                title={
+                  <div className="flex items-center gap-1.5">
+                    <SearchX className="w-[1em]" />
+                    <span>Filter</span>
+                  </div>
+                }
+              >
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold text-foreground-500 tracking-wide uppercase">By Type</p>
+                    <Select
+                      selectionMode="multiple"
+                      placeholder="Select a Type"
+                      variant="bordered"
+                      selectedKeys={values}
+                      aria-label="Filter Node"
+                      size="sm"
+                      onChange={handleSelectionChange}
+                    >
+                      {typeKeys.map((type) => (
+                        <SelectItem key={type}>{getTypeName(type)}</SelectItem>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold text-foreground-500 tracking-wide uppercase">By Name</p>
+                    <div className="flex flex-wrap items-center gap-1 p-2 min-h-10 rounded-lg border-2 border-default-200 focus-within:border-default-400 transition-colors">
+                      {Array.from(nameFilters).map((name) => (
+                        <Chip key={name} size="sm" variant="flat" color="danger" onClose={() => removeNameFilter(name)}>
+                          {name}
+                        </Chip>
+                      ))}
+                      <Input
+                        className="flex-1 min-w-[120px]"
+                        classNames={{
+                          inputWrapper: "!bg-transparent shadow-none !p-0 min-h-0 h-auto",
+                          innerWrapper: "h-auto",
+                          input: "text-sm placeholder:text-foreground-400",
+                        }}
+                        placeholder={nameFilters.size === 0 ? "Type name and press Enter to hide" : ""}
+                        value={nameInput}
+                        variant="flat"
+                        onChange={(e) => setNameInput(e.target.value)}
+                        onKeyDown={handleNameKeyDown}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Tab>
+              <Tab
+                key="display"
+                title={
+                  <div className="flex items-center gap-1.5">
+                    <Paintbrush className="w-[1em]" />
+                    <span>Display</span>
+                  </div>
+                }
+              >
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold text-foreground-500 tracking-wide uppercase">UI Size</p>
+                    <RadioGroup value={size} onValueChange={(l) => setUISize(l as UISize)} orientation="horizontal" classNames={{ wrapper: "gap-x-6" }}>
+                      <Radio value={UISize.sm}>Small</Radio>
+                      <Radio value={UISize.md}>Medium</Radio>
+                      <Radio value={UISize.lg}>Large</Radio>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </Tab>
+              <Tab
+                key="features"
+                title={
+                  <div className="flex items-center gap-1.5">
+                    <ToggleLeft className="w-[1em]" />
+                    <span>Features</span>
+                  </div>
+                }
+              >
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Highlight Update</span>
+                      <span className="text-xs text-foreground-400">Flash updated components</span>
+                    </div>
+                    <Switch size="sm" color="primary" isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} />
+                  </div>
+                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Hover Overlay</span>
+                      <span className="text-xs text-foreground-400">Highlight on hover</span>
+                    </div>
+                    <Switch size="sm" color="secondary" isSelected={configState.enableHover} onValueChange={setEnableHover} />
+                  </div>
+                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Retrigger Status</span>
+                      <span className="text-xs text-foreground-400">Show retrigger indicators</span>
+                    </div>
+                    <Switch size="sm" color="warning" isSelected={configState.enableRetrigger} onValueChange={toggleEnableRetrigger} />
+                  </div>
+                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Extend Node Detail</span>
+                      <span className="text-xs text-foreground-400">Show extended node info</span>
+                    </div>
+                    <Switch size="sm" isSelected={enable} onValueChange={onToggle} />
+                  </div>
+                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Edit Update</span>
+                      <span className="text-xs text-foreground-400">Allow value editing</span>
+                    </div>
+                    <Switch size="sm" color="success" isSelected={configState.enableEdit} onValueChange={setEnableEdit} />
+                  </div>
+                </div>
+              </Tab>
+              <Tab
+                key="actions"
+                title={
+                  <div className="flex items-center gap-1.5">
+                    <Trash2 className="w-[1em]" />
+                    <span>Actions</span>
+                  </div>
+                }
+              >
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs font-semibold text-foreground-500 tracking-wide uppercase">Clear Data</p>
+                  <Button size="sm" color="default" variant="flat" startContent={<Eraser className="w-[0.9em]" />} onPress={clearHMR}>
+                    Clear All HMR
+                  </Button>
+                  <Button size="sm" color="default" variant="flat" startContent={<Eraser className="w-[0.9em]" />} onPress={clearTrigger}>
+                    Clear All Trigger
+                  </Button>
+                  <Button size="sm" color="default" variant="flat" startContent={<Eraser className="w-[0.9em]" />} onPress={clearMessage}>
+                    Clear All Message
+                  </Button>
+                </div>
+              </Tab>
+            </Tabs>
           </ModalBody>
           <ModalFooter>
-            <Button onPress={onClose}>Close</Button>
+            <Button variant="light" onPress={onClose}>
+              Close
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

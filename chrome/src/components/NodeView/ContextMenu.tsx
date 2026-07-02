@@ -45,27 +45,29 @@ export const ContextMenu = memo(() => {
                 <span className="flex-grow">Store as global variable</span>
               </div>
               {(type === "Function" || type === "AsyncFunction" || type === "GeneratorFunction" || type === "Element") && (
-                <div
-                  className="context-menu-item px-2 cursor-pointer select-none flex justify-center items-center node-item-hover"
-                  onClick={async () => {
-                    setSource();
-                    await new Promise((r) => setTimeout(r, 100));
-                    contextMenuClose();
-                  }}
-                >
-                  {(type === "Function" || type === "AsyncFunction" || type === "GeneratorFunction") && (
-                    <>
-                      <Bug className="mr-2 w-[1em]" />
-                      <span className="flex-grow">Inspect Function source</span>
-                    </>
-                  )}
-                  {type === "Element" && (
-                    <>
-                      <Eye className="mr-2 w-[1em]" />
-                      <span className="flex-grow">Inspect Element node</span>
-                    </>
-                  )}
-                </div>
+                <>
+                  <div
+                    className="context-menu-item px-2 cursor-pointer select-none flex justify-center items-center node-item-hover"
+                    onClick={async () => {
+                      setSource();
+                      await new Promise((r) => setTimeout(r, 100));
+                      contextMenuClose();
+                    }}
+                  >
+                    {(type === "Function" || type === "AsyncFunction" || type === "GeneratorFunction") && (
+                      <>
+                        <Bug className="mr-2 w-[1em]" />
+                        <span className="flex-grow">Inspect in browser</span>
+                      </>
+                    )}
+                    {type === "Element" && (
+                      <>
+                        <Eye className="mr-2 w-[1em]" />
+                        <span className="flex-grow">Inspect Element node</span>
+                      </>
+                    )}
+                  </div>
+                </>
               )}
               <div
                 className="context-menu-item px-2 cursor-pointer select-none flex justify-center items-center node-item-hover"
