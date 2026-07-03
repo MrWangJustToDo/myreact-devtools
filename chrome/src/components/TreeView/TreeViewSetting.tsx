@@ -32,15 +32,15 @@ import {
   Eraser,
   Eye,
   EyeOff,
+  FilterIcon,
   Gauge,
+  MonitorIcon,
   Moon,
-  Paintbrush,
   RefreshCw,
-  SearchX,
   Settings,
+  ShieldMinusIcon,
+  SlidersHorizontalIcon,
   Sun,
-  ToggleLeft,
-  Trash2,
   Type,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -166,7 +166,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
         </ButtonGroup>
       </div>
 
-      <Modal isOpen={isOpen} backdrop="blur" size="lg" onClose={onClose} onOpenChange={onOpenChange} placement="top">
+      <Modal isOpen={isOpen} backdrop="blur" size="xl" onClose={onClose} onOpenChange={onOpenChange} placement="top">
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1 pb-0">
             <div className="flex items-center gap-2">
@@ -175,14 +175,14 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               <Code size="sm">@my-react/devtool</Code>
             </div>
           </ModalHeader>
-          <ModalBody className="pt-2">
-            <Tabs aria-label="Settings" variant="underlined" color="primary" classNames={{ tabList: "gap-0", tab: "h-10", panel: "pt-3 pb-1" }}>
+          <ModalBody className="pt-6">
+            <Tabs aria-label="Settings">
               <Tab
                 key="filter"
                 title={
-                  <div className="flex items-center gap-1.5">
-                    <SearchX className="w-[1em]" />
-                    <span>Filter</span>
+                  <div className="flex items-center gap-x-2">
+                    <FilterIcon size="1.1em" />
+                    <span className="text-[1.2em]">Filter</span>
                   </div>
                 }
               >
@@ -231,9 +231,9 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               <Tab
                 key="display"
                 title={
-                  <div className="flex items-center gap-1.5">
-                    <Paintbrush className="w-[1em]" />
-                    <span>Display</span>
+                  <div className="flex items-center gap-x-2">
+                    <MonitorIcon size="1.1em" />
+                    <span className="text-[1.2em]">Display</span>
                   </div>
                 }
               >
@@ -251,9 +251,9 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
               <Tab
                 key="features"
                 title={
-                  <div className="flex items-center gap-1.5">
-                    <ToggleLeft className="w-[1em]" />
-                    <span>Features</span>
+                  <div className="flex items-center gap-x-2">
+                    <SlidersHorizontalIcon size="1.1em" />
+                    <span className="text-[1.2em]">Features</span>
                   </div>
                 }
               >
@@ -263,21 +263,21 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                       <span className="text-sm font-medium">Highlight Update</span>
                       <span className="text-xs text-foreground-400">Flash updated components</span>
                     </div>
-                    <Switch size="sm" color="primary" isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} />
+                    <Switch size="sm" isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} />
                   </div>
                   <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Hover Overlay</span>
                       <span className="text-xs text-foreground-400">Highlight on hover</span>
                     </div>
-                    <Switch size="sm" color="secondary" isSelected={configState.enableHover} onValueChange={setEnableHover} />
+                    <Switch size="sm" isSelected={configState.enableHover} onValueChange={setEnableHover} />
                   </div>
                   <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Retrigger Status</span>
                       <span className="text-xs text-foreground-400">Show retrigger indicators</span>
                     </div>
-                    <Switch size="sm" color="warning" isSelected={configState.enableRetrigger} onValueChange={toggleEnableRetrigger} />
+                    <Switch size="sm" isSelected={configState.enableRetrigger} onValueChange={toggleEnableRetrigger} />
                   </div>
                   <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
                     <div className="flex flex-col">
@@ -291,16 +291,16 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                       <span className="text-sm font-medium">Edit Update</span>
                       <span className="text-xs text-foreground-400">Allow value editing</span>
                     </div>
-                    <Switch size="sm" color="success" isSelected={configState.enableEdit} onValueChange={setEnableEdit} />
+                    <Switch size="sm" isSelected={configState.enableEdit} onValueChange={setEnableEdit} />
                   </div>
                 </div>
               </Tab>
               <Tab
                 key="actions"
                 title={
-                  <div className="flex items-center gap-1.5">
-                    <Trash2 className="w-[1em]" />
-                    <span>Actions</span>
+                  <div className="flex items-center gap-x-2">
+                    <ShieldMinusIcon size="1.1em" />
+                    <span className="text-[1.2em]">Actions</span>
                   </div>
                 }
               >
@@ -320,7 +320,7 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
             </Tabs>
           </ModalBody>
           <ModalFooter>
-            <Button variant="light" onPress={onClose}>
+            <Button variant="flat" onPress={onClose}>
               Close
             </Button>
           </ModalFooter>

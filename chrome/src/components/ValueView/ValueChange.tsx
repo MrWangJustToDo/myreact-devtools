@@ -1,14 +1,33 @@
-import { Button, Chip, NumberInput, Popover, PopoverContent, PopoverTrigger, Switch, Textarea, useDisclosure } from "@heroui/react";
+import { Button, Chip, NumberInput, Popover, PopoverContent, PopoverTrigger, Select, SelectItem, Textarea, useDisclosure } from "@heroui/react";
 import { Check, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { useChunk } from "@/hooks/useChunk";
 import { useUpdateState } from "@/hooks/useUpdateState";
 
+import { Color } from "./Color";
+
 import type { NodeValue } from "@my-react-devtool/core";
 import type { ReactNode } from "react";
 
 const { setUpdateState, clear } = useUpdateState.getActions();
+
+const cssColor = (str: string) => {
+  if (!str) return false;
+  const s = new Option().style;
+  s.color = str;
+  return s.color !== "";
+};
+
+// const isUrl = (str: string) => /^https?:\/\/\S+$/i.test(str);
+
+// const openUrlInNewTab = (url: string) => {
+//   if (typeof chrome !== "undefined" && chrome?.tabs?.create) {
+//     chrome.tabs.create({ url });
+//   } else {
+//     window.open(url, "_blank", "noopener");
+//   }
+// };
 
 export const ValueChange = ({
   item,
@@ -61,10 +80,11 @@ export const ValueChange = ({
 
   return (
     <>
-      <span className="cursor-pointer inline-flex items-center gap-1.5 relative">
+      <span className="cursor-pointer">
         <Chip size="sm" variant="flat" color="primary" classNames={{ content: "p-0" }} className="h-[1.3em] min-w-0 !px-1 rounded-sm">
           <Pencil className="w-[0.65em] h-[0.65em]" />
         </Chip>
+        {item.t === "String" && cssColor(String(item.v)) && <Color value={String(item.v)} />}
         {children}
       </span>
       <Popover placement="bottom" isOpen={isOpen} backdrop="opaque" triggerScaleOnOpen={false} onOpenChange={onOpenChange}>
@@ -81,24 +101,21 @@ export const ValueChange = ({
                 </Chip>
               </div>
             </div>
-            <div className="px-4 pb-3">
+            <div className="px-4">
               {item.t === "Boolean" && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground-600">Value</span>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`text-xs font-mono font-medium tabular-nums transition-colors ${val === "true" ? "text-foreground-400" : "text-foreground"}`}
-                    >
-                      false
-                    </span>
-                    <Switch size="sm" color="success" isSelected={val === "true"} onValueChange={() => setVal(val === "true" ? "false" : "true")} />
-                    <span
-                      className={`text-xs font-mono font-medium tabular-nums transition-colors ${val === "true" ? "text-foreground" : "text-foreground-400"}`}
-                    >
-                      true
-                    </span>
-                  </div>
-                </div>
+                <Select
+                  variant="bordered"
+                  size="sm"
+                  disableAnimation
+                  selectedKeys={[val]}
+                  onSelectionChange={(keys) => {
+                    const v = Array.from(keys)[0];
+                    if (v) setVal(v as string);
+                  }}
+                >
+                  <SelectItem key="true">true</SelectItem>
+                  <SelectItem key="false">false</SelectItem>
+                </Select>
               )}
               {item.t === "Number" && <NumberInput variant="bordered" disableAnimation size="sm" value={+val} onValueChange={(l) => setVal(l.toString())} />}
               {item.t === "String" && (
@@ -113,7 +130,7 @@ export const ValueChange = ({
                 />
               )}
             </div>
-            <div className="flex justify-end gap-2 border-t border-divider px-4 py-3">
+            <div className="flex justify-end gap-2 px-4 py-2">
               <Button size="sm" variant="light" startContent={<X className="w-[0.85em]" />} onPress={onClose}>
                 Cancel
               </Button>
