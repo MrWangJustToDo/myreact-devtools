@@ -8,8 +8,8 @@ __turbopack_load_page_chunks__("/devTool", [
   "static/chunks/3820lnf2qbvdp.js",
   "static/chunks/1mv0viw11u21u.js",
   "static/chunks/09x907v2jtbgc.js",
-  "static/chunks/0m47hp9sfepuf.js",
-  "static/chunks/1g12-t4fp09py.js",
+  "static/chunks/1cofiq9h9wqxa.js",
+  "static/chunks/250cwt8di3l6h.js",
   "static/chunks/20b287q-j0f7g.js",
-  "static/chunks/turbopack-2m9_j696ki4zc.js"
+  "static/chunks/turbopack-25q9h3jr1o9tw.js"
 ])
