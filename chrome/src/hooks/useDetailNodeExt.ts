@@ -16,6 +16,7 @@ export const useDetailNodeExt = createState(
     withActions: (s) => {
       return {
         toggleEnable: () => (s.enable = !s.enable),
+        setEnable: (enable: boolean) => (s.enable = enable),
         updateHMRStatus: (status: HMRStatus[]) => {
           s.hmrStatus = status;
         },

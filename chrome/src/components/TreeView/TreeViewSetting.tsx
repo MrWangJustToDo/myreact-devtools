@@ -47,6 +47,7 @@ import { useTheme } from "next-themes";
 import { memo, useState } from "react";
 
 import { useAppTree } from "@/hooks/useAppTree";
+import { useAutoWidthTree } from "@/hooks/useAutoWidthTree";
 import { useConfig } from "@/hooks/useConfig";
 import { useConnect } from "@/hooks/useConnect";
 import { useDetailMode } from "@/hooks/useDetailMode";
@@ -62,12 +63,13 @@ import { TreeViewSearch } from "./TreeViewSearch";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import type { VirtuosoHandle } from "react-virtuoso";
 
-const onChange = useFilterNode.getActions().onChange;
-const { addNameFilter, removeNameFilter } = useFilterNode.getActions();
-
-const onToggle = useDetailNodeExt.getActions().toggleEnable;
-
 export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) => {
+  const onChange = useFilterNode.getActions().onChange;
+
+  const { addNameFilter, removeNameFilter } = useFilterNode.getActions();
+
+  const setEnableExt = useDetailNodeExt.getActions().setEnable;
+
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const { theme, setTheme } = useTheme();
@@ -82,7 +84,11 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
 
   const { forceRefresh } = useAppTree.getActions();
 
-  const { state: configState, setEnableHover, setEnableUpdate, toggleEnableRetrigger, setEnableEdit } = useConfig();
+  const { setAutoWidth } = useAutoWidthTree.getActions();
+
+  const autoWidth = useAutoWidthTree((s) => s.state);
+
+  const { state: configState, setEnableHover, setEnableUpdate, setEnableRetrigger, setEnableEdit } = useConfig();
 
   const { state: size, setUISize } = useUISize();
 
@@ -258,40 +264,65 @@ export const TreeViewSetting = memo(({ handle }: { handle?: VirtuosoHandle }) =>
                 }
               >
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                  <div
+                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2"
+                    onClick={() => setEnableUpdate(!configState.enableUpdate)}
+                  >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Highlight Update</span>
                       <span className="text-xs text-foreground-400">Flash updated components</span>
                     </div>
-                    <Switch size="sm" isSelected={configState.enableUpdate} onValueChange={setEnableUpdate} />
+                    <Switch size="sm" isSelected={configState.enableUpdate} onValueChange={() => setEnableUpdate(!configState.enableUpdate)} />
                   </div>
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                  <div
+                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2"
+                    onClick={() => setEnableHover(!configState.enableHover)}
+                  >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Hover Overlay</span>
                       <span className="text-xs text-foreground-400">Highlight on hover</span>
                     </div>
-                    <Switch size="sm" isSelected={configState.enableHover} onValueChange={setEnableHover} />
+                    <Switch size="sm" isSelected={configState.enableHover} onValueChange={() => setEnableHover(!configState.enableHover)} />
                   </div>
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                  <div
+                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2"
+                    onClick={() => setEnableRetrigger(!configState.enableRetrigger)}
+                  >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Retrigger Status</span>
                       <span className="text-xs text-foreground-400">Show retrigger indicators</span>
                     </div>
-                    <Switch size="sm" isSelected={configState.enableRetrigger} onValueChange={toggleEnableRetrigger} />
+                    <Switch size="sm" isSelected={configState.enableRetrigger} onValueChange={() => setEnableRetrigger(!configState.enableRetrigger)} />
                   </div>
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                  <div
+                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2"
+                    onClick={() => setEnableExt(!enable)}
+                  >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Extend Node Detail</span>
                       <span className="text-xs text-foreground-400">Show extended node info</span>
                     </div>
-                    <Switch size="sm" isSelected={enable} onValueChange={onToggle} />
+                    <Switch size="sm" isSelected={enable} onValueChange={() => setEnableExt(!enable)} />
                   </div>
-                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2">
+                  <div
+                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2"
+                    onClick={() => setEnableEdit(!configState.enableEdit)}
+                  >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Edit Update</span>
                       <span className="text-xs text-foreground-400">Allow value editing</span>
                     </div>
-                    <Switch size="sm" isSelected={configState.enableEdit} onValueChange={setEnableEdit} />
+                    <Switch size="sm" isSelected={configState.enableEdit} onValueChange={() => setEnableEdit(!configState.enableEdit)} />
+                  </div>
+                  <div
+                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-default-100 dark:hover:bg-default-50 transition-colors -mx-2"
+                    onClick={() => setAutoWidth(!autoWidth)}
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Auto Width</span>
+                      <span className="text-xs text-foreground-400">Auto adjust tree width</span>
+                    </div>
+                    <Switch size="sm" isSelected={autoWidth} onValueChange={() => setAutoWidth(!autoWidth)} />
                   </div>
                 </div>
               </Tab>

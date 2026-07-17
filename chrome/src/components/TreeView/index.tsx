@@ -3,6 +3,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 
 import { useAppTree, getTreeElementAtIndex, getTreeIndexOfElement } from "@/hooks/useAppTree";
+import { useAutoWidthTree } from "@/hooks/useAutoWidthTree";
 import { useKeyboardSelect } from "@/hooks/useKeyboardSelect";
 import { useSelectNode } from "@/hooks/useSelectNode";
 import { useDomSize } from "@/hooks/useSize";
@@ -11,17 +12,20 @@ import { TreeItem } from "./TreeItem";
 import { TreeViewHover } from "./TreeViewHover";
 import { TreeViewSetting } from "./TreeViewSetting";
 
+import type { CSSProperties } from "react";
 import type { VirtuosoHandle } from "react-virtuoso";
+
+const DEFAULT_INDENTATION_SIZE = 10;
 
 const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndentSizeRef: { current: number }, lastContainerWidthRef: { current: number }) => {
   const children = Array.from(container.querySelectorAll("[data-depth]")) as HTMLDivElement[];
 
   const listWidth = container.clientWidth;
 
-  let maxIndentationSize: number = lastIndentSizeRef.current || 12;
+  let maxIndentationSize: number = lastIndentSizeRef.current || DEFAULT_INDENTATION_SIZE;
 
   if (listWidth > lastContainerWidthRef.current) {
-    maxIndentationSize = 12;
+    maxIndentationSize = DEFAULT_INDENTATION_SIZE;
   }
 
   lastContainerWidthRef.current = listWidth;
@@ -44,9 +48,36 @@ const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndent
 
   container.style.setProperty("--indentation-size", `${maxIndentationSize}px`);
 
+  // container.style.setProperty("--width-size", `${listWidth}px`);
+
+  container.style.opacity = "1";
+}, 16);
+
+const updateContainerWidth = debounce((container: HTMLDivElement, lastContainerWidthRef: { current: number }, forceSetLeft?: boolean) => {
+  const children = Array.from(container.querySelectorAll("[data-depth]")) as HTMLDivElement[];
+
+  let listWidth = Number(container.getAttribute("--width-size") || container.clientWidth);
+
+  let childMaxWidth = 0;
+
+  for (const child of children) {
+    const childWidth: number = child?.scrollWidth || 0;
+    listWidth = Math.max(childWidth, listWidth);
+    childMaxWidth = Math.max(childWidth, childMaxWidth);
+  }
+
+  lastContainerWidthRef.current = listWidth;
+
   container.style.setProperty("--width-size", `${listWidth}px`);
 
   container.style.opacity = "1";
+
+  if (forceSetLeft) {
+    const scrollLeft = childMaxWidth - container.clientWidth;
+
+    // 同步最大的scrollLeft，确保元素可见
+    (container.firstElementChild as HTMLElement).scrollLeft = scrollLeft;
+  }
 }, 16);
 
 const NodeItem = ({ index }: { index: number }) => {
@@ -59,76 +90,93 @@ const NodeItem = ({ index }: { index: number }) => {
   return <TreeItem node={node} />;
 };
 
-const TreeViewImpl = memo(({ onScroll, totalCount, onMount }: { onScroll: () => void; totalCount: number; onMount: (s?: VirtuosoHandle) => void }) => {
-  const ref = useRef<VirtuosoHandle>(null);
+const TreeViewImpl = memo(
+  ({
+    onScroll,
+    totalCount,
+    onMount,
+    fixedWidth,
+  }: {
+    onScroll: (forceSetLeft?: boolean) => void;
+    totalCount: number;
+    onMount: (s?: VirtuosoHandle) => void;
+    fixedWidth: boolean;
+  }) => {
+    const ref = useRef<VirtuosoHandle>(null);
 
-  const [index, setIndex] = useState(0);
+    const [index, setIndex] = useState(0);
 
-  const mountRef = useRef(false);
+    const mountRef = useRef(false);
 
-  const totalCountRef = useRef(totalCount);
+    const totalCountRef = useRef(totalCount);
 
-  totalCountRef.current = totalCount;
+    totalCountRef.current = totalCount;
 
-  const render = useCallback((index: number) => <NodeItem index={index} />, []);
+    const render = useCallback((index: number) => <NodeItem index={index} />, []);
 
-  useEffect(() => {
-    const scrollToCurrent = () => {
-      const select = useSelectNode.getReadonlyState().select;
+    useEffect(() => {
+      const scrollToCurrent = () => {
+        const select = useSelectNode.getReadonlyState().select;
 
-      if (select === null || select === undefined) return;
+        if (select === null || select === undefined) return;
 
-      const idx = getTreeIndexOfElement(select);
+        const idx = getTreeIndexOfElement(select);
 
-      if (idx !== -1) {
-        if (!mountRef.current) {
-          mountRef.current = true;
-          setIndex(idx);
-        } else {
-          ref.current?.scrollIntoView({ index: idx, align: "center", done: onScroll });
+        if (idx !== -1) {
+          if (!mountRef.current) {
+            mountRef.current = true;
+            setIndex(idx);
+          } else {
+            // 只有在页面上通过点击选中元素定位的场景才强制同步left，避免影响正常滚动
+            ref.current?.scrollIntoView({ index: idx, align: "center", done: () => onScroll(true) });
+          }
         }
+      };
+
+      const cb = useSelectNode.subscribe((s) => s.scroll, scrollToCurrent);
+
+      if (totalCount > 0) {
+        scrollToCurrent();
       }
-    };
 
-    const cb = useSelectNode.subscribe((s) => s.scroll, scrollToCurrent);
+      return cb;
+    }, [onScroll, totalCount]);
 
-    if (totalCount > 0) {
-      scrollToCurrent();
-    }
+    useEffect(() => {
+      const id = setTimeout(() => (mountRef.current = true), 1000);
 
-    return cb;
-  }, [onScroll, totalCount]);
+      return () => clearTimeout(id);
+    }, []);
 
-  useEffect(() => {
-    const id = setTimeout(() => (mountRef.current = true), 1000);
+    useEffect(() => {
+      onMount(ref.current as VirtuosoHandle);
 
-    return () => clearTimeout(id);
-  }, []);
+      setTimeout(() => onScroll(true), 1000);
 
-  useEffect(() => {
-    onMount(ref.current as VirtuosoHandle);
+      return () => onMount();
+    }, [onMount, onScroll, index]);
 
-    return () => onMount();
-  }, [onMount, index]);
-
-  return (
-    <Virtuoso
-      className="font-code font-sm overflow-x-hidden"
-      ref={ref}
-      increaseViewportBy={300}
-      onScroll={onScroll}
-      key={index}
-      initialTopMostItemIndex={{ index, align: "center" }}
-      totalCount={totalCount}
-      itemContent={render}
-    />
-  );
-});
+    return (
+      <Virtuoso
+        className={`font-code font-sm ${fixedWidth ? "overflow-x-hidden w-full" : "w-auto"}`}
+        ref={ref}
+        increaseViewportBy={300}
+        onScroll={() => onScroll()}
+        key={index}
+        initialTopMostItemIndex={{ index, align: "center" }}
+        totalCount={totalCount}
+        itemContent={render}
+      />
+    );
+  }
+);
 
 TreeViewImpl.displayName = "TreeViewImpl";
 
 export const TreeView = memo(() => {
   const ref = useRef<HTMLDivElement>(null);
+
+  const state = useAutoWidthTree((s) => s.state);
 
   const totalWeight = useAppTree.useShallowStableSelector((s) => s.totalWeight) as number;
 
@@ -138,29 +186,41 @@ export const TreeView = memo(() => {
 
   const [r, setR] = useState<VirtuosoHandle>();
 
-  const lastIndentSizeRef = useRef(12);
+  const lastIndentSizeRef = useRef(DEFAULT_INDENTATION_SIZE);
 
   const lastContainerWidthRef = useRef(width);
 
   useKeyboardSelect();
 
-  const onScroll = useCallback(() => {
-    if (ref.current) {
-      updateIndentationSizeVar(ref.current as HTMLDivElement, lastIndentSizeRef, lastContainerWidthRef);
-    }
-  }, []);
+  const onScroll = useCallback(
+    (forceSetLeft?: boolean) => {
+      if (ref.current) {
+        if (state) {
+          updateIndentationSizeVar(ref.current as HTMLDivElement, lastIndentSizeRef, lastContainerWidthRef);
+        } else {
+          updateContainerWidth(ref.current as HTMLDivElement, lastContainerWidthRef, forceSetLeft);
+        }
+      }
+    },
+    [state]
+  );
 
   useEffect(() => {
     onScroll();
   }, [onScroll, width, height, totalWeight]);
 
   return (
-    <div className="tree-view h-full p-1">
-      <div className="group h-full transform-gpu" ref={ref} style={{ opacity: 0 }}>
+    <div className="tree-view h-full p-1 transform-gpu">
+      <div
+        key={state ? "auto-width" : "static-width"}
+        className="group h-full transform-gpu"
+        ref={ref}
+        style={{ opacity: 0, ["--indentation-size"]: `${DEFAULT_INDENTATION_SIZE}px` } as CSSProperties}
+      >
         <TreeViewHover />
-        {totalWeight > 0 && <TreeViewImpl key={refreshKey} onScroll={onScroll} totalCount={totalWeight} onMount={setR} />}
-        <TreeViewSetting handle={r} />
+        {totalWeight > 0 && <TreeViewImpl key={refreshKey} onScroll={onScroll} totalCount={totalWeight} onMount={setR} fixedWidth={state} />}
       </div>
+      <TreeViewSetting handle={r} />
     </div>
   );
 });

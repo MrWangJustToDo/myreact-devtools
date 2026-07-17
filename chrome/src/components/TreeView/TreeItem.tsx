@@ -152,7 +152,7 @@ const RenderIndent = memo(() => {
 
   return (
     <div
-      className="absolute top-[50%] z-[1] h-[110%] translate-y-[-50%] border-l border-gray-400 opacity-50"
+      className="absolute top-[50%] z-[1] h-[101%] translate-y-[-50%] border-l border-gray-400 opacity-50"
       style={{ left: `calc(calc(var(--indentation-size) * ${selectNode?._d ?? 0}) + 6px)` }}
     />
   );
@@ -243,6 +243,7 @@ export const TreeItem = memo(
           `${currentHasSelect ? " node-item-select" : ""}` +
           `${currentIsSelect ? " node-item-selected" : ""}`
         }
+        style={{ width: "var(--width-size, 100%)" }}
       >
         <div className="flex items-center h-full w-full px-[2px] relative">
           {currentIsSelect && <div className="absolute top-0 left-[1px] h-full border-l-2 border-blue-400 rounded-sm pointer-events-none" />}
@@ -250,9 +251,9 @@ export const TreeItem = memo(
           <div
             className="flex-grow"
             style={{
-              transform: `translateX(calc(${deep} * var(--indentation-size))`,
+              // transform: `translateX(calc(${deep} * var(--indentation-size))`,
               // width: `calc(100%-calc(${deep}*var(--indentation-size)))`,
-              // marginLeft: `calc(${deep} * var(--indentation-size)`,
+              marginLeft: `calc(${deep} * var(--indentation-size)`,
             }}
           >
             <div data-content className="flex items-center w-fit">

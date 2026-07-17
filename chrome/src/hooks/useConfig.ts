@@ -41,6 +41,9 @@ export const useConfig = createState(
       toggleEnableRetrigger() {
         s.state.enableRetrigger = !s.state.enableRetrigger;
       },
+      setEnableRetrigger(enableRetrigger: boolean) {
+        s.state.enableRetrigger = enableRetrigger;
+      },
     }),
     withNamespace: "useConfig",
     withDeepSelector: true,
