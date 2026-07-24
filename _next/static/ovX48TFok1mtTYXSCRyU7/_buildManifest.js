@@ -9,7 +9,7 @@ self.__BUILD_MANIFEST = {
     "static/chunks/2nf8g5wb-lker.js"
   ],
   "/devTool": [
-    "static/chunks/3ujguv4v-9_ku.js"
+    "static/chunks/3kezb67cx-0ci.js"
   ],
   "/disablePopup": [
     "static/chunks/0v8kwmhh6jvkv.js"
