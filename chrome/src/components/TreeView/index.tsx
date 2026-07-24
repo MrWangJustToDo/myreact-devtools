@@ -53,18 +53,28 @@ const updateIndentationSizeVar = debounce((container: HTMLDivElement, lastIndent
   container.style.opacity = "1";
 }, 16);
 
+const TREE_ITEM_PADDING_X = 4; // px-[2px] left + right on TreeItem inner row
+
 const updateContainerWidth = debounce((container: HTMLDivElement, lastContainerWidthRef: { current: number }, forceSetLeft?: boolean) => {
   const children = Array.from(container.querySelectorAll("[data-depth]")) as HTMLDivElement[];
 
-  let listWidth = Number(container.getAttribute("--width-size") || container.clientWidth);
+  const indentSize = parseFloat(getComputedStyle(container).getPropertyValue("--indentation-size")) || DEFAULT_INDENTATION_SIZE;
 
   let childMaxWidth = 0;
 
   for (const child of children) {
-    const childWidth: number = child?.scrollWidth || 0;
-    listWidth = Math.max(childWidth, listWidth);
-    childMaxWidth = Math.max(childWidth, childMaxWidth);
+    const depth = parseInt(child.getAttribute("data-depth") || "0", 10) || 0;
+    // Measure intrinsic content, not the row already stretched by --width-size / 100%
+    const contentWidth = (child.querySelector("[data-content]") as HTMLElement | null)?.scrollWidth || 0;
+    const childWidth = depth * indentSize + contentWidth + TREE_ITEM_PADDING_X;
+
+    childMaxWidth = Math.max(childMaxWidth, childWidth);
   }
+
+  // Keep the historical max so scrolling past narrower rows doesn't shrink the content width
+  // (scrollbar stays; previously-seen wide items remain reachable without re-scrolling horizontally)
+  const prevWidth = parseFloat(container.style.getPropertyValue("--width-size")) || 0;
+  const listWidth = Math.max(Math.ceil(childMaxWidth), prevWidth);
 
   lastContainerWidthRef.current = listWidth;
 
@@ -73,10 +83,13 @@ const updateContainerWidth = debounce((container: HTMLDivElement, lastContainerW
   container.style.opacity = "1";
 
   if (forceSetLeft) {
-    const scrollLeft = childMaxWidth - container.clientWidth;
+    const scrollLeft = Math.max(0, listWidth - container.clientWidth);
+    // Virtuoso root is the scrollport; TreeViewHover injects a <style> as a sibling
+    const scroller = container.querySelector<HTMLElement>(".font-code");
 
-    // 同步最大的scrollLeft，确保元素可见
-    (container.firstElementChild as HTMLElement).scrollLeft = scrollLeft;
+    if (scroller) {
+      scroller.scrollLeft = scrollLeft;
+    }
   }
 }, 16);
 
