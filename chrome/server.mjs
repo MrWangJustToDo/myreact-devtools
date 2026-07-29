@@ -47,6 +47,8 @@ app
       console.log(`> Server listening as ${dev ? "development" : process.env.NODE_ENV}`);
       console.log(`  - Local:   http://localhost:${port}`);
       console.log(`  - Network: http://${localIP}:${port}`);
+      console.log(`  - DEVTOOL_PATH: ${localIP}`);
+      console.log(`  - DEVTOOL_PORT: ${port}`);
       console.log(`> WebSocket endpoint:`);
       console.log(`  - Local:   ws://localhost:${port}/ws`);
       console.log(`  - Network: ws://${localIP}:${port}/ws`);
