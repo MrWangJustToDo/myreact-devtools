@@ -28,22 +28,22 @@ The runtime-side library injected into the inspected page. Central class is `Dev
 
 **Key directories:**
 
-| Directory | Purpose |
-|-----------|---------|
-| `src/instance.ts` | `DevToolCore` class — all runtime state fields, `_notify`, `subscribe`, all `notify*` methods |
-| `src/event.ts` | Enums: `DevToolMessageEnum` (core→UI), `MessagePanelType` (UI→core), `MessageHookType`, etc. |
-| `src/tree/` | Fiber → `PlainNode` conversion, `inspectFiber`, tree walking |
-| `src/tree/instance.ts` | `PlainNode` class — the serializable fiber representation sent to UI |
-| `src/data/` | `getNode()` / `getObj()` — deep value serialization to `NodeValue` |
-| `src/hook/` | Hook inspection, `disableLogs` wrapping during hook replay |
-| `src/fiber/` | Fiber node updates, HMR, type detection |
-| `src/dispatch/` | `patchEvent` — hooks into reconciler callbacks (commit, update, unmount, warn, error, etc.) |
-| `src/config/` | Feature toggles (hover overlay, update highlight, retrigger) |
-| `src/console.ts` | Console patching — intercepts `console.*` to record output |
-| `src/log.ts` | `disableLogs`/`reenableLogs` — suppresses console during hook inspection (from React DevTools) |
-| `src/view/` | DOM overlay (Select, Highlight) for hover/update visualization |
-| `src/setup.ts` | `setupDispatch` — patches a reconciler dispatch for devtool integration |
-| `src/utils.ts` | `debounce`, `throttle` |
+| Directory              | Purpose                                                                                        |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `src/instance.ts`      | `DevToolCore` class — all runtime state fields, `_notify`, `subscribe`, all `notify*` methods  |
+| `src/event.ts`         | Enums: `DevToolMessageEnum` (core→UI), `MessagePanelType` (UI→core), `MessageHookType`, etc.   |
+| `src/tree/`            | Fiber → `PlainNode` conversion, `inspectFiber`, tree walking                                   |
+| `src/tree/instance.ts` | `PlainNode` class — the serializable fiber representation sent to UI                           |
+| `src/data/`            | `getNode()` / `getObj()` — deep value serialization to `NodeValue`                             |
+| `src/hook/`            | Hook inspection, `disableLogs` wrapping during hook replay                                     |
+| `src/fiber/`           | Fiber node updates, HMR, type detection                                                        |
+| `src/dispatch/`        | `patchEvent` — hooks into reconciler callbacks (commit, update, unmount, warn, error, etc.)    |
+| `src/config/`          | Feature toggles (hover overlay, update highlight, retrigger)                                   |
+| `src/console.ts`       | Console patching — intercepts `console.*` to record output                                     |
+| `src/log.ts`           | `disableLogs`/`reenableLogs` — suppresses console during hook inspection (from React DevTools) |
+| `src/view/`            | DOM overlay (Select, Highlight) for hover/update visualization                                 |
+| `src/setup.ts`         | `setupDispatch` — patches a reconciler dispatch for devtool integration                        |
+| `src/utils.ts`         | `debounce`, `throttle`                                                                         |
 
 **Core patterns:**
 
@@ -57,14 +57,14 @@ The runtime-side library injected into the inspected page. Central class is `Dev
 
 Routes messages between `core` and the UI panel across different environments.
 
-| File | Purpose |
-|------|---------|
-| `src/message.ts` | `onMessageFromPanelOrWorkerOrDetector` — maps `MessagePanelType` commands to `DevToolCore` methods |
-| `src/core.ts` | Singleton `DevToolCore` instance |
-| `src/panel/` | Extension panel setup, `window.onRender`/`window.onListener` wiring |
-| `src/content/` | Content script variants (direct, forwarded, bundled, websocket) |
-| `src/entry/` | Entry points for different connection modes (web, socket, websocket, node, iframe) |
-| `src/background/` | Chrome extension service worker and proxy |
+| File              | Purpose                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| `src/message.ts`  | `onMessageFromPanelOrWorkerOrDetector` — maps `MessagePanelType` commands to `DevToolCore` methods |
+| `src/core.ts`     | Singleton `DevToolCore` instance                                                                   |
+| `src/panel/`      | Extension panel setup, `window.onRender`/`window.onListener` wiring                                |
+| `src/content/`    | Content script variants (direct, forwarded, bundled, websocket)                                    |
+| `src/entry/`      | Entry points for different connection modes (web, socket, websocket, node, iframe)                 |
+| `src/background/` | Chrome extension service worker and proxy                                                          |
 
 ### `chrome/` (DevTool UI)
 
@@ -76,13 +76,13 @@ Next.js app rendering the devtool panel. Works as Chrome extension panel or stan
 
 **Key directories:**
 
-| Directory | Purpose |
-|-----------|---------|
-| `src/utils/render.ts` | `onRender(data)` — receives `DevToolMessageEnum` messages, dispatches to stores |
+| Directory               | Purpose                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `src/utils/render.ts`   | `onRender(data)` — receives `DevToolMessageEnum` messages, dispatches to stores           |
 | `src/utils/listener.ts` | `onListener(postMessage)` — subscribes to store changes, sends `MessagePanelType` to core |
-| `src/hooks/` | `reactivity-store` state modules (one per feature) |
-| `src/components/` | UI components (TreeView, DetailView, NodeView, ConsoleView, GlobalThisView, etc.) |
-| `src/pages/` | Next.js routes (`devTool.tsx` is the main panel) |
+| `src/hooks/`            | `reactivity-store` state modules (one per feature)                                        |
+| `src/components/`       | UI components (TreeView, DetailView, NodeView, ConsoleView, GlobalThisView, etc.)         |
+| `src/pages/`            | Next.js routes (`devTool.tsx` is the main panel)                                          |
 
 ## Data Flow
 
@@ -122,10 +122,12 @@ Next.js app rendering the devtool panel. Works as Chrome extension panel or stan
 Follow this checklist when adding a new data channel (like console, globalThis, warn, error):
 
 ### 1. Core — enum (`packages/core/src/event.ts`)
+
 - Add entry to `DevToolMessageEnum` (core→UI data channel)
 - Add entry to `MessagePanelType` if UI needs to send commands back (e.g. clear, refresh)
 
 ### 2. Core — state & notify (`packages/core/src/instance.ts`)
+
 - Add field on `DevToolCore` (e.g. `_myFeature: ...`)
 - Add `notifyMyFeature()` method — serialize with `getNode()`, call `_notify()`
 - Add to `notifyAll()` if it should be sent on reconnect
@@ -134,22 +136,27 @@ Follow this checklist when adding a new data channel (like console, globalThis, 
 - For incremental data: use an index tracker (e.g. `_myFeatureSentIndex`) to only send deltas
 
 ### 3. Bridge — command handler (`packages/bridge/src/message.ts`)
+
 - Add `if (data?.type === MessagePanelType.myCommand)` block calling the appropriate `core.*` method
 
 ### 4. UI — store (`chrome/src/hooks/useMyFeature.ts`)
+
 - Create `reactivity-store` state with `createState`
 - Include actions for setting/appending/clearing data
 - Use `count` pattern if UI needs to trigger core-side actions (count++ → listener detects → sends message)
 
 ### 5. UI — render handler (`chrome/src/utils/render.ts`)
+
 - Import the store
 - Add `if (data.type === DevToolMessageEnum.myFeature)` block dispatching to store actions
 
 ### 6. UI — listener (`chrome/src/utils/listener.ts`)
+
 - Subscribe to store changes that should trigger messages to core
 - Send `MessagePanelType.*` via `postMessage`
 
 ### 7. UI — component (`chrome/src/components/MyFeatureView/index.tsx`)
+
 - Read from the store hook
 - Use `ValueView` to render `NodeValue` data (supports expandable objects, arrays, etc.)
 - Add to `DetailView` with a new mode in `useDetailMode`
@@ -158,33 +165,44 @@ Follow this checklist when adding a new data channel (like console, globalThis, 
 ## Key Patterns & Conventions
 
 ### State field naming
+
 - Runtime fields: `_fieldName` (underscore prefix, on `DevToolCore`)
 - Notify methods: `notifyFieldName()` — always guard with `if (!this.hasEnable) return`
 - Clear methods: `clearFieldName()` — reset field and notify
 
 ### Incremental data sending
+
 For high-frequency data (like console), use a sent-index to avoid resending all data:
+
 ```typescript
 // only send entries that haven't been sent yet
 const pending = this._data.slice(this._dataSentIndex);
 this._dataSentIndex = this._data.length;
 this._notify({ type: ..., data: pending });
 ```
+
 UI side should `append` incoming data rather than `replace`.  
 For clear: send `data: null` as a signal; UI should have separate `reset()` (no echo back) vs `clear()` (bumps count, notifies core).
 
 ### Console patching & disableLogs interaction
+
 `console.ts` patches native console methods. `log.ts` has `disableLogs()`/`reenableLogs()` from React DevTools that replaces console methods with no-ops during hook inspection. Since `disableLogs` saves/restores whatever is on `console.*`, our patches are naturally excluded during inspection — no explicit coordination needed.
 
 ### Value serialization
+
 All values sent to the UI go through `getNode()` (`data/inspect.ts`) → `NodeValue` objects. The UI renders these with `ValueView` component which supports expandable trees, chunk loading, and context menus.
 
 ### reactivity-store pattern in UI
+
 ```typescript
 export const useMyStore = createState(() => ({ data: null }), {
   withActions: (state) => ({
-    setData: (d) => { state.data = d; },
-    clear: () => { state.data = null; },
+    setData: (d) => {
+      state.data = d;
+    },
+    clear: () => {
+      state.data = null;
+    },
   }),
   withDeepSelector: false,
   withStableSelector: true,
@@ -198,12 +216,12 @@ useMyStore.getReadonlyState().data;
 
 ## Dev Modes
 
-| Command | Mode | Description |
-|---------|------|-------------|
-| `pnpm dev:web` | web | Connect via iframe postMessage |
-| `pnpm dev:socket` | socket | Connect via Socket.IO |
-| `pnpm dev:websocket` | websocket | Connect via raw WebSocket |
-| `pnpm dev:local` | local | Local Next.js dev (no connection) |
+| Command              | Mode      | Description                         |
+| -------------------- | --------- | ----------------------------------- |
+| `pnpm dev:web`       | web       | Connect via iframe postMessage      |
+| `pnpm dev:socket`    | socket    | Connect via Socket.IO               |
+| `pnpm dev:websocket` | websocket | Connect via raw WebSocket           |
+| `pnpm dev:local`     | local     | Local Next.js dev (no connection)   |
 | `pnpm dev:extension` | extension | Chrome extension with file watching |
 
 ## Type Checking
@@ -218,17 +236,17 @@ npx tsc --noEmit -p chrome/tsconfig.json
 
 ## Important Files Quick Reference
 
-| What | File |
-|------|------|
-| All devtool state & notify | `packages/core/src/instance.ts` |
-| Message enums | `packages/core/src/event.ts` |
-| Value serialization | `packages/core/src/data/inspect.ts` |
-| Fiber → PlainNode | `packages/core/src/tree/inspect.ts` |
-| PlainNode class | `packages/core/src/tree/instance.ts` |
-| Reconciler event hooks | `packages/core/src/dispatch/event.ts` |
-| Bridge message handler | `packages/bridge/src/message.ts` |
-| UI message receiver | `chrome/src/utils/render.ts` |
-| UI → core subscriptions | `chrome/src/utils/listener.ts` |
-| Detail panel router | `chrome/src/components/DetailView/index.tsx` |
-| Mode selector | `chrome/src/components/TreeView/TreeViewSetting.tsx` |
-| Detail mode state | `chrome/src/hooks/useDetailMode.ts` |
+| What                       | File                                                 |
+| -------------------------- | ---------------------------------------------------- |
+| All devtool state & notify | `packages/core/src/instance.ts`                      |
+| Message enums              | `packages/core/src/event.ts`                         |
+| Value serialization        | `packages/core/src/data/inspect.ts`                  |
+| Fiber → PlainNode          | `packages/core/src/tree/inspect.ts`                  |
+| PlainNode class            | `packages/core/src/tree/instance.ts`                 |
+| Reconciler event hooks     | `packages/core/src/dispatch/event.ts`                |
+| Bridge message handler     | `packages/bridge/src/message.ts`                     |
+| UI message receiver        | `chrome/src/utils/render.ts`                         |
+| UI → core subscriptions    | `chrome/src/utils/listener.ts`                       |
+| Detail panel router        | `chrome/src/components/DetailView/index.tsx`         |
+| Mode selector              | `chrome/src/components/TreeView/TreeViewSetting.tsx` |
+| Detail mode state          | `chrome/src/hooks/useDetailMode.ts`                  |

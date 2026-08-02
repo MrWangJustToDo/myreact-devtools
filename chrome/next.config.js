@@ -13,5 +13,5 @@ const nextConfig = {
   reactCompiler: true,
 };
 
-module.exports = withNext(nextConfig, { turbopackKey: 'turbopack' });
+module.exports = withNext(nextConfig, { turbopackKey: "turbopack" });
 // module.exports = nextConfig;

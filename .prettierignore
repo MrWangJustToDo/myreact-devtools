@@ -2,4 +2,6 @@
 **/dist
 **/dev
 **/bundle
+**/out
+**/.next
 pnpm-lock.yaml
